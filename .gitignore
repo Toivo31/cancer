@@ -1,0 +1,11 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Secrets: API keys live here, never commit
+.env
+
+# IDE
+.idea/
+.DS_Store

@@ -1,0 +1,130 @@
+# Manipulation techniques in online cancer content (Hostinger "Decode the Noise" submission).
+# Every example below is synthetic, written for this file.
+#
+# Fields per technique:
+#   id            stable snake_case key, used in flags and labels
+#   name          human-readable name
+#   definition    what the technique is, one or two sentences
+#   cues          surface signals the classifier should look for (not sufficient alone)
+#   example       a synthetic text that shows the technique
+#   explanation   plain-language template shown to the reader; {span} is the quoted text
+#   evidence      what has to be checked before the flag can stand
+#   not_this      common look-alikes that should NOT be flagged (protects precision)
+
+taxonomy: misinformation
+version: 1
+source_type: online_post
+
+techniques:
+  - id: fear_appeal
+    name: Fear appeal
+    definition: >
+      Uses alarm or dread to push the reader towards a decision (usually avoiding
+      treatment or screening) instead of giving evidence.
+    cues:
+      - absolute danger words ("kills", "destroys", "poison") about treatments or screening
+      - urgency with no data ("before it's too late", "share before they delete this")
+      - worst-case outcomes presented as typical
+    example: "Chemo kills more people than cancer ever did. Don't let them poison your family."
+    explanation: >
+      "{span}" tries to scare you rather than inform you. It gives no numbers or source,
+      and treats the worst outcome as if it were the normal one.
+    evidence:
+      - claim lacks a verifiable source or statistic
+      - a reliable source contradicts the stated risk (link it)
+    not_this:
+      - a sourced, proportionate description of real side effects
+      - a patient describing their own frightening experience without urging others
+
+  - id: fabricated_authority
+    name: Fabricated or unverifiable authority
+    definition: >
+      Borrows credibility from an expert, institution or study that cannot be identified
+      or does not say what is claimed.
+    cues:
+      - vague experts such as "a leading oncologist", "scientists admit", "a Harvard study" with no name, link or date
+      - real institution named, but the claim does not appear in its own publications
+      - credentials that cannot be checked
+    example: "A top Finnish oncologist secretly admitted that screening causes more cancer."
+    explanation: >
+      "{span}" leans on an authority you cannot check. No name, publication or link is
+      given, so the claim borrows trust it has not earned.
+    evidence:
+      - no identifiable person, publication or link
+      - or the cited source exists but does not support the claim (link it)
+    not_this:
+      - a named expert quoted with a working source
+      - a real study cited accurately, even if the reader dislikes its conclusion
+
+  - id: loaded_language
+    name: Loaded language
+    definition: >
+      Emotionally charged words that pass judgement before any facts are given.
+    cues:
+      - pejorative labels for treatments or professionals ("toxic therapy", "cancer industry", "pill pushers")
+      - glowing labels for unproven alternatives ("pure", "natural miracle")
+    example: "The cancer industry keeps pushing toxic poison therapy on desperate people."
+    explanation: >
+      "{span}" uses charged words to make the judgement for you. Remove them and check
+      whether any factual claim is left.
+    evidence:
+      - the charged terms carry the argument; no factual support follows
+    not_this:
+      - strong but accurate medical terms ("cytotoxic" is a technical word, not a slur)
+
+  - id: whataboutism
+    name: Whataboutism
+    definition: >
+      Deflects a question or criticism by pointing at a different issue instead of answering it.
+    cues:
+      - deflections such as "but what about...", "why don't you ask about..." in reply to a factual point
+      - switching topic to drug-company profits, past scandals or other countries
+    example: "Screening saves lives? What about all the money drug companies make from it?"
+    explanation: >
+      "{span}" changes the subject instead of answering. The other issue may be real,
+      but it does not show that the original claim is wrong.
+    evidence:
+      - the reply does not address the original claim
+    not_this:
+      - a relevant counter-argument that engages with the original point
+
+  - id: false_cure_anecdote
+    name: False cure / anecdote as evidence
+    definition: >
+      Presents a single story or an unproven remedy as proof that it works, ignoring
+      the people it did not help.
+    cues:
+      - testimonial claims such as "my aunt cured her cancer with...", "this diet reversed my tumour"
+      - testimonials replacing trial data
+      - the remedy is sold or linked in the same post
+    example: "My neighbour skipped surgery and cured stage 3 cancer with a 30-day juice cleanse."
+    explanation: >
+      "{span}" uses one story as proof. Single cases cannot show that a remedy works,
+      and the people it failed are not in the story.
+    evidence:
+      - no controlled evidence for the remedy
+      - Current Care Guidelines or a systematic review say otherwise (link it)
+    not_this:
+      - a personal story shared without claiming it proves anything for others
+
+  - id: conspiracy_framing
+    name: Conspiracy framing
+    definition: >
+      Explains away contrary evidence by claiming a hidden actor suppresses the truth,
+      which makes the claim impossible to disprove.
+    cues:
+      - cover-up phrases such as "they don't want you to know", "suppressed cure", "the media won't report this"
+      - lack of evidence presented as proof of a cover-up
+    example: "Doctors won't tell you about this cure because it would end their business."
+    explanation: >
+      "{span}" claims a cover-up, so any missing evidence becomes "proof". A claim that
+      cannot be proven wrong in any way is not evidence.
+    evidence:
+      - no evidence of suppression beyond the claim itself
+    not_this:
+      - documented, sourced reporting on real misconduct
+
+# Coordination signals are network-level, not text-level. They are recorded in
+# Verdict.coordination (see technique_classifier/schema.py), not as techniques:
+#   near-duplicate text across accounts (copy-paste campaigns), burst posting,
+#   new or bot-like accounts, links to the same seller domain.

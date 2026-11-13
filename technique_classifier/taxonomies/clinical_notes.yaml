@@ -1,0 +1,108 @@
+# Reasoning shortcuts and stigmatising language in clinical notes (AstraZeneca "Equal Care
+# Across Finland" project, "noise" module). Run ONLY on synthetic records; never on real
+# patient data. A flag means "worth a second look", not "a clinician made an error".
+# Every example below is synthetic, written for this file.
+#
+# Fields per technique: same as misinformation.yaml. Here `evidence` usually means a
+# pathway fact (a missing test or referral, repeated visits) rather than a web source.
+# Red-flag symptom lists and day thresholds are placeholders: take them from Käypä hoito
+# (Current Care Guidelines) or the AstraZeneca mentors before using them.
+
+taxonomy: clinical_notes
+version: 1
+source_type: clinical_note
+
+techniques:
+  - id: diagnostic_overshadowing
+    name: Diagnostic overshadowing
+    definition: >
+      A new symptom is attributed to something already known about the patient (weight,
+      a mental health diagnosis, age) without other causes being considered or tested.
+    cues:
+      - attribution phrases linking a symptom to weight, anxiety, depression or age ("likely due to weight", "probably anxiety-related", "age-related")
+      - advice that replaces workup ("lose weight and return if needed")
+      - the attributed condition is a known label in the patient's history
+    example: "Abdominal pain and tiredness, likely related to BMI 38. Advised weight loss. No tests."
+    explanation: >
+      "{span}" explains the symptom with something already known about the patient, and
+      no test was ordered to rule out other causes. The same symptom in another patient
+      might have led to an investigation.
+    evidence:
+      - symptom is on the red-flag list for the patient's age and sex [threshold source]
+      - no lab, imaging or referral within [N] days of the note
+    not_this:
+      - attribution made AFTER relevant tests came back normal
+      - weight discussed as a risk factor while tests are still ordered
+
+  - id: anchoring_premature_closure
+    name: Anchoring / premature closure
+    definition: >
+      The first explanation is carried forward across visits even though the symptom
+      persists or new findings appear.
+    cues:
+      - the same working diagnosis copied across three or more visits
+      - persisting or worsening symptom with no change of plan
+      - new finding (weight loss, anaemia) noted but not acted on
+    example: "Visit 3: cough continues, still bronchitis as before. Antibiotics renewed."
+    explanation: >
+      "{span}" repeats the first explanation although the symptom has not resolved. When a
+      treatment does not work, the original diagnosis is worth reconsidering.
+    evidence:
+      - three or more visits for the same symptom [threshold source]
+      - no new investigation between visits
+    not_this:
+      - a repeated diagnosis that was confirmed by tests
+      - a planned watch-and-wait with a stated review date
+
+  - id: stigmatising_language
+    name: Stigmatising language
+    definition: >
+      Labels that cast the patient as difficult or untrustworthy, which can make the next
+      reader less willing to investigate.
+    cues:
+      - labels such as "non-compliant", "frequent attender", "drug-seeking", "claims", "insists"
+      - judgements about the patient's character instead of observations
+    example: "Frequent attender, again insists something is wrong. Reassured."
+    explanation: >
+      "{span}" describes the patient, not the symptom. Words like this can lead the next
+      clinician to take the complaint less seriously.
+    evidence:
+      - the label sits next to an uninvestigated symptom
+    not_this:
+      - neutral factual wording ("missed two appointments", "reports pain 7/10")
+
+  - id: dismissive_no_safety_net
+    name: Dismissive reassurance without a safety net
+    definition: >
+      The symptom is played down and the patient leaves without a plan for what to do if
+      it persists or gets worse.
+    cues:
+      - reassurance phrases such as "probably nothing", "nothing to worry about", "reassured"
+      - no follow-up date, no instructions for worsening, no test
+    example: "Lump in breast, probably nothing. Reassured."
+    explanation: >
+      "{span}" reassures the patient without a follow-up plan. Even when the likely cause is
+      harmless, the patient needs to know when to come back.
+    evidence:
+      - no follow-up date or return instructions in the note
+      - red-flag symptom without test or referral within [N] days
+    not_this:
+      - reassurance after a normal test, with return instructions given
+
+  - id: red_flag_without_action
+    name: Red flag without action (trigger rule)
+    definition: >
+      A recorded red-flag finding is not followed by the expected test or referral within
+      the expected time. Detected from pathway events, not from wording alone.
+    cues:
+      - red-flag code or phrase (iron-deficiency anaemia, rectal bleeding, haemoptysis, unexplained weight loss)
+      - expected follow-up event missing from the timeline
+    example: "Hb 98, ferritin low. Iron tablets started. [Timeline: no colonoscopy referral within 60 days.]"
+    explanation: >
+      "{span}" records a warning sign, but the test usually expected next was not done
+      within [N] days. This is a missed chance for an earlier diagnosis.
+    evidence:
+      - expected event (e.g. colonoscopy, chest CT) absent within [N] days [rule source]
+    not_this:
+      - the test was declined by the patient and this is documented
+      - the test was done elsewhere (e.g. private or occupational care) and recorded
