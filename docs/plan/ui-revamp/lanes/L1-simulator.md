@@ -40,6 +40,7 @@ cards move into drawers, content unchanged); (5) Optimise and the flip. Judgemen
 - Optimise: how the list of `variant.changes` appears and how the changed steps are highlighted; how to label it
   honestly as a saved run reported on held-out patients; Norway's other variant pairs under Details. Weigh flip vs side by side
   at different widths (side by side today only turns on at ≥1700 px, see `02-audit.md`).
+- **Graph drawing (decided, D67, Tuomas): read `04-sim-view.md`, "Graph drawing".** Edge strength by thickness only, numbers on hover; nodes show only their name, with the activity number on hover or click; keep the return path in its own colour with the word "return" and the dashed boxes around tests and the hospital (both are in the current page: find them in `flow.js` and `current/` screenshots before restyling, and do not lose them); use colour only where it aids reading. Your judgement: the hover card design, which colours, and the wording of the Details switch for the dense view.
 - Whether the per-step delta labels ("−2.5 d on path") should hide small values.
 - Variants have different horizons (Norway 161 vs 93 days); consider how the shared clock and the "end" of playback behave.
 Be careful with: the click-a-dot trace, keyboard keys (Space, arrows, r), and every existing URL parameter

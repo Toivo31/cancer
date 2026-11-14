@@ -87,6 +87,23 @@ Numbers keep the run's own precision rules from the numbers sheet (one decimal f
 Horizons differ between variants (Norway: 161 vs 93 days). The shared clock should run to the larger one. The After view
 then shows everyone treated while Today still has piles. That is the point, and a single caption line can say it.
 
+## Graph drawing: less on screen by default (Tuomas, 14 Nov, D67)
+
+The graph should read at a glance. Numbers and secondary labels appear on demand, colour is used where it helps reading.
+
+| Element | Default | On hover or click |
+|---|---|---|
+| Edge (link between steps) | strength shown by **thickness only**; no number on the line | hover shows the number (patients or share on that link) |
+| Node (step) | **its name only** | hover or click shows its activity number (patients through, waiting now, typical wait); click pins it, Esc unpins |
+| Delta labels ("-2.5 d on path") in the After view | hidden | hover on the changed step |
+| Return path (discharge back to first contact) | **its own colour with the word "return"** on it (keep what the current page does) | hover as for any edge |
+| Groups (tests, hospital) | **dashed box with a small group label** around the steps that belong together (keep what the current page does) | none |
+
+- Colour is for meaning, not decoration: return path, group boxes, changed steps after Optimise, queue tint (see Queue colouring). Everything else stays thin grey. Pick the return colour and the box tint from the theme tokens (not brick, which is reserved for "wrong"), and make the cue work without colour as well (the word "return", the dashed outline).
+- The hover and click readout is one shared small card (or tooltip), the same for nodes and edges, so touch and projector use both work: click pins it. It must not hide the node it describes and must follow the clock (numbers refer to the current playback day where they are live, to the whole run otherwise; say which).
+- Keep the existing click-a-dot trace, keyboard keys and URL parameters unchanged. Details menu gets a switch "Show all numbers on the graph" for people who want the old dense view.
+- Check at 1440x900 and 1920x1080 that no label overlaps another at default, in both scenarios and both variants; names that do not fit are shortened by the exporter's existing short names, not truncated by the canvas.
+
 ## Queue colouring
 
 **What drives it (decided, D61):** the number of *sampled* dots waiting at a step at the current playback day (`groups[nid]`
