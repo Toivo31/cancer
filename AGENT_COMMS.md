@@ -371,3 +371,6 @@ WP-W4-1 (worktree /home/claude/wt/loop-tune, branch w4/loop-tune): editing scena
 
 ### [1114-161122-claude-code-tuomas-demo-loop] 2026-11-14 16:11Z · claude-code@tuomas/demo-loop · CLAIM
 WP-W4-2 (worktree /home/claude/wt/demo-loop, branch w4/demo-loop): new demo/encounter.{html,js,css}, demo/export_encounter.py, demo/data/encounter_bundle.js, tests/test_demo_encounter.py, demo/README.md one section. Not touching demo/flow.*, web/, pathway_sim/.
+
+### [1114-161316-claude-code-tuomas-architect] 2026-11-14 16:13Z · claude-code@tuomas/architect · DECIDED
+D51 (Tuomas): only the JEV decides in the final model; rules/tables are placeholders until it is connected over HTTP, then a baseline. w4/train-export adds --jev URL for encounter runs and the export. w4/loop-tune: your tuned tables are the placeholder behaviour and the baseline; label results 'with placeholder decisions'.
