@@ -1,0 +1,18 @@
+{
+ "accepted": 184,
+ "optimal>faster_pet>observed_in": 184,
+ "optimal_gain_pts": [
+  24,
+  47
+ ],
+ "faster_pet_gain_pts": [
+  13,
+  33
+ ],
+ "optimal_minus_faster_pts": [
+  1,
+  29
+ ],
+ "all_predicted_grid_points": 1043,
+ "ranking_holds_at_grid_points": 1028
+}

@@ -1,0 +1,146 @@
+{
+ "both_targets": {
+  "accepted": 184,
+  "pred": {
+   "faster_pet": {
+    "n": 184,
+    "min": 0.497,
+    "p10": 0.545,
+    "median": 0.605,
+    "p90": 0.663,
+    "max": 0.742
+   },
+   "optimal": {
+    "n": 184,
+    "min": 0.617,
+    "p10": 0.664,
+    "median": 0.746,
+    "p90": 0.821,
+    "max": 0.859
+   }
+  },
+  "observed_share_band": {
+   "n": 184,
+   "min": 0.36,
+   "p10": 0.367,
+   "median": 0.394,
+   "p90": 0.429,
+   "max": 0.44
+  },
+  "observed_median_band": [
+   44.0,
+   46.0,
+   47.8
+  ],
+  "gain": {
+   "faster_pet": {
+    "min": 0.13,
+    "median": 0.199,
+    "max": 0.332
+   },
+   "optimal": {
+    "min": 0.237,
+    "median": 0.345,
+    "max": 0.472
+   }
+  },
+  "optimal_in_published_ci_72_87": 0.64,
+  "faster_pet_in_published_ci_39_58": 0.34
+ },
+ "share_only": {
+  "accepted": 188,
+  "pred": {
+   "faster_pet": {
+    "n": 188,
+    "min": 0.497,
+    "p10": 0.545,
+    "median": 0.606,
+    "p90": 0.669,
+    "max": 0.742
+   },
+   "optimal": {
+    "n": 188,
+    "min": 0.617,
+    "p10": 0.664,
+    "median": 0.748,
+    "p90": 0.824,
+    "max": 0.859
+   }
+  },
+  "observed_share_band": {
+   "n": 188,
+   "min": 0.36,
+   "p10": 0.368,
+   "median": 0.396,
+   "p90": 0.431,
+   "max": 0.44
+  },
+  "observed_median_band": [
+   43.8,
+   45.9,
+   47.8
+  ],
+  "gain": {
+   "faster_pet": {
+    "min": 0.13,
+    "median": 0.201,
+    "max": 0.332
+   },
+   "optimal": {
+    "min": 0.237,
+    "median": 0.347,
+    "max": 0.472
+   }
+  },
+  "optimal_in_published_ci_72_87": 0.65,
+  "faster_pet_in_published_ci_39_58": 0.34
+ },
+ "median_only": {
+  "accepted": 345,
+  "pred": {
+   "faster_pet": {
+    "n": 345,
+    "min": 0.465,
+    "p10": 0.511,
+    "median": 0.579,
+    "p90": 0.651,
+    "max": 0.742
+   },
+   "optimal": {
+    "n": 345,
+    "min": 0.584,
+    "p10": 0.646,
+    "median": 0.74,
+    "p90": 0.811,
+    "max": 0.859
+   }
+  },
+  "observed_share_band": {
+   "n": 345,
+   "min": 0.284,
+   "p10": 0.319,
+   "median": 0.367,
+   "p90": 0.424,
+   "max": 0.453
+  },
+  "observed_median_band": [
+   44.0,
+   47.0,
+   49.0
+  ],
+  "gain": {
+   "faster_pet": {
+    "min": 0.127,
+    "median": 0.209,
+    "max": 0.349
+   },
+   "optimal": {
+    "min": 0.237,
+    "median": 0.368,
+    "max": 0.506
+   }
+  },
+  "optimal_in_published_ci_72_87": 0.6,
+  "faster_pet_in_published_ci_39_58": 0.51
+ }
+}

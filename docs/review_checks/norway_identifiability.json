@@ -1,0 +1,119 @@
+{
+ "standardised_coef": {
+  "share": {
+   "bronch": -0.0253,
+   "surg": -0.0867,
+   "cut": -0.0315,
+   "extra": -0.0485,
+   "pet": 0.0468
+  },
+  "median": {
+   "bronch": 1.3703,
+   "surg": 4.8014,
+   "cut": 1.4846,
+   "extra": 3.093,
+   "pet": -2.3393
+  }
+ },
+ "r2": {
+  "share": 0.947,
+  "median": 0.991
+ },
+ "marginal_effect_over_grid": {
+  "bronch": {
+   "share_range_pts": 6.7,
+   "median_range_days": 3.6
+  },
+  "surg": {
+   "share_range_pts": 25.8,
+   "median_range_days": 14.4
+  },
+  "cut": {
+   "share_range_pts": 8.5,
+   "median_range_days": 4.0
+  },
+  "extra": {
+   "share_range_pts": 13.0,
+   "median_range_days": 8.3
+  },
+  "pet": {
+   "share_range_pts": 12.9,
+   "median_range_days": 6.4
+  }
+ },
+ "constraint_singular_values_in_tolerance_units": [
+  3.91,
+  0.16
+ ],
+ "constraints_note": "2 targets can pin at most 2 combinations of 5 parameters; 3 directions are unconstrained by construction.",
+ "accepted_n": 184,
+ "accepted_param_levels": {
+  "bronch": {
+   "1": 57,
+   "3": 56,
+   "6": 41,
+   "10": 30
+  },
+  "surg": {
+   "2": 87,
+   "4": 64,
+   "6": 30,
+   "8": 3,
+   "10": 0,
+   "13": 0
+  },
+  "cut": {
+   "0": 62,
+   "1": 53,
+   "2": 44,
+   "4": 25
+  },
+  "extra": {
+   "0.01": 72,
+   "2": 59,
+   "4": 37,
+   "6": 16
+  },
+  "pet": {
+   "0.0": 13,
+   "0.5": 27,
+   "0.8": 40,
+   "0.9": 50,
+   "1.0": 54
+  }
+ },
+ "prediction_band_accepted": {
+  "faster_pet": {
+   "n": 184,
+   "min": 0.497,
+   "p10": 0.545,
+   "median": 0.605,
+   "p90": 0.663,
+   "max": 0.742
+  },
+  "optimal": {
+   "n": 184,
+   "min": 0.617,
+   "p10": 0.664,
+   "median": 0.746,
+   "p90": 0.821,
+   "max": 0.859
+  }
+ },
+ "corr_prediction_with_param_within_accepted": {
+  "faster_pet": {
+   "bronch": -0.37,
+   "surg": 0.15,
+   "cut": 0.12,
+   "extra": -0.6,
+   "pet": -0.62
+  },
+  "optimal": {
+   "bronch": 0.13,
+   "surg": 0.75,
+   "cut": -0.09,
+   "extra": -0.81,
+   "pet": 0.09
+  }
+ }
+}

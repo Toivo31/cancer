@@ -1,0 +1,489 @@
+{
+ "scenario": "stokstad",
+ "calibrated_on": "observed",
+ "targets": {
+  "share_within_target": [
+   0.4,
+   0.04
+  ],
+  "median_days_to_treatment": [
+   46.5,
+   2.5
+  ]
+ },
+ "n": 2000,
+ "seeds": [
+  1
+ ],
+ "grid": {
+  "tests.bronchoscopy.wait.median": [
+   3,
+   6,
+   10
+  ],
+  "treatment_wait_after_board": [
+   {
+    "tests.surgery_booking.wait.median": 13,
+    "tests.radiotherapy_booking.wait.median": 22.5
+   },
+   {
+    "tests.surgery_booking.wait.median": 10,
+    "tests.radiotherapy_booking.wait.median": 17
+   },
+   {
+    "tests.surgery_booking.wait.median": 8,
+    "tests.radiotherapy_booking.wait.median": 14
+   },
+   {
+    "tests.surgery_booking.wait.median": 6,
+    "tests.radiotherapy_booking.wait.median": 10.5
+   }
+  ],
+  "resources.tumour_board.cutoff_days": [
+   0,
+   2
+  ],
+  "tests.first_visit.extra_wait.median": [
+   0.01,
+   2
+  ],
+  "pet_triage_share": [
+   {
+    "flowcharts.observed.policy.pet_on_time.mix.pet_triage": 0.0,
+    "flowcharts.observed.policy.pet_on_time.mix.pet_early_route": 1.0
+   },
+   {
+    "flowcharts.observed.policy.pet_on_time.mix.pet_triage": 0.5,
+    "flowcharts.observed.policy.pet_on_time.mix.pet_early_route": 0.5
+   },
+   {
+    "flowcharts.observed.policy.pet_on_time.mix.pet_triage": 0.8,
+    "flowcharts.observed.policy.pet_on_time.mix.pet_early_route": 0.2
+   },
+   {
+    "flowcharts.observed.policy.pet_on_time.mix.pet_triage": 1.0,
+    "flowcharts.observed.policy.pet_on_time.mix.pet_early_route": 0.0
+   }
+  ]
+ },
+ "grid_points": 192,
+ "accepted": 11,
+ "published": {
+  "source": "STOKSTAD2019",
+  "observed": {
+   "share_within_target": 0.4,
+   "median_days_to_treatment": 46.5,
+   "ci95": [
+    0.31,
+    0.5
+   ]
+  },
+  "faster_pet": {
+   "share_within_target": 0.48,
+   "ci95": [
+    0.39,
+    0.58
+   ]
+  },
+  "optimal": {
+   "share_within_target": 0.8,
+   "ci95": [
+    0.72,
+    0.87
+   ]
+  },
+  "sampling_procedures": {
+   "observed": 112,
+   "optimal": 92
+  }
+ },
+ "prediction_summary": {
+  "faster_pet": {
+   "share_min": 0.5495,
+   "share_median": 0.618,
+   "share_max": 0.672,
+   "median_days_median": 37.52
+  },
+  "optimal": {
+   "share_min": 0.776,
+   "share_median": 0.828,
+   "share_max": 0.858,
+   "median_days_median": 30.52
+  }
+ },
+ "best": {
+  "params": {
+   "tests.bronchoscopy.wait.median": 3,
+   "treatment_wait_after_board": {
+    "tests.surgery_booking.wait.median": 6,
+    "tests.radiotherapy_booking.wait.median": 10.5
+   },
+   "resources.tumour_board.cutoff_days": 0,
+   "tests.first_visit.extra_wait.median": 2,
+   "pet_triage_share": {
+    "flowcharts.observed.policy.pet_on_time.mix.pet_triage": 1.0,
+    "flowcharts.observed.policy.pet_on_time.mix.pet_early_route": 0.0
+   }
+  },
+  "fit_error": 0.083,
+  "observed": {
+   "share_within_target": 0.3995,
+   "median_days_to_treatment": 45.78,
+   "sampling_per_patient": 0.981
+  },
+  "faster_pet": {
+   "share_within_target": 0.594,
+   "median_days_to_treatment": 38.33,
+   "sampling_per_patient": 0.981
+  },
+  "optimal": {
+   "share_within_target": 0.802,
+   "median_days_to_treatment": 31.36,
+   "sampling_per_patient": 0.804
+  }
+ },
+ "closest_if_none_accepted": null,
+ "accepted_sets": [
+  {
+   "params": {
+    "tests.bronchoscopy.wait.median": 3,
+    "treatment_wait_after_board": {
+     "tests.surgery_booking.wait.median": 6,
+     "tests.radiotherapy_booking.wait.median": 10.5
+    },
+    "resources.tumour_board.cutoff_days": 0,
+    "tests.first_visit.extra_wait.median": 2,
+    "pet_triage_share": {
+     "flowcharts.observed.policy.pet_on_time.mix.pet_triage": 1.0,
+     "flowcharts.observed.policy.pet_on_time.mix.pet_early_route": 0.0
+    }
+   },
+   "fit_error": 0.083,
+   "observed": {
+    "share_within_target": 0.3995,
+    "median_days_to_treatment": 45.78,
+    "sampling_per_patient": 0.981
+   },
+   "faster_pet": {
+    "share_within_target": 0.594,
+    "median_days_to_treatment": 38.33,
+    "sampling_per_patient": 0.981
+   },
+   "optimal": {
+    "share_within_target": 0.802,
+    "median_days_to_treatment": 31.36,
+    "sampling_per_patient": 0.804
+   }
+  },
+  {
+   "params": {
+    "tests.bronchoscopy.wait.median": 6,
+    "treatment_wait_after_board": {
+     "tests.surgery_booking.wait.median": 6,
+     "tests.radiotherapy_booking.wait.median": 10.5
+    },
+    "resources.tumour_board.cutoff_days": 0,
+    "tests.first_visit.extra_wait.median": 0.01,
+    "pet_triage_share": {
+     "flowcharts.observed.policy.pet_on_time.mix.pet_triage": 0.8,
+     "flowcharts.observed.policy.pet_on_time.mix.pet_early_route": 0.2
+    }
+   },
+   "fit_error": 0.142,
+   "observed": {
+    "share_within_target": 0.401,
+    "median_days_to_treatment": 45.56,
+    "sampling_per_patient": 0.981
+   },
+   "faster_pet": {
+    "share_within_target": 0.618,
+    "median_days_to_treatment": 37.52,
+    "sampling_per_patient": 0.981
+   },
+   "optimal": {
+    "share_within_target": 0.831,
+    "median_days_to_treatment": 30.19,
+    "sampling_per_patient": 0.804
+   }
+  },
+  {
+   "params": {
+    "tests.bronchoscopy.wait.median": 3,
+    "treatment_wait_after_board": {
+     "tests.surgery_booking.wait.median": 8,
+     "tests.radiotherapy_booking.wait.median": 14
+    },
+    "resources.tumour_board.cutoff_days": 0,
+    "tests.first_visit.extra_wait.median": 0.01,
+    "pet_triage_share": {
+     "flowcharts.observed.policy.pet_on_time.mix.pet_triage": 1.0,
+     "flowcharts.observed.policy.pet_on_time.mix.pet_early_route": 0.0
+    }
+   },
+   "fit_error": 0.199,
+   "observed": {
+    "share_within_target": 0.3855,
+    "median_days_to_treatment": 45.85,
+    "sampling_per_patient": 0.981
+   },
+   "faster_pet": {
+    "share_within_target": 0.611,
+    "median_days_to_treatment": 38.11,
+    "sampling_per_patient": 0.981
+   },
+   "optimal": {
+    "share_within_target": 0.8415,
+    "median_days_to_treatment": 30.07,
+    "sampling_per_patient": 0.804
+   }
+  },
+  {
+   "params": {
+    "tests.bronchoscopy.wait.median": 3,
+    "treatment_wait_after_board": {
+     "tests.surgery_booking.wait.median": 6,
+     "tests.radiotherapy_booking.wait.median": 10.5
+    },
+    "resources.tumour_board.cutoff_days": 0,
+    "tests.first_visit.extra_wait.median": 0.01,
+    "pet_triage_share": {
+     "flowcharts.observed.policy.pet_on_time.mix.pet_triage": 0.5,
+     "flowcharts.observed.policy.pet_on_time.mix.pet_early_route": 0.5
+    }
+   },
+   "fit_error": 0.206,
+   "observed": {
+    "share_within_target": 0.3845,
+    "median_days_to_treatment": 45.91,
+    "sampling_per_patient": 0.981
+   },
+   "faster_pet": {
+    "share_within_target": 0.6575,
+    "median_days_to_treatment": 36.29,
+    "sampling_per_patient": 0.981
+   },
+   "optimal": {
+    "share_within_target": 0.8105,
+    "median_days_to_treatment": 31.05,
+    "sampling_per_patient": 0.804
+   }
+  },
+  {
+   "params": {
+    "tests.bronchoscopy.wait.median": 3,
+    "treatment_wait_after_board": {
+     "tests.surgery_booking.wait.median": 6,
+     "tests.radiotherapy_booking.wait.median": 10.5
+    },
+    "resources.tumour_board.cutoff_days": 2,
+    "tests.first_visit.extra_wait.median": 0.01,
+    "pet_triage_share": {
+     "flowcharts.observed.policy.pet_on_time.mix.pet_triage": 1.0,
+     "flowcharts.observed.policy.pet_on_time.mix.pet_early_route": 0.0
+    }
+   },
+   "fit_error": 0.206,
+   "observed": {
+    "share_within_target": 0.403,
+    "median_days_to_treatment": 45.38,
+    "sampling_per_patient": 0.981
+   },
+   "faster_pet": {
+    "share_within_target": 0.6315,
+    "median_days_to_treatment": 36.99,
+    "sampling_per_patient": 0.981
+   },
+   "optimal": {
+    "share_within_target": 0.833,
+    "median_days_to_treatment": 30.52,
+    "sampling_per_patient": 0.804
+   }
+  },
+  {
+   "params": {
+    "tests.bronchoscopy.wait.median": 3,
+    "treatment_wait_after_board": {
+     "tests.surgery_booking.wait.median": 6,
+     "tests.radiotherapy_booking.wait.median": 10.5
+    },
+    "resources.tumour_board.cutoff_days": 2,
+    "tests.first_visit.extra_wait.median": 0.01,
+    "pet_triage_share": {
+     "flowcharts.observed.policy.pet_on_time.mix.pet_triage": 0.8,
+     "flowcharts.observed.policy.pet_on_time.mix.pet_early_route": 0.2
+    }
+   },
+   "fit_error": 0.362,
+   "observed": {
+    "share_within_target": 0.376,
+    "median_days_to_treatment": 46.38,
+    "sampling_per_patient": 0.981
+   },
+   "faster_pet": {
+    "share_within_target": 0.6205,
+    "median_days_to_treatment": 37.4,
+    "sampling_per_patient": 0.981
+   },
+   "optimal": {
+    "share_within_target": 0.808,
+    "median_days_to_treatment": 31.67,
+    "sampling_per_patient": 0.804
+   }
+  },
+  {
+   "params": {
+    "tests.bronchoscopy.wait.median": 10,
+    "treatment_wait_after_board": {
+     "tests.surgery_booking.wait.median": 6,
+     "tests.radiotherapy_booking.wait.median": 10.5
+    },
+    "resources.tumour_board.cutoff_days": 0,
+    "tests.first_visit.extra_wait.median": 0.01,
+    "pet_triage_share": {
+     "flowcharts.observed.policy.pet_on_time.mix.pet_triage": 1.0,
+     "flowcharts.observed.policy.pet_on_time.mix.pet_early_route": 0.0
+    }
+   },
+   "fit_error": 0.389,
+   "observed": {
+    "share_within_target": 0.3755,
+    "median_days_to_treatment": 46.79,
+    "sampling_per_patient": 0.981
+   },
+   "faster_pet": {
+    "share_within_target": 0.5495,
+    "median_days_to_treatment": 40.27,
+    "sampling_per_patient": 0.981
+   },
+   "optimal": {
+    "share_within_target": 0.828,
+    "median_days_to_treatment": 30.12,
+    "sampling_per_patient": 0.804
+   }
+  },
+  {
+   "params": {
+    "tests.bronchoscopy.wait.median": 3,
+    "treatment_wait_after_board": {
+     "tests.surgery_booking.wait.median": 6,
+     "tests.radiotherapy_booking.wait.median": 10.5
+    },
+    "resources.tumour_board.cutoff_days": 0,
+    "tests.first_visit.extra_wait.median": 2,
+    "pet_triage_share": {
+     "flowcharts.observed.policy.pet_on_time.mix.pet_triage": 0.8,
+     "flowcharts.observed.policy.pet_on_time.mix.pet_early_route": 0.2
+    }
+   },
+   "fit_error": 0.674,
+   "observed": {
+    "share_within_target": 0.3675,
+    "median_days_to_treatment": 46.79,
+    "sampling_per_patient": 0.981
+   },
+   "faster_pet": {
+    "share_within_target": 0.583,
+    "median_days_to_treatment": 38.82,
+    "sampling_per_patient": 0.981
+   },
+   "optimal": {
+    "share_within_target": 0.776,
+    "median_days_to_treatment": 32.46,
+    "sampling_per_patient": 0.804
+   }
+  },
+  {
+   "params": {
+    "tests.bronchoscopy.wait.median": 6,
+    "treatment_wait_after_board": {
+     "tests.surgery_booking.wait.median": 6,
+     "tests.radiotherapy_booking.wait.median": 10.5
+    },
+    "resources.tumour_board.cutoff_days": 2,
+    "tests.first_visit.extra_wait.median": 0.01,
+    "pet_triage_share": {
+     "flowcharts.observed.policy.pet_on_time.mix.pet_triage": 1.0,
+     "flowcharts.observed.policy.pet_on_time.mix.pet_early_route": 0.0
+    }
+   },
+   "fit_error": 0.833,
+   "observed": {
+    "share_within_target": 0.3635,
+    "median_days_to_treatment": 46.52,
+    "sampling_per_patient": 0.981
+   },
+   "faster_pet": {
+    "share_within_target": 0.572,
+    "median_days_to_treatment": 39.63,
+    "sampling_per_patient": 0.981
+   },
+   "optimal": {
+    "share_within_target": 0.818,
+    "median_days_to_treatment": 31.07,
+    "sampling_per_patient": 0.804
+   }
+  },
+  {
+   "params": {
+    "tests.bronchoscopy.wait.median": 6,
+    "treatment_wait_after_board": {
+     "tests.surgery_booking.wait.median": 6,
+     "tests.radiotherapy_booking.wait.median": 10.5
+    },
+    "resources.tumour_board.cutoff_days": 0,
+    "tests.first_visit.extra_wait.median": 0.01,
+    "pet_triage_share": {
+     "flowcharts.observed.policy.pet_on_time.mix.pet_triage": 1.0,
+     "flowcharts.observed.policy.pet_on_time.mix.pet_early_route": 0.0
+    }
+   },
+   "fit_error": 1.206,
+   "observed": {
+    "share_within_target": 0.4265,
+    "median_days_to_treatment": 44.31,
+    "sampling_per_patient": 0.981
+   },
+   "faster_pet": {
+    "share_within_target": 0.6285,
+    "median_days_to_treatment": 37.23,
+    "sampling_per_patient": 0.981
+   },
+   "optimal": {
+    "share_within_target": 0.858,
+    "median_days_to_treatment": 29.08,
+    "sampling_per_patient": 0.804
+   }
+  },
+  {
+   "params": {
+    "tests.bronchoscopy.wait.median": 3,
+    "treatment_wait_after_board": {
+     "tests.surgery_booking.wait.median": 6,
+     "tests.radiotherapy_booking.wait.median": 10.5
+    },
+    "resources.tumour_board.cutoff_days": 0,
+    "tests.first_visit.extra_wait.median": 0.01,
+    "pet_triage_share": {
+     "flowcharts.observed.policy.pet_on_time.mix.pet_triage": 0.8,
+     "flowcharts.observed.policy.pet_on_time.mix.pet_early_route": 0.2
+    }
+   },
+   "fit_error": 1.643,
+   "observed": {
+    "share_within_target": 0.4345,
+    "median_days_to_treatment": 44.13,
+    "sampling_per_patient": 0.981
+   },
+   "faster_pet": {
+    "share_within_target": 0.672,
+    "median_days_to_treatment": 35.75,
+    "sampling_per_patient": 0.981
+   },
+   "optimal": {
+    "share_within_target": 0.844,
+    "median_days_to_treatment": 29.68,
+    "sampling_per_patient": 0.804
+   }
+  }
+ ]
+}
