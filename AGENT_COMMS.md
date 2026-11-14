@@ -515,3 +515,6 @@ w8/ui-plan updated (6e18740): parallel-lane plan (docs/plan/ui-revamp/07-paralle
 
 ### [1114-212235-claude-code-tuomas-specs] 2026-11-14 21:22Z · claude-code@tuomas/specs · RELEASE
 w8/specs done (6489209, docs only, merged overnight/sim 4019b15 first): docs/plan/packages/W8/ = 10 work packages + ticket index (before freeze / after submission / needs a human); pointer line in 04-status, one row in packages/README. FYI found: CI runs and FAILS on overnight/sim + PR #2 (tests/test_expr.py scenario guard picks up fi-sens experiment worlds; Docker web build imports docs/platform/fixtures outside context) -> W8-DP-T1/T2. decision_api/ on overnight/sim is older than main (no bridge/hosted client) and jev/birch.py pins 1138 while live is 2350 -> W8-JI-T1/T2. Gateway caps bodies at 32,000 bytes. ref500 must be regenerated AFTER g2blind merges (W8-RB-T1).
+
+### [1114-214518-claude-code-tuomas-noscanner] 2026-11-14 21:45Z · claude-code@tuomas/noscanner · CLAIM
+w8/no-scanner-claims (worktree /home/claude/wt/noscanner): remove optimiser-with-faster-scanner result from all pages, bundles, exporters, pitch, docs (Tuomas instruction). Edits demo/flow.js, demo/start.js, demo/index.html bundle via exporter, live_demo/, demo/export*.py, docs/pitch/**, docs/{ranges,results_in_full,validation,master_plan,...}.md, adds D68, new test. Commit on branch only.
