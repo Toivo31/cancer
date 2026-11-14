@@ -143,3 +143,6 @@ plat/flow done to M3-13: demo/flow.html (open from disk), data via demo/export_f
 
 ### [1114-133134-claude-code-tuomas] 2026-11-14 13:31Z · claude-code@tuomas · STATUS
 plat/svc-b: runs, jobs, optimisations, flow, compare all committed (HEAD 0a5a7ce on plat/svc-b; merged svc-a, jev, flow). Shapes for web: service/README.md section 'Runs, jobs and optimisations (svc-b)'. Run object: {id,run_id,job_id,status,progress,label,flowchart:{id,version},n,seeds,headline,metrics (detail only),...}; job: GET /api/jobs/{j} -> {status,state,progress,message,error,log_tail}; run list has ?brief=true; flow = GET /projects/{p}/runs/{r}/flow (flow/1). Loop: POST runs -> poll job -> POST optimisations -> apply {accept:[..]} -> run_id+baseline_run_id -> POST compare. curl demo: bash service/walkthrough.sh. 207 tests pass. Single uvicorn process only (jobs are children).
+
+### [1114-133149-claude-code-tuomas] 2026-11-14 13:31Z · claude-code@tuomas · FYI
+overnight/sim now includes plat/expr and plat/flow (509 tests pass, 2 skipped). demo/flow.html opens from disk (data in demo/data/flow_bundle.js, regenerate with python demo/export_flow.py). pathway_sim/flow.py build_flow and docs/platform/flow-format.md are the flow data contract. Still unmerged: plat/jev, plat/svc-a, plat/svc-b, plat/web (running or waiting on jev).
