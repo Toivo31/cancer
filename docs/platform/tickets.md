@@ -22,9 +22,9 @@ Critical path to the first browser loop:
 
 | | ID | Ticket | Size | Needs | Done when |
 |---|---|---|---|---|---|
-| [ ] | M1-1 | `jev/` contract: request, response, backend info, `BackendPolicy` adapter, JSON examples | S | – | Types and examples match spec 02; adapter builds a request from a `PatientView`; unit tests |
-| [ ] | M1-2 | Engine decision modes `sample` and `argmax` with the common-random-number draw; choices log records mode, backend, model; `decision` accepted as a node kind | M | M1-1 | Same patient, same probabilities → same choice across flowcharts (test); existing tests pass |
-| [ ] | M1-3 | `StubBackend`: hardcoded and conditional probability tables; automatic migration of `mix`, `rules`, `prefer` | M | M1-2 | Every shipped scenario reproduces its current metrics exactly; changing one probability changes the run |
+| [x] | M1-1 | `jev/` contract: request, response, backend info, `BackendPolicy` adapter, JSON examples | S | – | Types and examples match spec 02; adapter builds a request from a `PatientView`; unit tests |
+| [x] | M1-2 | Engine decision modes `sample` and `argmax` with the common-random-number draw; choices log records mode, backend, model; `decision` accepted as a node kind | M | M1-1 | Same patient, same probabilities → same choice across flowcharts (test); existing tests pass |
+| [x] | M1-3 | `StubBackend`: hardcoded and conditional probability tables; automatic migration of `mix`, `rules`, `prefer` | M | M1-2 | Every shipped scenario reproduces its current metrics exactly; changing one probability changes the run |
 | [ ] | M1-4 | Safe condition evaluator replacing `eval` in engine, policies and optimiser | M | – | Identical results on all scenarios; sandbox-escape strings rejected at load (test) |
 | [ ] | M1-5 | Stub HTTP server and `HttpBackend` (keep-alive, cache, timeout, error modes) | M | M1-3 | A run through `http://localhost` equals the in-process run; Finnish run at most 3× slower; failure modes tested |
 | [ ] | M1-6 | Contract test file runnable against any JEV address | S | M1-5 | `pytest tests/test_jev_contract.py --jev-url …` passes against the stub server |

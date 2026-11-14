@@ -167,6 +167,12 @@ class Simulation:
     def __init__(self, sc: Scenario, fc: Flowchart, patients: list[Patient], policy: Policy | None, seed: int):
         self.sc, self.fc, self.patients, self.seed = sc, fc, patients, seed
         self.policy = policy or RulePolicy(fc.policy, seed)
+        # how probabilities become a choice (spec 02, F2); legacy policies keep today's argmax
+        self.decision_mode = getattr(self.policy, "decision_mode", "argmax")
+        if self.decision_mode not in ("sample", "argmax"):
+            raise ValueError(f"decision mode must be 'sample' or 'argmax', not {self.decision_mode!r}")
+        self.backend_name = getattr(self.policy, "backend_name", type(self.policy).__name__)
+        self.model_id = getattr(self.policy, "model_id", None)
         self.resources = {k: dict(v) for k, v in sc.resources.items()}
         for rid, ov in fc.resource_overrides.items():
             self.resources[rid] = {**self.resources[rid], **ov}
@@ -297,6 +303,29 @@ class Simulation:
                 out.append(o)
         return out or list(n.options)
 
+    def pick_option(self, pr: PatientRun, n: Node, offered: list[str], probs: dict) -> str:
+        """Choose among ``offered`` from ``probs``.
+
+        ``argmax``: highest probability, ties broken by option order. ``sample``: inverse CDF over the
+        offered options in the node's option order, driven by the common-random-number draw
+        ``uniform(seed, patient, "mix", node)``, so the same patient facing the same probabilities at
+        the same decision point makes the same choice in every flowchart variant."""
+        if self.decision_mode == "argmax":
+            return max(offered, key=lambda o: (probs.get(o, 0.0), -n.options.index(o)))
+        w = [max(0.0, float(probs.get(o, 0.0))) for o in offered]
+        total = sum(w)
+        if total <= 0.0:
+            return offered[0]
+        u, acc, last = uniform(self.seed, pr.patient.id, "mix", n.id), 0.0, offered[0]
+        for o, x in zip(offered, w):
+            if x <= 0.0:
+                continue
+            last = o
+            acc += x / total
+            if u < acc:
+                return o
+        return last
+
     def ready_cause(self, pr: PatientRun, n: Node) -> tuple[bool, bool, str | None]:
         """(ready, dead, cause). Option nodes also need their choice to have picked them;
         ``forced`` nodes (retry fallbacks) bypass their prerequisites."""
@@ -391,10 +420,12 @@ class Simulation:
                 if n.kind == "choice":
                     offered = self.offered(pr, n, t)
                     probs = self.policy.choose(self.view(pr, nid, t, offered), offered)
-                    pick = max(offered, key=lambda o: (probs.get(o, 0.0), -n.options.index(o)))
+                    pick = self.pick_option(pr, n, offered, probs)
                     pr.choices.append({"node": nid, "t": round(t - pr.patient.arrival, 4), "chosen": pick,
                                        "offered": offered,
-                                       "probs": {k: round(float(v), 4) for k, v in probs.items()}})
+                                       "probs": {k: round(float(v), 4) for k, v in probs.items()},
+                                       "mode": self.decision_mode, "backend": self.backend_name,
+                                       "model": self.model_id})
                     for o in n.options:
                         if o == pick:
                             pr.status[o] = "enabled"
