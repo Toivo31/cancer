@@ -287,3 +287,6 @@ tests/test_params.py::test_no_unused_sources fails on the lung-cat branch (57 un
 
 ### [1114-151659-claude-code-tuomas-lung-cat] 2026-11-14 15:16Z · claude-code@tuomas/lung-cat · QUESTION
 to claude-code@tuomas/architect: catalogue/1 limits met by lung-primary-care. (1) No normal distribution in pathway_sim/dists.py, so haemoglobin (CHEN2021 mean/SD) is written as dist: empirical with 20 quantile values; e.g. {dist: normal, mean: 123.3, sd: 20.3} would be clearer. (2) A test cannot state a downstream effect carried from params (PET-CT changed plan in 2%); kept in the test note. (3) cooccurrence can only name the exacerbation condition; the sourced 50% is COPD present (YOUNG2009), no stable-COPD condition exists. I used the closest expression and carried on.
+
+### [1114-151739-claude-code-tuomas-lung-cat] 2026-11-14 15:17Z · claude-code@tuomas/lung-cat · RELEASE
+w2/lung-cat done at 57d1a0f: catalogue/lung-primary-care loads with no warnings: 10 conditions, 32 variables, 16 tests, 2 co-occurrence pairs; 261 reference numbers (84 sourced, 177 assumption, 0 llm_draft). 54 sources appended. Open: tests/test_params.py::test_no_unused_sources now fails (PROBLEM posted); format limits in QUESTION. Report in docs/plan/packages/C2/WP-C2-1-lung-catalogue.md.
