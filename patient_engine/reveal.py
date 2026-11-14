@@ -39,6 +39,10 @@ state the card lacks raises and so tells which illnesses the patient has. A stat
 the same ``RevealError`` whatever the reason (an unknown name, a state of another card), and the handle has
 no method that lists the card's states.
 
+The revealed objects do not echo the state: ``state`` on a ``PublicView`` or ``RevealedObservation`` is
+``all_active`` for the first state and ``LATER_STATE`` (``"later"``) for every other, because the names
+``<illness>_resolved`` name a hidden condition (I1).
+
 Fresh attempts. With a ``catalogue`` the handle also serves attempt ``k`` of a test for every ``k`` at or
 beyond the stored attempts, without limit (a patient may be re-tested again and again). Such an attempt is
 drawn by ``skeleton.settle_attempt`` from the catalogue's accuracy given the card's findings in that state,
@@ -64,7 +68,12 @@ from .card import (
     RevealedObservation,
 )
 
-__all__ = ["RevealHandle", "RevealError"]
+__all__ = ["RevealHandle", "RevealError", "LATER_STATE"]
+
+#: What ``PublicView.state`` and ``RevealedObservation.state`` say for every state but the first. A state name
+#: such as ``pneumonia_resolved`` names a hidden condition (I1), so the revealed objects never echo it; the
+#: caller (the engine) knows which state it asked for.
+LATER_STATE = "later"
 
 
 class RevealError(LookupError):
@@ -75,6 +84,11 @@ class RevealError(LookupError):
 def opaque_id(card_id: str) -> str:
     """A stable label for a card id that says nothing about it."""
     return "C" + hashlib.blake2b(card_id.encode(), digest_size=5).hexdigest()
+
+
+def _label(state: str) -> str:
+    """The state as the revealed side may see it: ``all_active`` or ``LATER_STATE``."""
+    return INITIAL_STATE if state == INITIAL_STATE else LATER_STATE
 
 
 def _seed_of(card_id: str) -> int:
@@ -152,7 +166,7 @@ class RevealHandle:
             raise RevealError(f"attempt {attempt} of {test!r} is not available (stored: {len(attempts)})")
         if attempt < len(attempts):
             a = attempts[attempt]
-            return RevealedObservation(test=test, attempt=attempt, state=state, status=a.status,
+            return RevealedObservation(test=test, attempt=attempt, state=_label(state), status=a.status,
                                        values=dict(a.values), report=a.report)
         return self._fresh(test, attempt, state)
 
@@ -170,7 +184,7 @@ class RevealHandle:
                             background=dict(card.background), brief="", states=card.states)
         planned, reported = settle_attempt(cat, cat.tests[test], attempt, skeleton,
                                            finding_values(card.hidden.findings[state]), state)
-        return RevealedObservation(test=test, attempt=attempt, state=state, status=planned.status,
+        return RevealedObservation(test=test, attempt=attempt, state=_label(state), status=planned.status,
                                    values=dict(reported), report=report_text(cat.tests[test], planned.status, reported))
 
     # ------------------------------------------------------------------ keys and notes
@@ -211,7 +225,7 @@ class RevealHandle:
         p = self._card.presenting[state]
         return PublicView(
             card_id=self._public_id,
-            state=state,
+            state=_label(state),
             background=dict(self._card.background),
             presenting=Presenting(tuple(p.reported), p.text),
             observations=observations,
