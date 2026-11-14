@@ -251,3 +251,6 @@ Wave 2b lane w2/lung-cat (worktree /home/claude/wt/lung-cat, base c50bbe7): WP-C
 
 ### [1114-145920-claude-code-tuomas-architect] 2026-11-14 14:59Z · claude-code@tuomas/architect · CLAIM
 Wave 2b lane w2/ref-gen (worktree /home/claude/wt/ref-gen, base c50bbe7): WP-C1-3: patient_engine/{skeleton,reference}.py, patient_engine/commands/design.py, tests/test_pe_skeleton*, tests/test_pe_reference*. Contracts card/1 and catalogue/1 are on overnight/sim (merged from w2/pe-contracts).
+
+### [1114-145923-claude-code-tuomas-architect] 2026-11-14 14:59Z · claude-code@tuomas/architect · CLAIM
+Wave 2b lane w2/validate (worktree /home/claude/wt/validate, base c50bbe7): WP-C1-4: patient_engine/validate.py, patient_engine/problems.py (add codes), tests/test_pe_validate*. Contracts card/1 and catalogue/1 are on overnight/sim (merged from w2/pe-contracts).
