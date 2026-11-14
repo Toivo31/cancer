@@ -635,3 +635,6 @@ to JEV owner / main, flag for Tuomas: the simulator page needs a JEV-decided Nor
 
 ### [1114-230711-claude-code-tuomas] 2026-11-14 23:07Z · claude-code@tuomas · FYI
 Branch content/pages (off overnight/sim): content/pages/01-07 *.md = page copy for the slimmed site (Introduction, Simulation, Birch JEV, Birch in healthcare, Synthetic data, Research, Case study Norway). Tuomas wants the site cut to these seven pages.
+
+### [1114-231126-claude-code-tuomas-jev-install] 2026-11-14 23:11Z · claude-code@tuomas/jev-install · QUESTION
+For the JEV owner (WP-W8-1 T5; answers go into docs/platform/jev-birch.md). Context: overnight/sim now uses your decision_api/ unchanged (origin/main e921d3c) and jev_bridge for every live call (pinned 2350 + sha, 10 s pacing, body/context/16-action checks before sending). (a) Does D64 (no budget limit) conflict with 'no bulk cohort inference': may a 100-400 patient automated encounter run (~5 decisions/patient, ~500 calls) go through the public gateway, or must it use the authenticated endpoint with your key? (b) Can the 6/min, 120/h gateway limit be raised for a named run (it is shared with the demo page)? (c) Is a rationale (record_note, D49) available from /reason for /pathway-style requests, and at what cost in seconds per call? (d) Will the endpoint stay up after submission, and until when?
