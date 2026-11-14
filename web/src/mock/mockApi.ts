@@ -22,6 +22,12 @@ interface DB {
   runs: Record<string, MockRun[]>
 }
 
+// Real flow documents from the engine (small cohorts), loaded on demand so they stay out of the main bundle.
+const FLOWS: Record<string, () => Promise<{ default: unknown }>> = {
+  'finland_lung/baseline': () => import('../../../docs/platform/fixtures/flow_finland.json'),
+  'norway_check/observed': () => import('../../../docs/platform/fixtures/flow_norway.json'),
+}
+
 const KEY = 'pathway-mock-db-v1'
 let db: DB = load()
 
@@ -85,7 +91,7 @@ export function checkProblems(fc: Flowchart): Problem[] {
 
 export const mock: Api = {
   kind: 'mock',
-  templates: () => wait(TEMPLATES.map<Template>(({ id, name, description }) => ({ id, name, description }))),
+  templates: () => wait(TEMPLATES.map<Template>(({ id, name, description, flowcharts }) => ({ id, name, description, flowcharts: flowcharts.map((f) => ({ id: f.id, name: f.name })) }))),
   listProjects: () => wait(db.projects),
   createProject: (name, template) => {
     const id = nextId('p')
@@ -171,5 +177,13 @@ export const mock: Api = {
       if (r && (r.status === 'running' || r.status === 'queued')) { r.cancelled = true; sync(r); save() }
     }
   },
-  getFlow: async () => { throw new ApiError(404, 'no_flow', 'Run layers are not available in mock mode yet.') as Error & { data?: FlowData } },
+  getFlow: async (p, r) => {
+    project(p)
+    const run = db.runs[p]?.find((q) => q.id === r)
+    if (!run) throw new ApiError(404, 'not_found', `No run ${r}`)
+    sync(run)
+    const loader = run.status === 'succeeded' && !run.edited && run.template ? FLOWS[`${run.template}/${run.flowchart.id}`] : undefined
+    if (!loader) throw new ApiError(404, 'no_flow', 'Mock mode has run layers only for the unedited Norway "observed" and Finnish "baseline" flowcharts.')
+    return clone((await loader()).default as unknown as FlowData)
+  },
 }

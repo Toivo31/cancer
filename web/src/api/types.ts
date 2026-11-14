@@ -84,6 +84,8 @@ export interface Template {
   id: string
   name: string
   description?: string
+  /** flowcharts in the order the template lists them (today's pathway first) */
+  flowcharts?: { id: string; name?: string }[]
 }
 
 export interface Project {
@@ -157,33 +159,50 @@ export interface Run {
   error?: string | null
 }
 
-// ---- run layers (flow endpoint; shape agreed with plat/flow, see flow-format.md once merged) ----
-export interface StepStats {
-  /** patients who ran this step */
-  n: number
-  wait_median?: number | null
-  wait_mean?: number | null
-  took_median?: number | null
-  /** days on the critical path, summed over patients, and share of all critical-path days */
-  critical_days?: number
-  critical_share?: number
-  /** resource steps */
-  queue?: { t: number[]; length: number[] } | null
+// ---- run layers: the flow document `flow/1` (docs/platform/flow-format.md), GET /projects/{p}/runs/{r}/flow ----
+export interface FlowGraphNode {
+  id: string; label: string; short?: string; kind: string; stage?: string; layer?: number
+  test?: string; resource?: string; options?: string[]; outcome?: string; when?: string
 }
-export interface EdgeStats {
-  n: number
+export interface FlowGraphEdge { id: string; source: string; target: string; kind: 'then' | 'maybe' | 'option' | string; n: number; shortcut?: boolean }
+export interface FlowStep {
+  n: number; n_cancer?: number; events?: number
+  wait_mean?: number | null; wait_median?: number | null; wait_p90?: number | null
+  service_mean?: number | null; service_median?: number | null; wait_days?: number
+  positive?: number; negative?: number; nondiagnostic?: number
+  critical_n?: number; critical_wait?: number | null; critical_service?: number | null
+  critical_share?: number | null; critical_wait_share?: number | null
 }
-export interface DecisionStats {
-  offered: Record<string, number>
-  chosen: Record<string, number>
-  by_group?: Record<string, Record<string, number>>
+export interface FlowQueue { x: number[]; y: number[]; peak: number; mean: number }
+export interface FlowDecision {
+  n: number; options: string[]; offered: Record<string, number>; chosen: Record<string, number>
+  share: Record<string, number>; mean_probability?: Record<string, number>
+  by_group?: Record<string, { n: number; share: Record<string, number> }>
+}
+export interface TimeLost { node: string; label: string; wait: number; service: number; share: number; wait_share: number; n_critical: number; wait_median?: number | null; wait_p90?: number | null }
+/** one visit: [node, t_ready, t_start, t_end, t_result, result (1 | 0 | null), critical (0 | 1)] */
+export type Visit = [string, number, number, number, number, 1 | 0 | null, 0 | 1]
+/** one decision: [node, t, chosen option, offered options, {option: probability offered}] */
+export type Choice = [string, number, string, string[], Record<string, number>]
+export interface CohortPatient {
+  id: number | string; cohort?: number; g: string; age: number; cancer: boolean | 0 | 1
+  out: string; exit: string | null; t_exit: number | null; t_diag: number | null; t_treat: number | null; ft?: boolean | 0 | 1
+  v: Visit[]; c: Choice[]
 }
 export interface FlowData {
-  run_id: string
-  n_patients: number
-  steps: Record<string, StepStats>
-  edges: Record<string, EdgeStats>
-  exits: Record<string, Record<string, number>>
-  decisions: Record<string, DecisionStats>
-  cohort?: unknown
+  format: string
+  scenario: string; flowchart: string; seeds: number[]; synthetic?: boolean
+  clock_start?: string; target_days: number; warmup_days?: number
+  totals: { n: number; n_cancer: number; missed_cancers: number; untreated_cancers: number; treated_cancers: number; stuck: number; cohorts: number }
+  metrics: { n: number; share_within_target: number | null; median_days_to_treatment: number | null; median_days_to_diagnosis?: number | null; missed_cancers: number | null; [k: string]: unknown }
+  by_group?: Record<string, Record<string, number | null>>
+  graph: { nodes: FlowGraphNode[]; edges: FlowGraphEdge[]; stages?: string[] }
+  steps: Record<string, FlowStep>
+  resources?: Record<string, { label?: string; type?: string; capacity_per_day?: number; utilisation?: number }>
+  queues: Record<string, FlowQueue>
+  decisions: Record<string, FlowDecision>
+  exits: Record<string, { n: number; n_cancer: number; outcome: string }>
+  time_lost: TimeLost[]
+  cohort: { seed?: number; size: number; horizon: number; time_zero?: number; strata?: Record<string, number>; patients: CohortPatient[] }
+  meta?: Record<string, unknown>
 }

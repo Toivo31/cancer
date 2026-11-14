@@ -4,7 +4,13 @@ import type { Edge, EdgeProps, Node, NodeProps } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import type { Flowchart, FlowNode, World } from '../api/types'
 import { defaultShares } from '../lib/policy'
-import { layoutFlowchart, MARGIN_X, ROW_GAP, SIZE, structureKey } from './layout'
+import { edgeGeometry } from './geometry'
+import type { EdgeGeom } from './geometry'
+import { layoutFlowchart, SIZE, structureKey } from './layout'
+import type { NodeOverlay, Overlay } from './layers'
+import { pairKey } from './layers'
+import { PlaybackLayer } from './PlaybackLayer'
+import type { PlaybackProps } from './PlaybackLayer'
 
 export const STAGE_LABEL: Record<string, string> = {
   detection: 'Detection', referral: 'Referral', diagnosis: 'Diagnosis', treatment_start: 'Treatment start',
@@ -14,32 +20,32 @@ export function stageOf(n: FlowNode, world?: World | null): string | undefined {
   return (n.stage as string | undefined) ?? (n.test ? (world?.tests?.[n.test]?.stage as string | undefined) : undefined)
 }
 
-/** Per-step and per-edge decoration that run layers add (kept generic so every layer uses the same canvas). */
-export interface NodeOverlay { fill?: string; border?: string; badge?: string; sub?: string; subColor?: string }
-export interface EdgeOverlay { width?: number; label?: string; color?: string }
-export const edgeKey = (e: { from: string; to: string; type: string }) => `${e.from}>${e.to}:${e.type}`
-
 interface PData extends Record<string, unknown> {
   node: FlowNode
   stage?: string
   selected: boolean
-  muted: boolean
+  onPath: boolean
   overlay?: NodeOverlay
   probLine?: string
 }
 
 const PNode = memo(function PNode({ data }: NodeProps<Node<PData>>) {
-  const { node, stage, selected, muted, overlay, probLine } = data
-  const cls = ['pnode', node.kind, node.kind === 'exit' ? (node.outcome === 'treatment' ? 'treatment' : 'discharged') : '', selected ? 'sel' : '', muted ? 'dim-out' : ''].join(' ')
+  const { node, stage, selected, onPath, overlay, probLine } = data
+  const cls = ['pnode', node.kind, node.kind === 'exit' ? (node.outcome === 'treatment' ? 'treatment' : 'discharged') : '', selected ? 'sel' : '', onPath ? 'onpath' : ''].join(' ')
   const eyebrow = node.kind === 'decision' ? 'Decision' : node.kind === 'exit' ? (node.outcome === 'treatment' ? 'Treatment starts' : '') : node.kind === 'milestone' ? 'Diagnosis reached' : node.kind === 'join' ? '' : stage ? (STAGE_LABEL[stage] ?? stage) : ''
+  const sub = overlay?.sub ?? probLine
   return (
-    <div className={cls} style={{ background: overlay?.fill, borderColor: overlay?.border }} title={node.label}>
+    <div className={cls} style={{ background: overlay?.fill, borderColor: overlay?.border, borderWidth: overlay?.borderWidth }} title={node.label}>
       <Handle id="l" type="target" position={Position.Left} />
       <Handle id="t" type="target" position={Position.Top} />
       {eyebrow && <div className="stage">{eyebrow}</div>}
       <div className="title">{node.label}</div>
-      {(overlay?.sub || probLine) && <div className="num" style={{ fontSize: 10.5, color: overlay?.subColor ?? 'var(--muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{overlay?.sub ?? probLine}</div>}
-      {overlay?.badge && <div className="num" style={{ position: 'absolute', right: 8, top: 5, fontSize: 11, color: 'var(--text)' }}>{overlay.badge}</div>}
+      {sub && <div className="num sub" style={{ color: overlay?.subColor }}>{sub}</div>}
+      {overlay?.spark && (
+        <svg className="spark" viewBox="0 0 100 10" preserveAspectRatio="none" aria-hidden>
+          <polyline fill="none" stroke="#62B0FF" strokeWidth="1.2" vectorEffect="non-scaling-stroke" points={overlay.spark.map((v, i) => `${(i / Math.max(1, overlay.spark!.length - 1)) * 100},${10 - v * 10}`).join(' ')} />
+        </svg>
+      )}
       <Handle id="r" type="source" position={Position.Right} />
       <Handle id="b" type="source" position={Position.Bottom} />
     </div>
@@ -47,30 +53,12 @@ const PNode = memo(function PNode({ data }: NodeProps<Node<PData>>) {
 })
 const nodeTypes = { p: PNode }
 
-interface WrapData extends Record<string, unknown> { below: number; above: number; lane: number; adjacent: boolean }
-
-/** A connection that crosses a row break: out of the source, down to the channel between rows, back along it to the target's column, down into its top. */
-function WrapEdge({ sourceX, sourceY, targetX, targetY, markerEnd, style, label, labelStyle, labelBgStyle, labelBgPadding, labelBgBorderRadius, data }: EdgeProps) {
-  const d = data as WrapData
-  const lane = d.lane * 5
-  const pts: [number, number][] = [[sourceX, sourceY], [sourceX + 14 + lane, sourceY], [sourceX + 14 + lane, d.below + lane]]
-  if (d.adjacent) pts.push([targetX, d.below + lane])
-  else pts.push([MARGIN_X - lane, d.below + lane], [MARGIN_X - lane, d.above + lane], [targetX, d.above + lane])
-  pts.push([targetX, targetY])
-  const R = 9
-  let path = `M ${pts[0][0]} ${pts[0][1]}`
-  for (let i = 1; i < pts.length - 1; i++) {
-    const [px, py] = pts[i - 1], [cx, cy] = pts[i], [nx, ny] = pts[i + 1]
-    const l1 = Math.hypot(cx - px, cy - py), l2 = Math.hypot(nx - cx, ny - cy)
-    const r = Math.min(R, l1 / 2, l2 / 2)
-    const ax = cx - ((cx - px) / (l1 || 1)) * r, ay = cy - ((cy - py) / (l1 || 1)) * r
-    const bx = cx + ((nx - cx) / (l2 || 1)) * r, by = cy + ((ny - cy) / (l2 || 1)) * r
-    path += ` L ${ax} ${ay} Q ${cx} ${cy} ${bx} ${by}`
-  }
-  path += ` L ${pts[pts.length - 1][0]} ${pts[pts.length - 1][1]}`
-  return <BaseEdge path={path} markerEnd={markerEnd} style={style} label={label} labelX={targetX} labelY={targetY - 18} labelStyle={labelStyle} labelBgStyle={labelBgStyle} labelBgPadding={labelBgPadding} labelBgBorderRadius={labelBgBorderRadius} labelShowBg />
+interface EData extends Record<string, unknown> { geom: EdgeGeom }
+function PEdge({ markerEnd, style, label, labelStyle, labelBgStyle, labelBgPadding, labelBgBorderRadius, data }: EdgeProps) {
+  const g = (data as EData).geom
+  return <BaseEdge path={g.d} markerEnd={markerEnd} style={style} label={label} labelX={g.label[0]} labelY={g.label[1]} labelStyle={labelStyle} labelBgStyle={labelBgStyle} labelBgPadding={labelBgPadding} labelBgBorderRadius={labelBgBorderRadius} labelShowBg />
 }
-const edgeTypes = { wrap: WrapEdge }
+const edgeTypes = { pf: PEdge }
 
 const EDGE_STYLE: Record<string, { stroke: string; dash?: string; w: number }> = {
   required: { stroke: '#4a6177', w: 1.5 },
@@ -79,20 +67,32 @@ const EDGE_STYLE: Record<string, { stroke: string; dash?: string; w: number }> =
   option: { stroke: '#B79CFF', w: 1.7 },
 }
 
+export interface CanvasPlayback extends Omit<PlaybackProps, 'boxes' | 'routes' | 'edges'> {}
+
 interface Props {
   flowchart: Flowchart
   world?: World | null
   selected?: string | null
   onSelect?: (id: string | null) => void
-  nodeOverlay?: Record<string, NodeOverlay>
-  edgeOverlay?: Record<string, EdgeOverlay>
+  overlay?: Overlay | null
+  /** steps and connections to emphasise (a patient's critical path) */
+  path?: { nodes: Set<string>; edges: Set<string> } | null
+  playback?: CanvasPlayback | null
   showLegend?: boolean
+  /** change to redo the fit to the available space (for example after a panel opens or closes) */
+  refit?: string | number
 }
 
-export function FlowCanvas({ flowchart, world, selected, onSelect, nodeOverlay, edgeOverlay, showLegend = true }: Props) {
+export function FlowCanvas({ flowchart, world, selected, onSelect, overlay, path, playback, showLegend = true, refit }: Props) {
   const key = structureKey(flowchart)
-  const layout = useMemo(() => layoutFlowchart(flowchart.nodes, flowchart.edges), [key])
-  const boxes = layout.boxes // eslint-disable-line react-hooks/exhaustive-deps
+  const layout = useMemo(() => layoutFlowchart(flowchart.nodes, flowchart.edges), [key]) // eslint-disable-line react-hooks/exhaustive-deps
+  const boxes = layout.boxes
+  const geoms = useMemo(() => flowchart.edges.map((e, i) => (boxes[e.from] && boxes[e.to] ? edgeGeometry(boxes[e.from], boxes[e.to], layout, i % 5) : null)), [key, layout]) // eslint-disable-line react-hooks/exhaustive-deps
+  const routes = useMemo(() => {
+    const r: Record<string, [number, number][]> = {}
+    flowchart.edges.forEach((e, i) => { const g = geoms[i]; if (g && !r[pairKey(e.from, e.to)]) r[pairKey(e.from, e.to)] = g.pts })
+    return r
+  }, [key, geoms]) // eslint-disable-line react-hooks/exhaustive-deps
   const [hover, setHover] = useState<string | null>(null)
   const focus = hover ?? selected ?? null
 
@@ -103,44 +103,50 @@ export function FlowCanvas({ flowchart, world, selected, onSelect, nodeOverlay, 
       const pt = flowchart.decision_policy.points[n.id]
       let probLine: string | undefined
       const shares = defaultShares(pt)
-      if (n.kind === 'decision' && shares) probLine = `${Object.keys(shares).length} options${pt.rules?.length ? ` · ${pt.rules.length} rule${pt.rules.length > 1 ? 's' : ''}` : ''}`
+      if (n.kind === 'decision' && shares) probLine = `${Object.keys(shares).length} options${pt?.rules?.length ? ` · ${pt.rules.length} rule${pt.rules.length > 1 ? 's' : ''}` : ''}`
       else if (n.kind === 'decision') probLine = 'no probabilities set'
       return {
         id: n.id, type: 'p', position: { x: boxes[n.id].x, y: boxes[n.id].y }, width: SIZE[n.kind].w, height: SIZE[n.kind].h,
-        data: { node: n, stage: stageOf(n, world), selected: selected === n.id, muted: false, overlay: nodeOverlay?.[n.id], probLine },
+        data: { node: n, stage: stageOf(n, world), selected: selected === n.id, onPath: !!path?.nodes.has(n.id), overlay: overlay?.nodes[n.id], probLine },
         draggable: false, selectable: true,
       }
     })
     const es: Edge[] = flowchart.edges.map((e, i) => {
       const id = `e${i}`
       const st = EDGE_STYLE[e.type] ?? EDGE_STYLE.required
-      const ov = edgeOverlay?.[edgeKey(e)]
+      const ov = overlay?.edges[pairKey(e.from, e.to)]
+      const onPath = !!path?.edges.has(pairKey(e.from, e.to))
       const on = !focus || incident.has(id)
       let label: string | undefined = ov?.label
       if (label === undefined && e.type === 'option') {
         const p = defaultShares(flowchart.decision_policy.points[e.from])?.[e.to]
         if (p !== undefined) label = `${Math.round(p * 1000) / 10}%`
       }
-      const color = ov?.color ?? (on && focus ? (e.type === 'option' ? '#B79CFF' : '#62B0FF') : st.stroke)
-      const wrap = boxes[e.from] && boxes[e.to] && boxes[e.to].row > boxes[e.from].row
+      const color = onPath ? '#EAF1F8' : ov?.color ?? (on && focus ? (e.type === 'option' ? '#B79CFF' : '#62B0FF') : st.stroke)
+      const geom = geoms[i]
+      const wrap = !!geom && boxes[e.to].row > boxes[e.from].row
       return {
-        id, source: e.from, target: e.to, type: wrap ? 'wrap' : 'default', label,
+        id, source: e.from, target: e.to, type: 'pf', label,
         sourceHandle: 'r', targetHandle: wrap ? 't' : 'l',
-        data: wrap ? ({ below: layout.rowBottom[boxes[e.from].row] + ROW_GAP / 2, above: layout.rowTop[boxes[e.to].row] - ROW_GAP / 2, lane: i % 5, adjacent: boxes[e.to].row === boxes[e.from].row + 1 } as WrapData) : undefined,
+        data: { geom: geom ?? { d: '', pts: [], label: [0, 0] } } as EData,
         labelStyle: { fill: '#EAF1F8', fontFamily: 'var(--mono)', fontSize: 11 },
         labelBgStyle: { fill: '#0A0F14', fillOpacity: 0.9 }, labelBgPadding: [4, 2] as [number, number], labelBgBorderRadius: 4,
-        style: { stroke: color, strokeWidth: ov?.width ?? (on && focus ? st.w + 0.8 : st.w), strokeDasharray: st.dash, opacity: on ? 1 : 0.16 },
-        markerEnd: { type: MarkerType.ArrowClosed, color, width: 14, height: 14 },
-        zIndex: on && focus ? 10 : 0,
+        style: {
+          stroke: color, strokeWidth: onPath ? 3 : ov?.width ?? (on && focus ? st.w + 0.8 : st.w),
+          strokeDasharray: ov ? (ov.dashed ? '3 4' : undefined) : st.dash,
+          opacity: path && !onPath ? 0.25 : (ov?.opacity ?? 1) * (on ? 1 : 0.16),
+        },
+        markerEnd: { type: MarkerType.ArrowClosed, color, width: 12, height: 12, markerUnits: 'userSpaceOnUse' },
+        zIndex: onPath || (on && focus) ? 10 : 0,
       }
     })
     return { nodes: ns, edges: es }
-  }, [flowchart, world, boxes, layout, selected, focus, nodeOverlay, edgeOverlay])
+  }, [flowchart, world, boxes, geoms, selected, focus, overlay, path])
 
   return (
     <div style={{ position: 'absolute', inset: 0 }} data-testid="canvas">
       <ReactFlow
-        key={key} nodes={nodes} edges={edges} nodeTypes={nodeTypes} edgeTypes={edgeTypes}
+        key={`${key}/${refit ?? ''}`} nodes={nodes} edges={edges} nodeTypes={nodeTypes} edgeTypes={edgeTypes}
         fitView fitViewOptions={{ padding: 0.12 }} minZoom={0.15} maxZoom={1.8}
         nodesDraggable={false} nodesConnectable={false} elementsSelectable
         proOptions={{ hideAttribution: true }}
@@ -150,8 +156,9 @@ export function FlowCanvas({ flowchart, world, selected, onSelect, nodeOverlay, 
         <Background color="#17222d" gap={28} />
         <Controls showInteractive={false} />
         <MiniMap pannable zoomable nodeColor={(n) => ((n.data as PData).node.kind === 'decision' ? '#B79CFF' : '#2C3F52')} maskColor="rgba(10,15,20,.7)" style={{ width: 150, height: 96 }} />
+        {playback && <PlaybackLayer {...playback} boxes={boxes} routes={routes} edges={flowchart.edges} />}
       </ReactFlow>
-      {showLegend && (
+      {showLegend && !overlay && (
         <div className="legend">
           <span><i />required</span><span><i className="dash" />any of</span><span><i className="dot" />only if it ran</span><span><i className="opt" />decision option (% offered)</span>
         </div>

@@ -77,7 +77,7 @@ select.field { padding-right: 4px; max-width: 280px; text-overflow: ellipsis; }
 .tab.on { color: var(--text); border-bottom-color: var(--mint); }
 .tab:disabled { opacity: .4; cursor: default; }
 .workspace { flex: 1; min-height: 0; display: flex; }
-.canvas-wrap { flex: 1; min-width: 0; position: relative; }
+.canvas-wrap { position: relative; }
 .side { width: 360px; flex: none; border-left: 1px solid var(--hair); background: var(--panel); overflow: auto; display: flex; flex-direction: column; }
 .side section { padding: 14px 16px; border-bottom: 1px solid var(--hair); }
 .side h4 { margin: 0 0 10px; }
@@ -149,3 +149,35 @@ table.t tr.on td { background: rgba(98,176,255,.1); }
 .runrow.on { border-color: var(--blue); box-shadow: 0 0 0 1px var(--blue); }
 .runrow .metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 2px; }
 .runrow .metrics .num { font-size: 15px; font-weight: 700; }
+
+.pnode .sub { font-size: 10.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pnode .spark { position: absolute; left: 8px; right: 8px; bottom: 3px; width: calc(100% - 16px); height: 8px; }
+.pnode.onpath { border-color: var(--text); box-shadow: 0 0 0 1px var(--text); }
+
+.canvas-col { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.canvas-wrap { flex: 1; min-height: 0; }
+.toolbar { position: absolute; left: 12px; top: 12px; z-index: 8; display: flex; gap: 2px; padding: 3px; background: rgba(17,26,36,.94); border: 1px solid var(--hair); border-radius: 8px; flex-wrap: wrap; }
+.toolbar .tab { padding: 6px 12px; border-bottom: none; border-radius: 6px; }
+.toolbar .tab.on { background: var(--panel-2); color: var(--text); box-shadow: inset 0 0 0 1px var(--mint); }
+.toolhint { position: absolute; left: 12px; top: 58px; z-index: 8; font-size: 12px; color: var(--muted); background: rgba(10,15,20,.7); padding: 2px 6px; border-radius: 4px; max-width: 420px; }
+.playbar { flex: none; display: flex; align-items: center; gap: 14px; padding: 8px 14px; border-top: 1px solid var(--hair); background: var(--panel); flex-wrap: wrap; }
+.playbtn { width: 38px; height: 34px; font-size: 13px; padding: 0; }
+.clockbox { min-width: 54px; text-align: center; }
+.bigday { font-size: 24px; font-weight: 800; line-height: 1; }
+.speeds { display: flex; }
+.speeds .tab { padding: 5px 8px; font-size: 11px; }
+.stats { display: flex; gap: 16px; }
+.stat .num { font-size: 18px; font-weight: 700; line-height: 1.1; }
+.stat .label { font-size: 9.5px; white-space: nowrap; }
+.side .tabs { padding: 0 8px; border-bottom: 1px solid var(--hair); flex: none; }
+.side .tabs .tab { padding: 9px 10px; }
+.lostrow { background: var(--panel-2); border: 1px solid var(--hair); border-radius: 8px; padding: 8px 10px; cursor: pointer; text-align: left; color: var(--text); width: 100%; }
+.lostrow:hover, .lostrow.on { border-color: var(--amber); }
+.lostrow .bar { height: 4px; background: var(--night); border-radius: 3px; margin: 6px 0 4px; }
+.lostrow .bar > div { height: 100%; background: var(--amber); border-radius: 3px; }
+.patientlist { display: flex; flex-wrap: wrap; gap: 6px; }
+.okc { color: var(--mint); } .badc { color: var(--coral); }
+.legend { bottom: 14px; }
+input[type=range] { accent-color: var(--mint); }
+
+.panelbtn { position: absolute; right: 12px; top: 12px; z-index: 9; background: rgba(17,26,36,.94); }

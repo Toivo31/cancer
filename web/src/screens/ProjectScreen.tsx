@@ -1,7 +1,15 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useApi } from '../ApiContext'
 import type { Flowchart, FlowchartSummary, Problem, Project, World } from '../api/types'
+import { Clock } from '../graph/clock'
 import { FlowCanvas, STAGE_LABEL, stageOf } from '../graph/FlowCanvas'
+import { buildOverlay, LAYERS } from '../graph/layers'
+import type { Layer } from '../graph/layers'
+import { adjacency, patientPath, preparePatients } from '../graph/playback'
+import { useFlow } from '../lib/useFlow'
+import { PlaybackBar } from './PlaybackBar'
+import { TimeLostPanel } from './TimeLostPanel'
+import { TracePanel } from './TracePanel'
 import { allValid, applyDraft, draftFrom, isDirty } from '../lib/decisionDraft'
 import type { Draft } from '../lib/decisionDraft'
 import { go, replace } from '../lib/route'
@@ -26,12 +34,17 @@ export function ProjectScreen({ pid, route }: { pid: string; route: Route }) {
   const fid = route.q.get('f')
   const ver = route.q.get('v')
   const selectedRun = route.q.get('run')
-  const q = (over: Record<string, string | number | null>) => ({ f: fid, v: ver, tab: tab === 'flowchart' ? null : tab, run: selectedRun, ...over })
+  const q = (over: Record<string, string | number | null>) => ({ f: fid, v: ver, tab: tab === 'flowchart' ? null : tab, run: selectedRun, layer: route.q.get('layer'), ...over })
   const nav = (over: Record<string, string | number | null>) => go(`p/${pid}`, q(over))
 
   useEffect(() => {
-    Promise.all([api.getProject(pid), api.getWorld(pid), api.listFlowcharts(pid)])
-      .then(([p, w, l]) => { setProject(p); setWorld(w); setList(l) })
+    // flowcharts in the order the template lists them, so the project opens on today's pathway (not the alphabetical first)
+    Promise.all([api.getProject(pid), api.getWorld(pid), api.listFlowcharts(pid), api.templates().catch(() => [])])
+      .then(([p, w, l, ts]) => {
+        const order = ((ts as { id: string; flowcharts?: { id: string }[] }[]).find((t) => t.id === p.template)?.flowcharts ?? []).map((f) => f.id)
+        const rank = (id: string) => { const i = order.indexOf(id); return i < 0 ? 999 : i }
+        setProject(p); setWorld(w); setList(order.length ? l.slice().sort((a, b) => rank(a.id) - rank(b.id)) : l)
+      })
       .catch((e) => setError(e.message))
   }, [api, pid])
 
@@ -70,6 +83,32 @@ export function ProjectScreen({ pid, route }: { pid: string; route: Route }) {
     } finally { setSaving(false) }
   }, [api, pid, fc, initial, draft, cur, selectedRun])
 
+  // ---- run layers: the selected run's flow document drawn on the same canvas ----
+  const autoRun = cur ? runs.find((r) => r.status === 'succeeded' && r.flowchart.id === cur.id && r.flowchart.version === curVer) : undefined
+  const effRun = selectedRun ?? autoRun?.id ?? null
+  const runObj = runs.find((r) => r.id === effRun) ?? null
+  const { flow, error: flowError, loading: flowLoading } = useFlow(api, pid, effRun, runObj?.status === 'succeeded')
+  const layerQ = route.q.get('layer') as Layer | null
+  const layer: Layer = flow ? (layerQ && LAYERS.some((l) => l.id === layerQ) ? layerQ : 'flow') : 'structure'
+  const labelOf = useCallback((id: string) => fc?.nodes.find((n) => n.id === id)?.label ?? flow?.graph.nodes.find((n) => n.id === id)?.label ?? id, [fc, flow])
+  const overlay = useMemo(() => (fc && flow ? buildOverlay(fc, flow, layer, labelOf) : null), [fc, flow, layer, labelOf])
+  const clock = useMemo(() => (flow ? new Clock(flow.cohort.horizon) : null), [flow])
+  useEffect(() => { if (!clock) return; clock.play(); return () => clock.dispose() }, [clock])
+  const pps = useMemo(() => (flow && fc ? preparePatients(flow, new Set(fc.nodes.map((n) => n.id))) : []), [flow, fc])
+  const adj = useMemo(() => adjacency(fc?.edges ?? []), [fc])
+  const [patientIdx, setPatientIdx] = useState<number | null>(null)
+  const [panelOpen, setPanelOpen] = useState(true)
+  const [sideTab, setSideTab] = useState<'run' | 'time' | 'patient'>('run')
+  useEffect(() => { setPatientIdx(null) }, [flow])
+  const pickPatient = useCallback((idx: number | null) => { setPatientIdx(idx); if (idx !== null) setSideTab('patient') }, [])
+  const patient = patientIdx !== null ? pps.find((p) => p.idx === patientIdx) ?? null : null
+  const path = useMemo(() => (patient ? patientPath(patient, adj) : null), [patient, adj])
+  const transit = flow ? Math.max(0.5, flow.cohort.horizon / 110) : 1
+  const selectRun = (id: string | null) => {
+    const r = runs.find((x) => x.id === id)
+    replace(`p/${pid}`, q({ run: id, ...(r ? { f: r.flowchart.id, v: r.flowchart.version } : {}) }))
+  }
+
   if (error && !fc) return <div className="page"><div className="error">{error}</div><p><a href="#/">Back to projects</a></p></div>
   if (!fc || !cur || curVer === null || !draft || !world) return <div className="page"><div className="empty">Loading…</div></div>
 
@@ -99,10 +138,24 @@ export function ProjectScreen({ pid, route }: { pid: string; route: Route }) {
 
       {tab === 'flowchart' ? (
         <div className="workspace">
-          <div className="canvas-wrap">
-            <FlowCanvas flowchart={fc} world={world} selected={selected} onSelect={setSelected} />
+          <div className="canvas-col">
+            <div className="canvas-wrap" style={{ flex: 1 }}>
+              <FlowCanvas refit={panelOpen ? 'p' : 'c'} flowchart={fc} world={world} selected={selected} onSelect={setSelected} overlay={overlay} path={path}
+                playback={clock && layer !== 'structure' ? { clock, patients: pps, transit, selectedPatient: patientIdx, onPick: pickPatient } : null} />
+              <button className="btn small panelbtn" onClick={() => setPanelOpen((o) => !o)} aria-pressed={panelOpen} title={panelOpen ? 'Hide the side panel for more room' : 'Show the side panel'}>{panelOpen ? 'Hide panel ›' : '‹ Panel'}</button>
+              {flow && (
+                <>
+                  <div className="toolbar" role="tablist" aria-label="Layers">
+                    {LAYERS.map((l) => <button key={l.id} role="tab" aria-selected={layer === l.id} className={`tab ${layer === l.id ? 'on' : ''}`} onClick={() => nav({ layer: l.id })}>{l.label}</button>)}
+                  </div>
+                  <div className="toolhint"><strong>{runObj ? runObj.label || runObj.id : ''}</strong> · {overlay?.legend || LAYERS.find((l) => l.id === layer)?.hint}</div>
+                </>
+              )}
+              {!flow && (flowLoading || flowError) && <div className="toolhint" style={{ top: 12 }}>{flowLoading ? 'Loading the run…' : flowError}</div>}
+            </div>
+            {flow && clock && layer !== 'structure' && <PlaybackBar clock={clock} patients={pps} sampleLabel={`Dots: ${pps.length} sampled patients of ${flow.totals.n.toLocaleString('en')}. Counts and colours use everyone.`} />}
           </div>
-          <aside className="side" aria-label="Side panel">
+          {panelOpen && <aside className="side" aria-label="Side panel">
             {sel && (
               <section data-testid="step-panel">
                 <div className="label" style={{ marginBottom: 6 }}>{sel.kind === 'decision' ? 'Decision' : 'Step'}{stageOf(sel, world) ? ` · ${STAGE_LABEL[stageOf(sel, world)!] ?? stageOf(sel, world)}` : ''}</div>
@@ -113,6 +166,8 @@ export function ProjectScreen({ pid, route }: { pid: string; route: Route }) {
                   {sel.test && world.tests?.[sel.test]?.resource && <><span className="dim">Resource</span><span className="mono">{world.tests[sel.test].resource}</span></>}
                   {sel.when && <><span className="dim">Only if</span><span className="mono">{sel.when}</span></>}
                   {sel.outcome && <><span className="dim">Outcome</span><span>{sel.outcome}</span></>}
+                  {flow?.steps[sel.id] && <><span className="dim">Patients</span><span className="num">{flow.steps[sel.id].n.toLocaleString('en')}</span></>}
+                  {flow?.steps[sel.id]?.wait_median != null && <><span className="dim">Median wait</span><span className="num">{flow.steps[sel.id].wait_median!.toFixed(1)} d</span></>}
                 </div>
                 {sel.kind === 'decision' && (
                   <div style={{ marginTop: 10 }}>
@@ -121,9 +176,18 @@ export function ProjectScreen({ pid, route }: { pid: string; route: Route }) {
                 )}
               </section>
             )}
-            <RunPanel pid={pid} flowchart={fc} world={world} runs={runs} runsError={runsError} selectedRun={selectedRun}
-              onSelectRun={(id) => replace(`p/${pid}`, q({ run: id }))} onChanged={reloadRuns} dirty={dirty} />
-          </aside>
+            {flow && (
+              <div className="tabs" role="tablist">
+                {([['run', 'Run'], ['time', 'Where time is lost'], ['patient', 'Patient']] as const).map(([id, t]) => <button key={id} role="tab" aria-selected={sideTab === id} className={`tab ${sideTab === id ? 'on' : ''}`} onClick={() => setSideTab(id)}>{t}</button>)}
+              </div>
+            )}
+            {flow && sideTab === 'time' && <TimeLostPanel flow={flow} selected={selected} onSelect={setSelected} />}
+            {flow && sideTab === 'patient' && <TracePanel flow={flow} pp={patient} labelOf={labelOf} patients={pps} onPick={pickPatient} />}
+            {(!flow || sideTab === 'run') && (
+              <RunPanel pid={pid} flowchart={fc} world={world} runs={runs} runsError={runsError} selectedRun={effRun}
+                onSelectRun={selectRun} onChanged={reloadRuns} dirty={dirty} />
+            )}
+          </aside>}
         </div>
       ) : (
         <>
