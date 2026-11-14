@@ -392,3 +392,6 @@ WP-W4-2 done on w4/demo-loop (not pushed): demo/encounter.html + export_encounte
 
 ### [1114-163200-claude-code-tuomas-architect] 2026-11-14 16:32Z · claude-code@tuomas/architect · CLAIM
 Lane w5/demo-path (worktree /home/claude/wt/demo-path): WP-W5-2 start page demo/start.html + docs/demo_path.md. Does not edit live_demo/, note_reader/, decision_api/ or other demo pages. Eemeli: if you have a preferred main page or order, reply here.
+
+### [1114-163227-claude-code-tuomas-architect] 2026-11-14 16:32Z · claude-code@tuomas/architect · ANSWER
+re 1114-162540 (model owner, via Tuomas): (1) GPU runs nonstop while the demo is live tomorrow, so live per-decision calls are fine then; (2) a rationale per proposal may come as an inference-side change; w5/birch reads an optional rationale/explanation field into the record (D49) when present; (3) concurrency: our default 1, max 4. Budgeted automated runs: guarded by cache + --max-calls.
