@@ -24,7 +24,8 @@ const FLOW = (() => {
     bronch: "Bronchoscopy", ttnb: "Needle biopsy", pet: "PET-CT", mdt: "Tumour board",
     book_treat: "Treatment slot",
   };
-  const FAST_FROM_ROW = 6;          // fast lane from the specialist visit upwards (after referral handling)
+  const FAST_FROM_ROW = 6;
+  const frow = () => (FLOW.mini > 0 ? 0 : FAST_FROM_ROW);          // fast lane from the specialist visit upwards (after referral handling)
   const ROWS = 12;
   const VAGUE = "non_specific";
   const FAST_GAIN = 21;   // drawn on the fast lane: priority moved the patient ahead by 3+ weeks (271 of 466); the rest on the regular route
@@ -187,15 +188,19 @@ const FLOW = (() => {
   };
   const SINGLE = true;     // only our solution's flowchart
   function geom(side) {
-    const pw = SINGLE && side ? W * 0.5 : W * 0.4, cx = side ? (SINGLE ? W * 0.56 : W * 0.73) : W * 0.27;
-    const yb = H * 0.86, yt = H * 0.3;
+    const pw = SINGLE && side ? W * (FLOW.simple ? 0.66 : 0.5) : W * 0.4, cx = side ? (SINGLE ? W * (FLOW.simple ? 0.5 : 0.56) : W * 0.73) : W * 0.27;
+    const yb = H * (FLOW.simple ? 0.91 : 0.86), yt = H * (FLOW.simple ? 0.25 : 0.3);
     return { pw, cx, side, y: r => yb - (yb - yt) * r / ROWS };
   }
   const rowOf = node => (POS[node] || [0])[0];
   function nodeXY(g, node, fast) {
     const p = POS[node] || [0, 0];
     let x = g.cx + p[1] * g.pw;
-    if (fast && p[0] >= FAST_FROM_ROW && p[0] < ROWS) x = g.cx + 0.3 * g.pw;
+    if (fast && p[0] >= frow() && p[0] < ROWS) {     // an arc from the specialist visit to the treatment slot
+      const tt = Math.max(0, Math.min(1, (p[0] - frow()) / (ROWS - frow()))), sn = Math.sin(Math.PI / 2 * tt);
+      const xe = g.cx + (FLOW.mini > 0 ? 0.4 : 0.3) * g.pw, x0 = g.cx + p[1] * g.pw;
+      x = x0 + (xe - x0) * sn;
+    }
     return [x, g.y(p[0])];
   }
 
@@ -210,16 +215,36 @@ const FLOW = (() => {
     return (v._edges = cnt);
   }
 
+  let REVEAL = Infinity;           // trailer: the chart builds up row by row (Infinity = all drawn)
+  const ra = row => Math.max(0, Math.min(1, REVEAL - row + 1));
+  // trailer: a scale beside the chart, which stretches of the pathway are the patient's own and which are primary care time
+  function drawScale(g) {
+    const x0 = g.cx - g.pw * 0.5, a = Math.min(1, FLOW.scale);
+    const bracket = (r0, r1, lines) => {
+      const y0 = g.y(r1), y1 = g.y(r0), tick = W * 0.008;
+      ctx.save(); ctx.globalAlpha = a; ctx.strokeStyle = "rgba(45,45,42,0.85)"; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(x0 + tick, y0); ctx.lineTo(x0, y0); ctx.lineTo(x0, y1); ctx.lineTo(x0 + tick, y1); ctx.stroke();
+      const fs = Math.round(H * 0.024); ctx.font = `700 ${fs}px "Inter", sans-serif`; ctx.textAlign = "right"; ctx.textBaseline = "middle";
+      ctx.fillStyle = "rgba(30,30,28,0.95)";
+      lines.forEach((l, k) => ctx.fillText(l, x0 - W * 0.01, (y0 + y1) / 2 + (k - (lines.length - 1) / 2) * fs * 1.2));
+      ctx.restore();
+    };
+    bracket(-0.5, 0.45, ["PATIENT-", "CAUSED"]);
+    bracket(0.7, 4.45, ["PRIMARY", "CARE TIME"]);
+  }
+
   function drawChart(g, v, fastOn) {
     const E = edges(v), n = v.patients.length;
     for (const k in E) {
       const [a, b] = k.split(">");
-      const fa = fastOn && rowOf(a) >= FAST_FROM_ROW, fb = fastOn && rowOf(b) >= FAST_FROM_ROW && b !== "__finish";
+      const fa = fastOn && rowOf(a) >= frow(), fb = fastOn && rowOf(b) >= frow() && b !== "__finish";
       const [x1, y1] = nodeXY(g, a, fa), [x2, y2] = nodeXY(g, b, fb);
-      ctx.strokeStyle = fastOn && rowOf(b) >= FAST_FROM_ROW ? "rgba(25,95,165,0.3)" : "rgba(45,45,42,0.12)";
+      ctx.globalAlpha = ra(Math.max(rowOf(a), rowOf(b))); if (!ctx.globalAlpha) continue;
+      ctx.strokeStyle = fastOn && rowOf(b) >= frow() ? "rgba(25,95,165,0.3)" : "rgba(45,45,42,0.12)";
       ctx.lineWidth = 0.6 + 5 * Math.sqrt(E[k] / n);
       ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
     }
+    ctx.globalAlpha = 1;
     if (fastOn) {
       const [fx, fy0] = nodeXY(g, "spec_visit", true), [, fy1] = nodeXY(g, "book_treat", true);
       ctx.strokeStyle = "rgba(25,95,165,0.55)"; ctx.lineWidth = 2; ctx.setLineDash([6, 6]);
@@ -228,17 +253,20 @@ const FLOW = (() => {
       ctx.font = `600 ${Math.round(H * 0.018)}px "Inter", sans-serif`; ctx.textAlign = "center";
       ctx.fillStyle = "rgba(25,95,165,0.9)"; ctx.fillText("FAST LANE", 0, 0); ctx.restore();
     }
-    ctx.font = `${Math.round(H * 0.0145)}px "Inter", sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "top";
+    ctx.font = `${Math.round(H * (FLOW.simple ? 0.024 : 0.0145))}px "Inter", sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "top";
     for (const node in LABEL) {
       const [x, y] = nodeXY(g, node, false);
-      ctx.fillStyle = "rgba(85,85,80,0.55)"; ctx.fillText(LABEL[node], x, y + H * 0.012);
+      ctx.globalAlpha = ra(rowOf(node));
+      ctx.fillStyle = "rgba(85,85,80,0.55)"; ctx.fillText(LABEL[node], x, y + H * (FLOW.simple ? 0.018 : 0.012));
       ctx.fillStyle = "rgba(45,45,42,0.35)"; ctx.beginPath(); ctx.arc(x, y, 2.5, 0, Math.PI * 2); ctx.fill();
     }
+    ctx.globalAlpha = ra(ROWS);
     const [tx, ty] = nodeXY(g, "__finish", false);
     ctx.strokeStyle = "rgba(30,135,85,0.4)"; ctx.lineWidth = 1.5;
     ctx.beginPath(); ctx.moveTo(tx - g.pw * 0.42, ty); ctx.lineTo(tx + g.pw * 0.42, ty); ctx.stroke();
-    ctx.textBaseline = "top"; ctx.font = `600 ${Math.round(H * 0.018)}px "Inter", sans-serif`;
+    ctx.textBaseline = "top"; ctx.font = `600 ${Math.round(H * (FLOW.simple ? 0.03 : 0.018))}px "Inter", sans-serif`;
     ctx.fillStyle = "rgba(30,135,85,0.9)"; ctx.fillText("TREATMENT STARTS", tx, ty + H * 0.008);
+    ctx.globalAlpha = 1;
   }
 
   function groupRGB(p) { return p.g === VAGUE ? [20, 20, 20] : [150, 150, 145]; }   // vague = black, alarm = mid grey
@@ -246,7 +274,7 @@ const FLOW = (() => {
   function balls(g, v, day, target, fastOn, draw = true) {
     const n = v.patients.length, swarm = {}, laneQ = {};
     const out = { on: 0, missed: 0, grp: { [VAGUE]: [0, 0], other: [0, 0] }, missedVague: 0, back: [0, 0] };
-    const golden = 2.39996, R = H * 0.0042;
+    const golden = 2.39996, R = H * (FLOW.simple ? 0.0058 : 0.0042);
     for (let i = 0; i < n; i++) {
       const p = v.patients[i], s = stateOf(p, day, target), fast = fastOn && p.fl;
       const gk = p.g === VAGUE ? VAGUE : "other";
@@ -256,29 +284,30 @@ const FLOW = (() => {
       let x, y, col, rad = R, halo = 0;
       if (s.kind === "done") {
         if (s.ontime) { out.on++; out.grp[gk][0]++; }
-        if (FLOW.half && (i & 1)) continue;
+        if (FLOW.half && (i % FLOW.every !== 0)) continue;
         const [tx, ty] = nodeXY(g, "__finish", false);
         x = tx + (rnd(i, 7) - 0.5) * g.pw * 0.8; y = ty - H * 0.008 - rnd(i, 8) * H * 0.05;
         col = s.ontime ? (p.g === VAGUE ? "rgba(20,20,20,0.95)" : "rgba(150,150,145,0.95)") : "rgba(215,212,205,0.8)";
       } else if (s.kind === "gone") {
         out.missed++; if (p.g === VAGUE) out.missedVague++;
-        if (FLOW.half && (i & 1)) continue;
+        if (FLOW.half && (i % FLOW.every !== 0)) continue;
         const since = day - (p.tx || 0);
         if (since > 6) continue;
         const last = p.path.length ? p.path[p.path.length - 1][0] : "nurse_visit";
         const [lx, ly] = nodeXY(g, last, false);
         x = lx + (rnd(i, 3) - 0.5) * 30 - since * 8; y = ly + since * since * 6;
         col = `rgba(200,45,35,${Math.max(0, 1 - since / 6)})`; rad *= 1.4;
-      } else if (FLOW.half && (i & 1)) { continue;
+      } else if (FLOW.half && (i % FLOW.every !== 0)) { continue;
       } else if (s.kind === "wait" || s.kind === "start") {
         const node = s.node || "nurse_visit";
-        const onLane = fast && rowOf(node) >= FAST_FROM_ROW;
+        const onLane = fast && rowOf(node) >= frow();
         const [nx, ny] = nodeXY(g, node, onLane);
         const h = Math.min(1, (s.waitFor || 0) / 30);
         if (onLane) {
           // fast lane: a tidy short queue beside the lane instead of a swarm
           const k = (laneQ[node] = (laneQ[node] || 0) + 1) - 1, per = 14, sp = R * 1.9;
-          x = nx + sp * (1.2 + (k % per)); y = ny - sp * 0.5 + Math.floor(k / per) * sp * 0.85;
+          x = FLOW.mini > 0 ? nx + (rnd(i, 5) - 0.5) * 7 : nx + sp * (1.2 + (k % per));
+          y = FLOW.mini > 0 ? ny + (rnd(i, 6) - 0.5) * 7 : ny - sp * 0.5 + Math.floor(k / per) * sp * 0.85;
           rad = R * 0.72;
         } else {
           const k = (swarm[node] = (swarm[node] || 0) + 1);
@@ -289,7 +318,7 @@ const FLOW = (() => {
         col = `rgba(${cr},${cg},${cb},0.95)`;
         if (onLane && FLOW.mini > 0) col = "rgba(25,95,165,0.95)";
       } else {
-        const fa = fast && rowOf(s.from) >= FAST_FROM_ROW, fb = fast && rowOf(s.to) >= FAST_FROM_ROW && s.to !== "__finish";
+        const fa = fast && rowOf(s.from) >= frow(), fb = fast && rowOf(s.to) >= frow() && s.to !== "__finish";
         const [x1, y1] = nodeXY(g, s.from, fa), [x2, y2] = nodeXY(g, s.to, fb), f = ease(s.frac);
         x = x1 + (x2 - x1) * f + (rnd(i, 4) - 0.5) * 10; y = y1 + (y2 - y1) * f;
         col = fb ? "rgba(25,95,165,1)" : `rgba(${cr},${cg},${cb},1)`; rad *= 1.15;
@@ -305,9 +334,10 @@ const FLOW = (() => {
 
   function header(g, out, n, title, sub, ref = null) {
     ctx.textAlign = "center"; ctx.textBaseline = "alphabetic";
-    ctx.font = `600 ${Math.round(H * 0.03)}px "Inter", sans-serif`;
+    ctx.font = `600 ${Math.round(H * (FLOW.simple ? 0.048 : 0.03))}px "Inter", sans-serif`;
     ctx.fillStyle = g.side ? "rgba(25,95,165,0.95)" : "rgba(45,45,42,0.95)";
     ctx.fillText(title, g.cx, H * 0.06);
+    if (FLOW.simple) return;
     ctx.font = `${Math.round(H * 0.016)}px "Inter", sans-serif`; ctx.fillStyle = "rgba(105,105,100,0.9)";
     ctx.fillText(sub, g.cx, H * 0.086);
     // per-group share treated within 90 days (the inequality, in two bars)
@@ -391,7 +421,7 @@ const FLOW = (() => {
       const fv = sc.variants.find(v => v.key === "fastlane");
       if (fv) {
         if (!fv._fl) { fv.patients.forEach((p, i) => { const b = vOld.patients[i]; p.fl = !!(p.ft && p.tt !== null && b.tt !== null && b.tt - p.tt >= FAST_GAIN); }); fv._fl = true; }
-        vNew.patients.forEach((p, i) => { p.fl = !!(fv.patients[i] && fv.patients[i].fl) && i % 5 === 0; });
+        vNew.patients.forEach((p, i) => { p.fl = !!(fv.patients[i] && fv.patients[i].fl) && i % 12 === 0; });
       }
       vNew._mini = true;
     }
@@ -410,21 +440,37 @@ const FLOW = (() => {
       ctx.beginPath(); ctx.moveTo(W / 2, H * 0.03); ctx.lineTo(W / 2, H * 0.9); ctx.stroke();
       drawChart(gL, vOld, false);
     }
+    REVEAL = FLOW.build >= 1 ? Infinity : FLOW.build * (ROWS + 1.2);
     const laneOn = !mini && vNew.patients.some(p => p.fl);
     drawChart(gR, vNew, laneOn);
-    if (mini) {                               // one thin blue line; the rest of the chart stays normal grey
-      const [fx, fy0] = nodeXY(gR, "spec_visit", true), [, fy1] = nodeXY(gR, "book_treat", true);
+    if (mini) {                               // the fast track: a thin blue arc from a start point to an end point; the rest of the chart stays grey
+      const [sx, sy] = nodeXY(gR, "gp_visit", false), [, ey] = nodeXY(gR, "__finish", false), ex = gR.cx + 0.4 * gR.pw;
       FLOW.laneInk = true;
-      ctx.save(); ctx.globalAlpha = Math.min(1, FLOW.mini); ctx.strokeStyle = "rgba(25,95,165,0.95)"; ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.moveTo(fx, fy0 + H * 0.03); ctx.lineTo(fx, fy1 - H * 0.02); ctx.stroke();
-      ctx.translate(fx - H * 0.012, (fy0 + fy1) / 2); ctx.rotate(-Math.PI / 2);
-      ctx.font = `600 ${Math.round(H * 0.015)}px "Inter", sans-serif`; ctx.textAlign = "center"; ctx.fillStyle = "rgba(25,95,165,0.95)"; ctx.fillText("FAST TRACK", 0, 0);
+      ctx.save(); ctx.globalAlpha = Math.min(1, FLOW.mini); ctx.strokeStyle = "rgba(25,95,165,0.95)"; ctx.fillStyle = "rgba(25,95,165,0.95)"; ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      for (let k = 0; k <= 48; k++) {
+        const tt = k / 48, y = sy + (ey - sy) * tt, x = sx + (ex - sx) * Math.sin(Math.PI / 2 * tt);
+        k ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+      }
+      ctx.stroke();
+      for (const [x, y] of [[sx, sy], [ex, ey]]) { ctx.beginPath(); ctx.arc(x, y, 6, 0, Math.PI * 2); ctx.fill(); }
+      // its own route: two stops on the way (urgent CT, then the specialist), not straight to treatment
+      ctx.font = `600 ${Math.round(H * 0.019)}px "Inter", sans-serif`; ctx.textAlign = "left"; ctx.textBaseline = "middle";
+      for (const [tt, lab] of [[0.4, "Urgent CT"], [0.72, "Specialist"]]) {
+        const x = sx + (ex - sx) * Math.sin(Math.PI / 2 * tt), y = sy + (ey - sy) * tt;
+        ctx.beginPath(); ctx.arc(x, y, 5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillText(lab, x + 12, y);
+      }
+      ctx.font = `600 ${Math.round(H * 0.024)}px "Inter", sans-serif`; ctx.textAlign = "left"; ctx.textBaseline = "middle";
+      ctx.fillText("FAST TRACK", sx + (ex - sx) * Math.sin(Math.PI * 0.15) + 18, sy + (ey - sy) * 0.3);
       ctx.restore(); FLOW.laneInk = false;
     }
+    if (FLOW.build < 1) return;      // still building the chart: no patients, no header yet
     const oL = balls(gL, vOld, day, target, false, !SINGLE);
     FLOW.focusXY = null; FLOW.pos = [];
     const oR = balls(gR, vNew, day, target, true);
     ctx.drawImage(layer, 0, 0, W, H);
+    if (FLOW.scale > 0) drawScale(gR);
     if (FLOW.focusXY && FLOW.ring) {
       const [fx, fy] = FLOW.focusXY;
       ctx.strokeStyle = "rgba(25,95,165,0.95)"; ctx.lineWidth = 2;
@@ -433,7 +479,7 @@ const FLOW = (() => {
     if (SINGLE) {
       const T = TITLES[vNew.key] || [vNew.label.toUpperCase(), ""];
       header(gR, oR, vNew.patients.length, T[0], `${T[1]}median ${median(vNew)} days (today ${median(vOld)})`, vNew === vOld ? null : oL);
-      evidencePanel(day);
+      if (!FLOW.simple) evidencePanel(day);
     } else {
     header(gL, oL, vOld.patients.length, "TODAY", "median " + median(vOld) + " days to treatment");
     header(gR, oR, vNew.patients.length, "OUR SOLUTION", "notes read, warning signs flagged, fast lane · median " + median(vNew) + " days");
@@ -453,14 +499,14 @@ const FLOW = (() => {
     }
 
     // clock
-    ctx.textAlign = "center"; ctx.textBaseline = "alphabetic"; ctx.font = `600 ${Math.round(H * 0.045)}px "Inter", sans-serif`;
+    ctx.textAlign = "center"; ctx.textBaseline = "alphabetic"; ctx.font = `600 ${Math.round(H * (FLOW.simple ? 0.066 : 0.045))}px "Inter", sans-serif`;
     ctx.fillStyle = day >= target ? "rgba(200,125,0,0.95)" : "rgba(45,45,42,0.95)";
     const cxk = SINGLE ? W * 0.13 : W / 2;
     ctx.fillText("DAY " + String(Math.floor(day)).padStart(3, "0"), cxk, H * 0.06);
-    ctx.font = `${Math.round(H * 0.013)}px "Inter", sans-serif`; ctx.fillStyle = "rgba(105,105,100,0.85)";
-    ctx.fillText("since first contact · 521 simulated lung cancer patients", cxk, H * 0.082);
+    ctx.font = `${Math.round(H * (FLOW.simple ? 0.022 : 0.013))}px "Inter", sans-serif`; ctx.fillStyle = "rgba(105,105,100,0.85)";
+    ctx.fillText(FLOW.simple ? "days since first contact" : "since first contact · 521 simulated lung cancer patients", cxk, H * 0.082);
     if (!SHOW.active) {
-      ctx.fillText("521 simulated lung cancer patients · one synthetic county · note texts are synthetic examples · note reader and decision model are prototypes",
+      ctx.fillText(FLOW.simple ? "" : "521 simulated lung cancer patients · one synthetic county · note texts are synthetic examples · note reader and decision model are prototypes",
         W / 2, H * 0.975);
     }
   }
@@ -483,5 +529,5 @@ const FLOW = (() => {
     return vs.find(v => v.key === FLOW.newKey) || vs[1];
   }
 
-  return { draw, pickFocus, current, mini: 0, laneInk: false, focus: null, focusXY: null, ring: false, pos: [], newKey: "fastlane" };
+  return { draw, pickFocus, current, mini: 0, build: 1, scale: 0, every: 2, simple: false, laneInk: false, focus: null, focusXY: null, ring: false, pos: [], newKey: "fastlane" };
 })();

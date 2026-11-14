@@ -5,7 +5,7 @@
     {
       "id": "v3_wait",
       "at": "0:23.6",
-      "text": "In our framework, the pathway is simulated. Dots are patients, piles are waiting, and a few take the fast track."
+      "text": "In our framework, every patient follows the pathway. Dots are patients, piles are waiting, and a few take the fast track."
     }
   ]
 }

@@ -1,0 +1,75 @@
+{
+  "_about": "Punchy cut (trailer2.js). Each line: the phrases that cue the picture. Placeholder voice: python video/generated/tts.py --lines script_v2.json --voice Orus; your own recording: put s1.wav ... s7.wav in a folder and run build_timeline.py --from-dir <folder> --rate 1.0",
+  "voice_style": "Speak in a normal, natural male voice, like a clear and friendly presenter. Confident, a little brisk. Conversational, not dramatic, not announcer-like.",
+  "rate": 1.1,
+  "lines": [
+    {
+      "id": "s1",
+      "at": "0:00",
+      "text": "Same lymphoma. 123 days to treatment, or 207. It depends on which door you walk in.",
+      "phrases": [
+        "Same lymphoma.",
+        "123 days to treatment,",
+        "or 207.",
+        "It depends on which door you walk in."
+      ]
+    },
+    {
+      "id": "s2",
+      "at": "0:00",
+      "text": "Doctors either trust AI too little and check everything, or too much and check nothing.",
+      "phrases": [
+        "Doctors either trust AI too little and check everything,",
+        "or too much and check nothing."
+      ]
+    },
+    {
+      "id": "s3",
+      "at": "0:00",
+      "text": "Our framework: clinicians write the rule. The system runs it. Unsure? A doctor decides.",
+      "phrases": [
+        "Our framework:",
+        "clinicians write the rule.",
+        "The system runs it.",
+        "Unsure? A doctor decides."
+      ]
+    },
+    {
+      "id": "s4",
+      "at": "0:00",
+      "text": "Every dot is a patient. The piles are waiting. A few take the fast track.",
+      "phrases": [
+        "Every dot is a patient.",
+        "The piles are waiting.",
+        "A few take the fast track."
+      ]
+    },
+    {
+      "id": "s5",
+      "at": "0:00",
+      "text": "Built with Nemotron, powered by Verda.",
+      "phrases": [
+        "Built with Nemotron,",
+        "powered by Verda."
+      ]
+    },
+    {
+      "id": "s6",
+      "at": "0:00",
+      "text": "Our suggestion: pilot one pipeline in Finland, and measure the wait.",
+      "phrases": [
+        "Our suggestion:",
+        "pilot one pipeline in Finland,",
+        "and measure the wait."
+      ]
+    },
+    {
+      "id": "s7",
+      "at": "0:00",
+      "text": "Waiting is a decision nobody made.",
+      "phrases": [
+        "Waiting is a decision nobody made."
+      ]
+    }
+  ]
+}
