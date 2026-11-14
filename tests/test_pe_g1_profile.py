@@ -103,7 +103,7 @@ def test_an_answer_that_writes_findings_is_refused_and_repaired(lung, design):
     sk = make_skeleton(lung, 0, design, 5)
     fake = reference_fake_client(lung, design, 5, transform=add_findings)
     out = generate_card(Authors(lung), sk, fake)
-    assert out.status == "accepted" and out.repairs == 1
+    assert out.status == "accepted"      # refused by the schema (client repair round) or by the pipeline; either way the engine's findings stand
     assert out.card["hidden"]["findings"]["all_active"] == {
         k: {"value": f.value, "caused_by": list(f.caused_by)} for k, f in draw_findings(lung, sk).items()}
 

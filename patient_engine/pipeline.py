@@ -347,6 +347,7 @@ def reference_fake_client(catalogue: Catalogue, design: Design, seed: int, *,
     from .card import card_to_json
     cache: dict[int, dict] = {}
     lock = threading.Lock()
+    seen = threading.local()
 
     def reference_json(card_id: str) -> dict:
         index = int(card_id.rsplit(":", 1)[1])
@@ -364,9 +365,13 @@ def reference_fake_client(catalogue: Catalogue, design: Design, seed: int, *,
             ans = _fake_g2v2(catalogue, user)
             return transform("g2", None, ans, user) if transform else ans
         m = _ID_RX.search(user)
-        if not m:
+        if m:
+            seen.cid = m.group(1)
+        elif getattr(seen, "cid", None) and "did not validate" in user:   # the client's own schema-repair round has no card id
+            user = f"Card id: {seen.cid}\n{user} (failed validation)"
+        else:
             raise LLMError("reference fake: no card id in the prompt")
-        cid = m.group(1)
+        cid = seen.cid
         c = reference_json(cid)
         if "states" in schema["properties"]:
             role = "g1"
