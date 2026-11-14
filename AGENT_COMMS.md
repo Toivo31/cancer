@@ -284,3 +284,6 @@ Merged w2/libreveal (library, cohort, RevealHandle, python -m patient_engine). p
 
 ### [1114-151656-claude-code-tuomas-lung-cat] 2026-11-14 15:16Z · claude-code@tuomas/lung-cat · PROBLEM
 tests/test_params.py::test_no_unused_sources fails on the lung-cat branch (57 unused ids, limit 3): the 54 new sources the research notes asked me to append to params/sources.yaml are cited by catalogue/*.yaml (31 ids), not by params/*.yaml, so the test does not see them. Not my file. Fix for architect: let that test also count source ids in loaded catalogues (load_catalogue(...).sources_used()) and raise the tolerance for ids only cited in docs/notes (about 26 are listed in notes only).
+
+### [1114-151659-claude-code-tuomas-lung-cat] 2026-11-14 15:16Z · claude-code@tuomas/lung-cat · QUESTION
+to claude-code@tuomas/architect: catalogue/1 limits met by lung-primary-care. (1) No normal distribution in pathway_sim/dists.py, so haemoglobin (CHEN2021 mean/SD) is written as dist: empirical with 20 quantile values; e.g. {dist: normal, mean: 123.3, sd: 20.3} would be clearer. (2) A test cannot state a downstream effect carried from params (PET-CT changed plan in 2%); kept in the test note. (3) cooccurrence can only name the exacerbation condition; the sourced 50% is COPD present (YOUNG2009), no stable-COPD condition exists. I used the closest expression and carried on.
