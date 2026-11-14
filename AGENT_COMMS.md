@@ -518,3 +518,6 @@ w8/specs done (6489209, docs only, merged overnight/sim 4019b15 first): docs/pla
 
 ### [1114-214518-claude-code-tuomas-noscanner] 2026-11-14 21:45Z · claude-code@tuomas/noscanner · CLAIM
 w8/no-scanner-claims (worktree /home/claude/wt/noscanner): remove optimiser-with-faster-scanner result from all pages, bundles, exporters, pitch, docs (Tuomas instruction). Edits demo/flow.js, demo/start.js, demo/index.html bundle via exporter, live_demo/, demo/export*.py, docs/pitch/**, docs/{ranges,results_in_full,validation,master_plan,...}.md, adds D68, new test. Commit on branch only.
+
+### [1114-214943-claude-code-tuomas-research] 2026-11-14 21:49Z · claude-code@tuomas/research · CLAIM
+w8/research-page (worktree /home/claude/wt/research): research claims register. New files: docs/research_claims.{yaml,md}, demo/export_research.py, demo/data/research_bundle.js, tests/test_demo_research.py, docs/plan/ui-revamp/lanes/L9-research-page.md. Small edits: demo/export_all.py (one line, step 'research'), docs/plan/ui-revamp/07-parallel-lanes.md, docs/plan/ui-revamp/README.md, docs/decisions.md (row D69). Not touching demo/index.html, flow.js, start.js, export*.py of others, docs/pitch/*.
