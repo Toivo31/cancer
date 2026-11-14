@@ -71,10 +71,12 @@ def mean_metrics(ms: list[dict]) -> dict:
     return out
 
 
-def evaluate(sc: Scenario, fc: Flowchart, cohorts: list[tuple[int, list]]) -> tuple[dict, list]:
+def evaluate(sc: Scenario, fc: Flowchart, cohorts: list[tuple[int, list]], policy_factory=None) -> tuple[dict, list]:
+    """Run ``fc`` on each cohort. ``policy_factory(fc, seed)`` (optional) supplies the decision policy,
+    e.g. a JEV backend; None means the engine's rule policy from the flowchart."""
     ms, runs = [], []
     for seed, pts in cohorts:
-        run = simulate(sc, fc, pts, seed=seed)
+        run = simulate(sc, fc, pts, policy=policy_factory(fc, seed) if policy_factory else None, seed=seed)
         runs.append(run)
         ms.append(compute_metrics(run, sc))
     return mean_metrics(ms), runs
@@ -138,7 +140,7 @@ def cohorts(sc: Scenario, seeds, n) -> list[tuple[int, list]]:
     return [(s, generate_patients(sc, n, s)) for s in seeds]
 
 
-def search(sc: Scenario, start: Flowchart | str, cfg: Config | None = None, log=print, progress=None) -> dict:
+def search(sc: Scenario, start: Flowchart | str, cfg: Config | None = None, log=print, progress=None, policy_factory=None) -> dict:
     """``progress(done, total, message)`` (optional) is called once per search step and after the held-out reports."""
     cfg = cfg or Config()
     total = cfg.max_steps + 1
@@ -146,7 +148,7 @@ def search(sc: Scenario, start: Flowchart | str, cfg: Config | None = None, log=
     fc0 = sc.flowcharts[start] if isinstance(start, str) else start
     train = cohorts(sc, cfg.train_seeds, cfg.n_train)
     servers = {rid for rid, r in sc.resources.items() if r.get("type", "server") == "server"}
-    base_m, base_runs = evaluate(sc, fc0, train)
+    base_m, base_runs = evaluate(sc, fc0, train, policy_factory)
     cur, cur_m, cur_runs = fc0.copy(f"{fc0.id}_optimised"), base_m, base_runs
     steps, tried, all_rejected = [], 0, []
     log(f"start {fc0.id}: on-time {base_m['share_within_target']:.3f}, median {base_m['median_days_to_treatment']} d")
@@ -166,7 +168,7 @@ def search(sc: Scenario, start: Flowchart | str, cfg: Config | None = None, log=
         best, rejected = None, []
         for c, new in pool:
             tried += 1
-            m, runs = evaluate(sc, new, train)
+            m, runs = evaluate(sc, new, train, policy_factory)
             gains = _gains(m, cur_m)
             gain = sum(gains) / len(gains)
             bad = guardrails(m, base_m, cfg)
@@ -185,7 +187,7 @@ def search(sc: Scenario, start: Flowchart | str, cfg: Config | None = None, log=
                     if n2 is None:
                         continue
                     tried += 1
-                    m, runs = evaluate(sc, n2, train)
+                    m, runs = evaluate(sc, n2, train, policy_factory)
                     gains = _gains(m, cur_m)
                     gain = sum(gains) / len(gains)
                     if min(gains) >= 0 and gain >= cfg.min_gain and not guardrails(m, base_m, cfg) \
@@ -208,8 +210,8 @@ def search(sc: Scenario, start: Flowchart | str, cfg: Config | None = None, log=
         cur, cur_m, cur_runs = new, m, runs
     note(total - 1, total, "checking on patients the search never saw")
     held = cohorts(sc, cfg.heldout_seeds, cfg.n_heldout or cfg.n_train)
-    h0, _ = evaluate(sc, fc0, held)
-    h1, _ = evaluate(sc, cur, held)
+    h0, _ = evaluate(sc, fc0, held, policy_factory)
+    h1, _ = evaluate(sc, cur, held, policy_factory)
     return {
         "scenario": sc.id, "start": fc0.id, "config": {k: (list(v) if isinstance(v, tuple) else v) for k, v in cfg.__dict__.items()},
         "candidates_evaluated": tried,

@@ -66,7 +66,7 @@ class Job:
     owner: dict = field(default_factory=dict)   # free-form back-reference, e.g. {"project": p, "run": r}
 
     def to_dict(self, include_result: bool = True) -> dict:
-        d = {"id": self.id, "kind": self.kind, "label": self.label, "status": self.status,
+        d = {"id": self.id, "kind": self.kind, "label": self.label, "status": self.status, "state": self.status,
              "progress": round(self.progress, 4), "message": self.message,
              "created": self.created, "started": self.started, "finished": self.finished,
              "error": self.error, "log_tail": list(self.log), "owner": self.owner}

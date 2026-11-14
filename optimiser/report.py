@@ -20,7 +20,7 @@ def _heldout_row(m: dict) -> dict:
             "missed_cancers": m["missed_cancers"], "tests_per_patient": m["tests_per_patient"]}
 
 
-def build_report(sc: Scenario, fc0: Flowchart, res: dict, progress=None) -> dict:
+def build_report(sc: Scenario, fc0: Flowchart, res: dict, progress=None, policy_factory=None) -> dict:
     cfg = res["config"]
     held = cohorts(sc, cfg["heldout_seeds"], cfg.get("n_heldout") or cfg["n_train"])
     steps = res["steps"]
@@ -32,7 +32,7 @@ def build_report(sc: Scenario, fc0: Flowchart, res: dict, progress=None) -> dict
             raise RuntimeError(f"change {i} no longer applies: {st.get('plain')}")
         if progress:
             progress(i, max(1, len(steps)), f"checking change {i + 1} on unseen patients")
-        m = res["heldout"]["after"] if i == len(steps) - 1 else evaluate(sc, cur, held)[0]
+        m = res["heldout"]["after"] if i == len(steps) - 1 else evaluate(sc, cur, held, policy_factory)[0]
         ev = st.get("evidence") or {}
         changes.append({
             "index": i, "kind": st["kind"], "target": st["target"], "other": st["other"],
