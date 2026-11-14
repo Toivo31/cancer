@@ -21,13 +21,14 @@ The plan treats it as an existing page to restructure (lane L5). Tuomas's decisi
 | **L4 Evidence** | New page: Norway dot-and-range chart and robustness small multiples. The case-study paper comes after the submission | `demo/evidence.html/.js/.css` (after stub), `tests/test_demo_evidence.py`, **additive** fields in `demo/export_start.py`, and regenerating `demo/data/start_bundle.js` (under 1 s) | L0-A, L0-B | 2.5–3.5 h | yes, top and robustness; paper after |
 | **L5 Decision model** | Re-theme `jev.html` and restructure it to the template: infographic and examples first, model card below DETAILS | `demo/jev.html/.js/.css` | L0-A, L0-B | 1.5–2 h | yes |
 | **L6 Secondary pages** | Re-theme `encounter.html` (plus slower speed) and `index.html` (theme only; screen 5 "Before and after" keeps its layout and content, D66, script colours may change, the bundle block may not) | `demo/encounter.html/.js/.css`, the `<style>` part of `demo/index.html` | L0-A, L0-B | 1–1.5 h | yes |
+| **L9 Research page** (D69) | `research.html`: every claim on our pages labelled published / simulation / assumption, infographic of the three with counts, claims as expandable rows (`research.html#<claim id>`), sources table, framing sentence. Brief: [lanes/L9-research-page.md](lanes/L9-research-page.md) | `demo/research.html/.js/.css`, `tests/test_demo_research_page.py` (reads the frozen `demo/data/research_bundle.js` from branch `w8/research-page`) | L0-A only (L0-B nav if present) | 1–1.5 h | yes, **cut candidate** after L4's small multiples |
 | L7 Web tokens | `web/src/theme.css` + `theme.ts`, replace the 41 colour literals; no layout change | `web/src/**` | L0-A (copies token values) | 1 h | **no** (D60/D61: no React restyle for Sunday); brief ready for after the submission |
 | **L8 Integrator** (the coordinator session) | Pause, snapshot, merges, shared docs, final handoff | `docs/demo_path.md`, `demo/README.md`, `README.md`, `CLAUDE.md`, `docs/plan/04-status.md`, `docs/master_plan.md` (one line), `docs/plan/ui-revamp/HANDOFF.md`, all merges | everything | running | yes |
 
 **Nobody edits** during the revamp: `demo/export_*.py` (except L4, additive in `export_start.py`), `demo/export_all.py`,
 `demo/embed_bundle.py`, any `demo/data/*` bundle (except L4's `start_bundle.js`), `pathway_sim/`, `optimiser/`,
 `patient_engine/`, `jev/`, `decision_api/`, `live_demo/`, `note_reader/`, `video/`, `service/`, `scenarios/`, `params/`,
-`docs/pitch/`, existing tests other than the lane's own (see below). Data is frozen at the snapshot. That way a UI
+`docs/pitch/`, existing tests other than the lane's own (see below). The research register (`docs/research_claims.yaml`, its generated `.md`, `demo/export_research.py`, `demo/data/research_bundle.js`) is frozen too; L9 only reads the bundle. Data is frozen at the snapshot. That way a UI
 merge can never change a number.
 
 ### Existing tests and who may touch them
@@ -99,7 +100,8 @@ overnight/sim ──tag ui-revamp-base──► ui/main (integration branch, int
                                         ├─ ui/l3-patients     │ merges ui/main once after L0-B,
                                         ├─ ui/l4-evidence     │ then merged back by the integrator
                                         ├─ ui/l5-model        │ as soon as it is green
-                                        ├─ ui/l6-secondary    ┘
+                                        ├─ ui/l6-secondary    │
+                                        ├─ ui/l9-research    ┘ (needs w8/research-page merged into ui/main first: the bundle)
                                         └─ (ui/l7-web after the submission)
 ui/main ──(single --no-ff merge, after final checks)──► overnight/sim
 ```
@@ -107,7 +109,7 @@ ui/main ──(single --no-ff merge, after final checks)──► overnight/sim
 One worktree per lane: `git worktree add /home/claude/wt/ui-lN -b ui/lN-name ui/main`.
 
 Order: L0-A → L0-B → then **whichever lane is green first**, because the files are disjoint and merges cannot conflict.
-Suggested if several are ready together: L6, L5, L3, L4, L2, L1 (lowest risk first, so the simulator merges onto a stable site).
+Suggested if several are ready together: L6, L5, L9, L3, L4, L2, L1 (lowest risk first, so the simulator merges onto a stable site).
 The integrator runs `scripts/gate.sh` and `scripts/ui_shots.sh` after every merge into `ui/main`, and reloads all pages.
 
 ### Where conflicts could still come from, and the rule for each
@@ -145,7 +147,7 @@ runs only in the integrator, once per merge. No lane runs exporters (except L4's
 - **Fits before the freeze now:** L0, L1, L2, L3, L4 (page top + robustness; links the existing `docs/norway_case_study.md`; the printable white-paper page comes after), L5, L6. Six page agents plus the foundation agent and the integrator.
 - **Still after the submission:** the Norway case-study paper, the full React-app revamp (WP7 beyond tokens), one
   simulator for all surfaces (WP8, with Eemeli), pixel-diff regression.
-- **Cut order if the night runs late** (drop from the bottom): L4 robustness small multiples (keep the one chart) D67 adds hover/click readouts to L1: if L1 runs late, ship names-only nodes and thickness-only edges first (the default view), and cut the Details "Show all numbers" switch and the pinned-card polish before cutting the Optimise flip.
+- **Cut order if the night runs late** (drop from the bottom): L4 robustness small multiples (keep the one chart), then L9 (the research page; the register `docs/research_claims.md` stands on its own and the links can come after the submission) D67 adds hover/click readouts to L1: if L1 runs late, ship names-only nodes and thickness-only edges first (the default view), and cut the Details "Show all numbers" switch and the pinned-card polish before cutting the Optimise flip.
   → L3's reveal interaction (keep the static figure) → L1 step 5 animation (keep the plain toggle). Do not cut L0, L1 1–4, or L2.
 - **Stop rule at 03:15 UTC:** anything not merged into `ui/main` stays on its branch. `ui/main` ships as it is, or, if the
   final shots show a broken simulator, `ui/main` without L1 (revert L1's merge) ships.

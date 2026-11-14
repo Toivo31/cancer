@@ -1,0 +1,583 @@
+# Research claims register: the ONE edited file. Generated from it (do not edit those):
+#   docs/research_claims.md         the human-readable register
+#   demo/data/research_bundle.js    window.RESEARCH_DATA for the research page (lane L9)
+# Regenerate:  python demo/export_research.py      (about 15 s: reruns two simulations for the waiting split)
+#
+# Each claim has exactly one basis:
+#   published   a number or finding printed in a source; `source` must be an id in params/sources.yaml.
+#               `figure` is the published figure as we use it; `kind` the kind of source. How we read the
+#               source (full text / abstract / secondary) is NOT typed here: it is read from the registry.
+#   simulation  a result of our simulator on synthetic patients. Numbers are NEVER typed: write {ns.key}
+#               placeholders; ns = pitch (docs/pitch/fill_numbers.py build_values(), the same numbers the
+#               pitch uses) or split (the waiting-basis split computed by demo/research_split.py).
+#               `run` says which run; `inputs` which inputs drive it and their basis.
+#   assumption  our own choice; `where` in scenarios/*.yaml and `reason`. Computed counts use placeholders too.
+# `strength` says whether independent literature supports the same direction, including conflicts.
+# Claim ids are stable slugs used in links (research.html#<id>): never rename one; retire it with `retired: true`.
+# `shown_on` names the page or document and an anchor phrase (not line numbers, which move).
+
+framing: >-
+  The research establishes where time is lost in the lung-cancer pathway and which changes have been proposed or
+  tried. What our tool adds is that such changes can be simulated, starting from a Finnish hospital pathway (today a
+  synthetic county) or the Norwegian hospital of Stokstad et al. 2019, and that the changes to the pathway graph that
+  reduce the wait can be searched for and tested on simulated patients. The size of any gain is an estimate that
+  rests on the inputs listed in this register, many of which are our own assumptions.
+
+themes:
+  - {id: problem, title: The problem in Finland}
+  - {id: waits, title: Waits per step (what the simulator is given)}
+  - {id: delay, title: What causes delay}
+  - {id: norway, title: What the Norwegian study found, and how our model compares}
+  - {id: order, title: What optimising the order changes (Finland, synthetic)}
+  - {id: capacity, title: Capacity versus order}
+  - {id: limits, title: Data and AI limits}
+
+# Settings of the waiting-basis split (simulation, computed by demo/research_split.py).
+# overrides: owner -> basis when the scenario's own `source:` tag does not say what sets the wait. Each needs a reason.
+waiting_basis:
+  finland:
+    scenario: scenarios/finland_lung.yaml
+    flowchart: baseline
+    seed: 7
+    n: 18800
+    overrides:
+      "resource:clinic": {basis: calibrated, source: KHALIFE2025, why: "tagged assumption, but its booking lead and capacity were tuned so the specialist visit comes 14 to 28 d after the GP referral (KHALIFE2025)"}
+      "resource:treatment_slot": {basis: calibrated, source: IHE2026, why: "tagged assumption, but its booking lead was tuned to about 37 d from diagnosis to treatment (IHE2026, registry, all cancers, not lung-specific)"}
+  norway:
+    scenario: scenarios/stokstad.yaml
+    flowchart: observed
+    seed: 7
+    n: 2000
+    overrides:
+      "test:bronchoscopy": {basis: assumption, why: "tagged STOKSTAD2019, but its note says the wait was not reported (assumption, calibrated)"}
+      "test:ttnb": {basis: calibrated, source: STOKSTAD2019, why: "the published repeat-sampling wait (8 d) borrowed for needle biopsy"}
+
+claims:
+  # ------------------------------------------------------------------ the problem in Finland
+  - id: fi-survival-gap
+    theme: problem
+    claim: Five-year relative survival in lung cancer for men is about 17% in Finland against 27 to 30% in Denmark, Norway and Sweden.
+    basis: published
+    source: IHE2026
+    figure: "17% vs 27-30% (men, NORDCAN 2019-2023)"
+    kind: registry (via a dashboard report)
+    shown_on: ["docs/pitch/deck.md: slide 2", "docs/pitch/numbers_sheet.md: D2", "demo/start.html: The problem"]
+    strength: >-
+      Consistent with the Finnish Cancer Registry (men 16.2% for 2019-2023, docs/evidence_research.md section 3; that
+      report is not in the source registry). We do not claim the waits cause the survival gap: for lung cancer the
+      delay-to-mortality evidence is null on average (see 'What we could not support').
+  - id: fi-gp-appointment-14d
+    theme: problem
+    claim: A health-centre appointment takes about 14 days in Finland, against 2 to 7 days elsewhere in the Nordics.
+    basis: published
+    source: KHALIFE2025
+    figure: "14 d vs 2-7 d (typical wait, survey mode)"
+    kind: survey (42 specialists plus two workshops; not registry data)
+    shown_on: ["docs/master_plan.md: Finland is slower at most steps", "docs/pitch/deck.md: slide 2", "demo/start.html: The problem"]
+    strength: >-
+      One survey source; THL primary-care data (35% wait over 14 d, cited in KHALIFE2025) point the same way. The
+      numbers sheet (D3) still says the paper was 'not read in full', while params/sources.yaml records full text via
+      a repository copy: the registry is taken as current.
+  - id: fi-specialist-14-28d
+    theme: problem
+    claim: The specialist consultation comes 14 to 28 days after the GP referral in Finland, against 7 to 14 days elsewhere in the Nordics.
+    basis: published
+    source: KHALIFE2025
+    figure: "14-28 d vs 7-14 d"
+    kind: survey
+    shown_on: ["docs/master_plan.md: Finland is slower at most steps"]
+    strength: Survey modes, not measured waits. The Satakunta thesis (MATTILA2025) also puts most of the delay after the referral.
+  - id: fi-diagnosis-after-specialist
+    theme: problem
+    claim: Diagnosis takes about 28 days after the specialist visit in Finland, against 14 to 28 days elsewhere; at this step Sweden equals Finland.
+    basis: published
+    source: KHALIFE2025
+    figure: "28 d vs 14-28 d"
+    kind: survey
+    shown_on: ["docs/master_plan.md: Finland is slower at most steps"]
+    strength: Survey modes. 'Finland is slower at every step' would overstate it; at diagnosis it is not.
+  - id: fi-nurse-first
+    theme: problem
+    claim: 40 to 60% of Finnish patients with lung symptoms first see a nurse; elsewhere in the Nordics they see a doctor.
+    basis: published
+    source: KHALIFE2025
+    figure: "40-60%"
+    kind: survey
+    shown_on: ["docs/master_plan.md: Evidence on time gap", "docs/pitch/deck.md: slide 2"]
+    strength: Also reported in a University of Helsinki news item (HELSINKI2025_NEWS, secondary) about the same survey; no independent registry figure.
+  - id: fi-ct-in-primary-care
+    theme: problem
+    claim: Fewer than 10% of Finnish primary-care units can perform CT, against about 90 to 100% elsewhere in the Nordics.
+    basis: published
+    source: IHE2026
+    figure: "<10% vs 90-100%"
+    kind: survey (dashboard citing KHALIFE2025)
+    shown_on: ["docs/master_plan.md: Evidence on time gap", "docs/pitch/deck.md: slide 2"]
+    strength: >-
+      The source says 'perform', not 'order directly' (corrected 14 Nov). We found no source on whether Finnish GPs
+      can order CT directly, which is what the direct-CT flowchart changes.
+  - id: fi-satakunta-specialist-delay
+    theme: problem
+    claim: In Satakunta, the first visit to referral took about two weeks and referral to diagnosis almost two months, so most of the delay was in specialist care.
+    basis: published
+    source: MATTILA2025
+    figure: "about 14 d and about 55 d (n=131)"
+    kind: thesis (single region, COVID-19 period)
+    shown_on: ["docs/master_plan.md: The delay does not always arise in the same place"]
+    strength: One region during the pandemic; read as an abstract only.
+  - id: fi-diagnosis-to-treatment-37d
+    theme: problem
+    claim: From diagnosis to the start of treatment takes about 37 days in Finland (registry, all cancers).
+    basis: published
+    source: IHE2026
+    figure: "37 d (36-38), all cancers"
+    kind: registry
+    shown_on: ["docs/pitch/numbers_sheet.md: G2", "scenarios/finland_lung.yaml: treatment_slot note"]
+    strength: >-
+      CONFLICT: a lung-specific study of five Finnish hospitals (Acta Oncologica 2025, article 43398; not yet in the
+      source registry) gives a median of 69 d for surgical and 65 d for non-surgical patients. Our model is calibrated
+      to the all-cancer 37 d, so it probably understates this step. docs/evidence_sensitivity.md reruns the Finnish
+      comparison with the longer figure.
+  - id: fi-symptom-to-treatment-155d
+    theme: problem
+    claim: In four Finnish hospital districts, the average time from symptom onset to treatment was about 155 days.
+    basis: published
+    source: YLE_MOT2025
+    figure: "about 155 d"
+    kind: news report of an unpublished journalist analysis
+    shown_on: ["scenarios/finland_lung.yaml: finnish_targets", "docs/evidence_research.md: Finnish intervals"]
+    strength: Weak. Unpublished and secondary; context only, never a calibration target on its own.
+
+  # ------------------------------------------------------------------ waits per step: what the simulator is given
+  - id: in-fi-waits-half-published
+    theme: waits
+    claim: >-
+      In the Finnish baseline, {split.fi_matched_pct}% of the waiting days on a treated cancer's critical path sit at
+      steps whose wait was set to match a published figure (GP appointment, KHALIFE2025; specialist visit,
+      KHALIFE2025; treatment booking, IHE2026 all cancers; referral handling, PIRHA_PATH), and
+      {split.fi_assumed_pct}% at steps whose wait rests on our assumptions (CT, bronchoscopy, needle biopsy, PET-CT,
+      weekly tumour board, chest X-ray, nurse visit, referral letter, the interval before a patient re-presents).
+    basis: simulation
+    run: "scenarios/finland_lung.yaml, flowchart baseline, seed 7, 18,800 patients, treated cancers after the warm-up, critical path (demo/research_split.py)"
+    inputs: "per-step booking leads and capacities (resources:), extra waits (tests:); which of them are published or assumed is listed in the split table"
+    shown_on: ["demo/index.html: screen 2 headline", "docs/pitch/deck.md: slide 3"]
+    strength: >-
+      This is an accounting of our own inputs, not evidence. The published-matched waits are survey modes (KHALIFE2025)
+      or an all-cancer registry figure (IHE2026, see fi-diagnosis-to-treatment-37d); none is lung-specific measured data.
+  - id: in-no-waits-published
+    theme: waits
+    claim: >-
+      In the Norwegian model {split.no_matched_pct}% of the waiting days are per-step waits taken from the published
+      study (STOKSTAD2019); the rest are extra waits we calibrated so the observed pathway fits, and steps the paper
+      did not report.
+    basis: simulation
+    run: "scenarios/stokstad.yaml, flowchart observed, seed 7, 2,000 patients (demo/research_split.py)"
+    inputs: "per-test `wait` distributions (STOKSTAD2019), `extra_wait` (assumption, calibrated), weekly board (STOKSTAD2019; weekday assumed)"
+    shown_on: ["demo/index.html: screen 2 for the Norwegian scenario", "demo/flow.js: Where time is lost card"]
+    strength: One hospital, 100 patients, waits reconstructed from medians and ranges in the paper.
+  - id: in-cxr-misses-one-in-five
+    theme: waits
+    claim: A chest X-ray misses about one in five lung cancers in symptomatic patients (sensitivity about 75%).
+    basis: published
+    source: BRADLEY2021
+    figure: "sensitivity 0.754 (86/114)"
+    kind: single-centre prospective cohort (Leeds)
+    shown_on: ["scenarios/finland_lung.yaml: chest_xray", "demo/flow.js: exits (discharged cancers)"]
+    strength: Supported by a systematic review (BRADLEY2019, 77-80%, abstract) and the HSSIB investigation (HSSIB2021, which cites Bradley 2019). English data.
+  - id: as-scanner-capacity
+    theme: waits
+    claim: The slot capacities and booking leads for CT, bronchoscopy, needle biopsy, PET-CT, chest X-ray and the weekly tumour board in the Finnish county are our assumptions.
+    basis: assumption
+    where: "scenarios/finland_lung.yaml: resources (ct_scanner, bronchoscopy, ttnb_slot, pet_scanner, xray, tumour_board)"
+    reason: >-
+      We found no Finnish waits for PET-CT, bronchoscopy or needle biopsy, and no capacity data. The values are slices of
+      county capacity chosen so the scarce tests run at 85-95% utilisation; the board is weekly as in Norway (STOKSTAD2019).
+    shown_on: ["demo/index.html: screen 4", "docs/pitch/deck.md: slide 10"]
+    strength: Placeholders. Ask a Finnish clinician or the county for real numbers.
+  - id: as-ledger-counts
+    theme: waits
+    claim: Of the {pitch.f_scn_n} input blocks in the Finnish scenario, {pitch.f_scn_sourced} cite a source and {pitch.f_scn_assumption} are marked assumption; every capacity and booking lead is an assumption.
+    basis: assumption
+    where: "scenarios/finland_lung.yaml, counted by params/ledger.py (docs/ledger.md)"
+    reason: No Finnish data on the inputs the simulator needs; each such input is labelled rather than invented silently.
+    shown_on: ["demo/start.html: Data and honesty", "docs/pitch/deck.md: slide 10"]
+    strength: The count is computed; the inputs themselves are assumptions.
+  - id: as-target-90d
+    theme: waits
+    claim: The {pitch.f_target}-day target used for the Finnish 'treated on time' share is our provisional choice.
+    basis: assumption
+    where: "scenarios/finland_lung.yaml: target_days (docs/decisions.md D20)"
+    reason: >-
+      No national Finnish first-contact-to-treatment target was found (IHE2026 gives assessment within 21 days of
+      referral). At the Norwegian 42 days every Finnish flowchart is at zero.
+    shown_on: ["demo/start.html: The problem", "demo/index.html: screen 1", "docs/pitch/numbers_sheet.md: C4"]
+    strength: A display choice. With the lung-specific 65-69 d after diagnosis nobody would meet it.
+  - id: as-vague-symptom-group
+    theme: waits
+    claim: Patients with vague symptoms are less often sent for imaging at the first GP visit than patients with alarm symptoms.
+    basis: assumption
+    where: "scenarios/finland_lung.yaml: gp_assessment p_positive, gp_second_look (EQUITY ASSUMPTION), groups"
+    reason: Needed to model the equity question; the direction follows English data (KOO2023, SEWELL2020) but the rates are ours (D9).
+    shown_on: ["demo/index.html: screen 6", "docs/pitch/deck.md: slide 8"]
+    strength: >-
+      Direction supported (KOO2023: 34 vs 114 d diagnostic interval with vs without timely imaging; SEWELL2020 cites a
+      34-day longer wait for non-specific symptoms, a secondary citation). The size of the group gap is not a Finnish number.
+
+  # ------------------------------------------------------------------ what causes delay
+  - id: sim-fi-time-is-waiting
+    theme: delay
+    claim: >-
+      In our synthetic Finnish county, {pitch.f_wait_share}% of the days to treatment are waiting (booking time and
+      queues), not time spent in the tests and visits themselves.
+    basis: simulation
+    run: "demo/data/demo_bundle.json, finland_lung baseline stage breakdown (the number on demo/index.html screen 2)"
+    inputs: "per-step waits are inputs: about half matched to published figures, half assumed (in-fi-waits-half-published); service and report times are mostly assumptions with some published report times (PIRHA_PATH, STOKSTAD2019)"
+    shown_on: ["demo/index.html: screen 2 headline", "docs/pitch/deck.md: slide 3", "docs/master_plan.md: Where queues build up"]
+    strength: >-
+      The share follows from the inputs, it is not discovered by the model: if the waits are set from survey modes, most
+      of the time is waiting by construction. Independent sources agree that waits dominate (KHALIFE2025,
+      STOKSTAD2019), but none measures this share for Finland.
+  - id: sim-no-time-is-waiting
+    theme: delay
+    claim: In the Norwegian pathway as we rebuilt it, {split.no_bundle_wait_pct}% of the days to treatment are waiting.
+    basis: simulation
+    run: "demo/data/demo_bundle.json, stokstad baseline stage breakdown (the headline number on demo/index.html screen 2 for Norway)"
+    inputs: "per-step waits from STOKSTAD2019 (published) plus calibrated extra waits (assumption); see in-no-waits-published"
+    shown_on: ["demo/index.html: screen 2 (Norwegian scenario)"]
+    strength: Mostly a restatement of the published per-step waits; one hospital.
+  - id: sim-booking-not-queue
+    theme: delay
+    claim: >-
+      In the Finnish baseline most of the waiting is the fixed booking lead ({split.fi_booking_days} days per treated
+      cancer) rather than queueing for scarce capacity ({split.fi_queue_days} days); the rest is extra waits we assumed
+      ({split.fi_extra_days} days), paperwork and the weekly board.
+    basis: simulation
+    run: "same run as in-fi-waits-half-published"
+    inputs: "booking leads (min_lead_days) tuned to published waits; capacities assumed"
+    shown_on: ["docs/booking_vs_queue.md", "docs/master_plan.md: Where queues build up (review M1)"]
+    strength: >-
+      A property of how waits were entered, not an observation: the model reproduces published waits mainly through
+      booking leads. Real queues may be larger; no Finnish data separates the two.
+  - id: sim-fi-primary-care-largest
+    theme: delay
+    claim: >-
+      In our model the stage with the most waiting is {pitch.f_top_stage} ({pitch.f_top_stage_wait} days per treated
+      cancer; detection is the primary-care part before a referral); the largest single waits are {pitch.f_node_list}.
+    basis: simulation
+    run: "demo/data/demo_bundle.json, finland_lung baseline"
+    inputs: "GP appointment wait (KHALIFE2025, published); interval before re-presentation (assumption, median 14 d); treatment and specialist booking (calibrated to IHE2026 and KHALIFE2025)"
+    shown_on: ["demo/index.html: screen 2", "docs/pitch/deck.md: slide 3"]
+    strength: >-
+      Direction consistent with KHALIFE2025 (Finland slowest at the first steps), but MATTILA2025 (Satakunta) puts most
+      delay in specialist care. The re-presentation interval is an assumption, so the size is not established.
+  - id: sim-fi-cancer-treated-as-something-else
+    theme: delay
+    claim: >-
+      In the visit-by-visit primary-care loop {pitch.e_wrong_pct}% of cancers are first treated as
+      something else, and those wait roughly {pitch.e_ratio} times as long to referral.
+    basis: simulation
+    run: "encounter loop, eight seeds (docs/review_checks/encounter_results_8seeds.json, docs/encounter_results.md)"
+    inputs: "placeholder decision tables; every behaviour number in catalogue/lung-primary-care is an assumption"
+    shown_on: ["demo/start.html: Where time is lost in primary care", "docs/pitch/numbers_sheet.md: E5"]
+    strength: A mechanism, not a Finnish estimate. Plausible (missed and late diagnosis after non-specific presentations is well described, KOO2023, WEINBERG2021) but not shown for Finland.
+
+  # ------------------------------------------------------------------ the Norwegian study
+  - id: pub-stokstad-observed-40
+    theme: norway
+    claim: In the Norwegian hospital study, 40% of early-stage lung cancer patients started treatment within 42 days of referral.
+    basis: published
+    source: STOKSTAD2019
+    figure: "40% (95% CI 31-50), 100 patients"
+    kind: single-hospital study
+    shown_on: ["demo/index.html: screen 5", "demo/flow.js: Check against the published study", "docs/pitch/deck.md: slides 4 and 6"]
+    strength: One centre, stage I-II only, 100 patients.
+  - id: pub-stokstad-faster-pet-48
+    theme: norway
+    claim: Re-timing the same patients with a faster PET-CT (7 days) raised the share to 48%, a gain that was not statistically significant.
+    basis: published
+    source: STOKSTAD2019
+    figure: "48% (95% CI 39-58)"
+    kind: single-hospital study (authors' re-timing of observed patients)
+    shown_on: ["demo/index.html: screen 5", "demo/flow.js: validation card", "docs/master_plan.md: Capacity versus order"]
+    strength: One centre; the re-timing is the authors' calculation, not an observed after-period.
+  - id: pub-stokstad-reordered-80
+    theme: norway
+    claim: The authors estimated that reordering the steps (with the faster PET-CT) would bring 80% within 42 days; this is their model estimate, not an observed result.
+    basis: published
+    source: STOKSTAD2019
+    figure: "80% (95% CI 72-87), model estimate"
+    kind: single-hospital study (authors' model)
+    shown_on: ["demo/index.html: screen 5", "demo/start.js: Why we trust the engine", "docs/pitch/deck.md: slide 4"]
+    strength: Never tested in practice in the paper. Pathway redesigns elsewhere did shorten times (see the unregistered sources below), which supports the direction.
+  - id: pub-stokstad-pet-wait
+    theme: norway
+    claim: During the study the median time from PET-CT referral to report was 20.5 days; a new scanner later cut it to 7 days or less.
+    basis: published
+    source: STOKSTAD2019
+    figure: "20.5 d (7-49)"
+    kind: single-hospital study
+    shown_on: ["docs/master_plan.md: Capacity versus order", "scenarios/stokstad.yaml: pet_ct"]
+    strength: One centre.
+  - id: sim-no-fitted-observed
+    theme: norway
+    claim: Fitted only to the observed order, our model gives {pitch.s_obs_share}% treated within {pitch.s_target_days} days (the paper reports {pitch.s_pub_base}%). This is a fit, not a test.
+    basis: simulation
+    run: "docs/validation_results.json, demo/data/demo_bundle.json (best-fitting setting)"
+    inputs: "per-step waits from STOKSTAD2019; five unreported inputs calibrated (assumption)"
+    shown_on: ["demo/flow.js: validation card", "demo/start.js: Why we trust the engine", "docs/pitch/numbers_sheet.md: A1"]
+    strength: Agreement here is by construction.
+  - id: sim-no-authors-band
+    theme: norway
+    claim: >-
+      Predicted, not fitted: across all {pitch.s_ext_n} settings that fit the observed pathway, the authors' reordered
+      pathway comes out at {pitch.s_ext_auth_min} to {pitch.s_ext_auth_max}%, typically about {pitch.s_ext_auth_med}%;
+      {pitch.s_ext_auth_in_ci_pct}% of the settings fall inside the paper's interval.
+    basis: simulation
+    run: "docs/review_checks/norway_grid_extension.json, norway_grid_table.json (scripts/norway_robustness.py)"
+    inputs: "STOKSTAD2019 waits; the band comes from the five unreported inputs the data cannot pin down"
+    shown_on: ["demo/start.js: The range is wider", "demo/flow.js: validation card", "docs/pitch/numbers_sheet.md: A3, A4"]
+    strength: >-
+      Consistent with the published estimate within a wide band; the comparison target is itself a model estimate. The
+      best fit also depends on the fitted practice of ordering PET-CT at triage (numbers sheet A8).
+  - id: sim-no-ranking-holds
+    theme: norway
+    claim: In all {pitch.s_ext_rank_n} fitting settings the authors' reordering beats the faster scanner alone, which beats today's pathway.
+    basis: simulation
+    run: "docs/review_checks/norway_ranking.json"
+    inputs: "as sim-no-authors-band"
+    shown_on: ["docs/pitch/deck.md: slides 4 and 6", "docs/pitch/numbers_sheet.md: A5"]
+    strength: The same ranking as the paper's own numbers (40 < 48 < 80), so it is a consistency check, not new evidence.
+  - id: sim-no-faster-pet-overpredicted
+    theme: norway
+    claim: For the faster scanner alone the model gives {pitch.s_fast_share}% at its best fit against the published {pitch.s_pub_fast}%; it over-predicts.
+    basis: simulation
+    run: "demo/data/demo_bundle.json; band in docs/review_checks/norway_grid_extension.json"
+    inputs: "as sim-no-authors-band"
+    shown_on: ["demo/flow.js: Faster scanner only, over-predicted", "demo/start.js: It over-predicts the faster scanner alone"]
+    strength: A known miss; trust the ranking, not the size.
+  - id: sim-no-optimiser-found-redesign
+    theme: norway
+    claim: >-
+      Started from the observed pathway and not told the answer, the optimiser arrived at the authors' three changes
+      plus a fourth, overlapping one (plan tissue sampling at referral triage) that needs a clinical check. It chose from
+      a menu of about {pitch.s_candidates} single changes that contained each of the authors' changes.
+    basis: simulation
+    run: "docs/review_checks/norway_opt_summary.json, norway_opt_structure.json (scripts/norway_optimiser_robust.py)"
+    inputs: "the menu of candidate changes was written by us (assumption) and contained the authors' changes"
+    shown_on: ["demo/start.js: What our optimiser did", "demo/flow.js: What our optimiser did", "docs/norway_case_study.md"]
+    strength: Plausibility, not proof; never 'beats the authors'. The fourth change is not in the paper.
+
+  # ------------------------------------------------------------------ what optimising the order changes (Finland)
+  - id: sim-fi-reorder-headline
+    theme: order
+    claim: >-
+      In our synthetic Finnish county, two reorders with no new equipment take the share treated within
+      {pitch.f_target} days from {pitch.f_share_base}% to {pitch.f_share_opt}% on two held-out cohorts; across
+      {pitch.r_f_cohorts} cohorts the gain is {pitch.r_f_gain_lo} to {pitch.r_f_gain_hi} points.
+    basis: simulation
+    run: "demo/data/demo_bundle.json (held-out cohorts), docs/ranges_finland.json"
+    inputs: "all Finnish inputs; the gain mainly rests on the assumed paperwork and board delays (sim-fi-gain-mechanism)"
+    shown_on: ["demo/start.js: What reordering wins", "demo/index.html: screen 1", "docs/pitch/deck.md: slide 1"]
+    strength: >-
+      Direction supported by the Norwegian study and by pathway redesigns elsewhere; the size is an estimate on a
+      synthetic county. Not an estimate for real Finnish patients.
+  - id: sim-fi-median-days
+    theme: order
+    claim: Median days from first contact to treatment go from {pitch.f_median_base} today to {pitch.f_median_opt} with the two reorders.
+    basis: simulation
+    run: "demo/data/demo_bundle.json"
+    inputs: "as sim-fi-reorder-headline"
+    shown_on: ["demo/index.html: screen 1", "docs/pitch/numbers_sheet.md: C3"]
+    strength: As sim-fi-reorder-headline.
+  - id: sim-fi-gain-mechanism
+    theme: order
+    claim: >-
+      The two reorders gain by overlapping waits that used to add up (booking the specialist visit while the referral is
+      handled, reserving the treatment slot while the case waits for the board): they remove paperwork and board time
+      from the critical path, not booking or queue time.
+    basis: simulation
+    run: "docs/booking_vs_queue.md (docs/evidence_checks/booking_vs_queue.py, cohorts 301 and 302)"
+    inputs: "referral handling (PIRHA_PATH, published); referral letter, second look and weekly board (assumptions)"
+    shown_on: ["demo/index.html: screen 5", "docs/booking_vs_queue.md"]
+    strength: The size of the gain is as good as those assumed paperwork delays; the direction does not depend on booking leads.
+  - id: sim-fi-guardrails
+    theme: order
+    claim: The two reorders leave missed cancers ({pitch.f_missed_base} per cohort), tests per patient and the waits of patients without cancer unchanged.
+    basis: simulation
+    run: "demo/data/demo_bundle.json"
+    inputs: "chest X-ray sensitivity (BRADLEY2021) and safety-net behaviour (assumption) set the missed cancers"
+    shown_on: ["demo/index.html: screen 1 safety check", "demo/start.js: Missed cancers per cohort"]
+    strength: Expected, since the reorders act after the referral.
+  - id: sim-fi-robust-to-assumptions
+    theme: order
+    claim: The gain stays positive when each of {pitch.r_f_oat_n} assumptions is varied one at a time; it nearly vanishes if CT capacity is one slot lower.
+    basis: simulation
+    run: "docs/ranges_finland.json, docs/ranges.md"
+    inputs: "the assumption list in pathway_sim/sensitivity.py"
+    shown_on: ["demo/index.html: screen 3 How sure are we", "docs/pitch/numbers_sheet.md: C11"]
+    strength: One seed per variant; robustness to our own ranges, not to the real world.
+  - id: sim-fi-survives-lung-specific-wait
+    theme: order
+    claim: >-
+      Rerun with the lung-specific Finnish diagnosis-to-treatment wait instead of the all-cancer one, the two reorders
+      still gain on every held-out cohort, but the share within the target becomes zero for both pathways.
+    basis: simulation
+    run: "docs/review_checks/fi_evidence_results.json (scripts/fi_evidence_sensitivity.py), docs/evidence_sensitivity.md"
+    inputs: "extra delay at treatment booking only; optimiser not rerun in that world"
+    shown_on: ["docs/pitch/numbers_sheet.md: G2", "docs/evidence_sensitivity.md"]
+    strength: One direction of change only. Answers part of the 37 vs 65-69 d conflict.
+  - id: as-fi-conditional-urgent-booking
+    theme: order
+    claim: >-
+      Urgent booking for every referred patient gives {pitch.f_cond_share_0}%, {pitch.f_cond_share_50}% or
+      {pitch.f_cond_share_100}% if none, half or all of an assumed booking-lead reduction holds.
+    basis: assumption
+    where: "scenarios/finland_lung.yaml: urgent_lead_days on the resources, fast-lane test variants"
+    reason: The gain is exactly the booking time assumed to be saved; no data on how short urgent leads can be.
+    shown_on: ["demo/index.html: screen 1 A conditional finding", "docs/pitch/numbers_sheet.md: C7"]
+    strength: Not a result; needs real booking-lead data.
+  - id: sim-fi-equity-gap
+    theme: order
+    claim: >-
+      Under our assumptions both groups gain: vague-symptom patients go from {pitch.f_ns_share_base}% to
+      {pitch.f_ns_share_opt}% and alarm-symptom patients from {pitch.f_ss_share_base}% to {pitch.f_ss_share_opt}%; the
+      gap in points {pitch.f_gap_pp_widens} while the gap in median days {pitch.f_gap_days_narrows}.
+    basis: simulation
+    run: "demo/data/demo_bundle.json, by_group"
+    inputs: "the group difference itself is an assumption (as-vague-symptom-group, D9)"
+    shown_on: ["demo/index.html: screen 6", "docs/pitch/deck.md: slide 8"]
+    strength: Never 'the gap closes'. The direction of the baseline gap is supported in English data; its size is ours.
+
+  # ------------------------------------------------------------------ capacity versus order
+  - id: pub-order-over-capacity
+    theme: capacity
+    claim: In the Norwegian study a faster scanner alone barely helped, while reordering the steps (an estimate) roughly doubled the share treated on time.
+    basis: published
+    source: STOKSTAD2019
+    figure: "40% -> 48% (n.s.) vs 40% -> 80% (model estimate)"
+    kind: single-hospital study
+    shown_on: ["docs/master_plan.md: Capacity versus order", "demo/index.html: screen 4 lede", "docs/pitch/deck.md: slide 4"]
+    strength: >-
+      One centre and a model estimate. Supported in direction by redesign studies elsewhere (Royal Free, Toronto, a
+      Welsh simulation, an English CXR-to-CT study) that are cited in docs/master_plan.md but not in the source registry.
+      Limits: some tests are genuinely undersized (a London study), and fast tracks can crowd out other patients (Sweden).
+  - id: sim-fi-capacity-control
+    theme: capacity
+    claim: >-
+      The same extra CT and PET-CT capacity with today's order reaches {pitch.f_capctl_share}%; a hand-written
+      order-together pathway reaches {pitch.f_bundle_share}% but needs three PET-CT slots a day.
+    basis: simulation
+    run: "demo/data/demo_bundle.json, capacity_vs_order"
+    inputs: "capacities and booking leads are assumptions (as-scanner-capacity)"
+    shown_on: ["demo/index.html: screen 4", "docs/pitch/deck.md: slide 4"]
+    strength: Consistent in direction with STOKSTAD2019; sizes rest on assumed capacities.
+  - id: sim-fi-one-more-slot
+    theme: capacity
+    claim: One more slot a day at the {pitch.f_cap_top_name} adds {pitch.f_cap_top_pp} points; the next best adds {pitch.f_cap_second_pp}.
+    basis: simulation
+    run: "demo/data/demo_bundle.json capacity_probe, docs/capacity_probe.md (one seed)"
+    inputs: "capacities are assumptions; PET-CT is the scarcest by our choice of one slot a day"
+    shown_on: ["demo/index.html: screen 4 If you could add one appointment a day", "docs/pitch/deck.md: slide 4"]
+    strength: Says where OUR assumed capacity binds; not evidence of a real Finnish PET-CT shortage (no Finnish PET-CT wait found).
+  - id: sim-no-noequipment-vs-scanner
+    theme: capacity
+    claim: >-
+      In Norway, reordering with no new equipment beats today's pathway in {pitch.o_nof_beats_obs} of {pitch.o_n}
+      fitting settings, but beats the faster scanner alone in only {pitch.o_nof_beats_fast} of {pitch.o_n}.
+    basis: simulation
+    run: "docs/review_checks/norway_opt_summary.json"
+    inputs: "as sim-no-authors-band; the optimiser's candidate menu (assumption)"
+    shown_on: ["demo/start.js: No new equipment", "docs/pitch/numbers_sheet.md: B3"]
+    strength: "'Reordering beats buying the scanner' must carry this count."
+
+  # ------------------------------------------------------------------ data and AI limits
+  - id: as-synthetic-patients
+    theme: limits
+    claim: All patients are synthetic; no real patient data is used anywhere.
+    basis: assumption
+    where: "patient_engine/, pathway_sim/patients.py, libraries/"
+    reason: Hackathon data rules and privacy; the brief allows synthetic data.
+    shown_on: ["demo/start.html: Synthetic patients only", "every page"]
+    strength: A design choice. No claim of validity on real patients.
+  - id: as-primary-care-behaviour
+    theme: limits
+    claim: >-
+      The primary-care loop uses placeholder decision tables; with them it reproduces the calibrated chain only at the
+      edge of the tolerances ({pitch.e_tune_ok} of {pitch.e_tune_total} checks on its tuning seeds,
+      {pitch.e_fresh_ok} of {pitch.e_fresh_total} on fresh seeds).
+    basis: assumption
+    where: "catalogue/lung-primary-care/*.yaml, scenarios/finland_encounter*.yaml"
+    reason: No Finnish data on GP and nurse decisions; behaviour numbers are tuned to plausible practice.
+    shown_on: ["demo/start.js: consistency line", "docs/pitch/numbers_sheet.md: E4"]
+    strength: Placeholder; not measured in Finland.
+  - id: as-catalogue-draft
+    theme: limits
+    claim: The care catalogue is a draft no clinician has read; {pitch.cat_assump} of its {pitch.cat_total} entries are tagged assumption.
+    basis: assumption
+    where: "catalogue/lung-primary-care/*.yaml"
+    reason: Built overnight from literature where found; the rest labelled.
+    shown_on: ["demo/start.js: Care catalogue", "docs/pitch/numbers_sheet.md: E3"]
+    strength: Draft.
+  - id: as-jev-not-in-headlines
+    theme: limits
+    claim: No headline number depends on the team's decision model (JEV); the headline runs use placeholder tables and rules.
+    basis: assumption
+    where: "jev/birch.py adapter; scenarios/*.yaml policies"
+    reason: The model is connected through an adapter for the demo, but it was not validated on a pathway task in time.
+    shown_on: ["docs/pitch/numbers_sheet.md: F3", "docs/pitch/deck.md: slide 10"]
+    strength: Design choice.
+  - id: sim-dm-benchmark
+    theme: limits
+    claim: >-
+      On a task where the right answer depends on the set of options, our own small decision model scores
+      {pitch.dm_acc_corr}% against {pitch.dm_acc_dot_wide}% for a parameter-matched dot-product baseline.
+    basis: simulation
+    run: "decision_model/README.md benchmark tables"
+    inputs: "a synthetic benchmark we designed (assumption)"
+    shown_on: ["docs/pitch/deck.md: backup slides", "docs/pitch/numbers_sheet.md: F1"]
+    strength: Our own benchmark; part of the gain is model capacity (control task). Not the team's JEV.
+  - id: sim-per-patient-optimisation-overloads
+    theme: limits
+    claim: A decision model that optimises each patient separately sends most patients to the shortest-looking queue and overloads it, unless it can see queue state.
+    basis: simulation
+    run: "decision model in the simulator loop (docs/master_plan.md section 10)"
+    inputs: "Finnish scenario capacities (assumption)"
+    shown_on: ["docs/master_plan.md: Build status", "docs/pitch/deck.md: slide 10"]
+    strength: Plausible and consistent with crowd-out concerns about fast tracks (Swedish interviews, not in the registry); shown only in our model.
+
+# Claims made in our documents that this register cannot back with a source in params/sources.yaml.
+# Listed so nobody repeats them as sourced. Adding the source to the registry (owner of params/sources.yaml) would move them up.
+unsupported:
+  - id: delay-mortality-lung
+    claim: Faster care saves lives in lung cancer.
+    status: not claimed; the evidence is null on average
+    detail: >-
+      Hanna et al. 2020 (BMJ meta-analysis across cancers): lung surgery HR 1.06 per 4 weeks, not significant. A 2025
+      lung-specific meta-analysis: pooled HR 1.00 (0.99-1.02), I² 97%. Effect probably stage-dependent (sicker-quicker
+      in advanced disease). Neither is in params/sources.yaml. Our pages must not claim survival gains.
+    links: ["https://link.springer.com/article/10.1007/s11357-025-01684-9"]
+  - id: lung-specific-diagnosis-to-treatment
+    claim: Finnish lung-specific diagnosis to treatment is 65 to 69 days.
+    status: published but not in the registry; conflicts with the 37 d we use
+    detail: Five Finnish hospitals, 2018 (Acta Oncologica 2025, article 43398). See fi-diagnosis-to-treatment-37d and sim-fi-survives-lung-specific-wait.
+    links: ["https://medicaljournalssweden.se/actaoncologica/article/view/43398"]
+  - id: redesign-studies
+    claim: Pathway redesigns elsewhere cut time to treatment (Royal Free 66 to 29 d; Toronto 39.9 to 28.1 d referral to diagnosis; a Norwegian county hospital about 8 and 15 d; a Welsh simulation 10-12 and 20-22 d; English CXR-to-CT 15 to 3 d without changing time to decision).
+    status: cited in docs/master_plan.md, not in the registry
+    detail: Supports the direction of 'order matters'. The master plan itself notes one PubMed link may point to a different paper (England et al.).
+    links: []
+  - id: capacity-limits
+    claim: Some tests are genuinely undersized (London study, Cooke 2022) and fast tracks can lengthen waits for others (Swedish interviews).
+    status: cited in docs/master_plan.md and deck backup, not in the registry
+    detail: The limits of reordering; the simulator reports all patients' waits as a guardrail because of this.
+    links: []
+  - id: finnish-pet-bronchoscopy-waits
+    claim: Finnish waits for PET-CT, bronchoscopy, needle biopsy and the tumour board cycle.
+    status: no source found
+    detail: These steps carry a large share of the simulated Finnish waiting days that rest on assumptions (see the split table and in-fi-waits-half-published). A question for AstraZeneca mentors or a county.
+    links: []
+  - id: diagnostic-ct-sensitivity
+    claim: Diagnostic chest CT sensitivity in symptomatic patients (0.95 used).
+    status: no source found; screening LDCT (HOREWEG2014, secondary) and nodule CT (WEIRMCCALL2020, abstract) are proxies
+    detail: params/test_accuracy.yaml keeps it as an assumption.
+    links: []

@@ -20,7 +20,7 @@ import time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-STEPS = {"cards": "export_cards.py", "start": "export_start.py", "encounter": "export_encounter.py", "flow": "export_flow.py", "jev": "export_jev.py"}
+STEPS = {"cards": "export_cards.py", "start": "export_start.py", "encounter": "export_encounter.py", "flow": "export_flow.py", "jev": "export_jev.py", "research": "export_research.py"}
 
 
 def main(argv: list[str]) -> int:

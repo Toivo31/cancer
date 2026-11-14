@@ -34,6 +34,7 @@ Submission Sun 10:00 Helsinki; code freeze 04:00 UTC. Tuomas's choices are recor
 | React app | Not restyled for Sunday (lane L7 waits) |
 | Norway framing (D62) | Plausibility framing of `docs/norway_case_study.md`; ranges always; never "beats the authors" |
 | JEV page wording (D63) | Kept as built; restructure and restyle only |
+| Research page (D69) | `research.html` "Research behind the numbers": every claim labelled published / our simulation / our assumption, with a link per claim (`research.html#<claim id>`); register `docs/research_claims.yaml`. **The nav stays five pages**: Research is reached from the Evidence page and from claim links. It is reference material behind every page, not a step of the demo story, and a sixth nav entry would reopen the frozen `site.js`; adding it later is an additive change through the integrator |
 | Dashboard "Before and after" (D66) | `index.html` screen 5 kept as built, re-themed only (script colours may change); linked from the Simulator's Optimise result (`index.html#<scenario>/5`) |
 | Simulator graph (D67) | Less by default: edge thickness only, node names only, numbers on hover/click; keep the coloured "return" path and the dashed group boxes; a Details switch for the dense view |
 
@@ -48,12 +49,13 @@ Submission Sun 10:00 Helsinki; code freeze 04:00 UTC. Tuomas's choices are recor
 | L4 Evidence | `demo/evidence.*` (new), additive `export_start.py` + `start_bundle.js` | yes (top + robustness) |
 | L5 Decision model | `demo/jev.*` | yes |
 | L6 Secondary | `demo/encounter.*`, CSS of `index.html` | yes |
+| L9 Research page (D69) | `demo/research.*` (new), reads the frozen `research_bundle.js` | yes, small (1 to 1.5 h); cut candidate after L4's small multiples |
 | L7 Web tokens | `web/src/**` | no (after the submission) |
 | L8 Integrator | merges, `docs/demo_path.md`, READMEs, `CLAUDE.md` pointer, `HANDOFF.md` | throughout |
 
 **Critical path:** pause and snapshot (20 min) → L0-A (30 min) → L1 (3 to 3.5 h) → integration and rehearsal (1 h).
 That is about 5 hours. **Everything from L0 to L6 fits before 04:00 UTC if the pause starts by about 22:00 UTC.** Each
-half hour of delay comes out of the buffer first, then out of L1's last step. Cut order if late: L4's small multiples, then L3's
+half hour of delay comes out of the buffer first, then out of L1's last step. Cut order if late: L4's small multiples, then L9 (the research page; the register document stands alone), then L3's
 reveal interaction, then L1's Optimise animation (keep the plain toggle). L0, L1 steps 1 to 4 and L2 are not cut. At
 03:15 UTC, whatever is merged into `ui/main` ships, as one merge into `overnight/sim`. Rollback point: tag `ui-revamp-base`.
 
