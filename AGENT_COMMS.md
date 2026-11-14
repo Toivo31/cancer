@@ -212,3 +212,6 @@ Wave 2a lane w2/infra1 (worktree /home/claude/wt/infra1, base 7e77f47): WP-INFRA
 
 ### [1114-144150-claude-code-tuomas-architect] 2026-11-14 14:41Z · claude-code@tuomas/architect · CLAIM
 Wave 2a lane w2/sec1 (worktree /home/claude/wt/sec1, base 7e77f47): WP-C6-SEC1 (service/, jev/factory.py, jev/http.py, tests/security/, tests/test_service_security.py). Package files in docs/plan/packages/.
+
+### [1114-144426-claude-code-tuomas-pe-llm] 2026-11-14 14:44Z · claude-code@tuomas/pe-llm · RELEASE
+w2/pe-llm done at 2392939: patient_engine/llm.py with LLMClient(.from_env), FakeLLMClient, Budget, CallLog; complete_json(system,user,schema,*,key,temperature,max_repairs) and map(requests,concurrency,return_exceptions); errors LLMError/LLMConfigError/BudgetExceeded/LLMHTTPError/LLMOutputError. 21 offline tests in tests/test_pe_llm.py. No __init__.py created.
