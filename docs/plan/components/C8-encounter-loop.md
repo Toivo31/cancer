@@ -56,6 +56,11 @@ Rules:
 4. **Definitive tests (D46).** Each condition has one test whose output measures that condition's
    own hidden marker (`dx_<condition>`): slow, scarce, expensive. Cost, turnaround and capacity come
    from the catalogue and the world; a world setting `cost_scale` multiplies costs (visible).
+4b. **Group tests (D50).** Cheaper, faster tests that say "one of this group of conditions is
+   present" without naming it (a negative result makes the whole group unlikely). Expressed with the
+   existing format: the test's output measures a shared hidden marker (`lung_lesion`, an inflammation
+   marker, `airway_obstruction`, a cardiac strain marker) that several conditions cause. Narrow with
+   group tests, confirm with the definitive test. No engine change.
 5. **Worried well (D47).** A catalogue condition with independent symptom probabilities and no
    objective findings.
 6. **The hospital part stays as it is** (Norway check untouched); hospital steps whose test maps
