@@ -157,7 +157,7 @@ def walk(args, out=print, input_fn=input) -> dict:
             elif parse_spec(args.jev):
                 url = parse_spec(args.jev)
             be = BirchBackend(url, max_calls=args.max_calls, cache_dir=cache, allow_non_model=allow_non_model,
-                              include_assessments=args.include_assessments,
+                              include_assessments=args.include_assessments, concurrency=args.concurrency,
                               forbidden_values=frozenset(world.catalogue.conditions))
             inner = BirchPolicy(be, mode="argmax", catalogue=world.catalogue, care=world.care)
         step = StepPolicy(inner, world, table, args.auto_accept, input_fn, out)
@@ -201,6 +201,7 @@ def main(argv=None) -> int:
     ap.add_argument("--auto-accept", action="store_true", help="accept every proposal without asking")
     ap.add_argument("--include-assessments", action="store_true", help="send earlier assessment entries as evidence too")
     ap.add_argument("--max-calls", type=int, default=DEFAULT_MAX_CALLS, help="hard limit on model calls (default %(default)s)")
+    ap.add_argument("--concurrency", type=int, default=1, help="model calls in flight, 1 to 4 (default 1; a walk asks one at a time)")
     ap.add_argument("--cache-dir", default="runs/jev_cache")
     ap.add_argument("--work-dir", default="runs", help="libraries, mock cache and saved walks go here")
     ap.add_argument("--world", default=WORLD)

@@ -25,6 +25,7 @@ import hashlib
 import http.client
 import json
 import threading
+from concurrent.futures import ThreadPoolExecutor
 import time
 import urllib.parse
 from collections import Counter
@@ -38,6 +39,8 @@ from .contract import BackendError, BackendInfo, ContractError, DecisionRequest,
 DEFAULT_URL = "http://127.0.0.1:8771"
 PATH = "/api/decision/pathway"
 DEFAULT_MAX_CALLS = 50
+MAX_CONCURRENCY = 4              # the owner does not know the endpoint's limit; default 1, at most 4
+MAX_NOTE_CHARS = 2000
 DEFAULT_TIMEOUT = 160.0           # the proxy gives up on the model after 145 s (a cold start takes longer)
 MAX_FAILURES_IN_A_ROW = 2         # after this many failed calls in a row nothing more is sent
 MAX_BODY_BYTES = 480 * 1024       # the proxy refuses 512 KiB
@@ -209,6 +212,17 @@ def cache_key(payload: dict) -> str:
     return hashlib.sha256(json.dumps(p, sort_keys=True, ensure_ascii=False, separators=(",", ":")).encode()).hexdigest()
 
 
+def _rationale(resp: dict, q: dict) -> str | None:
+    """The model's own short rationale when the API sends one (per question, else per response); None otherwise.
+    Read from ``rationale`` or ``explanation``; it becomes the record note (decision D49)."""
+    for src in (q, resp):
+        for k in ("rationale", "explanation"):
+            v = src.get(k)
+            if isinstance(v, str) and v.strip():
+                return v.strip()[:MAX_NOTE_CHARS]
+    return None
+
+
 # =============================================================================================== backend
 
 class BirchBackend:
@@ -221,7 +235,7 @@ class BirchBackend:
 
     def __init__(self, url: str = DEFAULT_URL, *, max_calls: int = DEFAULT_MAX_CALLS, cache_dir: str | Path | None = "runs/jev_cache",
                  timeout: float = DEFAULT_TIMEOUT, include_assessments: bool = False, allow_non_model: bool = False,
-                 forbidden_values=(), checkpoint: int = CHECKPOINT):
+                 forbidden_values=(), checkpoint: int = CHECKPOINT, concurrency: int = 1):
         u = urllib.parse.urlparse(url if "//" in url else "http://" + url)
         if u.scheme not in ("http", "https") or not u.hostname:
             raise ValueError(f"bad Birch proxy url {url!r}")
@@ -238,7 +252,11 @@ class BirchBackend:
         self.include_assessments, self.allow_non_model = include_assessments, allow_non_model
         self.forbidden_values = frozenset(forbidden_values)
         self.checkpoint = checkpoint
-        self._lock = threading.Lock()                 # concurrency 1
+        if not 1 <= int(concurrency) <= MAX_CONCURRENCY:
+            raise ValueError(f"concurrency must be between 1 and {MAX_CONCURRENCY}")
+        self.concurrency = int(concurrency)
+        self._slots = threading.BoundedSemaphore(self.concurrency)   # live calls in flight
+        self._state = threading.RLock()               # counters, budget, cache files
         self.calls = self.failures = self.cache_hits = self.single_option = 0
         self._in_a_row = 0
         self.latencies: list[float] = []              # model-side latency_ms of live calls
@@ -254,7 +272,10 @@ class BirchBackend:
         return BackendInfo("birch", f"birch-{self.checkpoint}", True, None, {"url": self.url, "max_calls": self.max_calls})
 
     def decide(self, requests: list[DecisionRequest]) -> list[DecisionResponse]:
-        return [self._decide_one(r) for r in requests]            # one at a time, in order
+        if self.concurrency == 1 or len(requests) < 2:
+            return [self._decide_one(r) for r in requests]        # one at a time, in order
+        with ThreadPoolExecutor(self.concurrency) as ex:
+            return list(ex.map(self._decide_one, requests))       # at most `concurrency` calls in flight, order kept
 
     def summary(self) -> dict:
         s = {"calls": self.calls, "max_calls": self.max_calls, "cache_hits": self.cache_hits,
@@ -272,28 +293,31 @@ class BirchBackend:
 
     # ------------------------------------------------------------------ one decision
     def _decide_one(self, req: DecisionRequest) -> DecisionResponse:
-        with self._lock:
-            self.last_response = self.last_payload = None
-            self.last_cached = False
-            ids = req.option_ids
-            if len(ids) == 1:                                    # nothing to propose: never pay for it
+        ids = req.option_ids
+        if len(ids) == 1:                                        # nothing to propose: never pay for it
+            with self._state:
                 self.single_option += 1
-                return DecisionResponse(req.request_id, {ids[0]: 1.0}, "single option, model not asked")
-            payload = map_request(req, self.include_assessments)
-            check_visible(payload, self.forbidden_values)
-            body = json.dumps(payload, ensure_ascii=False).encode()
-            if len(body) > MAX_BODY_BYTES:
-                raise BirchError(f"{req.request_id}: request is {len(body)} bytes; the proxy accepts less than 512 KiB")
-            key = cache_key(payload)
-            resp = self._cache_get(key)
-            cached = resp is not None
-            if resp is None:
+            return DecisionResponse(req.request_id, {ids[0]: 1.0}, "single option, model not asked")
+        payload = map_request(req, self.include_assessments)
+        check_visible(payload, self.forbidden_values)
+        body = json.dumps(payload, ensure_ascii=False).encode()
+        if len(body) > MAX_BODY_BYTES:
+            raise BirchError(f"{req.request_id}: request is {len(body)} bytes; the proxy accepts less than 512 KiB")
+        key = cache_key(payload)
+        with self._slots:
+            with self._state:
+                resp = self._cache_get(key)                      # a second worker with the same key finds the first one's answer
+                cached = resp is not None
+                if cached:
+                    self.cache_hits += 1
+                else:
+                    self._admit(req.request_id)                  # budget and failure breaker, counted before sending
+            if not cached:
                 resp = self._call(body, req.request_id)
-                self._cache_put(key, payload, resp)
-            else:
-                self.cache_hits += 1
-            self.last_payload, self.last_response, self.last_cached = payload, resp, cached
-            return self._to_response(req, payload, resp, cached)
+                with self._state:
+                    self._cache_put(key, payload, resp)
+        self.last_payload, self.last_response, self.last_cached = payload, resp, cached
+        return self._to_response(req, payload, resp, cached)
 
     def _to_response(self, req: DecisionRequest, payload: dict, resp: dict, cached: bool) -> DecisionResponse:
         try:
@@ -310,7 +334,8 @@ class BirchBackend:
             raise BirchError(f"{req.request_id}: scores cannot be turned into probabilities: {scores}")
         probs = {o: scores[o] / total for o in offered}
         b = resp.get("backend") or {}
-        self.backends_seen[f"{b.get('mode')}:{b.get('step')}"] += 1
+        with self._state:
+            self.backends_seen[f"{b.get('mode')}:{b.get('step')}"] += 1
         seen = (resp.get("pathway") or {}).get("visible_source_ids")
         sent = {e["source_id"] for e in payload["case"]["evidence"]}
         extra = sorted(set(seen or []) - sent)
@@ -319,10 +344,10 @@ class BirchBackend:
         lat = resp.get("latency_ms")
         expl = (f"birch step {b.get('step')} ({b.get('mode')}); proposed {q.get('proposed_action_id')}, margin "
                 f"{q.get('score_margin', 0):.3f}; " + ("cached" if cached else f"{lat if lat is not None else '?'} ms"))
-        return DecisionResponse(req.request_id, probs, expl)
+        return DecisionResponse(req.request_id, probs, expl, record_note=_rationale(resp, q))
 
     # ------------------------------------------------------------------ the call
-    def _call(self, body: bytes, rid: str) -> dict:
+    def _admit(self, rid: str) -> None:
         if self._in_a_row >= MAX_FAILURES_IN_A_ROW:
             raise BirchUnavailable(f"{rid}: stopped after {self._in_a_row} failed calls in a row ({self.last_error}); "
                                    "start or fix the proxy/model and begin a new run")
@@ -330,6 +355,8 @@ class BirchBackend:
             raise BirchBudgetExceeded(f"{rid}: call budget of {self.max_calls} used up; raise --max-calls on purpose "
                                       "(each call costs GPU time) or rerun to use the cache")
         self.calls += 1                                                   # counted before sending: failures cost too
+
+    def _call(self, body: bytes, rid: str) -> dict:
         t0 = time.monotonic()
         conn = None
         try:
@@ -345,7 +372,8 @@ class BirchBackend:
         finally:
             if conn is not None:
                 conn.close()
-        self.wall.append(time.monotonic() - t0)
+        with self._state:
+            self.wall.append(time.monotonic() - t0)
         if status != 200:
             try:
                 detail = json.loads(raw).get("detail", "")
@@ -360,15 +388,17 @@ class BirchBackend:
         if b.get("mode") != "model" and not self.allow_non_model:
             self._fail(f"{rid}: the proxy answered from backend mode {b.get('mode')!r}, not the model "
                        "(is it running with --fixture?); scripted scores are not used here")
-        self._in_a_row = 0
-        if isinstance(resp.get("latency_ms"), (int, float)):
-            self.latencies.append(float(resp["latency_ms"]))
+        with self._state:
+            self._in_a_row = 0
+            if isinstance(resp.get("latency_ms"), (int, float)):
+                self.latencies.append(float(resp["latency_ms"]))
         return resp
 
     def _fail(self, msg: str):
-        self.failures += 1
-        self._in_a_row += 1
-        self.last_error = msg
+        with self._state:
+            self.failures += 1
+            self._in_a_row += 1
+            self.last_error = msg
         raise BirchUnavailable(msg)
 
     # ------------------------------------------------------------------ disk cache
@@ -435,7 +465,9 @@ class BirchPolicy(BackendPolicy):
         return req
 
     def choose_with_note(self, view, options: list[str]):
-        probs, _, _ = super().choose_with_note(view, options)
+        probs, said, assessment = super().choose_with_note(view, options)
+        if said:                                       # the model wrote a rationale: it is the note
+            return probs, said, assessment or {"plan": "{action}"}
         note = TEMPLATE_NOTE.format(step=self.backend.checkpoint) + (f" {self.last_explanation}." if self.last_explanation else "")
         return probs, note, {"plan": "{action}"}
 
@@ -466,7 +498,8 @@ def backend_from_config(cfg: dict) -> BirchBackend:
                         cache_dir=cfg.get("cache_dir", "runs/jev_cache"),
                         timeout=float(cfg.get("birch_timeout", DEFAULT_TIMEOUT)),
                         include_assessments=bool(cfg.get("include_assessments", False)),
-                        allow_non_model=bool(cfg.get("allow_non_model", False)))
+                        allow_non_model=bool(cfg.get("allow_non_model", False)),
+                        concurrency=int(cfg.get("concurrency", 1)))
 
 
 def policy_for_world(world, url: str | None = None, **kw) -> BirchPolicy:
