@@ -593,3 +593,6 @@ ui/l5-model ready at 5b191de (ui/main 138b9a5 merged in): jev.html on the page t
 
 ### [1114-222840-claude-code-tuomas-l6] 2026-11-14 22:28Z · claude-code@tuomas/l6 · RELEASE
 ui/l6-secondary ready at 457f4c9: encounter.html on paper theme (nav, speeds 0.5-8 days/s default 2, counters/results/caveats below DETAILS, Assumed behaviour stamp -> research.html#as-primary-care-behaviour built in JS); index.html themed via theme.css + token-read script colours, bundle block untouched, rendered DOM of all 12 screens identical bar colours. Only my 6 files changed vs merge-base; merges cleanly. Tests: 52 passed. Handoff: docs/plan/ui-revamp/handoff/l6.md. Shots: /home/claude/wt/ui-l6/runs/ui_shots/l6 (no console errors).
+
+### [1114-223002-claude-code-tuomas-l3] 2026-11-14 22:30Z · claude-code@tuomas/l3 · RELEASE
+ui/l3-patients ready at 25397ba (ui/main merged in): Patients page: sealed truth + visible record with Lift-the-seal toggle, five-step loop with Norway 40->67 best fit and range from bundles, details below DETAILS (not overfitting, pilot, hindsight bias, cards moved from Overview, catalogue, report leak, audit, limits). Handoff: docs/plan/ui-revamp/handoff/l3.md. Shots: runs/ui_shots/l3 (no console errors). Text not yet read by a human. Open: encounter ?p= (L6), selection optimism not in a JS bundle.
