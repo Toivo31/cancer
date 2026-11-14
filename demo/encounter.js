@@ -5,22 +5,37 @@
 'use strict';
 const D = window.ENC_DATA;
 const $ = (s, r) => (r || document).querySelector(s);
-const C = {night: '#0A0F14', panel: '#16222F', line: '#2C3F52', text: '#EAF1F8', muted: '#A8B8C9', dim: '#6F8296',
-  coral: '#FF9A7A', mint: '#55E3B0', amber: '#FFC04D', blue: '#62B0FF', red: '#FF5D73'};
+/* Colours: the theme tokens (demo/theme.css), read once at start (Site.tokens() when site.js is loaded). The
+   fallbacks are the same paper-theme values. Meaning: mustard = waiting, brick = wrong (left with symptoms, a
+   treatment that matches no true condition), brown = the hidden truth (teaching view), ink = everything else. */
+const C = (function () {
+  const fb = {paper: '#F4F0E4', card: '#FBF9F2', inset: '#EAE5D6', ink: '#1E1D1A', ink2: '#4F4B43', ink3: '#67625A',
+    faint: '#9C978C', line: '#CDC7B6', mustard: '#B8902F', mustardInk: '#7E5E12', mustardTint: '#F1E4BD', brick: '#9E3B2A', brown: '#6A4B30'};
+  const names = {paper: '--paper', card: '--card', inset: '--inset', ink: '--ink', ink2: '--ink-2', ink3: '--ink-3', faint: '--faint',
+    line: '--line', mustard: '--mustard', mustardInk: '--mustard-ink', mustardTint: '--mustard-tint', brick: '--brick', brown: '--brown'};
+  const cs = getComputedStyle(document.documentElement), o = {};
+  Object.keys(names).forEach(k => { const v = cs.getPropertyValue(names[k]).trim(); o[k] = v || fb[k]; });
+  return o;
+})();
+const rgb = h => { const m = /^#?([0-9a-f]{6})$/i.exec(String(h).trim()); if (!m) return [128, 128, 128]; const n = parseInt(m[1], 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; };
+const rgba = (h, a) => `rgba(${rgb(h).join(',')},${a})`;
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
 const fmt = n => n == null ? '–' : Math.round(n).toLocaleString('en-US');
 const f1 = x => x == null ? '–' : (Math.round(x * 10) / 10).toFixed(1);
 const pct = (x, d) => x == null ? '–' : (100 * x).toFixed(d == null ? 0 : d) + '%';
 const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
-const S = {t: 0, playing: true, rate: 1, layer: 'flow', truth: false, sel: null, H: 100, base: 4, hitDots: []};
+const SPEEDS = [0.5, 1, 2, 4, 8];   // days per second, as in the simulator (flow.html); default 2
+const S = {t: 0, playing: true, rate: 2, layer: 'flow', truth: false, sel: null, H: 100, hitDots: []};
 let NW = 108, NH = 40, W = 1040, HH = 640;
 let nodes, pos, nid, edges, geo, pats, byId;
-const STATE_COL = [C.amber, C.blue, '#4E6074', C.mint];
-const END_COL = {h_treat: C.mint, end_resolved: '#7FD3B4', end_symptoms: C.coral, end_horizon: '#7B8FA3'};
-const KIND_STROKE = {role: C.blue, referral: C.coral, treat: C.amber, start: C.muted, rest: C.dim, test: C.line, hosp: C.line};
+// dot colour by state: waiting, being seen or tested, at home, finished (the finish colour comes from END_COL)
+const STATE_COL = [C.mustard, C.ink, C.faint, C.ink];
+const END_COL = {h_treat: C.ink, end_resolved: C.faint, end_symptoms: C.brick, end_horizon: C.ink3};
+const KIND_STROKE = {role: C.ink2, referral: C.ink, treat: C.ink3, start: C.ink3, rest: C.ink3, test: C.ink3, hosp: C.ink3, end: C.ink3};
 
 function init() {
-  if (!D) { document.body.innerHTML = '<p style="padding:30px;font:14px monospace;color:#EAF1F8">data/encounter_bundle.js not found. Run: python demo/export_encounter.py</p>'; return; }
+  if (!D) { document.querySelector('main').innerHTML = '<p class="cmd">data/encounter_bundle.js not found. Run: python demo/export_encounter.py</p>'; return; }
+  if (window.Site && Site.nav) Site.nav('simulator');
   W = D.size.w; HH = D.size.h; NW = D.size.node_w; NH = D.size.node_h;
   nodes = D.nodes; pos = {}; nid = {};
   nodes.forEach((n, i) => { pos[n.id] = n; nid[n.id] = i; });
@@ -34,16 +49,15 @@ function init() {
   if (q.has('truth')) S.truth = true;
   if (q.has('paused')) S.playing = false;
   if (q.get('day')) S.t = +q.get('day');
-  $('#layers').innerHTML = [['flow', 'Flow'], ['time', 'Time at step']].map(([k, l]) => `<button class="chip ${k === S.layer ? 'on' : ''}" data-l="${k}">${l}</button>`).join('');
-  $('#layers').addEventListener('click', e => { const b = e.target.closest('[data-l]'); if (!b) return; S.layer = b.dataset.l; document.querySelectorAll('#layers .chip').forEach(c => c.classList.toggle('on', c === b)); renderGraph(); });
+  $('#layers').innerHTML = [['flow', 'Flow'], ['time', 'Time at step']].map(([k, l]) => `<button class="chip" aria-pressed="${k === S.layer}" data-l="${k}">${l}</button>`).join('');
+  $('#layers').addEventListener('click', e => { const b = e.target.closest('[data-l]'); if (!b) return; S.layer = b.dataset.l; document.querySelectorAll('#layers .chip').forEach(c => c.setAttribute('aria-pressed', String(c === b))); renderGraph(); renderLegend(); });
   $('#truth').onclick = () => setTruth(!S.truth);
   $('#play').onclick = () => { if (S.t >= S.H) S.t = 0; S.playing = !S.playing; $('#play').textContent = S.playing ? 'Pause' : 'Play'; };
   $('#restart').onclick = () => { S.t = 0; S.playing = true; $('#play').textContent = 'Pause'; };
   $('#slider').oninput = e => { S.t = +e.target.value; S.playing = false; $('#play').textContent = 'Play'; };
   $('#speed').onchange = e => { S.rate = +e.target.value; };
   const sl = $('#slider'); sl.max = S.H; sl.step = S.H / 1000;
-  S.base = Math.max(1, S.H / 40);
-  $('#speed').innerHTML = [.5, 1, 2, 4].map(m => `<option value="${m}" ${m === S.rate ? 'selected' : ''}>${f1(S.base * m)} days/s</option>`).join('');
+  $('#speed').innerHTML = SPEEDS.map(m => `<option value="${m}" ${m === S.rate ? 'selected' : ''}>${m} days/s</option>`).join('');
   document.addEventListener('keydown', e => {
     if (e.target.tagName === 'SELECT') return;
     if (e.code === 'Space') { e.preventDefault(); $('#play').click(); }
@@ -53,8 +67,7 @@ function init() {
     else if (e.key === 'ArrowLeft') S.t = Math.max(0, S.t - S.H / 100);
   });
   document.addEventListener('click', e => { if (e.target.closest && e.target.closest('button')) e.target.closest('button').blur(); });
-  $('#legend').innerHTML = `<span><i style="background:${C.amber}"></i>waiting</span><span><i style="background:${C.blue}"></i>being seen or tested</span><span><i style="background:#4E6074"></i>at home</span><span><i style="background:${C.mint}"></i>treatment started</span><span><i style="background:${C.coral}"></i>left, symptoms persist</span>`;
-  wireHit();
+  wireHit(); renderLegend(); renderFooter();
   window.addEventListener('resize', () => { fit(); });
   renderGraph(); renderResults(); renderNote(); fit();
   const p0 = q.get('p');
@@ -97,7 +110,7 @@ function renderGraph() {
     if (!list.length) return '';
     const x0 = Math.min(...list.map(n => n.x)) - NW / 2 - pad, x1 = Math.max(...list.map(n => n.x)) + NW / 2 + pad;
     const y0 = Math.min(...list.map(n => n.y)) - NH / 2 - pad - 14, y1 = Math.max(...list.map(n => n.y)) + NH / 2 + pad;
-    return `<rect x="${x0}" y="${y0}" width="${x1 - x0}" height="${y1 - y0}" rx="6" fill="rgba(98,176,255,.03)" stroke="${C.line}" stroke-dasharray="3 5"/><text x="${x0 + 8}" y="${y0 + 11}" class="mono" font-size="9.5" letter-spacing="1.6" fill="${C.dim}">${label}</text>`;
+    return `<rect x="${x0}" y="${y0}" width="${x1 - x0}" height="${y1 - y0}" rx="0" fill="none" stroke="${C.line}" stroke-dasharray="3 5"/><text x="${x0 + 8}" y="${y0 + 11}" class="mono" font-size="10" letter-spacing="1.2" fill="${C.ink3}">${label}</text>`;
   };
   svg += box(nodes.filter(n => n.kind === 'test'), 'TESTS', 8);
   svg += box(nodes.filter(n => n.hospital), 'HOSPITAL', 8);
@@ -105,36 +118,36 @@ function renderGraph() {
   edges.forEach(e => {
     const g = geo[e.id], w = .8 + 5.2 * Math.sqrt(e.n / maxE), ret = e.target === 'first';
     const on = sel && sel.edges.has(e.id);
-    const col = on ? C.amber : ret ? C.coral : C.mint;
-    const op = on ? .95 : .18 + .45 * Math.sqrt(e.n / maxE);
-    svg += `<path d="M${g.p0.x.toFixed(1)},${g.p0.y.toFixed(1)} Q${g.c.x.toFixed(1)},${g.c.y.toFixed(1)} ${g.p1.x.toFixed(1)},${g.p1.y.toFixed(1)}" fill="none" stroke="${col}" stroke-opacity="${op.toFixed(2)}" stroke-width="${(on ? Math.max(w, 2.5) : w).toFixed(1)}"/>`;
+    const col = on ? C.ink : ret ? C.ink2 : C.ink3;
+    const op = on ? .95 : .16 + .4 * Math.sqrt(e.n / maxE);
+    svg += `<path d="M${g.p0.x.toFixed(1)},${g.p0.y.toFixed(1)} Q${g.c.x.toFixed(1)},${g.c.y.toFixed(1)} ${g.p1.x.toFixed(1)},${g.p1.y.toFixed(1)}" fill="none" stroke="${col}" stroke-opacity="${op.toFixed(2)}" stroke-width="${(on ? Math.max(w, 2.5) : w).toFixed(1)}"${ret && !on ? ' stroke-dasharray="7 5"' : ''}/>`;
     const dx = g.p1.x - g.c.x, dy = g.p1.y - g.c.y, l = Math.hypot(dx, dy) || 1, ux = dx / l, uy = dy / l, s = 4 + Math.min(w, 5);
     svg += `<path d="M${g.p1.x.toFixed(1)},${g.p1.y.toFixed(1)} l${(-ux * s - uy * s * .55).toFixed(1)},${(-uy * s + ux * s * .55).toFixed(1)} l${(uy * s * 1.1).toFixed(1)},${(-ux * s * 1.1).toFixed(1)} z" fill="${col}" fill-opacity="${Math.min(1, op + .2).toFixed(2)}"/>`;
     if (e.n > .12 * maxE || ret) {
       const m = along(g, .5);
-      labels += `<text x="${(m.x + 4).toFixed(1)}" y="${(m.y - 3).toFixed(1)}" class="mono" font-size="9.5" fill="${ret ? C.coral : C.muted}" stroke="${C.panel}" stroke-width="3" paint-order="stroke">${ret ? 'returns ' : ''}${fmt(e.n)}</text>`;
+      labels += `<text x="${(m.x + 4).toFixed(1)}" y="${(m.y - 3).toFixed(1)}" class="mono" font-size="10" fill="${ret ? C.ink : C.ink3}" stroke="${C.card}" stroke-width="3" paint-order="stroke">${ret ? 'returns ' : ''}${fmt(e.n)}</text>`;
     }
   });
   svg += labels;
   nodes.forEach(n => {
     const x = n.x - NW / 2, y = n.y - NH / 2;
-    let fill = '#0E161F', stroke = KIND_STROKE[n.kind] || C.line, sw = 1;
-    if (n.id === 'h_treat') { fill = 'rgba(85,227,176,.10)'; stroke = C.mint; }
-    if (n.kind === 'end' && n.id !== 'h_treat') stroke = END_COL[n.id] || C.dim;
+    let fill = C.card, stroke = KIND_STROKE[n.kind] || C.ink3, sw = 1;
+    if (n.id === 'h_treat') { stroke = C.ink; sw = 1.6; }
+    if (n.id === 'end_symptoms') stroke = C.brick;
     let line2 = n.n ? fmt(n.n) + ' patients' : '';
     if (S.layer === 'time' && n.dwell != null) {
       const a = clamp(Math.sqrt(n.dwell / maxD), 0, 1);
-      fill = `rgba(255,192,77,${(.05 + .5 * a).toFixed(3)})`;
-      if (a > .5) stroke = C.amber;
+      fill = rgba(C.mustard, (.06 + .5 * a).toFixed(3));
+      if (a > .5) stroke = C.mustardInk;
       line2 = `median ${f1(n.dwell)} d`;
     } else if (S.layer === 'time') line2 = n.n ? fmt(n.n) + ' patients' : '';
-    if (sel && sel.nodes.has(n.id)) { stroke = C.amber; sw = 2.2; }
+    if (sel && sel.nodes.has(n.id)) { stroke = C.ink; sw = 2.2; }
     const words = n.label.split(' '); const lines = ['']; words.forEach(w_ => { const cur = lines[lines.length - 1]; if ((cur + ' ' + w_).trim().length <= 19) lines[lines.length - 1] = (cur + ' ' + w_).trim(); else lines.push(w_); });
     const ls = lines.slice(0, 2); if (lines.length > 2) ls[1] = ls[1].slice(0, 17) + '…';
     const ty = ls.length === 1 ? y + 16 : y + 14;
     svg += `<g data-id="${n.id}"><rect x="${x}" y="${y}" width="${NW}" height="${NH}" rx="${n.kind === 'role' ? 20 : 4}" fill="${fill}" stroke="${stroke}" stroke-width="${sw}"/>`;
-    ls.forEach((l, i) => { svg += `<text x="${n.x}" y="${ty + i * 11.5}" text-anchor="middle" font-size="11" font-weight="700" fill="${C.text}">${esc(l)}</text>`; });
-    if (line2) svg += `<text x="${n.x}" y="${y + NH - 5}" text-anchor="middle" class="mono" font-size="9" fill="${C.muted}">${line2}</text>`;
+    ls.forEach((l, i) => { svg += `<text x="${n.x}" y="${ty + i * 11.5}" text-anchor="middle" font-size="11" font-weight="600" fill="${C.ink}">${esc(l)}</text>`; });
+    if (line2) svg += `<text x="${n.x}" y="${y + NH - 5}" text-anchor="middle" class="mono" font-size="9.5" fill="${C.ink3}">${line2}</text>`;
     svg += '</g>';
   });
   $('#svgbox').innerHTML = svg + '</svg>';
@@ -146,7 +159,8 @@ function selSets(p) {
 }
 function fit() {
   const gw = $('#gw'), pane = $('#pane');
-  const availH = Math.max(430, innerHeight - 250);
+  const top = pane.getBoundingClientRect().top + scrollY;
+  const availH = Math.max(430, innerHeight - Math.min(top, 330) - 70);
   const w = Math.min(pane.clientWidth - 2, availH * W / HH * 1.15);
   gw.style.width = Math.round(Math.max(w, 300)) + 'px';
 }
@@ -178,7 +192,7 @@ function draw(t) {
     const r = at(p, t);
     if (!r) return;
     const st = r.r[2], node = nodes[r.r[1]];
-    if (r.tr) { cnt.move++; draws.push({x: r.tr.x, y: r.tr.y, col: C.text, r: 2.4, p}); return; }
+    if (r.tr) { cnt.move++; draws.push({x: r.tr.x, y: r.tr.y, col: C.ink3, r: 2.4, p}); return; }
     if (st === 0) cnt.w++; else if (st === 1) cnt.s++; else if (st === 2) cnt.home++;
     else if (node.id === 'h_treat') cnt.tx++; else if (node.id === 'end_resolved') cnt.res++; else if (node.id === 'end_symptoms') cnt.sym++; else cnt.hor++;
     (groups[node.id] = groups[node.id] || []).push({p, st, since: r.since});
@@ -189,25 +203,25 @@ function draw(t) {
     arr.forEach((o, i) => {
       const c = i % perRow, rr = Math.floor(i / perRow);
       const x = p0.x - NW / 2 + 5 + c * sx + (rr % 2 ? sx / 2 : 0), y = p0.y - NH / 2 - 4 - rr * rs;
-      let col = o.st === 3 ? (END_COL[id] || C.mint) : STATE_COL[o.st];
-      if (o.st === 0) { const wt = clamp((t - o.since) / 30, 0, 1); col = `rgb(${[255, 192 + (138 - 192) * wt, 77 + (60 - 77) * wt].map(Math.round).join(',')})`; }
+      let col = o.st === 3 ? (END_COL[id] || C.ink) : STATE_COL[o.st];
+      if (o.st === 0) { const wt = clamp((t - o.since) / 30, 0, 1), a = rgb(C.mustard), b = rgb(C.mustardInk); col = `rgb(${a.map((v, j) => Math.round(v + (b[j] - v) * wt)).join(',')})`; }
       draws.push({x, y, col, r: big ? 1.9 : 2.5, p: o.p});
     });
   });
   S.hitDots = draws;
   draws.forEach(o => {
     ctx.beginPath(); ctx.arc(o.x, o.y, o.r, 0, 6.2832); ctx.fillStyle = o.col; ctx.fill();
-    if (S.truth && D.truth[o.p.id] && D.truth[o.p.id].cancer) { ctx.beginPath(); ctx.arc(o.x, o.y, o.r + 2, 0, 6.2832); ctx.strokeStyle = C.red; ctx.lineWidth = 1.2; ctx.stroke(); }
+    if (S.truth && D.truth[o.p.id] && D.truth[o.p.id].cancer) { ctx.beginPath(); ctx.arc(o.x, o.y, o.r + 2, 0, 6.2832); ctx.strokeStyle = C.brown; ctx.lineWidth = 1.3; ctx.stroke(); }
   });
   if (S.sel != null) {
     const o = draws.find(o => o.p.idx === S.sel);
-    if (o) { ctx.beginPath(); ctx.arc(o.x, o.y, 7, 0, 6.2832); ctx.strokeStyle = C.text; ctx.lineWidth = 1.6; ctx.stroke(); }
+    if (o) { ctx.beginPath(); ctx.arc(o.x, o.y, 7, 0, 6.2832); ctx.strokeStyle = C.ink; ctx.lineWidth = 1.6; ctx.stroke(); }
   }
   return cnt;
 }
 let lastCnt = '';
 function counters(c) {
-  const h = `<span><i style="background:${C.amber}"></i>waiting <b>${c.w}</b></span><span><i style="background:${C.blue}"></i>being seen or tested <b>${c.s}</b></span><span><i style="background:#4E6074"></i>at home <b>${c.home}</b></span><span><i style="background:${C.text}"></i>moving <b>${c.move}</b></span><span><i style="background:${C.mint}"></i>treatment started <b>${c.tx}</b></span><span><i style="background:#7FD3B4"></i>left, gone <b>${c.res}</b></span><span><i style="background:${C.coral}"></i>left, symptoms persist <b>${c.sym}</b></span><span><i style="background:#7B8FA3"></i>at 1 year <b>${c.hor}</b></span><span style="margin-left:auto;color:${C.dim}">sample of ${pats.length}</span>`;
+  const h = `<span><i style="background:${C.mustard}"></i>waiting <b>${c.w}</b></span><span><i style="background:${C.ink}"></i>being seen or tested <b>${c.s}</b></span><span><i style="background:${C.faint}"></i>at home <b>${c.home}</b></span><span><i style="background:${C.ink3}"></i>moving <b>${c.move}</b></span><span><i style="background:${END_COL.h_treat}"></i>treatment started <b>${c.tx}</b></span><span><i style="background:${END_COL.end_resolved}"></i>left, gone <b>${c.res}</b></span><span><i style="background:${END_COL.end_symptoms}"></i>left, symptoms persist <b>${c.sym}</b></span><span><i style="background:${END_COL.end_horizon}"></i>at one year <b>${c.hor}</b></span><span>day <b>${Math.round(S.t)}</b> · sample of ${pats.length}</span>`;
   if (h !== lastCnt) { $('#counters').innerHTML = h; lastCnt = h; }
 }
 
@@ -238,9 +252,10 @@ function nodeTip(n) {
 }
 function setTruth(on, quiet) {
   S.truth = on;
-  const b = $('#truth'); b.classList.toggle('on', on); b.setAttribute('aria-pressed', on ? 'true' : 'false');
+  const b = $('#truth'); b.setAttribute('aria-pressed', on ? 'true' : 'false');
   b.textContent = on ? 'Truth revealed (teaching view)' : 'Reveal truth (teaching view)';
   if (!quiet || on) renderSide();
+  renderLegend();
 }
 function select(i) {
   S.sel = i; S.t = 0; S.playing = true; $('#play').textContent = 'Pause';
@@ -250,32 +265,32 @@ function select(i) {
 /* ------------------------------------------------------------------ patient panel */
 function renderSide() {
   const side = $('#side');
-  let h = `<div class="card"><h3>Example patients</h3><p>Picked automatically from the whole run. ${S.truth ? 'Teaching captions on.' : 'Captions describe only what the record shows.'}</p><div class="ex">`;
+  let h = `<div class="card enc-card"><h3>Example patients</h3><p>Picked automatically from the whole run. ${S.truth ? 'Teaching captions on.' : 'Captions describe only what the record shows.'}</p><div class="enc-ex">`;
   D.examples.forEach(e => {
     const cap = S.truth && D.truth[e.id] && D.truth[e.id].caption ? D.truth[e.id].caption : e.label;
     const on = S.sel != null && pats[S.sel].id === e.id;
     h += `<button data-p="${e.id}" class="${on ? 'on' : ''}">${esc(cap)}<small>patient ${e.id}${S.truth ? '' : ''}</small></button>`;
   });
-  h += `</div><p style="margin-top:8px">Or click any dot in the graph.</p></div>`;
+  h += `</div><p style="margin:8px 0 0">Or click any dot in the graph.</p></div>`;
   if (S.sel != null) {
     const p = pats[S.sel], tr = S.truth ? D.truth[p.id] : null;
-    h += `<div class="card" id="recard"><h3>Patient ${p.id} <span class="x" id="close">close</span></h3><div class="sum"><b>${esc(p.g)}</b><br>${p.ep} episode${p.ep > 1 ? 's' : ''} · ${outcomeText(p)}<br><span id="nowat"></span></div>`;
+    h += `<div class="card enc-card" id="recard"><h3>Patient ${p.id} <span class="enc-x" id="close">close</span></h3><div class="enc-sum"><b>${esc(p.g)}</b><br>${p.ep} episode${p.ep > 1 ? 's' : ''} · ${outcomeText(p)}<br><span id="nowat"></span></div>`;
     if (tr) {
-      h += `<div class="truthbox"><h4>Hidden truth (teaching view)</h4>Actually had: <b>${tr.conditions.map(esc).join(', ')}</b>${tr.cancer ? ' <b style="color:' + C.red + '">(cancer)</b>' : ''}<br>`;
-      h += tr.treatments.length ? tr.treatments.map(x => `${esc(x.label)} on day ${f1(x.day)}: ${x.matched ? '<span style="color:' + C.mint + '">matches one of the true conditions</span>' : '<span style="color:' + C.red + '">matches none of them</span>'}`).join('<br>') : 'No treatment started in primary care.';
-      h += `<br><span style="color:${C.muted}">The clinicians never see this; the record below is all they have.</span></div>`;
+      h += `<div class="enc-truthbox"><h4>Hidden truth · teaching view</h4>Actually had: <b>${tr.conditions.map(esc).join(', ')}</b>${tr.cancer ? ' <b>(cancer)</b>' : ''}<br>`;
+      h += tr.treatments.length ? tr.treatments.map(x => `${esc(x.label)} on day ${f1(x.day)}: ${x.matched ? '<b>matches one of the true conditions</b>' : '<span class="bad">matches none of them</span>'}`).join('<br>') : 'No treatment started in primary care.';
+      h += `<br><span class="quiet">The clinicians never see this; the record below is all they have.</span></div>`;
     }
-    h += `<div class="key"><span><i style="background:${C.blue}"></i>mechanical log (written by the simulator, never edited)</span><span><i style="background:${C.coral}"></i>assessment (the decider's words: interpretation)</span></div><div class="rec" id="rec">`;
+    h += `<div class="enc-key"><span><i></i>mechanical log (typed by the simulator, never edited)</span><span><i class="a"></i><em>assessment (the decider's words: interpretation)</em></span></div><div class="enc-rec" id="rec">`;
     p.lines.forEach((l, i) => {
-      const mk = tr && tr.marks && tr.marks[i] != null ? `<span class="mk ${tr.marks[i] ? 'ok' : 'bad'}">${tr.marks[i] ? 'treatment matches a true condition' : 'treatment matches none of the true conditions'}</span>` : '';
-      h += `<div class="ln ${l[1] ? 'a' : 'm'}" data-i="${i}" data-t="${l[0]}">${l[1] ? '<b>assessment</b>' : ''}${esc(l[2])}${mk}</div>`;
+      const mk = tr && tr.marks && tr.marks[i] != null ? `<span class="enc-mk ${tr.marks[i] ? 'ok' : 'bad'}">${tr.marks[i] ? 'treatment matches a true condition' : 'treatment matches none of the true conditions'}</span>` : '';
+      h += `<div class="enc-ln ${l[1] ? 'a' : 'm'}" data-i="${i}" data-t="${l[0]}">${l[1] ? '<b>assessment</b>' : ''}${esc(l[2])}${mk}</div>`;
     });
     h += '</div>' + proposalsHtml(p) + '</div>';
-  } else h += `<div class="card"><h3>Patient record</h3><p>Nothing selected. A record has two layers: the <b style="color:${C.blue}">mechanical log</b> (what happened, written by the simulator) and the clinicians' <b style="color:${C.coral}">assessments</b> (their working diagnosis and plan, in their own words).</p></div>`;
+  } else h += `<div class="card enc-card"><h3>Patient record</h3><p>Nothing selected. A record has two layers: the <span class="enc-ln m" style="display:inline;padding:0 4px">mechanical log</span> (what happened, typed by the simulator) and the clinicians' <em>assessments</em> (their working diagnosis and plan, in their own words).</p></div>`;
   side.innerHTML = h;
-  side.querySelectorAll('.ex button').forEach(b => b.onclick = () => select(byId[b.dataset.p]));
+  side.querySelectorAll('.enc-ex button').forEach(b => b.onclick = () => select(byId[b.dataset.p]));
   const cl = $('#close'); if (cl) cl.onclick = () => { S.sel = null; renderGraph(); renderSide(); };
-  side.querySelectorAll('.ln').forEach(el => el.onclick = () => el.classList.toggle('open'));
+  side.querySelectorAll('.enc-ln[data-i]').forEach(el => el.onclick = () => el.classList.toggle('open'));
   lastVis = -2;
 }
 function proposalsHtml(p) {
@@ -284,9 +299,9 @@ function proposalsHtml(p) {
   if (!p.proposals || !p.proposals.length) return h + `<p>None in this bundle yet. When present: per decision, the offered actions with scores, the model's proposal and what was chosen.</p>`;
   p.proposals.forEach(d => {
     const mx = Math.max(1e-9, ...d.options.map(o => o.score || 0));
-    h += `<div class="prop"><div class="ph"><b>${esc(String(d.decision_point || '').replace(/_/g, ' '))}</b><span class="dl ${esc(d.delivery || '')}">${esc(d.delivery || '')}</span></div>`;
+    h += `<div class="enc-prop"><div class="ph"><b>${esc(String(d.decision_point || '').replace(/_/g, ' '))}</b><span class="dl ${esc(d.delivery || '')}">${esc(d.delivery || '')}</span></div>`;
     d.options.forEach(o => {
-      h += `<div class="po${o.id === d.proposed ? ' pr' : ''}"><span>${esc(o.label || o.id)}${o.id === d.proposed ? ' <i>proposed</i>' : ''}${o.id === d.chosen ? ' <i class="ch">chosen</i>' : ''}</span><em>${o.score == null ? '–' : (+o.score).toFixed(2)}</em><u style="width:${Math.max(2, 100 * (o.score || 0) / mx)}%"></u></div>`;
+      h += `<div class="enc-po${o.id === d.proposed ? ' pr' : ''}"><span>${esc(o.label || o.id)}${o.id === d.proposed ? ' <i>proposed</i>' : ''}${o.id === d.chosen ? ' <i class="ch">chosen</i>' : ''}</span><em>${o.score == null ? '–' : (+o.score).toFixed(2)}</em><u style="width:${Math.max(2, 100 * (o.score || 0) / mx)}%"></u></div>`;
     });
     h += '</div>';
   });
@@ -307,14 +322,14 @@ function updateRecord() {
   for (let i = 0; i < els.length; i++) { els[i].classList.toggle('future', i >= n); els[i].classList.toggle('now', i === n - 1 && n > 0); }
   const r = at(p, t);
   $('#nowat').textContent = r ? 'day ' + Math.round(t) + ': ' + nodes[r.r[1]].label : '';
-  if (n > 0 && els[n - 1] && S.playing) { const c = $('#side'), el = els[n - 1]; const top = el.offsetTop - c.offsetTop; if (top < c.scrollTop || top > c.scrollTop + c.clientHeight - 60) c.scrollTop = Math.max(0, top - 120); }
+  if (n > 0 && els[n - 1] && S.playing) { const c = $('#side-wrap'), el = els[n - 1]; const top = el.getBoundingClientRect().top - c.getBoundingClientRect().top + c.scrollTop; if (top < c.scrollTop || top > c.scrollTop + c.clientHeight - 60) c.scrollTop = Math.max(0, top - 120); }
 }
 
 /* ------------------------------------------------------------------ results */
 function renderResults() {
   const R = D.results, o = R.overall;
-  const OC = [['treatment', 'Treatment started', C.mint], ['left_resolved', 'Left, symptoms gone', '#7FD3B4'], ['left_with_symptoms', 'Left, symptoms persist', C.coral], ['undiagnosed_at_horizon', 'Still in primary care at 1 year', '#7B8FA3']];
-  let h = `<div class="card"><h3>Results of this run · ${fmt(o.n)} simulated patients, ${fmt(o.cancers)} with lung cancer</h3><div class="res">`;
+  const OC = [['treatment', 'Treatment started', END_COL.h_treat], ['left_resolved', 'Left, symptoms gone', END_COL.end_resolved], ['left_with_symptoms', 'Left, symptoms persist', END_COL.end_symptoms], ['undiagnosed_at_horizon', 'Still in primary care at one year', END_COL.end_horizon]];
+  let h = `<h3 class="finding">In this one run, ${pct(o.cancer_treated_share)} of cancers reach treatment and ${pct(o.cancer_within_target_share)} within ${D.target_days} days</h3><p class="enc-small">${fmt(o.n)} simulated patients, ${fmt(o.cancers)} with lung cancer. One seed and no warm-up: see the note below for the multi-seed numbers.</p><div class="enc-res">`;
   [[pct(o.cancer_treated_share), 'of cancers reach treatment'], [pct(o.cancer_within_target_share), `of cancers treated within ${D.target_days} days`],
    [f1(o.cancer_median_days_to_referral), 'median days to referral (cancers)'], [f1(o.cancer_median_days_to_diagnosis), 'median days to diagnosis'],
    [f1(o.cancer_median_days_to_treatment), 'median days to treatment'], [o.cancer_left_with_symptoms + ' of ' + o.cancers, 'cancers left with symptoms, not followed up'],
@@ -323,8 +338,8 @@ function renderResults() {
     .forEach(([v, l]) => { h += `<div class="k"><b>${v}</b><span>${l}</span></div>`; });
   h += '</div>';
   const tot = OC.reduce((s, [k]) => s + (o.outcomes[k] || 0), 0) || 1;
-  h += `<div class="obar">${OC.map(([k, l, c]) => `<i style="width:${100 * (o.outcomes[k] || 0) / tot}%;background:${c}" title="${l}"></i>`).join('')}</div><div class="olg">${OC.map(([k, l, c]) => `<span><i style="background:${c}"></i>${l} <b style="color:${C.text}">${fmt(o.outcomes[k] || 0)}</b></span>`).join('')}</div>`;
-  h += `<table class="gt"><tr><th>Group</th><th>Patients</th><th>Cancers</th><th>Treated</th><th>In ${D.target_days} d</th><th>Median days to treatment</th><th>GP visits</th><th>Tests</th><th>€ per patient</th></tr>`;
+  h += `<div class="enc-obar">${OC.map(([k, l, c]) => `<i style="width:${100 * (o.outcomes[k] || 0) / tot}%;background:${c}" title="${l}"></i>`).join('')}</div><div class="enc-olg">${OC.map(([k, l, c]) => `<span><i style="background:${c}"></i>${l} <b>${fmt(o.outcomes[k] || 0)}</b></span>`).join('')}</div>`;
+  h += `<table class="enc-gt"><tr><th>Group</th><th>Patients</th><th>Cancers</th><th>Treated</th><th>In ${D.target_days} d</th><th>Median days to treatment</th><th>GP visits</th><th>Tests</th><th>€ per patient</th></tr>`;
   const GN = {age: 'Age', sex: 'Sex', smoking: 'Smoking', region: 'Region'};
   Object.keys(R.by_group).forEach(g => {
     h += `<tr class="gh"><td colspan="9">${GN[g] || g}</td></tr>`;
@@ -333,7 +348,7 @@ function renderResults() {
       h += `<tr><td>${esc(k === 'f' ? 'female' : k === 'm' ? 'male' : k)}</td><td>${fmt(s.n)}</td><td>${fmt(s.cancers)}</td><td>${pct(s.cancer_treated_share)}</td><td>${pct(s.cancer_within_target_share)}</td><td>${f1(s.cancer_median_days_to_treatment)}</td><td>${s.gp_encounters_per_patient}</td><td>${s.tests_per_patient}</td><td>${fmt(s.cost_per_patient_eur)}</td></tr>`;
     });
   });
-  h += `</table><p style="margin-top:8px">Cancer columns rest on few patients per group (${fmt(o.cancers)} in all), so differences between groups are noisy. From the run's own report: <code>python -m pathway_sim run scenarios/finland_encounter.yaml</code>.</p></div>`;
+  h += `</table><p class="enc-small" style="margin-top:8px">Cancer columns rest on few patients per group (${fmt(o.cancers)} in all), so differences between groups are noisy. From the run's own report: <code>python -m pathway_sim run scenarios/finland_encounter.yaml</code>.</p>`;
   $('#results').innerHTML = h;
 }
 function renderNote() {
@@ -341,15 +356,26 @@ function renderNote() {
   $('#note').innerHTML = `<b>All patients are simulated.</b> Counts on the graph, edge thickness and the tables use all ${fmt(D.n)} simulated patients; the moving dots are a sample of ${pats.length} (about ${Math.round(100 * c / pats.length)}% with cancer, far above the real ${pct(D.n_cancer / D.n, 1)}, so that some reach treatment). Time is days since each patient's own first contact. Decisions come from placeholder tables; the numbers show how the loop behaves, not Finnish measurements. Findings are simulated and are not clinical advice. Run ${esc(D.generated_at)}, seed ${D.seed}.` + multiSeedNote();
 }
 
+function renderLegend() {
+  let h = `<span><i style="background:${C.mustard}"></i>waiting</span><span><i style="background:${C.ink}"></i>being seen or tested</span><span><i style="background:${C.faint}"></i>at home</span><span><i style="background:${C.brick}"></i>left, symptoms persist</span>`;
+  if (S.layer === 'time') h += `<span><i style="background:${C.mustardTint};border:1px solid ${C.mustardInk};border-radius:0"></i>step shade: median days there</span>`;
+  if (S.truth) h += `<span><i class="ring"></i>has cancer (hidden truth)</span>`;
+  $('#legend').innerHTML = h;
+}
+function renderFooter() {
+  const t = `Synthetic patients only · not clinically reviewed · decisions assumed (placeholder tables) · numbers read from data/encounter_bundle.js, run ${D.generated_at}`;
+  if (window.Site && Site.footer) Site.footer(t); else $('#footer').textContent = t;
+}
+
 /* ------------------------------------------------------------------ playback */
 let last = performance.now();
 function frame(now) {
   const dt = (now - last) / 1000; last = now;
   if (S.playing) {
-    S.t += dt * S.base * S.rate;
+    S.t += Math.min(dt, .25) * S.rate;
     if (S.t >= S.H) { S.t = S.H; S.playing = false; $('#play').textContent = 'Replay'; }
   }
-  $('#slider').value = S.t; $('#day').textContent = Math.round(S.t);
+  $('#slider').value = S.t; $('#day').textContent = String(Math.round(S.t)).padStart(3, '0');
   counters(draw(S.t));
   updateRecord();
   requestAnimationFrame(frame);
