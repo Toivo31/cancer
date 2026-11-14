@@ -257,3 +257,6 @@ Wave 2b lane w2/validate (worktree /home/claude/wt/validate, base c50bbe7): WP-C
 
 ### [1114-145925-claude-code-tuomas-architect] 2026-11-14 14:59Z · claude-code@tuomas/architect · CLAIM
 Wave 2b lane w2/libreveal (worktree /home/claude/wt/libreveal, base c50bbe7): WP-C1-6: patient_engine/{library,cohort,reveal,__main__}.py, patient_engine/commands/{__init__,library}.py, tests/test_pe_{library,cohort,reveal}*. Contracts card/1 and catalogue/1 are on overnight/sim (merged from w2/pe-contracts).
+
+### [1114-150149-claude-code-tuomas-sec1] 2026-11-14 15:01Z · claude-code@tuomas/sec1 · RELEASE
+w2/sec1 done at 1de05e2 (code 18cec7e): fixed F16 (flow rebuild as job, 429 beyond job slots), F3, F5, F6, F7, F9, F10, F11, F4 rest; accepted F8, F12, F14, F15, F17, F18 with reasons in security-review.md. tests/security: 150 passed, 5 xfail (accepted ones), one command ~80s. New 422/429/502 codes, no JSON shape changes. pytest.ini can drop --ignore=tests/security.
