@@ -562,7 +562,7 @@ def _line(p: Problem, limit: int) -> str:
 def repair_prompt(card_json: Mapping[str, Any] | str | None, problems: Iterable[Problem]) -> str:
     """The message that asks the card author to correct ``card_json``: one line per problem as
     ``- path: message (hint)``, errors first (every error is listed, none is cut), warnings after as
-    space allows, then nothing else. Deterministic; about 1 700 characters for ten problems.
+    space allows, then nothing else. Deterministic; about 1 900 characters for ten problems.
     ``card_json`` (a dict or its JSON text) is read only for the card id."""
     if isinstance(card_json, str):
         try:
