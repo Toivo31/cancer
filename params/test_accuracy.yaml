@@ -1,0 +1,71 @@
+# Test accuracy and invasiveness. Sensitivity/specificity are per patient (or per lesion/node where noted).
+# p_nondiagnostic and complication rates feed the simulator's p_nondiagnostic and invasive-cost fields.
+chest_xray:
+  sensitivity_symptomatic:
+    {value: 0.754, unit: fraction, source: BRADLEY2021, note: "Cancers diagnosed within 1 year among symptomatic over-50s in Leeds (self-referred); 86 of 114 had a positive film. Systematic review (BRADLEY2019) gives 76.8%, 79.3%, 79.7% in its three low-bias studies"}
+  specificity_symptomatic:
+    {value: 0.902, unit: fraction, source: BRADLEY2021, note: "Same cohort"}
+  negative_predictive_value:
+    {value: 0.997, unit: fraction, source: BRADLEY2021, note: "At one year; 0.35% still develop a diagnosis after a negative film"}
+  miss_rate_hssib:
+    {value: 0.20, unit: fraction, source: HSSIB2021, note: "About one in five cancers missed; consistent with sensitivity 77-80%"}
+low_dose_ct:
+  sensitivity_screening:
+    {value: 0.846, unit: fraction, source: HOREWEG2014, note: "NELSON interim analysis, high-risk smokers 50-75, first 3 rounds plus 2 years follow-up. Screening population, so use with care for symptomatic patients. Secondary (news summary)"}
+  specificity_screening:
+    {value: 0.986, unit: fraction, source: HOREWEG2014, note: "Same"}
+  positive_predictive_value_screening:
+    {value: 0.404, unit: fraction, source: HOREWEG2014, note: "Same"}
+diagnostic_ct_chest:
+  sensitivity_detect_primary_tumour:
+    {value: 0.95, unit: fraction, source: assumption, note: "No direct source retrieved for diagnostic CT detection of a primary lung tumour in a symptomatic patient. Reasoned as at least the LDCT screening sensitivity of 0.846 (HOREWEG2014) because full-dose CT reads better; sensitivity analysis recommended over 0.85-0.98"}
+  specificity_for_cancer:
+    {value: 0.80, unit: fraction, source: assumption, note: "Nodules and masses are often benign (infection, scarring); no sourced number retrieved. For nodal staging see mediastinal_staging"}
+pet_ct:
+  sensitivity_malignant_lesion:
+    {value: 0.968, unit: fraction, source: GOULD2001, note: "FDG-PET (stand-alone, not PET-CT) meta-analysis of 40 studies, 1,474 pulmonary lesions, at the operating point reflecting current practice. Pooled maximum joint sensitivity and specificity 91.2%"}
+  specificity_malignant_lesion:
+    {value: 0.778, unit: fraction, source: GOULD2001, note: "Same operating point; false positives from inflammation/infection"}
+  treatment_plan_changed_by_pet_ct:
+    {value: 0.02, unit: fraction, source: STOKSTAD2019, note: "In the Norwegian stage I-II cohort PET-CT changed the plan in 2%; further workup was triggered in about 12%"}
+mediastinal_staging:
+  ct_sensitivity:
+    {value: 0.55, unit: fraction, source: GELBERG2014, note: "Per ACCP 2013 (SILVESTRI2013) via Gelberg review; nodal disease prevalence about 30%. Studies differ in population so do not compare modalities directly"}
+  ct_specificity:
+    {value: 0.81, unit: fraction, source: GELBERG2014, note: "NPV 83%"}
+  pet_sensitivity:
+    {value: 0.80, unit: fraction, source: GELBERG2014, note: "Prevalence about 28%"}
+  pet_specificity:
+    {value: 0.88, unit: fraction, source: GELBERG2014, note: "NPV 91%"}
+  ebus_tbna_sensitivity:
+    {value: 0.89, unit: fraction, source: GELBERG2014, note: "ACCP 2013 value. Meta-analyses summarised by ALMEIDA2012 give 0.88 and 0.93; 0.94 when patients are selected by PET/CT positive nodes versus 0.76 when not selected"}
+  ebus_tbna_sensitivity_unselected:
+    {value: 0.76, unit: fraction, source: ALMEIDA2012, note: "From the meta-analysis summarised there; i.e. false negatives of about 24% when patients are not pre-selected by imaging"}
+  ebus_tbna_specificity:
+    {value: 1.0, unit: fraction, source: GELBERG2014, note: "Reviewers note 100% could not be verified without a follow-up test. Treat as 'very high', e.g. 0.99 in sensitivity runs (assumption)"}
+  ebus_tbna_npv:
+    {value: 0.91, unit: fraction, source: GELBERG2014, note: "ACCP 2013"}
+bronchoscopy:
+  sensitivity_central_endobronchial:
+    {value: 0.88, unit: fraction, source: RIVERA2013, note: "Flexible bronchoscopy, central/endobronchial lesions (ACCP 2013)"}
+  sensitivity_peripheral_over_2cm:
+    {value: 0.63, unit: fraction, source: RIVERA2013, note: "Peripheral lesions larger than 2 cm"}
+  sensitivity_peripheral_under_2cm:
+    {value: 0.34, unit: fraction, source: RIVERA2013, note: "Peripheral lesions 2 cm or smaller (ACCP wording 'less than 2 cm'). Explains repeat sampling after failed bronchoscopy in Stokstad"}
+  radial_ebus_diagnostic_yield_peripheral:
+    {value: 0.73, unit: fraction, source: RIVERA2013, note: "Guideline describes it as emerging technology; electromagnetic navigation 0.71"}
+  specificity:
+    {value: 1.0, unit: fraction, source: assumption, note: "A positive tissue sample is taken as true cancer; false positives on cytology are rare. Not sourced here"}
+  p_nondiagnostic_peripheral:
+    {value: 0.40, unit: fraction, source: assumption, note: "Derived: roughly 1 minus the blended peripheral sensitivity (0.34 to 0.63) for a mix of lesion sizes, and in Stokstad 15 patients needed repeat sampling after a failed bronchoscopy. Not a published rate"}
+  complication_pneumothorax:
+    {value: 0.01, unit: fraction, source: assumption, note: "No sourced figure retrieved. Guideline abstract (RIVERA2013) says transthoracic needle has a higher pneumothorax rate than bronchoscopic methods"}
+transthoracic_needle_biopsy:
+  sensitivity:
+    {value: 0.90, unit: fraction, source: RIVERA2013, note: "Pooled sensitivity of transthoracic needle aspiration/biopsy; trend to lower sensitivity for lesions under 2 cm"}
+  p_nondiagnostic:
+    {value: 0.027, unit: fraction, source: UZUN2017, note: "Single-centre CT-guided FNA, 12 of 432; diagnostic accuracy 97.6%. Optimistic for a general hospital; sensitivity analysis recommended up to 0.10 (assumption)"}
+  pneumothorax_any:
+    {value: 0.15, unit: fraction, source: WIENER2011, note: "About 15% in a US population-based sample of biopsies for nodules (secondary summary). Single-centre UZUN2017 found 19%"}
+  pneumothorax_chest_tube:
+    {value: 0.066, unit: fraction, source: WIENER2011, note: "Needing a chest tube; single-centre UZUN2017 found 2.9%"}
