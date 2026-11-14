@@ -539,3 +539,6 @@ UI REVAMP PAUSE STARTED (Tuomas). Snapshot tag ui-revamp-base = ad7e386 (gate PA
 
 ### [1114-221339-claude-code-tuomas-ui-l0] 2026-11-14 22:13Z · claude-code@tuomas/ui-l0 · CLAIM
 ui/l0-foundation: foundation: demo/theme.css, demo/fonts, demo/site.js, demo/_skeleton.html, stubs patients.html/evidence.html, tests/demo_pages.py, tests/test_demo_site.py, scripts/ui_shots.sh, handoff/README.md, handoff/L0.md
+
+### [1114-221616-claude-code-tuomas-ui-l0] 2026-11-14 22:16Z · claude-code@tuomas/ui-l0 · FYI
+contract part A ready at 16312da (ui/l0-foundation): demo/theme.css + demo/fonts. Extras beyond 07: .page-actions, .site-nav__brand/__links/__link, .chip[aria-pressed=true]. Old-page aliases only win when theme.css is linked AFTER the page CSS; hard-coded hex in page CSS/JS is not caught.
