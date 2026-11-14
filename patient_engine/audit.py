@@ -423,7 +423,7 @@ _BG_DEFAULTS = {"pp": 5.0, "min_n": 20, "max_share": 0.0, "max_under_50": 0.10}
 def _background_realism(cards, catalogue, tol) -> dict[str, Any]:
     """Is the background of the cards a possible, plausible population? Hard rules (no violation accepted):
     pack-years that cannot fit in the card's age (more than two packs a day since age 13), never-smokers with
-    pack-years. Against the population file (``params/population_<catalogue id>.yaml``, patient_engine/population.py),
+    pack-years. Against the population file (``populations/<catalogue id>.yaml``, patient_engine/population.py),
     with the expectation of each card given its own age, sex and primary condition: the share of each smoking
     status in the library, and for each condition with ``min_n`` cards the share aged 65 and over and under 50.
     Plain rule: at most ``max_under_50`` of lung-cancer cards under 50 (Finland: a few percent). Without a

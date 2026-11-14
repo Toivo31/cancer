@@ -124,7 +124,7 @@ catalogue hash but changes every generated library id (`ref500` again) and the s
 between generation batches, not during one.
 
 **Status (w7/population, 14 Nov evening): rows 1 to 3 fixed in `patient_engine/skeleton.py` with a population model that
-sits outside the catalogue** (`params/population_lung_primary_care.yaml`, loader `patient_engine/population.py`). The
+sits outside the catalogue** (`populations/lung_primary_care.yaml`, loader `patient_engine/population.py`). The
 catalogue hash is unchanged (`2bcb9c78b2e0`, asserted in `tests/test_population_model.py`). Age is right-tailed and
 depends on the condition (lung cancer median about 68, under 50 about 5%). Smoking status depends on age and sex and the
 overall mix is the catalogue's own never 0.40 / former 0.38 / current 0.22. Pack-years are years smoked times packs a

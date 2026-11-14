@@ -1,4 +1,4 @@
-"""Population model for synthetic backgrounds (review w7 M4): params/population_lung_primary_care.yaml."""
+"""Population model for synthetic backgrounds (review w7 M4): populations/lung_primary_care.yaml."""
 
 from __future__ import annotations
 

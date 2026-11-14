@@ -263,14 +263,14 @@ def _truncated_normal(lo: float, hi: float, u: float) -> float:
 
 
 def _draw_background(catalogue: Catalogue, seed: int, index: int, k: int) -> dict[str, Value]:
-    """One candidate background. With a population file (``params/population_<catalogue id>.yaml``, see
+    """One candidate background. With a population file (``populations/<catalogue id>.yaml``, see
     ``patient_engine/population.py``) age, sex, smoking status, pack-years and region follow it. Otherwise the
     default population model (``catalogue/1`` has none yet): a categorical
     field is uniform over its values, a binary one a fair coin, a continuous one a normal centred in its
     ``range`` (SD one sixth of the width) truncated to it (default range 0..100)."""
     bg: dict[str, Value] = {}
     model = _population_model(catalogue)
-    if model is not None:        # params/population_<catalogue id>.yaml: age, sex, smoking, pack-years, region
+    if model is not None:        # populations/<catalogue id>.yaml: age, sex, smoking, pack-years, region
         bg = model.draw_background(seed, index, k, catalogue.background)
     for f in catalogue.background.values():
         if f.id in bg:

@@ -57,4 +57,4 @@ Tolerance: a cell fails when it is outside the 4.2-sigma interval and more than 
 - Correlation between repeated attempts of one test on one card: attempts are treated as independent, so a model-written library whose repeats agree too closely has intervals that are too narrow.
 - Free text (notes, reports) beyond the validator's leak rule.
 
-Computed in 4.9 s. Full cells (expected, observed, interval) are in `audit.json`.
+Computed in 1.87 s. Full cells (expected, observed, interval) are in `audit.json`.

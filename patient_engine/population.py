@@ -1,11 +1,11 @@
 """Population model for the background of synthetic patients (review w7, M4).
 
     from patient_engine.population import get_model
-    model = get_model(catalogue)          # None when no params/population_<catalogue id>.yaml exists
+    model = get_model(catalogue)          # None when no populations/<catalogue id>.yaml exists
     bg = model.draw_background(seed, index, k, fields)
     shares = model.condition_shares(bg)   # P(condition | smoking status, age band), catalogue-consistent
 
-The model lives OUTSIDE the catalogue (``params/population_<id>.yaml``), so the locked catalogue hash does not
+The model lives OUTSIDE the catalogue (``populations/<id>.yaml``), so the locked catalogue hash does not
 change: ``catalogue.version_hash`` is built from the five catalogue files only. The file is read explicitly here.
 
 What it does
@@ -36,7 +36,7 @@ from pathway_sim.dists import uniform
 __all__ = ["PopulationModel", "get_model", "population_path", "PopulationError", "STATUSES"]
 
 REPO = Path(__file__).resolve().parent.parent
-PARAMS = REPO / "params"
+POPULATIONS = REPO / "populations"
 STATUSES = ("never", "former", "current")
 _N = NormalDist()
 
@@ -46,7 +46,7 @@ class PopulationError(ValueError):
 
 
 def population_path(catalogue_id: str) -> Path:
-    return PARAMS / f"population_{catalogue_id}.yaml"
+    return POPULATIONS / f"{catalogue_id}.yaml"
 
 
 def _pick(probs: Sequence[float], u: float) -> int:
@@ -259,7 +259,7 @@ _CACHE: dict[tuple, PopulationModel | None] = {}
 
 
 def get_model(catalogue) -> PopulationModel | None:
-    """The population model for ``catalogue`` (``params/population_<id>.yaml``), or ``None`` when that file does
+    """The population model for ``catalogue`` (``populations/<id>.yaml``), or ``None`` when that file does
     not exist or the catalogue lacks the fields it models (the skeleton then keeps its old default)."""
     path = population_path(catalogue.id)
     key = (catalogue.version_hash, str(path))
