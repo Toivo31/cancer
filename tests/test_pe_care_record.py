@@ -88,3 +88,10 @@ def test_jev_response_carries_record_note():
     assert DecisionResponse.from_dict(d).to_dict() == d
     with pytest.raises(Exception):
         DecisionResponse.from_dict({"request_id": "r", "probs": {"a": 1.0}, "assessment": "text"})
+
+
+def test_check_responses_keeps_record_note():
+    from jev.contract import DecisionRequest, DecisionResponse, check_responses
+    q = DecisionRequest("r", "gp_encounter", {}, [{"id": "a"}, {"id": "b"}])
+    out = check_responses([q], [DecisionResponse("r", {"a": 0.5, "b": 0.5}, None, "note", {"plan": "p"})])
+    assert out[0].record_note == "note" and out[0].assessment == {"plan": "p"}

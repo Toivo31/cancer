@@ -171,7 +171,8 @@ def check_responses(requests: list[DecisionRequest], responses: list[DecisionRes
     for q, r in zip(requests, responses):
         if r.request_id != q.request_id:
             raise ContractError(f"response order broken: expected {q.request_id!r}, got {r.request_id!r}")
-        out.append(DecisionResponse(r.request_id, check_probs(r.probs, q.option_ids, q.request_id), r.explanation))
+        out.append(DecisionResponse(r.request_id, check_probs(r.probs, q.option_ids, q.request_id), r.explanation,
+                                    r.record_note, r.assessment))
     return out
 
 
