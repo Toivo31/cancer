@@ -115,10 +115,11 @@ class _Server:
         self.normal_cap = max(1, int(math.floor(self.cap * (1 - self.reserved)))) if self.reserved else self.cap
         self.weekdays_only = bool(spec.get("weekdays_only", True))
         self.min_lead = float(spec.get("min_lead_days", 1.0))
+        self.urgent_lead = float(spec.get("urgent_lead_days", self.min_lead))   # fast-track booking lead
         self.booked: dict[int, int] = {}
 
     def book(self, t_ready: float, priority: bool) -> float:
-        d = int(math.floor(t_ready + self.min_lead))
+        d = int(math.floor(t_ready + (self.urgent_lead if priority else self.min_lead)))
         limit = self.cap if priority else self.normal_cap
         for _ in range(100000):
             if not (self.weekdays_only and d % 7 in (5, 6)) and self.booked.get(d, 0) < limit:
@@ -220,7 +221,8 @@ class Simulation:
                 self.on_done(pr, node, attempt, t)
             elif kind == "exit":
                 self.exit(pr, node, t)
-        horizon = max((pr.t_exit or pr.patient.arrival) for pr in runs.values()) if runs else 0.0
+        # utilisation over the arrival window (excludes warm-up and the drain tail after the last arrival)
+        horizon = max(pr.patient.arrival for pr in runs.values()) if runs else 0.0
         resources = {}
         for rid, s in self.servers.items():
             resources[rid] = s.summary(self.sc.warmup_days, horizon)
@@ -343,7 +345,7 @@ class Simulation:
         pid, seed = pr.patient.id, self.seed
         t_ready0 = t_ready
         if test.get("extra_wait") is not None:   # e.g. a late referral before the queue
-            t_ready = t_ready + sample(test["extra_wait"], uniform(seed, pid, "extra", n.test, attempt))
+            t_ready = t_ready + max(0.0, sample(test["extra_wait"], uniform(seed, pid, "extra", n.test, attempt)))
         if typ == "server":
             t_start = self.servers[rid].book(t_ready, pr.priority)
         elif typ == "delay":
@@ -353,6 +355,7 @@ class Simulation:
             t_start = self.batches[rid].book(t_ready)
         else:
             t_start = t_ready + sample(test.get("wait"), uniform(seed, pid, "wait", n.test, attempt))
+        t_start = max(t_start, t_ready0)
         if n.kind == "exit":
             ev = Event(n.id, n.test, rid, self.sc.stage_of(n), t_ready0, t_start, t_start, t_start, None, attempt)
             pr.events.append(ev)

@@ -14,9 +14,11 @@
 id: finland_lung
 description: >
   Synthetic Finnish lung-cancer pathway in one wellbeing services county, clock from first contact in
-  primary care (nurse or GP) to start of treatment. target_days: 42 is the NORWEGIAN target used here for
-  comparability with the Stokstad validation scenario; Finnish targets per IHE2026 are assessment within
-  21 days of referral, and the strategy goal is "treatment within target times". Chest-symptom presenters
+  primary care (nurse or GP) to start of treatment. target_days: 90 is a PROVISIONAL display target
+  (decisions.md D20): with the clock starting at first contact in primary care, every flowchart is at 0%
+  within the Norwegian 42 days (which counts from referral receipt). We found no Finnish national
+  first-contact-to-treatment target; IHE2026 gives assessment within 21 days of referral, and the strategy
+  goal is "treatment within target times". Chest-symptom presenters
   arrive as a Poisson stream; lung cancer is about 1.6% of them, the rest is pneumonia, COPD exacerbation,
   benign nodule, other benign chest conditions and self-limiting illness. Half see a nurse first
   (KHALIFE2025). Queues form at GP appointments, chest X-ray, specialist clinic, CT, bronchoscopy / needle
@@ -24,7 +26,7 @@ description: >
   BRADLEY2021); a safety net (persisting symptoms -> re-presentation weeks later) catches some of them,
   the rest are discharged = missed cancers.
 clock_start: first_contact
-target_days: 42
+target_days: 90                      # assumption, provisional (D20); see description
 warmup_days: 60
 default_n: 18800                     # 44 / day x (60 d warm-up + 365 d measured year) = 18,700, plus a margin
 arrivals: {rate_per_day: 44}
@@ -69,13 +71,13 @@ resources:
   nurse_appt:     {type: server, capacity_per_day: 35, weekdays_only: true, min_lead_days: 2, source: assumption, note: "slice of nurse first-contact capacity; the Finnish care guarantee asks for assessment of care need within about 3 working days (not in sources.yaml)"}
   gp_appt:        {type: server, capacity_per_day: 74, weekdays_only: true, min_lead_days: 12, source: KHALIFE2025, note: "booking lead set so that the first GP appointment takes about 14 d (mode of survey answers, THL: 35% wait over 14 d); capacity is an assumption"}
   xray:           {type: server, capacity_per_day: 24, weekdays_only: true, min_lead_days: 2, source: assumption, note: "direct-access chest X-ray, usually within days"}
-  clinic:         {type: server, capacity_per_day: 7, weekdays_only: true, min_lead_days: 12, source: assumption, note: "pulmonology outpatient visits for suspected lung cancer; lead + queue calibrated to 14-28 d from GP referral to specialist visit"}
-  ct_scanner:     {type: server, capacity_per_day: 3, weekdays_only: true, min_lead_days: 4, source: assumption, note: "slice of county CT for lung work-up (params/finland.yaml capacity: 30 scans/day county-wide, placeholder). Finland has the fewest CT scanners per capita in the Nordics (IHE2026)"}
-  bronchoscopy:   {type: server, capacity_per_day: 1, weekdays_only: true, min_lead_days: 6, source: assumption, note: "bronchoscopy / EBUS slots (params/finland.yaml: placeholder 4/day)"}
-  ttnb_slot:      {type: server, capacity_per_day: 1, weekdays_only: true, min_lead_days: 6, source: assumption, note: "CT-guided transthoracic needle biopsy slots"}
-  pet_scanner:    {type: server, capacity_per_day: 1, weekdays_only: true, min_lead_days: 4, source: assumption, note: "PET-CT slots; regional resource (params/finland.yaml placeholder 8/day regional). No Finnish PET-CT wait found"}
+  clinic:         {type: server, capacity_per_day: 7, weekdays_only: true, min_lead_days: 12, urgent_lead_days: 5, source: assumption, note: "pulmonology outpatient visits for suspected lung cancer; lead + queue calibrated to 14-28 d from GP referral to specialist visit"}
+  ct_scanner:     {type: server, capacity_per_day: 3, weekdays_only: true, min_lead_days: 4, urgent_lead_days: 1, source: assumption, note: "slice of county CT for lung work-up (params/finland.yaml capacity: 30 scans/day county-wide, placeholder). Finland has the fewest CT scanners per capita in the Nordics (IHE2026)"}
+  bronchoscopy:   {type: server, capacity_per_day: 1, weekdays_only: true, min_lead_days: 6, urgent_lead_days: 2, source: assumption, note: "bronchoscopy / EBUS slots (params/finland.yaml: placeholder 4/day)"}
+  ttnb_slot:      {type: server, capacity_per_day: 1, weekdays_only: true, min_lead_days: 6, urgent_lead_days: 2, source: assumption, note: "CT-guided transthoracic needle biopsy slots"}
+  pet_scanner:    {type: server, capacity_per_day: 1, weekdays_only: true, min_lead_days: 4, urgent_lead_days: 1, source: assumption, note: "PET-CT slots; regional resource (params/finland.yaml placeholder 8/day regional). No Finnish PET-CT wait found"}
   tumour_board:   {type: batch, weekdays: [2], cutoff_days: 1, source: assumption, note: "weekly multidisciplinary lung board on Wednesday (weekly is Norwegian practice, STOKSTAD2019; Pirkanmaa lists the board without frequency)"}
-  treatment_slot: {type: server, capacity_per_day: 2, weekdays_only: true, min_lead_days: 10, source: assumption, note: "surgery / oncology start slots for this county; lead calibrated to about 37 d diagnosis to treatment (IHE2026, all cancers)"}
+  treatment_slot: {type: server, capacity_per_day: 2, weekdays_only: true, min_lead_days: 10, urgent_lead_days: 6, source: assumption, note: "surgery / oncology start slots for this county; lead calibrated to about 37 d diagnosis to treatment (IHE2026, all cancers)"}
   paper:          {type: none, source: assumption, note: "letters and administrative handling; waits are on the tests"}
 
 tests:
@@ -228,13 +230,13 @@ tests:
   # The engine gives priority patients the reserved slots but not a shorter booking lead. A fast lane is mostly
   # about the lead (an urgent appointment within days), so the variants below shorten the lead with a NEGATIVE
   # extra_wait (the booking starts earlier than the ready time + lead). Same server, so fast-lane patients still
-  # compete for the same slots and everyone else is crowded out. Feature request: `urgent_lead_days` on servers.
-  specialist_visit_fast: {<<: *t_spec, extra_wait: {dist: fixed, value: -7}, source: assumption, note: "urgent appointment about 5 d after referral handling instead of 12 (IHE2026: Finnish target is assessment within 21 d of referral); workaround for a shorter lead"}
-  chest_ct_fast:         {<<: *t_ct, extra_wait: {dist: fixed, value: -3}, source: assumption, note: "urgent CT, lead 1 d instead of 4"}
-  bronchoscopy_fast:     {<<: *t_bronch, extra_wait: {dist: fixed, value: -4}, source: assumption, note: "urgent sampling, lead 2 d instead of 6"}
-  ttnb_fast:             {<<: *t_ttnb, extra_wait: {dist: fixed, value: -4}, source: assumption, note: "urgent sampling, lead 2 d instead of 6"}
-  pet_ct_fast:           {<<: *t_pet, extra_wait: {dist: fixed, value: -3}, source: assumption, note: "urgent PET-CT, lead 1 d instead of 4"}
-  treatment_booking_fast: {<<: *t_treat, extra_wait: {dist: uniform, low: -6, high: -2}, source: assumption, note: "urgent treatment start: lead about 6 d instead of 10 and no extra work-up wait"}
+  # compete for the same slots and everyone else is crowded out. Fast-track patients book with each server's `urgent_lead_days`.
+  specialist_visit_fast: {<<: *t_spec, source: assumption, note: "urgent appointment about 5 d after referral handling instead of 12 (IHE2026: Finnish target is assessment within 21 d of referral); short lead via urgent_lead_days on the resource"}
+  chest_ct_fast:         {<<: *t_ct, source: assumption, note: "urgent CT, lead 1 d instead of 4"}
+  bronchoscopy_fast:     {<<: *t_bronch, source: assumption, note: "urgent sampling, lead 2 d instead of 6"}
+  ttnb_fast:             {<<: *t_ttnb, source: assumption, note: "urgent sampling, lead 2 d instead of 6"}
+  pet_ct_fast:           {<<: *t_pet, source: assumption, note: "urgent PET-CT, lead 1 d instead of 4"}
+  treatment_booking_fast: {<<: *t_treat, source: assumption, note: "urgent treatment start: lead about 6 d instead of 10 and no extra work-up wait"}
 
 flowcharts:
   # ===================================================================== baseline

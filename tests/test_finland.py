@@ -25,7 +25,7 @@ def baseline_run(sc):
 
 def test_loads_with_expected_flowcharts(sc):
     assert sc.clock_start == "first_contact"
-    assert sc.target_days == 42
+    assert sc.target_days == 90   # provisional, decisions.md D20
     assert sc.warmup_days >= 30
     assert "rate_per_day" in sc.arrivals
     assert {"baseline", "direct_ct", "bundled_workup", "fast_track_nonspecific"} <= set(sc.flowcharts)

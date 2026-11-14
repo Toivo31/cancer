@@ -177,3 +177,12 @@ def test_stokstad_scenario_loads_and_runs():
         assert m["stuck"] == 0, fid
         assert m["n_cancer"] == 200
         assert m["untreated_cancers"] == 0
+
+
+def test_flowchart_copy_keeps_guards():
+    sc = tiny()
+    fc = sc.flowcharts["serial"].copy("copy")
+    pts = generate_patients(sc, 300, 11)
+    a = compute_metrics(simulate(sc, "serial", pts, seed=11), sc)
+    b = compute_metrics(simulate(sc, fc, pts, seed=11), sc)
+    assert {k: v for k, v in a.items() if k != "flowchart"} == {k: v for k, v in b.items() if k != "flowchart"}

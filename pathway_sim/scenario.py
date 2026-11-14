@@ -110,6 +110,7 @@ def parse_flowchart(fid: str, d: dict) -> Flowchart:
         n = Node(**{k: v for k, v in nd.items() if k in Node.__dataclass_fields__ and k != "code"})
         if n.id in nodes:
             raise ValueError(f"flowchart {fid}: duplicate node id {n.id!r}")
+        n.code = compile_guard(n.when, f"{fid}/{n.id}") if n.when else None
         nodes[n.id] = n
     return Flowchart(id=fid, nodes=nodes, policy=copy.deepcopy(d.get("policy") or {}),
                      description=d.get("description", ""),
