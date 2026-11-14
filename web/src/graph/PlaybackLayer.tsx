@@ -3,7 +3,7 @@ import { useStore } from '@xyflow/react'
 import type { Box } from './layout'
 import type { Clock } from './clock'
 import { pointAlong } from './geometry'
-import { adjacency, bfsPath, jitter, stateAt } from './playback'
+import { adjacency, bfsPath, fadeAlpha, jitter, stateAt } from './playback'
 import type { PPatient } from './playback'
 
 export interface PlaybackProps {
@@ -32,24 +32,25 @@ export function PlaybackLayer(props: PlaybackProps) {
   live.current = { transform, width, height, selectedPatient }
 
   const adj = useMemo(() => adjacency(edges), [edges])
-  const routeCache = useRef(new Map<string, [number, number][]>())
+  const routeCache = useRef(new Map<string, [number, number][] | null>())
   useEffect(() => { routeCache.current.clear() }, [routes, adj])
 
   const routeBetween = (a: string, b: string): [number, number][] | null => {
     const key = `${a}>${b}`
-    const hit = routeCache.current.get(key)
-    if (hit) return hit
+    if (routeCache.current.has(key)) return routeCache.current.get(key) ?? null
     const path = bfsPath(adj, a, b)
     let pts: [number, number][] | null = null
     if (path) {
       pts = []
-      for (let i = 0; i + 1 < path.length; i++) pts.push(...(routes[`${path[i]}>${path[i + 1]}`] ?? []))
+      for (let i = 0; i + 1 < path.length; i++) {
+        const seg = routes[`${path[i]}>${path[i + 1]}`]
+        if (!seg) { pts = null; break }
+        pts.push(...seg)
+      }
     }
-    if (!pts || pts.length < 2) {
-      const A = boxes[a], B = boxes[b]
-      pts = A && B ? [[A.x + A.w, A.y + A.h / 2], [B.x, B.y + B.h / 2]] : null
-    }
-    if (pts) routeCache.current.set(key, pts)
+    // no drawn connection leads from a to b: the dot fades out and in instead of flying across the graph
+    if (pts && pts.length < 2) pts = null
+    routeCache.current.set(key, pts)
     return pts
   }
 
@@ -74,21 +75,32 @@ export function PlaybackLayer(props: PlaybackProps) {
         if (!B) continue
         let x: number, y: number
         const j1 = jitter(pp.idx, 1), j2 = jitter(pp.idx, 2)
+        let alpha = 0.88
+        const pile = (n: string, kind: number): [number, number] | null => {
+          const b = boxes[n]
+          if (!b) return null
+          return kind === 0 ? [b.x + 8 + j1 * (b.w - 16), b.y + b.h + 3 + j2 * 11] : kind === 1 ? [b.x + 8 + j1 * (b.w - 16), b.y - 3 - j2 * 9] : [b.x + 10 + j1 * (b.w - 20), b.y + b.h + 3 + j2 * 17]
+        }
         if (st.from) {
           const route = routeBetween(st.from, st.node)
           if (route) {
-            // along the route, with a little sideways spread so a crowd reads as a stream
+            // along the drawn connections, with a little sideways spread so a crowd reads as a stream
             const [px, py] = pointAlong(route, st.u)
             x = px
             y = py + (j2 - 0.5) * 6
-          } else { x = B.x; y = B.y + B.h / 2 }
-        } else if (st.kind === 0) { x = B.x + 8 + j1 * (B.w - 16); y = B.y + B.h + 3 + j2 * 11 }
-        else if (st.kind === 1) { x = B.x + 8 + j1 * (B.w - 16); y = B.y - 3 - j2 * 9 }
-        else { x = B.x + 10 + j1 * (B.w - 20); y = B.y + B.h + 3 + j2 * 17 }
+          } else {
+            const f = fadeAlpha(st.u)
+            const at = pile(f.at === 'from' ? st.from : st.node, f.at === 'from' ? 1 : 0)
+            if (!at) continue
+            ;[x, y] = at
+            alpha = 0.88 * f.alpha
+            if (alpha < 0.02) continue
+          }
+        } else { const at = pile(st.node, st.kind); if (!at) continue; [x, y] = at }
         const sx = x * z + tx, sy = y * z + ty
         const color = st.from || st.kind === 1 ? COL.served : st.kind === 0 ? COL.wait : pp.treated ? (pp.late ? COL.late : COL.ontime) : pp.missed ? COL.missed : COL.left
         ctx.fillStyle = color
-        ctx.globalAlpha = pp.idx === sel ? 1 : 0.88
+        ctx.globalAlpha = pp.idx === sel ? 1 : alpha
         ctx.beginPath(); ctx.arc(sx, sy, r, 0, Math.PI * 2); ctx.fill()
         hs.push({ x: sx, y: sy, idx: pp.idx })
         if (pp.idx === sel) selXY = [sx, sy]

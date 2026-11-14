@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { CohortPatient, FlowData } from '../api/types'
-import { adjacency, bfsPath, counters, patientPath, preparePatients, stateAt } from './playback'
+import { adjacency, bfsPath, counters, fadeAlpha, patientPath, preparePatients, stateAt } from './playback'
 
 const flow = {
   target_days: 90,
@@ -44,5 +44,22 @@ describe('playback', () => {
     const trail = patientPath(pps[0], adj)
     expect([...trail.nodes].sort()).toEqual(['a', 'b', 'treat', 'x'])
     expect(trail.edges.has('a>x')).toBe(true)
+  })
+
+  it('steps that overlap in time never make the dot hop backwards along a missing connection', () => {
+    // b is visited (arrival 6) while a is still being served (arrival 1, served from 7): recorded times interleave
+    const overlap = mk(9, { v: [['a', 1, 7, 8, 12, 1, 1], ['b', 6, 9, 9.5, 14, 1, 1], ['c', 13, 14, 14.5, 16, 1, 1]], exit: 'treat', t_exit: 20 })
+    const g = { ...flow, cohort: { ...flow.cohort, patients: [overlap] } } as FlowData
+    const [pp] = preparePatients(g, new Set(['a', 'b', 'c', 'treat']))
+    const adj = adjacency([{ from: 'a', to: 'b' }, { from: 'b', to: 'c' }, { from: 'c', to: 'treat' }])
+    for (let t = 0; t < 25; t += 0.25) {
+      const st = stateAt(pp, t, 2)
+      if (st?.from) expect(bfsPath(adj, st.from, st.node), `${st.from}>${st.node} at ${t}`).not.toBeNull()
+    }
+  })
+  it('a dot between steps with no connection fades out then in', () => {
+    expect(fadeAlpha(0)).toEqual({ at: 'from', alpha: 1 })
+    expect(fadeAlpha(0.5).alpha).toBe(0)
+    expect(fadeAlpha(1)).toEqual({ at: 'to', alpha: 1 })
   })
 })
