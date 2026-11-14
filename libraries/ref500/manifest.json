@@ -12,21 +12,21 @@
     "viral_self_limiting": 41,
     "worried_well": 41
   },
-  "catalogue_hash": "2bcb9c78b2e07f6f227615a404375794ec002449e0475ecdaf2256be72c24183",
+  "catalogue_hash": "436ff728b7179a74c7cb4732a2f6a49108481ff9a43cc43b9633e87e72508094",
   "catalogue_id": "lung_primary_care",
-  "created": "2026-11-14T19:20:50Z",
+  "created": "2026-11-14T21:08:19Z",
   "error_source": "guided",
   "file": {
-    "bytes": 988348,
+    "bytes": 990207,
     "name": "cards.jsonl.gz",
-    "sha256": "c592d553cea3c53cb7c262aee1b25422d38e749cb64f6dde1042d390d0e3749f"
+    "sha256": "1d98c316634c9a18d2e804b3e2971364cd681c38b438655b556c592c7239a492"
   },
   "format": "library/1",
   "generator": "llm",
-  "id": "L_424fcb177237f71f",
+  "id": "L_8a99f4d9d9fa9c5f",
   "model": "fake",
   "prompts": {
-    "patient": "g1@1",
+    "patient": "g1@2",
     "results": "g2@2"
   }
 }

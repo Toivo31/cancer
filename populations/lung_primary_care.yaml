@@ -4,7 +4,7 @@ format: population/1
 # catalogue hash is built from the five catalogue files only, and this file sits outside that folder).
 # Every number is sourced or marked `assumption` with one line of reasoning. Nobody clinical has read it.
 catalogue_id: lung_primary_care
-built_for_catalogue_hash_prefix: 2bcb9c78b2e0     # a test fails when the catalogue changes, so this is re-read
+built_for_catalogue_hash_prefix: 436ff728b717     # a test fails when the catalogue changes, so this is re-read
 
 # The marginal the catalogue itself assumes (conditions.yaml, note on lung_cancer prevalence): the
 # condition prevalence levels per smoking status were derived from this mix. The model below is

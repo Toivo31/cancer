@@ -1,6 +1,6 @@
 # Library audit: PASS
 
-Library `L_424fcb177237f71f` (500 cards, generator `llm`, model `fake`, error source `guided`), catalogue `lung_primary_care` (`2bcb9c78b2e0`).
+Library `L_8a99f4d9d9fa9c5f` (500 cards, generator `llm`, model `fake`, error source `guided`), catalogue `lung_primary_care` (`436ff728b717`).
 
 States: all_active 500, asthma_resolved 42, benign_nodule_resolved 42, copd_exacerbation_resolved 67, heart_failure_resolved 42, pneumonia_resolved 44, reflux_postinfectious_cough_resolved 42, tuberculosis_resolved 42, viral_self_limiting_resolved 41. Accuracy and non-diagnostic checks use every state (all_active and the resolved states pooled as `resolved`); frequency checks use `all_active` of single-illness cards.
 
@@ -43,11 +43,11 @@ Tolerance: a cell fails when it is outside the 4.2-sigma interval and more than 
 | `accuracy.respiratory_virus_pcr` | PASS | 3 of 3 cells within tolerance |
 | `non_diagnostic` | PASS | 52 of 52 cells within tolerance |
 | `state_consistency` | PASS | 0 of 362 resolved states with a violation (0.00%); limit 0.00% |
-| `presenting` | PASS | 0 of 1139 reported complaints that are not true symptoms (0.00%); limit 0.00% |
+| `presenting` | PASS | 0 of 1151 reported complaints that are not true symptoms (0.00%); limit 0.00% |
 | `diversity` | PASS | 0 of 500 cards that repeat an earlier card (0.00%); limit 2.00% |
 | `leak` | PASS | 0 of 1724 notes flagged by the validator's leak rule (0.00%); limit 2.00% |
 | `background_realism` | PASS | 28 of 28 cells within tolerance |
-| `report_wording` | PASS | positive: hedged 0% wrong vs 0% right (gap +0 pp within strata, z 0.0), NB excess 0.0, n 4591/5739; negative: hedged 0% wrong vs 0% right (gap +0 pp within strata, z 0.0), NB excess 0.0, n 1824/66393 |
+| `report_wording` | PASS | positive: hedged 0% wrong vs 0% right (gap +0 pp within strata, z 0.0), NB excess 0.0, n 4587/5801; negative: hedged 0% wrong vs 0% right (gap +0 pp within strata, z 0.0), NB excess 0.0, n 1818/66293 |
 
 17 cell(s) skipped for too few cases (not counted as pass or fail).
 
@@ -58,4 +58,4 @@ Tolerance: a cell fails when it is outside the 4.2-sigma interval and more than 
 - Correlation between repeated attempts of one test on one card: attempts are treated as independent, so a model-written library whose repeats agree too closely has intervals that are too narrow.
 - Free text (notes, reports) beyond the validator's leak rule and the report_wording check (hedging words, length, a bag-of-words classifier on binary results).
 
-Computed in 2.49 s. Full cells (expected, observed, interval) are in `audit.json`.
+Computed in 2.88 s. Full cells (expected, observed, interval) are in `audit.json`.

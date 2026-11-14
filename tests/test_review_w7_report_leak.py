@@ -152,6 +152,9 @@ def test_audit_report_wording_fails_on_the_g2v1_gemini_library():
     if not (lib_dir / "cards.jsonl.gz").exists():
         pytest.skip("libraries/gemini_s2_30 is not in this checkout")
     cat = _cat()
+    import json
+    if json.loads((lib_dir / "manifest.json").read_text())["catalogue_hash"] != cat.version_hash:
+        pytest.skip("libraries/gemini_s2_30 was made for an earlier catalogue (D59 changed the hash)")
     rep = audit_library(load_library(lib_dir, cat), cat, load_tolerances(CATALOGUE / "audit_tolerances.yaml"))
     chk = next(c for c in rep["checks"] if c["id"] == "report_wording")
     assert chk["status"] == "fail" and "report_wording" in rep["failed_checks"]

@@ -52,6 +52,17 @@
       source: assumption
       grade: assumption
       note: "Research note section 9 suggestion; GRACE symptom tables not extracted."
+    benign_nodule:
+      p: 0.9
+      source: VANVUGT2012
+      grade: C
+      note: >-
+        Catalogue check D59: the prevalence of this condition comes from GRACE, where every patient
+        presented with acute cough and the nodule was an incidental radiograph finding (VANVUGT2012), so
+        cough is the presenting symptom by construction; 0.9 leaves room for nodules found when imaging
+        is done for another chest symptom (assumption). Was the population floor 0.295, which left
+        about a third of these presenters with no symptom at all (out of the catalogue's own scope). Read
+        through a summarising tool; re-check against the page.
     worried_well: {p: 0.3, source: assumption, grade: assumption, note: "D47: each symptom drawn independently with a moderate rate, so the set is incoherent; alarm symptoms (haemoptysis, weight loss) are rare. Not sourced."}
     default:
       p: 0.295
@@ -636,9 +647,15 @@
     benign_nodule: {p: 1.0, source: assumption, grade: assumption, note: "A benign nodule or scar is a lesion by definition."}
     tuberculosis:
       p: 0.5
-      source: assumption
-      grade: assumption
-      note: "Nodular or cavitary lesions are common in pulmonary TB; not sourced."
+      source: GETNET2019
+      grade: C
+      note: >-
+        Value unchanged by the catalogue check D59, now sourced: 45.6% (95% CI 40.9-50.4%) of 434 new
+        pulmonary TB patients had cavities on the radiograph (GETNET2019, Ethiopia, pastoralist setting
+        with long diagnostic delay, so cavitation is if anything higher than in Finland). Nodular or
+        cavitary lesion here; infiltrates are `consolidation`, which is drawn given this variable so
+        that nearly every pulmonary TB has some radiographic abnormality. Read through a summarising tool;
+        re-check against the page.
     default:
       p: 0.01
       source: assumption
@@ -683,6 +700,20 @@
       source: assumption
       grade: assumption
       note: "Incidental nodules are mostly small; no size distribution was sourced."
+    tuberculosis:
+      dist: lognormal
+      median: 27
+      p90: 42
+      source: GETNET2019
+      grade: C
+      note: >-
+        Catalogue check D59: TB fell back to the incidental-nodule default (median 8 mm), so most TB
+        lesions were under 10 mm and the chest radiograph (sensitivity 0.47 below 10 mm) missed about
+        half of them. Cavity diameter in 434 new pulmonary TB patients was mean 2.8 cm, SD 1.0
+        (GETNET2019, Ethiopia, long diagnostic delay); a lognormal with median 27 mm and 90th
+        percentile 42 mm roughly matches that. Tuberculomas and nodular lesions are often 1 to 3 cm
+        too. High-burden setting with late diagnosis, so likely somewhat large for Finland. Read
+        through a summarising tool; re-check against the page.
     default:
       dist: lognormal
       median: 8
@@ -787,7 +818,21 @@
       note: >-
         GRACE defined pneumonia by the chest radiograph (VANVUGT2012), so nearly all have
         consolidation; clinical pneumonia without radiographic change exists.
-    tuberculosis: {p: 0.5, source: assumption, grade: assumption, note: "Not sourced."}
+    tuberculosis:
+      p: 0.625
+      source: assumption
+      grade: assumption
+      note: >-
+        Catalogue check D59: was 0.5 drawn independently of `lung_lesion` (0.5), which left a quarter
+        of pulmonary TB with a truly normal chest image; the chest radiograph has high sensitivity for
+        pulmonary TB (WHO 2016 guidance, qualitative; a normal film is uncommon outside HIV). Now drawn
+        given the lesion: infiltrate in 0.85 of TB without a nodular or cavitary lesion and 0.4 of TB
+        with one, so about 7.5% have neither and 0.625 overall have consolidation (the base value is
+        that overall figure). The shares are our assumption.
+      by:
+        lung_lesion:
+          "true": {p: 0.4, source: assumption, grade: assumption, note: "Infiltrate around a cavity or nodule; assumption."}
+          "false": {p: 0.85, source: assumption, grade: assumption, note: "Non-cavitary pulmonary TB shows as an infiltrate on most films; assumption."}
     default: {p: 0.01, source: assumption, grade: assumption, note: "Background rate; not sourced."}
 
 - id: brain_metastasis
@@ -837,7 +882,17 @@
       source: assumption
       grade: assumption
       note: "COPD is defined by obstruction; some are misdiagnosed. Not sourced."
-    asthma: {p: 0.3, source: assumption, grade: assumption, note: "Variable obstruction in asthma; not sourced."}
+    asthma:
+      p: 0.3
+      source: NICE_NG245
+      grade: C
+      note: >-
+        Value unchanged by the catalogue check D59, now sourced: in the NICE/BTS/SIGN 2024 evidence
+        review on spirometry for diagnosing asthma in adults, obstruction (FEV1/FVC below 70%) had
+        sensitivity 0.30 to 0.35 (2 studies, n 47 and 118) and below the LLN 0.37 (95% CI 0.26-0.50),
+        specificity 0.96 to 1.00; very low to low quality, no pooling. Asthma between attacks often
+        has normal spirometry, so 0.3 at a single visit is plausible. Read through a summarising tool;
+        re-check against the page.
     default:
       p: 0.08
       source: YOUNG2009

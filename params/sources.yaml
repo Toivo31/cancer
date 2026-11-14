@@ -619,3 +619,17 @@
   supports: [CRP point-of-care, one-hour target for urgent laboratory tests, plain X-rays usually without appointment]
   accessed: 2026-11-14
   access: full_text   # via a summarising tool
+- id: GETNET2019
+  citation: "Getnet F, Demissie M, Worku A, Gobena T, Tschopp R, Girmachew M, Assefa G, Seyoum B. Delay in diagnosis of pulmonary tuberculosis increases the risk of pulmonary cavitation in pastoralist setting of Ethiopia. BMC Pulmonary Medicine 2019."
+  url: https://pmc.ncbi.nlm.nih.gov/articles/PMC6836413
+  year: 2019
+  supports: ["cavitation on chest radiograph in 45.6% (95% CI 40.9-50.4) of 434 new pulmonary TB patients", "cavity diameter mean 2.8 cm, SD 1.0"]
+  accessed: 2026-11-14
+  access: full_text   # read through a summarising tool; high-burden setting with long diagnostic delay
+- id: NICE_NG245
+  citation: "NICE, BTS, SIGN. Asthma: diagnosis, monitoring and chronic asthma management (update). Evidence reviews for spirometry, draft for consultation, June 2024 (guideline NG245)."
+  url: https://nice.org.uk/guidance/ng245/documents/evidence-review
+  year: 2024
+  supports: ["spirometry for asthma in adults: FEV1/FVC below 70% sensitivity 0.30-0.35, specificity 0.96-1.00 (2 studies); below LLN sensitivity 0.37 (0.26-0.50), specificity 0.96; no pooling"]
+  accessed: 2026-11-14
+  access: full_text   # first 100k of 157k characters, read through a summarising tool

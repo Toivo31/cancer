@@ -372,3 +372,42 @@ chest signs, clubbing, hoarseness and recurrent chest infection.
 - Counts are in the RELEASE note on the agent channel.
 - Several entries are duplicates across sections on purpose (KOO2023 appears in 2a and 4b); use one id per quantity.
 - Ades 2014 and Hamilton 2005 are the same patients (CAPER), so do not count them as two independent sources when weighing evidence.
+
+## 12. Catalogue check, 14 Nov night (D59)
+
+A targeted check of the numbers that most shape tonight's cards (the engine now draws every finding from the
+catalogue, D58). Changed in `variables.yaml` (old → new):
+
+- Benign nodule, cough: population floor 0.295 → 0.9 (VANVUGT2012, grade C: the condition's prevalence comes from
+  GRACE, where every patient had acute cough). About a third of benign-nodule cards had no symptom at all.
+- Tuberculosis, lesion size: fell back to the nodule default (median 8 mm, p90 15) → lognormal median 27, p90 42
+  (GETNET2019: cavities mean 2.8 cm, SD 1.0; high-burden setting, grade C). At 8 mm the radiograph saw half of TB lesions.
+- Tuberculosis, consolidation: 0.5 independent of the lesion → 0.85 without a nodular or cavitary lesion, 0.4 with
+  one (assumption); a truly normal TB image falls from 25% to 7.5%.
+- Sources added for unchanged values: TB lesion 0.5 (GETNET2019, cavitation 45.6%); asthma airflow obstruction 0.3
+  (NICE_NG245, spirometry sensitivity 0.30-0.39 for asthma in adults).
+
+Checked and kept: lung cancer symptom frequencies (CAPER, ADES2014/HAMILTON2005, consistent with WALTER2015);
+lung cancer prevalence 1.3% (BRADLEY2021); TB symptoms (cough 0.8, fever 0.5, weight loss 0.5, haemoptysis 0.2,
+plausible against general TB descriptions but unsourced); worried-well rates (D47 design; about 7% draw no symptom).
+Left as they are, for a clinician to look at (evidence unclear or a change would ripple into tuned lanes):
+
+- No disease found (20% of presenters): every symptom falls back to the CAPER control floor, so about 37% draw no
+  symptom ("attends for a check-up", outside the scope) and only 12% have chest pain although the label is
+  "musculoskeletal" first. Tried: chest pain 0.5, cough, breathlessness and tiredness 0.35 (assumptions). Reverted
+  because nothing resolves this condition in `care.yaml`, so symptomatic patients return all year and the pinned
+  encounter run went out of range (GP visits 4.25 → 5.8 per patient, cost 491 → 657 EUR). Needs a care-model rule
+  first (natural resolution or reassurance), then these numbers.
+
+- Lung cancer with a co-existing COPD exacerbation in 50% (`cooccurrence.yaml`, YOUNG2009): that is COPD present,
+  not an active flare, and `airflow_obstruction` 0.5 already models COPD; an active flare in half of cancer
+  presenters is probably too high. Changing it moves the encounter-loop tuning, so left.
+- Symptoms that fall back to the CAPER control floor where a GP expects more: pneumonia chest pain 0.12 and
+  tiredness 0.15; heart failure tiredness 0.15; TB tiredness 0.15; viral illness tiredness 0.15 and wheeze 0.05.
+  These make look-alikes look cleaner than in practice (cancer stands out more).
+- Worried well and no-disease classes inherit small floors for objective signs (oedema, chest sounds 5%, raised
+  NT-proBNP 8%), against D47's "no objective findings".
+- Prevalences that are pure assumptions: no disease found 0.20, COPD exacerbation 0.075, heart failure 0.05,
+  reflux or post-infectious cough 0.055, worried well 0.03, viral (remainder) 0.45. They set cohorts, not cards.
+- Lab distributions mostly assumed: CRP per condition, platelets in lung cancer, haemoglobin default not split by sex.
+- COPD exacerbation airflow obstruction 0.9 (by definition close to 1; 0.9 allows for misdiagnosed COPD).
