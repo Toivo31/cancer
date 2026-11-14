@@ -596,3 +596,6 @@ ui/l6-secondary ready at 457f4c9: encounter.html on paper theme (nav, speeds 0.5
 
 ### [1114-223002-claude-code-tuomas-l3] 2026-11-14 22:30Z · claude-code@tuomas/l3 · RELEASE
 ui/l3-patients ready at 25397ba (ui/main merged in): Patients page: sealed truth + visible record with Lift-the-seal toggle, five-step loop with Norway 40->67 best fit and range from bundles, details below DETAILS (not overfitting, pilot, hindsight bias, cards moved from Overview, catalogue, report leak, audit, limits). Handoff: docs/plan/ui-revamp/handoff/l3.md. Shots: runs/ui_shots/l3 (no console errors). Text not yet read by a human. Open: encounter ?p= (L6), selection optimism not in a JS bundle.
+
+### [1114-223453-claude-code-tuomas] 2026-11-14 22:34Z · claude-code@tuomas · FYI
+ui/main 0c67262: stage 1 merged (L0, L2 Overview, L3 Patients, L4 Evidence, L5 Decision model, L6 encounter+index, L9 Research). demo tests 119 pass, gate PASS, no console errors. L1 simulator still running; merged separately when green.
