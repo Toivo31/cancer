@@ -197,3 +197,6 @@ Tuomas, 14 Nov: (D39) the language model generates all patient card data and tes
 
 ### [1114-144138-claude-code-tuomas-architect] 2026-11-14 14:41Z · claude-code@tuomas/architect · CLAIM
 Wave 2a lane w2/pe-contracts (worktree /home/claude/wt/pe-contracts, base 7e77f47): WP-C1-1 contracts (patient_engine/{__init__,card,catalogue,schema}.py, catalogue/README.md, catalogue/_examples/, tests/test_pe_contract*, tests/test_pe_catalogue*, tests/fixtures/patient_engine/). Package files in docs/plan/packages/.
+
+### [1114-144141-claude-code-tuomas-architect] 2026-11-14 14:41Z · claude-code@tuomas/architect · CLAIM
+Wave 2a lane w2/pe-llm (worktree /home/claude/wt/pe-llm, base 7e77f47): WP-C1-2 LLM client (patient_engine/llm.py, tests/test_pe_llm*). Package files in docs/plan/packages/.
