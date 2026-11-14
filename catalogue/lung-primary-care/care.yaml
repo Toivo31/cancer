@@ -106,7 +106,7 @@ treatments:
       heart_failure: {p: {p: 0.6, source: assumption, grade: assumption, note: "Congestion symptoms ease with a diuretic; heart failure itself is not cured, so 'resolved' means symptoms controlled. Not sourced."}, days: {dist: lognormal, median: 7, p90: 21, source: assumption, grade: assumption, note: "Not sourced."}}
 behaviour:
   first_contact: {values: {nurse: 0.5, gp: 0.5}, source: KHALIFE2025, grade: B, note: "Survey mode: 40 to 60% of Finnish patients meet a doctor at first contact, the rest a nurse (specialist survey, not registry data)."}
-  return_if_persisting: {p: 0.7, source: assumption, grade: assumption, note: "After a discharge with advice while a symptom persists. Not sourced."}
-  return_delay_days: {dist: lognormal, median: 21, p90: 60, source: assumption, grade: assumption, note: "Not sourced; the scenario safety-net re-presentation was a median of 14 days (finland_lung)."}
-  give_up_per_episode: {p: 0.05, source: assumption, grade: assumption, note: "Not sourced."}
+  return_if_persisting: {p: 0.95, source: assumption, grade: assumption, note: "After a discharge with advice while a symptom persists. Not sourced. TUNED in WP-W4-1 (was 0.7) so that persisting cancers re-present as in the calibrated chain (symptoms_persist 0.90-0.95 x gp_represent 0.95-0.98)."}
+  return_delay_days: {dist: lognormal, median: 14, p90: 35, source: assumption, grade: assumption, note: "Not sourced; finland_lung re-presents after a median of 14 days (p90 35). TUNED in WP-W4-1 (was median 21, p90 60) to match it."}
+  give_up_per_episode: {p: 0.02, source: assumption, grade: assumption, note: "Not sourced. TUNED in WP-W4-1 (was 0.05)."}
   horizon_days: {value: 365, source: assumption, grade: assumption, note: "One year of follow-up, as the scenario's measured year."}
