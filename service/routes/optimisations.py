@@ -13,6 +13,7 @@ from pathway_sim.documents import flowchart_to_document
 
 from ..deps import get_project
 from ..errors import ERROR_RESPONSES, ApiError, not_found
+from ..limits import offload
 from ..run_service import start_optimisation, start_run
 from ..runs_core import _scenario_for
 from ..runtime import Runtime, get_runtime
@@ -71,10 +72,10 @@ def opt_view(rt: Runtime, row: dict, full: bool = True) -> dict:
 
 
 @router.post("/projects/{p}/optimisations", status_code=202)
-def post_optimisation(body: OptimiseRequest, project: dict = Depends(get_project), rt: Runtime = Depends(get_runtime)):
+async def post_optimisation(body: OptimiseRequest, project: dict = Depends(get_project), rt: Runtime = Depends(get_runtime)):
     """Start an optimisation job: search on training patients, report on held-out patients the search never saw."""
     settings = body.model_dump(exclude={"flowchart"}, exclude_none=True)
-    row = start_optimisation(rt, project["id"], body.flowchart.id, body.flowchart.version, settings)
+    row = await offload(start_optimisation, rt, project["id"], body.flowchart.id, body.flowchart.version, settings)   # may call a JEV (F5)
     return opt_view(rt, row, full=False)
 
 

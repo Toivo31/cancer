@@ -14,7 +14,7 @@ import threading
 from fastapi import Request
 
 from .deps import Services
-from .jobs import Job, JobRunner
+from .jobs import FINAL, Job, JobRunner
 from .runs_db import JobRows, Optimisations, Runs
 from .store import now
 
@@ -32,6 +32,7 @@ class Runtime:
         self.jobrows = JobRows(self.store)
         self.runner = JobRunner(max_workers=self.settings.max_jobs, default_timeout=self.settings.job_seconds,
                                 persist=self.jobrows.save, on_finish=self._on_finish)
+        self.flow_slots = threading.BoundedSemaphore(max(1, self.settings.max_jobs))   # waiting flow rebuilds (F16)
         self.reconcile()
 
     # ------------------------------------------------------------------ start-up and shutdown
@@ -46,6 +47,18 @@ class Runtime:
 
     def shutdown(self) -> None:
         self.runner.shutdown()
+
+    def cancel_project_jobs(self, project_id: str, wait: float = 10.0) -> int:
+        """Cancel every queued or running job of a project and wait until its process has ended (F7). Returns how many."""
+        mine = [j for j in self.runner.list() if (j.owner or {}).get("project") == project_id and j.status not in FINAL]
+        for j in mine:
+            self.runner.cancel(j.id)
+        for j in mine:
+            try:
+                self.runner.wait(j.id, timeout=wait)
+            except TimeoutError:
+                pass
+        return len(mine)
 
     # ------------------------------------------------------------------ job hook
     def _on_finish(self, job: Job) -> None:

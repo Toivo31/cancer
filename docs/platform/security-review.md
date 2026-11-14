@@ -26,6 +26,31 @@ enforces them yet and a public hosting without them is not safe. F16 was not kno
 2. **F1 open API.** Fix: one ASGI middleware that compares a header with `PATHWAY_ACCESS_TOKEN` (constant-time compare, `/api/health` exempt), refused when the variable is set and the header is wrong.
 3. **F16 flow rebuild in the API process.** Fix: serve only the stored flow, or run the rebuild as a job; at minimum a semaphore of 1 and a time limit.
 
+## Status (WP-C6-SEC1, branch `w2/sec1`; the commit is in the package report)
+
+Every test marked `xfail(strict=True)` for a fixed hole is now a normal test; `python -m pytest -q tests/security` runs as one command (about 80 s on a loaded 2-CPU machine). Five tests stay `xfail(strict=True)` for the accepted findings (F8, F12, F15 twice, F17).
+
+| Finding | Status | Evidence |
+|---|---|---|
+| F1 access token | Fixed by the deployment lane (`service/security.py`) | `test_access_and_web.py::test_requests_without_the_access_token_are_rejected` |
+| F2 outbound host | Fixed: allowlist, no credentials, no response text in errors (deployment lane); timeout and size caps (SEC1, see F5) | `test_ssrf_jev.py` |
+| F3 NaN and Infinity | Fixed: `service/limits.py` `RejectNonFinite` refuses them (also `1e999`, JSON-lines uploads) with 422 `invalid_document` and the field path; stored non-finite values are shown as null so `GET /runs` answers 200 | `test_input_limits.py` (4), `test_sec1_fixes.py` |
+| F4 wrong-typed policy, unreachable JEV | Fixed: `/decide` answers 502 for `BackendError`; `jev.prepare` rejects non-string `backend` and `url` and non-object `points` with a ValueError (422) | `test_ssrf_jev.py::test_wrong_typed_decision_policy_is_a_422`, `test_decide_with_unreachable_jev_is_a_client_error`, the fuzzer (`KNOWN_500` is empty) |
+| F5 JEV timeout, size, stall | Fixed: `HttpBackend` caps timeout at 5 s and retries at 1, rejects non-positive or non-finite timeouts, reads at most 1 MiB; calls made while a request waits (`/decide`, `POST /runs`, `POST /optimisations`) run in a dedicated pool of 4 threads (16 places, then 429) with a 1 s timeout and no retry, so the event loop and the shared thread pool stay free | `test_ssrf_jev.py` (3), `test_sec1_fixes.py` |
+| F6 tracebacks | Fixed: the traceback goes to the server log (`pathway.jobs`), job and run errors carry `code` and a message with server paths replaced by `<path>` | `test_jobs_resources.py` (2), `test_sec1_fixes.py` |
+| F7 deleted project's jobs | Fixed: `DELETE /projects/{p}` cancels its queued and running jobs and waits for their processes to end before removing rows and files | `test_jobs_resources.py::test_deleting_a_project_stops_its_running_jobs`, `test_sec1_fixes.py` |
+| F8 orphan job after SIGKILL | Accepted: in Docker the container ends with PID 1. `PR_SET_PDEATHSIG` was tried and did not help (the worker's parent is the forkserver, which does not end with the service); a bare VM should run the service under a supervisor that kills the process group | still `xfail` |
+| F9 integer overflow | Fixed: versions limited to 1..10**6 in bodies, paths and queries | `test_input_limits.py` (2) |
+| F10 `.` and `..` ids | Fixed: ids must start with a letter or digit | `test_input_limits.py` (3) |
+| F11 blob key pattern | Fixed: `fullmatch` on `[A-Za-z0-9][A-Za-z0-9_-]{0,79}` in `service/store.py` and `service/runs_core.py` | `test_paths_and_static.py` (3) |
+| F12 global job list | Accepted: one shared token, one team; revisit when projects belong to people | still `xfail` |
+| F13 headers | Fixed by the deployment lane | `test_basic_security_headers_are_set` |
+| F14 quotas | Accepted for the hackathon: the deployment lane already limits job starts per client per minute (`PATHWAY_JOB_STARTS_PER_MIN`, 6), queued plus running jobs (`PATHWAY_MAX_ACTIVE_JOBS`) and requests per minute, all active outside open mode. Set `PATHWAY_JOB_SECONDS=120` on the hosted instance. No run count per project (about 1.8 MB per 19k-patient seed; the disk guard `PATHWAY_MIN_FREE_MB` stops writes) | policy, no test |
+| F15 validator gaps | Accepted here: the fix is in `pathway_sim.validate` (not in this package's paths). Such a world fails alone, at the job, with a clean error (F6) | still `xfail` |
+| F16 flow re-simulation | Fixed: the stored flow is served as before; any other `sample`, `sample_seed` or `seeds` is rebuilt by a job (own process, 60 s limit, counted against the job slots) and the request waits for it. At most one waiting rebuild per job slot, others get 429 `flow_busy`. Same JSON shape | `test_jobs_resources.py::test_flow_rebuild_is_bounded_by_the_job_limit`, `test_flow_rebuild_runs_as_a_job_and_the_default_flow_does_not` |
+| F17 stub server negative length | Accepted: `jev/stub_server.py` is a dev tool bound to 127.0.0.1 and outside this package's paths; do not expose it | still `xfail` |
+| F18 memory | Accepted: configuration, not code. Hosted: `PATHWAY_MAX_PATIENTS=20000`, `PATHWAY_MAX_SEEDS=3`, `PATHWAY_MAX_JOBS=1` or 2, container of 2 GB. Flow rebuilds also use job slots, so they are inside these limits | no test |
+
 ## Findings
 
 Effort: S under an hour, M a few hours, L a day.

@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import gzip
 import json
+import uuid
 from typing import Any
 
 from fastapi import APIRouter, Depends, Query, Response
@@ -17,9 +18,12 @@ from pydantic import BaseModel, Field
 from ..deps import get_project
 from ..errors import ERROR_RESPONSES, ApiError, not_found
 from ..run_service import start_run
-from ..runs_core import (FLOW_DEFAULT_SAMPLE, FLOW_MAX_PATIENTS, _scenario_for, build_bundle, compute_flow, read_lines,
+from ..runs_core import (FLOW_DEFAULT_SAMPLE, FLOW_MAX_PATIENTS, _scenario_for, build_bundle, execute_flow, read_lines,
                          stream_path)
 from ..runtime import Runtime, drop_runtime, ensure_runtime, get_runtime
+from ..jobs import QueueFull
+from ..models import VERSION_MAX
+from ..limits import offload, scrub_non_finite
 from ..store import NotFound
 
 router = APIRouter(tags=["runs"], responses=ERROR_RESPONSES)
@@ -35,7 +39,7 @@ def on_shutdown(app) -> None:
 
 class FlowchartRef(BaseModel):
     id: str
-    version: int | None = Field(None, description="Version number; omit for the latest")
+    version: int | None = Field(None, ge=1, le=VERSION_MAX, description="Version number; omit for the latest")
 
 
 class RunRequest(BaseModel):
@@ -66,7 +70,7 @@ def run_view(rt: Runtime, row: dict, full: bool = True) -> dict:
     if full:
         d["metrics"] = row["metrics"]
         d["resources"] = row["resources"]
-    return d
+    return scrub_non_finite(d)       # F3: a row stored before non-finite numbers were refused must still encode
 
 
 def _get_run(rt: Runtime, p: str, r: str) -> dict:
@@ -84,10 +88,10 @@ def _finished(row: dict) -> dict:
 
 # ------------------------------------------------------------------------------------------ routes
 @router.post("/projects/{p}/runs", status_code=202)
-def post_run(body: RunRequest, response: Response, project: dict = Depends(get_project), rt: Runtime = Depends(get_runtime)):
+async def post_run(body: RunRequest, response: Response, project: dict = Depends(get_project), rt: Runtime = Depends(get_runtime)):
     """Start a run (202), or return the identical run that already exists (200, ``cached: true``)."""
-    row, created = start_run(rt, project["id"], body.flowchart.id, body.flowchart.version, body.n, body.seeds,
-                             body.decision_policy, body.label)
+    row, created = await offload(start_run, rt, project["id"], body.flowchart.id, body.flowchart.version, body.n, body.seeds,
+                                 body.decision_policy, body.label)       # validation may call a JEV (F5)
     if not created:
         response.status_code = 200
     return {**run_view(rt, row, full=False), "cached": not created}
@@ -185,8 +189,8 @@ def get_flow(r: str, sample: int | None = Query(None, ge=1, le=2000, description
     """Flow document (``flow/1``, ``docs/platform/flow-format.md``): per-step and per-edge counts, waits, critical-path
     share, queues, decision shares and a sampled cohort of patient traces for playback. Counts cover every measured
     patient of the run's seeds, so the totals equal the run's metrics. The stored document (sample 300, seed 0) is
-    served as is; another sample size, sample seed or seed subset re-simulates the run (same patients, a few seconds,
-    refused above 60,000 patients)."""
+    served as is; another sample size, sample seed or seed subset is rebuilt by a job (same patients, a few seconds, refused
+    above 60,000 patients) and the request waits for it, so it counts against the job limits (429 when they are full)."""
     pid = project["id"]
     row = _finished(_get_run(rt, pid, r))
     default = sample in (None, FLOW_DEFAULT_SAMPLE) and sample_seed in (None, 0) and not seeds
@@ -201,8 +205,46 @@ def get_flow(r: str, sample: int | None = Query(None, ge=1, le=2000, description
     if len(use) * row["n"] > FLOW_MAX_PATIENTS:
         raise ApiError(422, "flow_too_large", f"The flow of {len(use) * row['n']} patients is too large to rebuild on request "
                                               f"(limit {FLOW_MAX_PATIENTS}); ask for fewer seeds")
-    spec = rt.store.get_blob(pid, "runspec", r)
-    return compute_flow(spec, sample or FLOW_DEFAULT_SAMPLE, sample_seed or 0, use)
+    return _rebuild_flow(rt, pid, r, sample or FLOW_DEFAULT_SAMPLE, sample_seed or 0, use)
+
+
+FLOW_REBUILD_SECONDS = 60        # wall-time limit of one rebuild job
+
+
+def _rebuild_flow(rt: Runtime, pid: str, r: str, sample: int, sample_seed: int, use: list[int]) -> dict:
+    """F16: never simulate in the API process. The rebuild is a job (own process, time limit, counted against the
+    job slots); the request waits for it. At most one rebuild per job slot may be waiting, others get 429."""
+    if not rt.flow_slots.acquire(blocking=False):
+        raise ApiError(429, "flow_busy", "Other flow rebuilds are running; try again in a moment, or use the stored flow "
+                                         "(no sample, sample_seed or seeds parameters)")
+    key = "f_" + uuid.uuid4().hex[:12]
+    try:
+        try:
+            job = rt.runner.submit("flow", execute_flow,
+                                   {"data_dir": str(rt.store.data_dir), "project_id": pid, "run_id": r, "sample": sample,
+                                    "sample_seed": sample_seed, "seeds": use, "out_key": key},
+                                   label=f"flow {r}", timeout=FLOW_REBUILD_SECONDS, owner={"project": pid, "kind": "flow", "id": r})
+        except QueueFull as e:
+            raise ApiError(429, "queue_full", f"Too many jobs are waiting ({e}); try again in a minute") from None
+        try:
+            done = rt.runner.wait(job.id, timeout=FLOW_REBUILD_SECONDS + 15)
+        except TimeoutError:
+            rt.runner.cancel(job.id)
+            raise ApiError(504, "flow_timeout", "The flow rebuild took too long") from None
+        if done is None or done.status != "succeeded":
+            if done is not None and done.status == "cancelled":
+                raise ApiError(409, "flow_cancelled", "The flow rebuild was cancelled")
+            raise ApiError(422, "flow_failed", "The flow could not be rebuilt for these parameters (see the job for the error code)")
+        try:
+            return rt.store.get_blob(pid, "flowtmp", key)
+        except NotFound:
+            raise not_found("run", r) from None     # the project was deleted meanwhile
+    finally:
+        try:
+            rt.store.delete_blob(pid, "flowtmp", key)
+        except ValueError:
+            pass
+        rt.flow_slots.release()
 
 
 # ------------------------------------------------------------------------------------------ compare

@@ -27,14 +27,25 @@ store and update the run or optimisation that owns the job.
 from __future__ import annotations
 
 import collections
+import logging
 import multiprocessing as mp
 import os
+import re
 import threading
 import time
 import traceback
 import uuid
 from dataclasses import dataclass, field
 from typing import Any, Callable
+
+log = logging.getLogger("pathway.jobs")
+_PATH = re.compile(r"(?:[A-Za-z]:)?(?:[\\/][^\s'\"():,;<>|]+){2,}")     # two or more path segments: /home/x/y.py, C:\\a\\b
+
+
+def public_message(text: str, limit: int = 500) -> str:
+    """Error text for API clients: server file paths replaced by ``<path>`` (F6); the full text stays in the server log."""
+    return _PATH.sub("<path>", str(text))[:limit]
+
 
 FINAL = ("succeeded", "failed", "cancelled")
 LOG_TAIL = 40
@@ -123,7 +134,7 @@ def _worker(conn, cancel_event, fn: Callable, args: dict) -> None:
     except BaseException as e:   # noqa: BLE001 - any failure is reported, never raised into the pool
         code = getattr(e, "code", None) or type(e).__name__
         ctx._send(("error", {"code": str(code), "message": str(e)[:2000],
-                             "traceback": traceback.format_exc()[-4000:]}))
+                             "traceback": traceback.format_exc()[-4000:]}))      # the supervisor logs it and drops it (F6)
     finally:
         try:
             conn.close()
@@ -269,7 +280,7 @@ class JobRunner:
                 except Exception as e:   # noqa: BLE001 - e.g. the function is not picklable
                     child.close()
                     parent.close()
-                    self._finish(job, "failed", error={"code": "start_failed", "message": str(e)[:500]})
+                    self._finish(job, "failed", error={"code": "start_failed", "message": public_message(e)})
                     continue
                 child.close()
                 job.status, job.started = "running", time.time()
@@ -328,9 +339,14 @@ class JobRunner:
             elif outcome[0] == "cancelled":
                 self._finish(job, "cancelled", message="cancelled")
             else:
-                self._finish(job, "failed", error=outcome[1])
+                err = dict(outcome[1])
+                tb = err.pop("traceback", None)
+                if tb:      # F6: the traceback (server paths, library versions) goes to the server log, never to a client
+                    log.error("job %s (%s) failed: %s\n%s", job.id, job.label, err.get("message"), tb)
+                err["message"] = public_message(err.get("message", ""))
+                self._finish(job, "failed", error=err)
         except Exception as e:   # noqa: BLE001 - the supervisor itself must always reach a final state
-            self._finish(job, "failed", error={"code": "supervisor_error", "message": str(e)[:500]})
+            self._finish(job, "failed", error={"code": "supervisor_error", "message": public_message(e)})
         finally:
             try:
                 conn.close()

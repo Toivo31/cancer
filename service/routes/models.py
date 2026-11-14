@@ -54,7 +54,7 @@ class TrainRequest(BaseModel):
 class AttachRequest(BaseModel):
     model: str
     decision_points: list[str] | None = Field(None, description="Use the model at these decision points; default all it was trained on")
-    base_version: int | None = Field(None, description="The version you edited; 409 if it is no longer the latest")
+    base_version: int | None = Field(None, ge=1, le=10**6, description="The version you edited; 409 if it is no longer the latest")
 
 
 def model_view(rt: Runtime, row: dict, full: bool = True) -> dict:

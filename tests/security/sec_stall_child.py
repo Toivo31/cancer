@@ -17,6 +17,7 @@ def main():
     silent.bind(("127.0.0.1", 0))
     silent.listen(128)
     url = f"http://127.0.0.1:{silent.getsockname()[1]}"
+    os.environ["JEV_ALLOWED_HOSTS"] = url.split("//", 1)[1]          # the operator's allowlist; what is measured is the stall
     pol = {"backend": "http", "url": url, "model": "m", "timeout": 2.0}
     body = {"flowchart": {"id": "observed"}, "decision_point": "sample_plan", "decision_policy": pol}
     c = make_client(Path(tempfile.mkdtemp()))

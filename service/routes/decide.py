@@ -4,9 +4,11 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Depends
 
+from jev.contract import BackendError
 from pathway_sim.documents import DocumentError, normalise_flowchart_doc
 
 from ..deps import get_project, get_store
+from ..limits import offload
 from ..errors import ERROR_RESPONSES, ApiError, not_found
 from ..models import DecideRequest, DecideResponse, FlowchartRef
 from ..prepare import decide
@@ -17,9 +19,13 @@ router = APIRouter(tags=["decisions"], responses=ERROR_RESPONSES)
 
 
 @router.post("/projects/{p}/decide", response_model=DecideResponse)
-def try_a_decision(req: DecideRequest, project: dict = Depends(get_project), store: Store = Depends(get_store)):
+async def try_a_decision(req: DecideRequest, project: dict = Depends(get_project), store: Store = Depends(get_store)):
     """Probabilities per option at one decision point for the context you enter. ``flowchart`` is
     ``{"id", "version"?}`` of a stored flowchart or a whole document (an unsaved edit)."""
+    return await offload(_try_a_decision, req, project, store)      # may call a JEV: off the event loop and the shared pool (F5)
+
+
+def _try_a_decision(req: DecideRequest, project: dict, store: Store):
     world, _ = store.get_world(project["id"])
     if isinstance(req.flowchart, FlowchartRef):
         try:
@@ -33,6 +39,8 @@ def try_a_decision(req: DecideRequest, project: dict = Depends(get_project), sto
         raise ApiError(422, "invalid_document", "The flowchart has problems", problems)
     try:
         return decide(world, doc, req.decision_point, req.context, req.offered, req.option_leads, req.decision_policy)
+    except BackendError as e:                  # the JEV cannot be reached, timed out, or broke the contract (F4)
+        raise ApiError(502, "backend_unavailable", f"The decision service could not be used: {e}") from None
     except DocumentError as e:
         raise ApiError(422, "invalid_document", str(e), e.problems) from None
     except ValueError as e:                    # the stub table does not fit the flowchart, and the like

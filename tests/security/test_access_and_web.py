@@ -7,7 +7,6 @@ import pytest
 from sec_helpers import make_client, new_project
 
 
-@pytest.mark.xfail(strict=True, reason="F1: spec 07 asks for PATHWAY_ACCESS_TOKEN; nothing reads it at f0bca56, so every route is open")
 def test_requests_without_the_access_token_are_rejected(tmp_path, monkeypatch):
     monkeypatch.setenv("PATHWAY_ACCESS_TOKEN", "s3cret-token")
     with make_client(tmp_path) as c:
@@ -68,7 +67,6 @@ def test_markup_in_names_is_returned_as_json_data(client):
     assert "text/html" not in got.headers["content-type"]
 
 
-@pytest.mark.xfail(strict=True, reason="F13: no X-Content-Type-Options / frame / CSP headers on any response (low; matters once the web app is served from the same origin)")
 def test_basic_security_headers_are_set(client):
     h = {k.lower(): v for k, v in client.get("/api/projects").headers.items()}
     assert h.get("x-content-type-options") == "nosniff"

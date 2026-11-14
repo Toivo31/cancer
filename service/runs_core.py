@@ -25,7 +25,7 @@ from pathway_sim.documents import canonical_json, documents_to_scenario, flowcha
 
 from .store import Store
 
-BLOB_KEY = re.compile(r"^[A-Za-z0-9_.-]{1,80}$")
+BLOB_KEY = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]{0,79}")
 
 
 # ------------------------------------------------------------------------------------ identity
@@ -94,7 +94,7 @@ def headline(m: dict) -> dict:
 # ------------------------------------------------------------------------------------ files
 def stream_path(store: Store, project_id: str, kind: str, key: str) -> Path:
     for part in (project_id, kind, key):
-        if not BLOB_KEY.match(part):
+        if not BLOB_KEY.fullmatch(part):
             raise ValueError(f"bad path part {part!r}")
     return store.blob_dir / project_id / kind / f"{key}.jsonl.gz"
 
@@ -282,6 +282,18 @@ def flow_from_logs(sc, fc, logs: list, all_seeds: list[int], sample: int = FLOW_
                      meta={"pooled_seeds": [lg.seed for lg in logs], "run_seeds": list(all_seeds),
                            "complete": len(logs) == len(all_seeds), "sample": sample, "sample_seed": sample_seed})
     return doc
+
+
+def execute_flow(ctx, data_dir: str, project_id: str, run_id: str, sample: int, sample_seed: int, seeds: list[int],
+                 out_key: str) -> dict:
+    """Job function (F16): rebuild a flow document in a worker process and leave it as a temporary blob.
+    The request that asked for it reads and deletes the blob; nothing large goes through the job table."""
+    store = Store(data_dir)
+    spec = load_spec(store, project_id, "runspec", run_id)
+    ctx.progress(0, 1, "rebuilding the flow", force=True)
+    doc = compute_flow(spec, sample, sample_seed, seeds)
+    store.put_blob(project_id, "flowtmp", out_key, doc)
+    return {"key": out_key}
 
 
 def compute_flow(spec: dict, sample: int, sample_seed: int, seeds: list[int] | None = None) -> dict:

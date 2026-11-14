@@ -7,8 +7,7 @@ list, a long string, ...). It asserts two things:
 * no response is a 5xx other than the ones already known and written down in ``KNOWN_500`` (a new 500 fails the test);
 * no response body shows a stack trace, a source path or SQL text.
 
-``test_known_500s_are_fixed`` is an ``xfail(strict=True)`` that goes red when the last known 500 is fixed,
-as a reminder to empty ``KNOWN_500``.
+``KNOWN_500`` is empty: every 5xx is a failure.
 """
 
 from __future__ import annotations
@@ -27,11 +26,7 @@ HOSTILE_IDS = ["nope", "...", "..%2F..%2Fetc%2Fpasswd", "a" * 3000, "p_%E2%80%AE
 BIG = 10 ** 30
 
 # (method, route template, case label) -> why. A 500 anywhere else fails the fuzzer.
-KNOWN_500: dict[tuple[str, str], str] = {
-    ("POST", "/api/projects/{p}/decide"): "F8: decision_policy.backend of the wrong type, and an unreachable JEV, are not turned into a 4xx",
-    ("POST", "/api/projects/{p}/runs"): "F8/F9: decision_policy.backend of the wrong type; a flowchart version above 2**63 overflows SQLite",
-    ("GET", "/api/projects/{p}/flowcharts/{f}/versions/{v}"): "F9: a version number above 2**63 overflows SQLite",
-}
+KNOWN_500: dict[tuple[str, str], str] = {}      # emptied by WP-C6-SEC1 (F4, F9): any 5xx fails the fuzzer
 
 LEAK_MARKERS = ("Traceback (most recent call last)", "/home/", "site-packages", "sqlite3.", "SELECT ", ".py\", line")
 
@@ -206,8 +201,3 @@ def test_fuzz_every_route_has_no_unexpected_500(world):
     new = {k: v for k, v in seen_500.items() if k not in KNOWN_500}
     assert not new, "unexpected 500 responses: " + json.dumps({f"{m} {t}": v[:5] for (m, t), v in new.items()}, indent=1)
     assert not leaks, "responses that show internals:\n" + "\n".join(leaks[:10])
-
-
-@pytest.mark.xfail(strict=True, reason="known 500s exist; see KNOWN_500 and security-review.md. Delete this test when KNOWN_500 is empty")
-def test_known_500s_are_fixed():
-    assert not KNOWN_500

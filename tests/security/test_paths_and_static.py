@@ -54,21 +54,19 @@ def test_unique_ids_and_blob_names_come_from_the_server(tmp_path):
 
 
 # ------------------------------------------------------------------------------------------ F11: the blob key check is weaker than it looks
-@pytest.mark.xfail(strict=True, reason="F11: the key pattern allows '..' as a whole path part; Store._blob_path('..', '..', 'x') leaves the blob directory")
 def test_blob_path_rejects_dot_segments(tmp_path):
     s = Store(tmp_path / "d")
-    path = s._blob_path("..", "..", "x")
-    assert (tmp_path / "d" / "blobs") in path.resolve().parents, f"{path} is outside the blob directory"
+    for parts in (("..", "..", "x"), ("p_ok", "..", "x"), (".", "runlogs", "x"), ("p_ok", "runlogs", "..")):
+        with pytest.raises(ValueError):
+            s._blob_path(*parts)
 
 
-@pytest.mark.xfail(strict=True, reason="F11: '$' in the key pattern also matches before a trailing newline")
 def test_blob_path_rejects_trailing_newline(tmp_path):
     s = Store(tmp_path / "d")
     with pytest.raises(ValueError):
         s._blob_path("p_ok", "runlogs", "r_1\n")
 
 
-@pytest.mark.xfail(strict=True, reason="F11: the same pattern is repeated in service/runs_core.py (stream_path)")
 def test_stream_path_rejects_dot_segments(tmp_path):
     from service.runs_core import stream_path
     with pytest.raises(ValueError):
