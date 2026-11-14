@@ -158,6 +158,7 @@ optimiser's change now gives 33%; 61% is the conditional urgent-booking result. 
 5. **The "person decides" demo is not blind.** `python -m jev.walk --pick cancer` (`jev/walk.py:28`): the reviewer
    chose a cancer patient before the walk. The model is blind; the person is not. Say so on stage, or offer
    `--pick random`.
+   *Fixed (w8/minors):* `jev.walk --pick random` (seeded, seed printed, `--pick-seed N` repeats it, truth shown after the walk as before) is now the default when neither `--pick` nor `--library` is given. Help text, module docstring and `docs/platform/jev-birch.md` say which modes are blind for the person; `--pick cancer` etc. print a note that the person is not blind.
 6. **Equity guardrail does not cover a widening gap.** D23 blocks a group getting slower, not the gap widening; the
    accepted change widens the gap in points from 13.6 to 24.6 while both groups gain. The pitch says this honestly
    (`docs/pitch/equity.md`), keep it.
