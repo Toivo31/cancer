@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Equal Care Across Finland: the demo in order</title>
+<link rel="stylesheet" href="start.css">
+</head>
+<body>
+<header class="top">
+  <div><span class="eyebrow">Equal Care Across Finland · lung cancer · the demo in order</span>
+    <h1>Where time is lost, what reordering wins, why you can trust it, and who decides</h1>
+    <p class="sub">Six steps, one sentence each, and the one result each screen proves. Every number on this page is read from the data files behind the screens when the page opens; "pending" means the file is not there yet.</p></div>
+  <span class="badge" title="Every patient in this demo is simulated. No real patient data.">Synthetic patients only</span>
+</header>
+
+<main>
+  <section class="row" id="s-problem">
+    <div><h2>The problem</h2>
+      <p class="what">Finland is slower than its Nordic neighbours at the first steps of the lung-cancer pathway and survives least (IHE Cancer Dashboard Finland, a survey of typical waits). In our synthetic Finnish county, few cancers reach treatment inside the target.</p></div>
+    <div class="proof" id="p-problem"></div>
+    <div class="go"><a class="btn main" href="index.html#finland_lung/2">Where the time goes</a>
+      <a class="btn sm" href="../docs/finland_scenario.md">The Finnish scenario</a></div>
+  </section>
+
+  <section class="row" id="s-primary">
+    <div><h2>Where time is lost in primary care</h2>
+      <p class="what">Watch the loop: nurse, GP, tests, home, back again. Pick an example patient and read the record the clinician saw, not what was true. Look at the cancer treated as an infection.</p></div>
+    <div class="proof" id="p-primary"></div>
+    <div class="go"><a class="btn main" href="encounter.html">The encounter loop</a><div class="btnrow" id="ex-links"></div></div>
+  </section>
+
+  <section class="row" id="s-order">
+    <div><h2>What reordering wins</h2>
+      <p class="what">Same patients, two orders of the same steps, no new capacity. Compare mode shows the change per step. The optimiser saw only what the records showed; these are held-out patients.</p></div>
+    <div class="proof" id="p-order"></div>
+    <div class="go"><a class="btn main" href="flow.html?s=finland&amp;compare">Finland: today vs suggested</a>
+      <a class="btn sm" href="flow.html?s=norway&amp;compare">Norway: same idea</a></div>
+  </section>
+
+  <section class="row" id="s-trust">
+    <div><h2>Why we trust the engine</h2>
+      <p class="what">We rebuilt a published Norwegian pathway, fitted only the observed order, and let the engine predict the reordered one. It matches the authors' estimate and over-states the faster-scanner-only gain, and we say so.</p></div>
+    <div class="proof" id="p-trust"></div>
+    <div class="go"><a class="btn main" href="index.html#stokstad/5">Norway check on screen</a>
+      <a class="btn sm" href="../docs/validation.md">Method and limits</a></div>
+  </section>
+
+  <section class="row" id="s-model">
+    <div><h2>The decision model at the nodes</h2>
+      <p class="what">At every clinician decision the team's model scores the allowed next steps from the visible record; a person accepts or overrides. Live when the GPU is up, saved examples otherwise, always labelled as which.</p></div>
+    <div class="proof" id="p-model">
+      <span class="cmd">python -m decision_api.server</span>
+      <span class="cmd">python -m jev.walk --pick cancer</span>
+      <span class="cap">Open <code>http://127.0.0.1:8771/decision</code> for the panel. Scores are relative to the offered options, not probabilities. Without the key: <code>--jev mock</code>.</span></div>
+    <div class="go"><a class="btn main" href="../decision_api/README.md">Decision model kit</a>
+      <a class="btn sm" href="../live_demo/flow.html">Live demo (needs its server)</a></div>
+  </section>
+
+  <section class="row" id="s-honest">
+    <div><h2>Data and honesty</h2>
+      <p class="what">Synthetic patients only. Each input is either sourced or marked as an assumption, and the counts come from the ledger. Primary-care behaviour is assumed, not measured.</p></div>
+    <div class="proof" id="p-honest"></div>
+    <div class="go"><a class="btn main" href="../docs/ledger.md">Evidence ledger</a>
+      <a class="btn sm" href="../docs/pitch/data_transparency.md">Data and transparency</a>
+      <a class="btn sm" href="../docs/parameters.md">Every parameter</a></div>
+  </section>
+</main>
+
+<div class="honest" id="honest">
+  <b>Read these with the numbers.</b> <span class="v">Synthetic data</span>: no real patient is used anywhere. <span class="v">Primary-care behaviour is assumed</span>: the encounter loop's decision rates are tuned to plausible practice, not measured in Finland. <span class="v">The Norway check supports the ranking of reorderings, not exact magnitudes.</span> <span class="v">Decision-model scores</span> are relative candidate scores, not probabilities. Walkthrough script: <code>docs/demo_path.md</code>.
+</div>
+
+<script src="data/flow_bundle.js"></script>
+<script src="data/encounter_bundle.js"></script>
+<script src="data/start_bundle.js"></script>
+<script src="start.js"></script>
+</body>
+</html>
