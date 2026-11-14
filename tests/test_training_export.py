@@ -155,3 +155,11 @@ def test_jev_not_allowed_or_unreachable_is_a_clear_error(tmp_path, monkeypatch):
     monkeypatch.setenv("JEV_ALLOWED_HOSTS", "127.0.0.1:9")
     with pytest.raises(SystemExit, match="not usable"):
         export(WORLD, 10, [1], str(tmp_path / "b.jsonl.gz"), jev="http://127.0.0.1:9", quiet=True)
+
+
+def test_jev_accepts_a_factory_kind(tmp_path):
+    out = str(tmp_path / "k.jsonl.gz")
+    s = export(WORLD, 40, [1], out, jev="stub", quiet=True)
+    assert s["rows"] > 0 and s["jev_calls"][0]["failures"] == 0
+    with pytest.raises(SystemExit, match="not usable"):
+        export(WORLD, 10, [1], str(tmp_path / "u.jsonl.gz"), jev="no_such_backend", quiet=True)

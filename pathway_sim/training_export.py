@@ -113,25 +113,36 @@ class TimedBackend:
         return out
 
 
-def jev_policy(world, url: str, model: str | None = None, timeout: float = 5.0):
-    """``BackendPolicy`` over the HTTP JEV at ``url`` (host must be in JEV_ALLOWED_HOSTS / JEV_DEFAULT_URL, as for
-    the service). Raises SystemExit with a plain message when the host is not allowed or the JEV is unreachable."""
+def jev_policy(world, spec: str, model: str | None = None, timeout: float = 5.0):
+    """``BackendPolicy`` over the JEV named by ``spec``: an HTTP URL (host must be in JEV_ALLOWED_HOSTS /
+    JEV_DEFAULT_URL, as for the service) or any other backend kind ``jev.factory`` knows (``stub``, ``http``, ``local``,
+    and kinds other lanes register there, e.g. ``birch``). Raises SystemExit with a plain message when the host is not
+    allowed, the kind is unknown or the JEV is unreachable."""
+    from jev import factory
     from jev.adapter import BackendPolicy
     from jev.contract import BackendError
-    from jev.http import HttpBackend
+    from jev.stub import StubBackend
+    cfg = {"timeout": timeout}
+    if model:
+        cfg["model"] = model
+    kind = spec
+    if spec.startswith(("http://", "https://")):
+        try:
+            from service.security import check_jev_url
+            check_jev_url(spec, where="--jev")
+        except ImportError:
+            pass
+        except ValueError as e:                               # HostNotAllowed
+            raise SystemExit(f"error: {e}") from None
+        kind, cfg["url"] = "http", spec
+    if kind == "rule":
+        raise SystemExit("error: for encounter worlds --jev takes a URL or a backend kind such as stub or birch (the world's decision tables are the default)")
     try:
-        from service.security import HostNotAllowed, check_jev_url
-        check_jev_url(url, where="--jev")
-    except ImportError:
-        pass
-    except ValueError as e:                                   # HostNotAllowed
-        raise SystemExit(f"error: {e}") from None
-    try:
-        be = TimedBackend(HttpBackend(url, model, timeout=timeout, retries=1, on_error="fail"))
+        be = TimedBackend(factory._make_backend(kind, cfg, StubBackend({}), "--jev", world.flowchart, 0))
         return BackendPolicy(be, mode="sample", scenario=world.scenario, flowchart=world.flowchart)
     except (BackendError, ValueError) as e:
-        raise SystemExit(f"error: the JEV at {url} is not usable: {e}\n"
-                         "       start it (for a test: python -m jev.stub_server) and check the URL") from None
+        raise SystemExit(f"error: the JEV {spec!r} is not usable: {e}\n"
+                         "       for a URL: start the service (for a test: python -m jev.stub_server) and check the address") from None
 
 
 def jev_summary(pol) -> dict | None:
@@ -189,10 +200,8 @@ def cli_run_world(a) -> None:
     if a.decision_mode or a.set:
         raise SystemExit("error: --decision-mode and --set apply to flowchart scenarios, not encounter worlds")
     pol = None
-    if a.jev and a.jev not in ("stub", "rule"):
+    if a.jev:
         pol = jev_policy(world, a.jev, a.jev_model, a.jev_timeout or 5.0)
-    elif a.jev:
-        raise SystemExit("error: for encounter worlds --jev takes a URL (the world's decision tables are the default)")
     try:
         log = run_encounter(world, n, a.seed, policy=pol, cohort=cohort)
     except Exception as e:
@@ -362,7 +371,7 @@ def add_cli(sub) -> None:
     p.add_argument("--holdout-generator", help="rows from cards made by this generator (e.g. reference) are marked test")
     p.add_argument("--library", action="append", metavar="DIR", help="card library directory (patient_engine library); repeatable. Default: the world's reference library")
     p.add_argument("--holdout-library", action="append", metavar="DIR", help="library whose patients all go to the test split (generalisation check); repeatable")
-    p.add_argument("--jev", metavar="URL", help="decide with the HTTP JEV at URL (host must be in JEV_ALLOWED_HOSTS or be JEV_DEFAULT_URL) instead of the decision tables")
+    p.add_argument("--jev", metavar="URL|KIND", help="decide with the JEV instead of the decision tables: an HTTP URL (host must be in JEV_ALLOWED_HOSTS or be JEV_DEFAULT_URL) or a jev.factory backend kind (stub, birch, ...)")
     p.add_argument("--jev-model", help="model id to ask the JEV for")
     p.add_argument("--jev-timeout", type=float, default=5.0, help="seconds per JEV call (the client caps it at 5)")
     p.add_argument("--out", required=True, help="path ending in .jsonl.gz")

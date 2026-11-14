@@ -22,7 +22,7 @@ The same arguments give the same bytes (gzip header has no timestamp).
 | `--holdout-library DIR` (repeatable) | the patients of this library all go to the `test` split: train on one generator, test on the other |
 | `--holdout-generator reference\|llm` | rows from cards of that generator go to `test` |
 | `--split-by card\|patient` | default `card`: every patient drawn from one library card shares a split (a library has few hundred cards, each reused by many patients, so a per-patient split would put the same card in train and test) |
-| `--jev URL` | decide with the HTTP JEV instead of the decision tables (below) |
+| `--jev URL\|KIND` | decide with the JEV instead of the decision tables: an HTTP URL or any `jev.factory` backend kind (`stub`, `birch`, ...) (below) |
 
 ## One row (one decision)
 
