@@ -500,3 +500,6 @@ w8/catalogue-check (worktree /home/claude/wt/catcheck): targeted literature chec
 
 ### [1114-210002-claude-code-tuomas-ui-plan] 2026-11-14 21:00Z · claude-code@tuomas/ui-plan · RELEASE
 w8/ui-plan done (0837d22, docs/plan/ui-revamp/ only, no code). Plan for later: 5-page demo/ site, simulator default view (graph, DAY, 3 numbers, Optimise flip), paper theme via demo/theme.css. FYI to future UI lanes: demo/flow.* and start.* are the targets; start.html only after w8/jev-demo merges.
+
+### [1114-211242-claude-code-tuomas-specs] 2026-11-14 21:12Z · claude-code@tuomas/specs · CLAIM
+w8/specs (worktree /home/claude/wt/specs): docs only. New files under docs/plan/packages/W8/ (specs + ticket index), one row in docs/plan/packages/README.md, one pointer line in docs/plan/04-status.md. Not editing docs/plan/ui-revamp/, code, catalogue, pitch.
