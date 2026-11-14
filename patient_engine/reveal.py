@@ -76,17 +76,21 @@ def _check_state(state: str) -> None:
 class RevealHandle:
     """A patient as the revealed side may see them. See the module docstring."""
 
-    __slots__ = ("_card", "_public_id")
+    __slots__ = ("_card", "_public_id", "_catalogue")
 
-    def __init__(self, card: Card, *, public_id: str | None = None) -> None:
+    def __init__(self, card: Card, *, public_id: str | None = None, catalogue=None) -> None:
         """``public_id`` is the label the revealed side sees as ``PublicView.card_id``. The default is opaque
         (``C`` + 10 hex of a hash of the card id): a card id written by a generator could carry the condition
         (``lung_cancer_017``). A cohort passes a per-patient label (``P000042``); a tool for people may pass
-        the real card id on purpose."""
+        the real card id on purpose.
+
+        ``catalogue`` (optional, the card's catalogue): with it the handle serves attempts beyond the stored
+        ones, each a fresh but reproducible draw (see ``reveal``). Without it only stored attempts exist."""
         if not isinstance(card, Card):
             raise TypeError("RevealHandle needs a Card")
         self._card = card
         self._public_id = opaque_id(card.id) if public_id is None else str(public_id)
+        self._catalogue = catalogue
 
     def __repr__(self) -> str:
         return f"RevealHandle({self._public_id!r})"
