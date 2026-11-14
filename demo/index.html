@@ -6324,6 +6324,11 @@ function screen1(sc){
     if(cr.length){var best=cr.reduce(function(p,r){return r.share>p.share?r:p},cr[0]);
       h+='<p class="lede" style="margin-top:.9rem">Adding capacity instead, with the same order of steps, reaches at most '+pct(best.share)+' on the same patients (screen 4).</p>'}
   }
+  var cu=null;(sc.variants||[]).forEach(function(v){if(v.role==="conditional_urgent_booking")cu=v});
+  if(cu&&cu.conditional&&cu.conditional.length){
+    h+='<h2 style="margin-top:1.4rem">A conditional finding, not the headline</h2><div class="panel"><p class="lede" style="margin-top:0">If every referred patient could be booked on the urgent track, the gain is exactly the booking time that is assumed to be saved. We do not know that time; the rows below show how the result moves with it. Needs real booking-lead data before it is a recommendation.</p><table class="src"><thead><tr><th>Share of the assumed lead reduction that holds</th><th>Treated on time</th><th>Median days</th></tr></thead><tbody>'+
+      cu.conditional.map(function(r){return '<tr><td class="mono">'+Math.round(r.share_of_lead_reduction*100)+'%</td><td class="mono">'+pct(r.share_within_target)+'</td><td class="mono">'+d1(r.median_days_to_treatment)+'</td></tr>'}).join('')+'</tbody></table></div>';
+  }
   if(cv&&cv.changes&&cv.changes.length){
     h+='<h2 style="margin-top:1.4rem">What to change</h2><div class="panel"><ul class="changes">'+cv.changes.map(function(c,i){return '<li><b>'+(i+1)+'</b><span>'+esc(plain(c))+'</span></li>'}).join('')+'</ul></div>';
   }
@@ -6333,9 +6338,13 @@ function screen1(sc){
      '<div class="note">'+(isNum(b.median_days_to_treatment)&&isNum(a.median_days_to_treatment)?'<b>'+d1(b.median_days_to_treatment-a.median_days_to_treatment)+' days</b> sooner for the typical patient':'days from first visit to treatment')+'</div></div>';
   // missed cancers guardrail
   var m0=b.missed_cancers,m1=a.missed_cancers,ok=isNum(m0)&&isNum(m1)&&m1<=m0;
+  if(isNum(b.n)&&isNum(b.n_cancer)&&b.n===b.n_cancer){
+    h+='<div class="panel card guard"><div class="lab">Cancers left untreated <span class="tag">n/a</span></div><div class="val"><span class="from">n/a</span></div>'+
+       '<div class="note">Every patient in this cohort has cancer and there is no discharge exit, so this safety check cannot trip here. It matters in the Finnish scenario, where some cancers are never found.</div></div>';
+  }else
   h+='<div class="panel card guard"><div class="lab">Cancers missed <span class="tag'+(ok||!isNum(m1)?'':' bad')+'">'+(!isNum(m1)?'n/a':ok?(m1===m0?'unchanged':'fewer'):'check')+'</span></div>'+
      '<div class="val"><span class="from">'+(isNum(m0)?m0:'n/a')+'</span><span class="sep">&rarr;</span><span class="to">'+(isNum(m1)?m1:'n/a')+'</span></div>'+
-     '<div class="note">Safety check: a faster pathway must not send cancers home undetected'+(isNum(b.n_cancer)?' (out of '+b.n_cancer+' cancers)':'')+'</div></div>';
+     '<div class="note">Safety check: a faster pathway must not send cancers home undetected'+(isNum(b.n_cancer)?' (per cohort, average of 2 held-out cohorts, out of '+b.n_cancer+' cancers)':'')+'</div></div>';
   // tests per patient
   h+='<div class="panel card"><div class="lab">Tests per patient</div><div class="val"><span class="from">'+d1(b.tests_per_patient)+'</span><span class="sep">&rarr;</span><span class="to">'+(cv?d1(a.tests_per_patient):"n/a")+'</span></div>'+
      '<div class="note">'+(isNum(b.tests_per_patient)&&isNum(a.tests_per_patient)?(Math.abs(a.tests_per_patient-b.tests_per_patient)<=0.15*b.tests_per_patient?'Almost the same number of tests, ordered differently':(a.tests_per_patient>b.tests_per_patient?'More tests per patient: the price of running steps side by side':'Fewer tests per patient')):'Average tests ordered per patient')+'</div></div>';
@@ -6395,16 +6404,16 @@ function screen2(sc){
   var h='<p class="eyebrow">2 &middot; Where time is lost</p>';
   if(tt>0){
     var top=rows.reduce(function(p,r){return r.wait>p.wait?r:p},rows[0]);
-    h+='<h1>'+Math.round(tw/tt*100)+'% of the time to treatment is spent waiting in queues, not in the tests</h1>';
+    h+='<h1>'+Math.round(tw/tt*100)+'% of the time to treatment is spent waiting (booking time and queues), not in the tests</h1>';
     h+='<p class="lede">Average days per cancer patient, split into waiting for a step and being served by it. The most waiting is at <b style="color:var(--wait)">'+esc((STAGES[top.id]||human(top.id)).toLowerCase())+'</b> ('+d1(top.wait)+' days).</p>';
   }else h+='<h1>Where time is lost</h1>';
-  h+='<div class="legend"><span><i style="background:'+C.wait+'"></i>Waiting in a queue</span><span><i style="background:'+C.serve+'"></i>Being served (the test or visit itself)</span></div>';
+  h+='<div class="legend"><span><i style="background:'+C.wait+'"></i>Waiting (booking time and queues)</span><span><i style="background:'+C.serve+'"></i>Being served (the test or visit itself)</span></div>';
   h+='<div class="panel">'+stageChart(sc,b,a)+'</div>';
   var sl=stepList(sc,b);
   if(sl.html){
-    h+='<h2>The longest queue is at one step: '+esc(sl.label)+'</h2><div class="panel">'+sl.html+'</div>';
+    h+='<h2>The longest wait is at one step: '+esc(sl.label)+'</h2><div class="panel">'+sl.html+'</div>';
   }
-  h+='<h2>The change that fixes it</h2>';
+  h+='<h2>The suggested change</h2>';
   if(cv&&cv.changes&&cv.changes.length){
     h+='<div class="panel"><ul class="changes">'+cv.changes.map(function(c,i){return '<li><b>'+(i+1)+'</b><span>'+esc(plain(c))+'</span></li>'}).join('')+'</ul></div>';
   }else h+='<div class="empty">No suggested change listed in this bundle.</div>';
@@ -6433,7 +6442,7 @@ function screenWhy(sc){
   if(cum.length>1){
     var last=cum[cum.length-1];
     h+='<h1>Each change adds on-time treatment, and the numbers come from patients the search never saw</h1>';
-    h+='<p class="lede">Treated on time after 0, 1, 2 &hellip; changes, applied one by one to the same unseen patients. Final: '+pct(last.share)+(isNum(o.selection_optimism_pp)?'. Picking the best of '+(o.candidates_evaluated||"many")+' options on the search patients flatters the result by about '+d1(o.selection_optimism_pp)+' points; the numbers shown come from unseen patients, so they do not carry it.':'.')+'</p>';
+    h+='<p class="lede">Treated on time after 0, 1, 2 &hellip; changes, applied one by one to the same unseen patients. Final: '+pct(last.share)+(isNum(o.selection_optimism_pp)?'. Picking the best of '+(o.candidates_evaluated||"many")+' options on the search patients '+(o.selection_optimism_pp>=0?'flatters the result by about '+d1(o.selection_optimism_pp)+' points':'did not flatter the result here (the unseen patients did '+d1(-o.selection_optimism_pp)+' points better)')+'; the numbers shown come from unseen patients, so they do not carry it.':'.')+'</p>';
     var rows=cum.map(function(r,i){
       var lab=r.kind==="lead"?r.label:(r.kind==="start"?(r.label==="Faster PET-CT scanner"?r.label:"Today"):"After change "+r.step);
       return {v:r.share,label:lab,color:r.kind==="lead"||r.step===0?(r.label==="Faster PET-CT scanner"?C.serve:C.today):C.good,sub:null};
@@ -6446,7 +6455,7 @@ function screenWhy(sc){
       h+='<div class="panel ev"><div class="evh"><b>'+(i+1)+'</b><span>'+esc(plain(d.label))+'</span></div><dl>'+
         (d.records_said?'<dt>The records said</dt><dd>'+esc(d.records_said)+'</dd>':'')+
         (d.rerun_said?'<dt>The rerun confirmed</dt><dd>'+esc(d.rerun_said)+'</dd>':'')+
-        (isNum(d.heldout_on_time_after)?'<dt>On unseen patients</dt><dd>'+pct(d.heldout_on_time_after)+' treated on time after this change (together with the ones above)</dd>':'')+
+        (isNum(d.heldout_on_time_after)?'<dt>On unseen patients</dt><dd>'+pct(d.heldout_on_time_after)+' treated on time after this change'+(i>0?' (together with the ones above)':'')+'</dd>':'')+
         '</dl></div>';
     });
     h+='</div>';
