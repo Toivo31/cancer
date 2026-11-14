@@ -1,0 +1,72 @@
+{
+  "format": "card/1",
+  "id": "example:000001",
+  "background": {"age": 67, "sex": "f", "smoking_status": "former", "pack_years": 30, "region": "rural_east"},
+  "states": ["all_active"],
+  "presenting": {
+    "all_active": {"reported": ["cough_3wk", "fever"], "text": "I have had a cough for about a month and a temperature since the weekend."}
+  },
+  "hidden": {
+    "conditions": [
+      {"id": "lung_cancer", "role": "primary", "attributes": {"stage": "II", "location": "peripheral"}},
+      {"id": "pneumonia", "role": "coexisting", "attributes": {}}
+    ],
+    "findings": {
+      "all_active": {
+        "cough_3wk": {"value": true, "caused_by": ["lung_cancer", "pneumonia"]},
+        "fever": {"value": true, "caused_by": ["pneumonia"]},
+        "weight_loss": {"value": false, "caused_by": []},
+        "crp_true": {"value": 85.0, "caused_by": ["pneumonia"]},
+        "hb_true": {"value": 128.0, "caused_by": []},
+        "lung_lesion": {"value": true, "caused_by": ["lung_cancer"]},
+        "lesion_size_mm": {"value": 17.0, "caused_by": ["lung_cancer"]},
+        "lesion_location": {"value": "peripheral", "caused_by": ["lung_cancer"]},
+        "consolidation": {"value": true, "caused_by": ["pneumonia"]}
+      }
+    },
+    "error_plan": {
+      "all_active": {
+        "history": [{"status": "ok", "outputs": {"cough_3wk": "correct", "fever": "correct", "weight_loss": "correct"}}],
+        "blood_count": [{"status": "ok", "outputs": {"crp": "correct", "hb": "correct"}}],
+        "chest_xray": [
+          {"status": "ok", "outputs": {"abnormal": "miss", "consolidation": "correct"}},
+          {"status": "ok", "outputs": {"abnormal": "correct", "consolidation": "correct"}},
+          {"status": "non_diagnostic", "outputs": {}}
+        ],
+        "chest_ct": [{"status": "ok", "outputs": {"nodule_seen": "correct", "size_mm": "correct", "location": "correct"}}]
+      }
+    }
+  },
+  "observations": {
+    "all_active": {
+      "history": [
+        {"status": "ok", "values": {"cough_3wk": true, "fever": true, "weight_loss": false}, "report": "Cough for four weeks, fever for three days. No weight loss reported."}
+      ],
+      "blood_count": [
+        {"status": "ok", "values": {"crp": 88.0, "hb": 127.0}, "report": "CRP 88 mg/L, Hb 127 g/L."}
+      ],
+      "chest_xray": [
+        {"status": "ok", "values": {"abnormal": false, "consolidation": true}, "report": "Right lower lobe consolidation. No separate lesion identified."},
+        {"status": "ok", "values": {"abnormal": true, "consolidation": true}, "report": "Consolidation persists; a rounded 18 mm opacity is seen within it."},
+        {"status": "non_diagnostic", "values": {}, "report": "Image not interpretable: patient movement."}
+      ],
+      "chest_ct": [
+        {"status": "ok", "values": {"nodule_seen": true, "size_mm": 17.0, "location": "peripheral"}, "report": "Peripheral 17 mm nodule in the right lower lobe with surrounding consolidation."}
+      ]
+    }
+  },
+  "notes": [
+    {"id": "n1", "kind": "patient_account", "state": "all_active", "text": "Retired teacher, smoked for thirty years and stopped five years ago. The cough started before the fever.", "mentions": ["cough_3wk", "fever"]},
+    {"id": "n2", "kind": "gp_note", "state": "all_active", "text": "Chest X-ray shows consolidation; treated as pneumonia. Review in six weeks.", "mentions": ["chest_xray.consolidation"]}
+  ],
+  "provenance": {
+    "library": null,
+    "catalogue_id": "tiny",
+    "catalogue_hash": "example-not-a-real-hash",
+    "generator": "reference",
+    "model": null,
+    "prompts": {},
+    "error_source": "guided",
+    "validation": {"ok": true, "repairs": 0}
+  }
+}

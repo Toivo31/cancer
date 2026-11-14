@@ -1,0 +1,7 @@
+{
+  "format": "cohort/1",
+  "library_id": "L_example",
+  "prevalence": {"lung_cancer": 0.016, "pneumonia": 0.25, "healthy": 0.734},
+  "n": 18800,
+  "seed": 1
+}

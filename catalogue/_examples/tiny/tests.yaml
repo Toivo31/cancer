@@ -1,0 +1,71 @@
+# Tests: what each reveals (outputs), how accurately, how long it takes. Not process steps.
+- id: history
+  label: Structured history
+  category: history
+  outputs:
+    - {id: cough_3wk, type: binary, measures: cough_3wk, sensitivity: {value: 0.9, source: assumption, note: "patients forget"}, specificity: {value: 0.98, source: assumption}}
+    - {id: fever, type: binary, measures: fever, sensitivity: {value: 0.85, source: assumption}, specificity: {value: 0.97, source: assumption}}
+    - {id: weight_loss, type: binary, measures: weight_loss, sensitivity: {value: 0.6, source: assumption, note: "often not asked"}, specificity: {value: 0.98, source: assumption}}
+  positive_when: "cough_3wk or weight_loss"
+  timing: {service_days: {value: 0.02, source: assumption}}
+  resource_kind: gp
+  invasive: false
+- id: blood_count
+  label: Basic blood count and CRP
+  category: bloodwork
+  outputs:
+    - {id: crp, type: continuous, unit: mg/L, measures: crp_true, error_sd: {value: 2.0, source: assumption}}
+    - {id: hb, type: continuous, unit: g/L, measures: hb_true, error_sd: {value: 3.0, source: assumption}}
+  nondiagnostic: {value: 0.01, source: assumption, note: "haemolysed or lost sample"}
+  positive_when: "crp >= 50 or hb < 110"
+  timing: {report_days: {dist: lognormal, median: 0.5, p90: 1.5, source: assumption}}
+  resource_kind: lab
+  cost_eur: {value: 15, source: assumption}
+  invasive: false
+- id: chest_xray
+  label: Chest X-ray
+  category: imaging
+  outputs:
+    - id: abnormal
+      type: binary
+      measures: lung_lesion
+      sensitivity:
+        value: 0.754
+        source: BRADLEY2021
+        grade: B
+        note: "symptomatic over-50s; size bands are an illustrative assumption"
+        by: {lesion_size_mm: {"..10": 0.4, "10..": 0.8}}
+      specificity:
+        value: 0.902
+        source: BRADLEY2021
+        grade: B
+        by: {condition: {pneumonia: 0.8}}
+    - id: consolidation
+      type: binary
+      measures: consolidation
+      sensitivity: {value: 0.8, source: assumption}
+      specificity: {value: 0.95, source: assumption}
+  nondiagnostic: {value: 0.02, source: assumption}
+  positive_when: "abnormal"
+  timing:
+    service_days: {value: 0.04, source: assumption}
+    report_days: {dist: lognormal, median: 1.5, p90: 4, source: assumption, note: "as in scenarios/finland_lung.yaml"}
+  resource_kind: xray
+  cost_eur: {value: 40, source: assumption}
+  invasive: false
+- id: chest_ct
+  label: CT of the chest
+  category: imaging
+  max_attempts: 2
+  outputs:
+    - {id: nodule_seen, type: binary, measures: lung_lesion, sensitivity: {value: 0.95, source: assumption, note: "params/test_accuracy.yaml diagnostic_ct_chest"}, specificity: {value: 0.8, source: assumption}}
+    - {id: size_mm, type: size_mm, measures: lesion_size_mm, only_if: "nodule_seen", error_sd: {value: 2.0, source: assumption}}
+    - {id: location, type: categorical, measures: lesion_location, only_if: "nodule_seen", accuracy: {value: 0.95, source: assumption}}
+  positive_when: "nodule_seen"
+  timing:
+    report_days: {dist: lognormal, median: 3, p90: 7, source: assumption}
+  resource_kind: ct
+  cost_eur: {value: 250, source: assumption}
+  invasive: false
+  harm: {complication_rate: {value: 0.001, source: assumption, note: "contrast reaction, illustrative"}}
+  requires: [history]                # facts (test ids or test.output) that should be known before ordering it

@@ -1,0 +1,19 @@
+# Tiny example catalogue: tests the catalogue/1 format and the card/1 schema. NOT medical content.
+# Numbers are placeholders marked `assumption` unless they are copied from params/ with their source.
+format: catalogue/1
+id: tiny
+version: 1
+title: Tiny example catalogue (format test only)
+status: example                     # example | draft | reviewed
+scope: >
+  Adults contacting primary care with chest symptoms. Prevalence is among these presenters, not in the
+  general population. Illustrative numbers only; used by tests and as a template.
+max_attempts: 3                     # attempts per test on a card (a test may lower it with its own max_attempts)
+
+# Visible facts about a patient, known from arrival. Distributions belong to populations/ (optional).
+background:
+  - {id: age, label: Age, type: continuous, unit: years, range: {min: 18, max: 100}}
+  - {id: sex, label: Sex, type: categorical, values: [f, m]}
+  - {id: smoking_status, label: Smoking, type: categorical, values: [never, former, current]}
+  - {id: pack_years, label: Pack-years, type: continuous, unit: pack-years, range: {min: 0, max: 200}}
+  - {id: region, label: Region, type: categorical, values: [urban_south, rural_east, rural_north]}
