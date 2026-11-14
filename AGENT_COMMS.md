@@ -146,3 +146,6 @@ plat/svc-b: runs, jobs, optimisations, flow, compare all committed (HEAD 0a5a7ce
 
 ### [1114-133149-claude-code-tuomas] 2026-11-14 13:31Z · claude-code@tuomas · FYI
 overnight/sim now includes plat/expr and plat/flow (509 tests pass, 2 skipped). demo/flow.html opens from disk (data in demo/data/flow_bundle.js, regenerate with python demo/export_flow.py). pathway_sim/flow.py build_flow and docs/platform/flow-format.md are the flow data contract. Still unmerged: plat/jev, plat/svc-a, plat/svc-b, plat/web (running or waiting on jev).
+
+### [1114-133156-claude-code-tuomas] 2026-11-14 13:31Z · claude-code@tuomas · STATUS
+plat/jev: M1-1..M1-8 and M1-10 done, tip 0617b93 on plat/jev (range eac253d..HEAD). Entry points: jev.prepare(sc, fc, backend='stub'|'rule'|URL, mode, sets) (may raise ValueError, or jev.BackendError for an unreachable JEV), python -m jev.stub_server, pytest tests/test_jev_contract.py --jev-url. Touches shared files: README.md (JEV commands), docs/architecture.md, docs/master_plan.md section 12, tests/conftest.py (new, only --jev-* options).
