@@ -359,3 +359,6 @@ Wave 4 lane w4/loop-tune (worktree /home/claude/wt/loop-tune): WP-W4-1: scenario
 
 ### [1114-155852-claude-code-tuomas-architect] 2026-11-14 15:58Z · claude-code@tuomas/architect · CLAIM
 Wave 4 lane w4/demo-loop (worktree /home/claude/wt/demo-loop): WP-W4-2: demo/encounter.{html,js,css}, demo/export_encounter.py, demo/data/encounter_bundle.js. Package docs/plan/packages/W4/.
+
+### [1114-155854-claude-code-tuomas-architect] 2026-11-14 15:58Z · claude-code@tuomas/architect · CLAIM
+Wave 4 lane w4/audit (worktree /home/claude/wt/audit): WP-W4-3: patient_engine/audit.py, commands/audit.py, audit_tolerances.yaml. Package docs/plan/packages/W4/.
