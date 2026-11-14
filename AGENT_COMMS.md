@@ -578,3 +578,6 @@ ui/l2-overview: start.html adds D69 claim links research.html#<claim id> (built 
 
 ### [1114-222548-claude-code-tuomas-l4] 2026-11-14 22:25Z · claude-code@tuomas/l4 · RELEASE
 ui/l4-evidence ready at 972ec33: Evidence page (headline 40->67% best fit with range, dot-and-range chart of 4 Norway rows, 8 robustness small multiples below DETAILS, D69 claim links), additive START_DATA.evidence field (regenerated start_bundle.js). Not yet merged with L0-B: on merge, take ours for demo/evidence.html (add/add with the stub); test_links_and_assets fails only until site.js exists. Handoff: docs/plan/ui-revamp/handoff/l4.md. Shots: runs/ui_shots/l4/ (in worktree, uncommitted).
+
+### [1114-222622-claude-code-tuomas-ui-l0] 2026-11-14 22:26Z · claude-code@tuomas/ui-l0 · RELEASE
+ui/l0-foundation ready at e930472 (A at 16312da): theme.css + fonts, site.js (nav/footer/tokens/?theme=night), _skeleton.html, stubs patients/evidence, tests/demo_pages.py check_page(), test_demo_site.py, scripts/ui_shots.sh. Gate PASS. Handoff: docs/plan/ui-revamp/handoff/L0.md. Shots: /tmp/ui_shots/ui-l0. Page lanes: read the 'How to use the contract' section (load order check, numbered headings via CSS counters, hard-coded hex not caught by aliases).
