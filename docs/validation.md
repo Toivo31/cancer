@@ -170,3 +170,93 @@ Correlation lowers the faster-PET median by only 2 points at rho 0.6 and the aut
 Recommendation (not made): report the prediction band, not 78–86%, in the pitch (authors' pathway 62–86%, central 75%; faster PET 50–74%);
 extend the shipped calibration grid at the post-board wait, extra wait and bronchoscopy wait, or report likelihood-weighted
 predictions; keep `stokstad_calibrated.yaml` as the best-fit illustration only.
+
+## Optimiser robustness, ablation and structure check (14 Nov night)
+
+Question: the optimiser, started from the observed Norwegian pathway, reached 88.2% treated within 42 days with the faster PET-CT scanner and 67.1% without. It was only ever tested on the 11 settings of the first calibration grid. Does it hold on the 184 accepted settings of the extended grid? Which of its four changes matter? How close is our reconstruction to the paper?
+
+Reproduce: `python scripts/norway_optimiser_robust.py` (tasks 1 and 2) and `python scripts/norway_optimiser_structure.py` (task 3 experiments), both cached in `docs/review_checks/norway_opt_*.json`; `--recompute` reruns (about 50 minutes each on 2 shared cores). Settings: n = 1000 patients, seed 1 per grid setting, the same patients for every flowchart. Observed, faster-PET and authors' pathway are read from the grid table (a spot check re-ran three settings and matched exactly). Best fit: the shipped calibrated scenario, held-out seeds 201 to 203, 3 x 1000 patients, the same cohorts as the dashboard (the run reproduces 88.2% and 67.1%). Noise on a 1000-patient share is about 1.5 points; differences between flowcharts on the same patients are tighter. The optimiser's four changes: (a) tumour board before sampling is finished, (b) PET-CT always ordered early, (c) exercise test always ordered early, (d) tissue sampling ordered at the same time as the first visit (it starts right after the CT). The four-change flowchart was rebuilt from the observed flowchart and checked node by node against the saved `runs/opt_stokstad*.json`. One choice to know: the saved flowcharts carry the best-fit PET-CT-at-triage share (1.0). On each grid setting they get that setting's share, as every other flowchart does.
+
+### 1. The optimiser on the 184 settings
+
+Share treated within 42 days, across the 184 accepted settings (percent):
+
+| Flowchart | min | 10% | median | 90% | max |
+|---|---|---|---|---|---|
+| Observed | 36.0 | 36.7 | 39.4 | 42.9 | 44.0 |
+| Faster PET-CT only | 49.7 | 54.5 | 60.5 | 66.3 | 74.2 |
+| Authors' pathway (simulated, with faster scanner) | 61.7 | 66.4 | 74.7 | 82.1 | 85.9 |
+| Optimiser, no new equipment | 48.3 | 56.8 | 64.8 | 71.0 | 76.8 |
+| Optimiser, with faster scanner | 78.2 | 82.0 | 87.7 | 91.3 | 93.3 |
+
+- Optimiser with scanner beats the authors' pathway in **184 of 184** settings, by 3.6 to 19.0 points (median 12.8). It beats faster-PET-only in 184 of 184.
+- Optimiser without equipment beats observed in **184 of 184** (gain 10.6 to 36.0 points, median 24.9).
+- Optimiser without equipment beats faster-PET-only in **128 of 184**. It loses in 56. Median gap +5.1 points, range -21.7 to +22.2. The losses are the settings where PET-CT is mostly ordered at the first visit (triage share 0 to 0.5: 34 of the 56) and the wait after the board is short.
+- Optimiser without equipment beats the authors' pathway in 22 of 184. That comparison is not fair: the authors' pathway includes the faster scanner.
+- The ranking holds. The size does not: the "88.2 / 67.1" of the best fit is a middle value; the no-equipment result ranges over 28 points and the with-scanner result over 15.
+
+### 2. Ablation
+
+Remove one change at a time (leave one out), and add one change at a time to the observed pathway. Best fit in the first columns; median over the 184 in the last.
+
+| Optimiser flowchart | no scanner, best fit | no scanner, 184 median (min to max) | with scanner, best fit | with scanner, 184 median (min to max) |
+|---|---|---|---|---|
+| All four | 67.1 | 64.8 (48.3 to 76.8) | 88.2 | 87.7 (78.2 to 93.3) |
+| Without (a) board before sampling done | 65.7 | 62.7 | 85.8 | 84.6 |
+| Without (b) PET-CT always early | 51.3 | 51.4 | 77.7 | 79.1 |
+| Without (c) exercise test always early | 62.4 | 60.4 | 81.5 | 82.0 |
+| **Without (d) sampling at the first visit** | **64.9** | **60.9 (47.5 to 68.5)** | **85.4** | **82.8 (69.6 to 90.2)** |
+| Only (b) and (c) (neither (a) nor (d)) | 56.7 | 52.4 | 73.6 | 71.2 |
+| Only (d), on the observed pathway | 46.6 | 46.4 | 69.7 | 70.6 |
+
+Loss when a change is removed, in points (best fit; 184 median): (b) 15.8 and 10.5 (13.2 and 9.2); (c) 4.7 and 6.7 (4.2 and 5.8); (a) 1.4 and 2.4 (1.3 and 1.9); (d) 2.2 and 2.8 (3.1 and 3.8). Removing any change lowers the result in every one of the 184 settings.
+
+**Is the optimiser's lead over the authors' pathway entirely due to (d)? No.**
+
+- Without (d), with the scanner, the optimiser still gives 85.4% at the best fit against 80.1% for the authors' pathway (+5.3). Over the 184 it beats the authors' pathway in 182 and leads by 7.9 points at the median (with (d): 12.8). So (d) is about a third of the lead.
+- Without (d) and without the scanner the optimiser equals the three changes (a), (b), (c): 64.9% at the best fit (median 60.9% over the 184). That is above faster-PET-only (60.3%) by 4.6 points at the best fit, and above it in 113 of 184 settings.
+- (b), the PET-CT change, is the biggest single piece. It is one of the authors' own three changes.
+- (a) and (d) are substitutes. Each takes sampling off the path to the board. Alone, each costs little; removing both costs 10.4 points (no scanner) and 11.8 (scanner) at the best fit.
+- The real source of the lead is in the authors' pathway, not in (d) (section 3): our authors' pathway makes treatment wait for the tissue sample, which only starts after the tumour board. Take that wait away and it gives 88.3% at the best fit, the optimiser's 88.2%. Over the 184 the difference is 0.2 to 2.5 points (median 0.3).
+
+### 3. Structure check against the paper
+
+What I could read. The publisher, PMC and NCBI hosts refused or blocked the fetch tool, except the figure caption pages and the Springer article page. The text below comes from a machine summary of the Springer open-access page and of the captions of figures 3 and 4. **I did not see the figure images** and did not read the full text myself, so every row below is "as summarised" and should be checked against the paper before it is used in the pitch. The repo's own earlier note (`params/stokstad.yaml`, `docs/parameters.md`) says the figure 4 timings were also never seen. Summaries only; no passages copied.
+
+What the paper says, as far as I could read it. Figure 3 has three panels: observed, the same patients with a PET-CT wait of 7 days or less, and the reordered pathway with that same PET-CT wait. Figure 4 draws the observed and the proposed pathway with median times. The proposed pathway: CT requested right after the referral letter; PET-CT (fit patients) and exercise test (reduced lung function) requested right after the first consultation; tumour board straight after them, which also chooses the sampling method and the treatment; treatment referral straight after the board, before the final diagnostic results, because PET-CT changed the plan in about 2% of patients; sampling requested after the board. The simulation reordered each patient's observed intervals. It used the 7-day PET-CT wait for everyone, and the observed referral-to-treatment waits (surgery 13 days, radiotherapy 22.5). A discussion passage says PET-CT should ideally be requested even earlier, soon after the CT.
+
+| # | Our flowchart (`scenarios/stokstad.yaml`) | Paper | Likely effect on our numbers | Tested |
+|---|---|---|---|---|
+| 1 | In the authors' pathway **treatment waits for the tissue sample to finish** (`treat` after the board and `sampling_done`), and sampling only starts after the board | Treatment is referred right after the board; sampling happens while the patient waits for treatment | Large, raises ours when removed: +13.5 points median (+8.2 at the best fit: 80.1 to 88.3). Binding because the fitted wait after the board is only 2 to 8 days, while a sample takes about 10 days from request to report | Yes, below |
+| 2 | Fitted practice orders on-time PET-CT at triage (share 1.0 at the best fit, 0.5 to 1.0 in most accepted settings) and carries it into the authors' pathway | Formal definition: PET-CT after the first consultation; the paper's own list of delays counts a PET-CT not requested at the first consultation as late | Large, lowers ours: 80.1 to 66.1 at the best fit; median -14.1 over the 184 | Yes, below |
+| 3 | Wait from the board to treatment start is fitted at 6 days (best fit) or 2 to 8 (extended grid) | Observed referral-to-treatment medians, 13 days (surgery) and 22.5 days (radiotherapy), 0 days from board to referral | Large, direction unknown. The paper's step medians chained exceed its 46.5-day median, so something overlaps that the paper does not say; our fit puts the overlap here | Already in section 1 |
+| 4 | Waits drawn independently per step (lognormal, p90 assumed) | Each patient's own observed intervals are reused, so a slow patient stays slow | Moderate. Correlation barely moves the faster-PET miss (section 5 above) | Yes, earlier |
+| 5 | Faster PET-CT: wait uniform 2 to 4.5 days plus a report of about 2.5, so 5 to 7 days (assumption) | "7 days or less", exact value not given in what I read | Unknown. A slower scanner would lower both faster-PET and authors' numbers; may explain part of the faster-PET over-prediction (62% against 48%) | No |
+| 6 | PET-CT for every patient | Fit patients only | Small; PET-CT is on the path for most | No |
+| 7 | Weekly board with a cutoff (weekday and cutoff are assumptions); the optimal pathway keeps it | Board "straight after" the tests; whether the simulated pathway also removes the wait for the weekly meeting is not stated in what I read | Unknown; if it removes the weekly wait, the paper's 80% is easier than ours | No |
+| 8 | Sampling method chosen by tumour location (central bronchoscopy, peripheral needle) | A method that serves diagnosis and staging; count of procedures 112 to 92 | Small; it reproduces the 0.82 ratio | Earlier, not repeated |
+| 9 | 16 patients with an incomplete work-up at the board are not modelled in the observed pathway | Counted as a delay reason in the paper | Small; run before (`scenarios/experiments/stokstad_incomplete_board_*`), no fix of the faster-PET miss | Earlier |
+| 10 | Exercise test: 24% ordered early in observed practice, 21% need one, always early after the visit in the authors' pathway | Same idea | Matches | n/a |
+| 11 | Not reproduced: the paper's 93% estimate using each step's median interval (figure 4) | Reported | Not a check we can make until the figure 4 timings are known | No |
+
+Experiments (copies under `scenarios/experiments/stokstad_authors_variants.yaml`; the shipped scenarios are untouched). Authors' pathway, share treated within 42 days:
+
+| Variant | Best fit | 184 median (min to max) | In published 72 to 87 | Difference to shipped authors' pathway, 184 median |
+|---|---|---|---|---|
+| Shipped authors' pathway | 80.1 | 74.7 (61.7 to 85.9) | 118 of 184 | 0 |
+| Treatment does not wait for sampling | 88.3 | 88.5 (78.5 to 94.9) | 71 of 184 | +13.5 |
+| PET-CT requested at the first consultation | 66.1 | 62.6 (44.1 to 76.2) | 19 of 184 | -14.1 |
+| Both (the paper's text read literally) | 77.3 | 79.0 (64.2 to 89.5) | 139 of 184 | +3.9 |
+
+Which is closer to the paper on PET-CT? The paper's formal pathway requests PET-CT at the first consultation, so the literal reading is **PET-CT at the first visit**, not at triage. Alone that gives 66%, which misses the published 80%. But the shipped 80% rests on two errors that offset each other: PET-CT earlier than the paper has it (raises ours), and a treatment wait for sampling that the paper does not have (lowers ours). The literal reading of both gives 77.3% at the best fit and 79.0% median over the 184, closer to 80% than the shipped version, and 139 of 184 settings inside the published interval against 118. It is a better-structured match, not a better fit: the observed pathway was calibrated with the triage share, and I did not recalibrate with the literal reading. In the 40 settings with a triage share of 0 or 0.5, the literal reading gives a median of 84.4%.
+
+### 4. What may be claimed about the optimiser on this test
+
+- The ranking holds. On all 184 settings the optimiser without equipment beats observed, and the optimiser with the faster scanner beats the authors' pathway as we simulate it and faster-PET-only. Say this.
+- The size does not hold. Optimiser with scanner: 78 to 93% (median 88); no equipment: 48 to 77% (median 65), against 40% observed. Do not quote 88.2 and 67.1 without the range.
+- Without equipment it is not clearly better than the scanner alone: it beats faster-PET-only in 128 of 184, loses in 56. Do not say "reordering beats buying the scanner" from this test without that count.
+- The optimiser's lead over the authors' pathway is **not a finding about care**. It comes from our authors' pathway making treatment wait for sampling that starts after the board. With that wait removed the two are within 0.2 to 2.5 points in every setting. The claim "the optimiser improved on the authors' pathway" must not be made.
+- The independent evidence is that the optimiser rediscovered, from the observed pathway alone, the authors' three changes (a, b, c) and put the biggest weight on PET-CT (b) and the exercise test (c). The fourth, (d), is not in the paper; it is worth 2 to 4 points here and overlaps with (a). It means ordering the tissue sample at the CT stage. Whether a biopsy can be planned before the first visit is a clinical question the model cannot answer.
+- Held-out here means other patients, not other structure. The optimiser, its test and the model share the same assumptions, including the gate in row 1 and the triage share in row 2.
+
+Not done: re-running the optimiser search under each of the 184 settings (the flowcharts are the ones found at the best fit); recalibrating the observed pathway under the literal reading of PET-CT timing; the faster-scanner wait, the board frequency and the 93% estimate (rows 5, 7, 11); reading the figure images or the full text first-hand.
