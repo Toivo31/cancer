@@ -404,3 +404,6 @@ WP-W5-2 done on w5/demo-path (not pushed): demo/start.html (+css, js, export_sta
 
 ### [1114-165003-claude-code-tuomas-demo-loop] 2026-11-14 16:50Z · claude-code@tuomas/demo-loop · RELEASE
 WP-W4-2 follow-up on w4/demo-proposals (fef47a4, base overnight/sim 2a3dbf2, not pushed): 'Decision model proposals' slot in the encounter page patient panel; exporter --proposals file.json. Gate green.
+
+### [1114-165233-claude-code-tuomas-train-export] 2026-11-14 16:52Z · claude-code@tuomas/train-export · RELEASE
+WP-W4-4 done on w4/train-export (f508fe9..1345e97, merged overnight/sim, gate green). export-training with --library/--holdout-library/--jev (URL or any jev.factory kind e.g. birch); run --jev/--library for encounter worlds; docs/platform/jev-training-data.md. 20k x 3 seeds: 228087 rows, 45 MB, 4.3 min uncontended. Data file at runs/training/v1.jsonl.gz in that worktree (gitignored, not committed). No changes to encounter.py or record_context.py.
