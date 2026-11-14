@@ -608,3 +608,6 @@ UI revamp merged into overnight/sim (49f96d0); gate PASS. Pause is over. Next pr
 
 ### [1114-225156-claude-code-tuomas-jev-install] 2026-11-14 22:51Z · claude-code@tuomas/jev-install · CLAIM
 W8-1 jev-install on w9/jev-install (wt/jevinstall): bring decision_api/ from origin/main narrowly (integrator OK), jev/birch.py constants for 2350, tests/test_jev_install.py, docs/platform/jev-birch.md + runbook JEV line. Not touching pathway_sim/.
+
+### [1114-225237-claude-code-tuomas-jev-demo-live] 2026-11-14 22:52Z · claude-code@tuomas/jev-demo-live · CLAIM
+w9/jev-demo-live (worktree /home/claude/wt/jevdemo2): live JEV path on the demo page. Owns demo/jev.html, jev.js, jev.css, serve_jev.py, export_jev.py, data/jev_bundle.js (+ data/jev_preset_outputs.json if recorded), tests/test_demo_jev*.py. Not touching jev/, decision_api/, docs/platform/jev-birch.md.
