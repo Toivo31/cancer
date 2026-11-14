@@ -108,12 +108,12 @@ Critical path to the first browser loop:
 
 | | ID | Ticket | Size | Needs | Done when |
 |---|---|---|---|---|---|
-| [ ] | M7-1 | Dockerfile and compose file | S | M3-1 | `docker run` serves the app with a data volume |
-| [ ] | M7-2 | Access token, read-only demo mode, rate and size limits, JEV host allowlist | M | M2-5 | Requests without a token rejected; limits tested |
-| [ ] | M7-3 | Host config and runbook | S | M7-1, T (F5) | Tuomas can deploy with one command |
-| [ ] | M7-4 | CI on pull requests: tests, web build, type check, container build | S | M3-1 | Workflow green on a PR |
-| [ ] | M7-5 | Seed instance: two templates and a guided project | S | M7-3 | A first-time visitor can run the loop |
-| [ ] | M7-6 | Synthetic-data notice on upload | S | M6-5 | Banner present |
+| [ ] | M7-1 | Dockerfile and compose file | S | M3-1 | `docker run` serves the app with a data volume **Status: files written, `docker build` not run (no daemon); needs web/ merged.** |
+| [x] | M7-2 | Access token, read-only demo mode, rate and size limits, JEV host allowlist | M | M2-5 | Requests without a token rejected; limits tested |
+| [ ] | M7-3 | Host config and runbook | S | M7-1, T (F5) | Tuomas can deploy with one command **Status: runbook and `deploy/deploy.sh` written; waits on a host (F5).** |
+| [ ] | M7-4 | CI on pull requests: tests, web build, type check, container build | S | M3-1 | Workflow green on a PR **Status: workflow written, not run on GitHub.** |
+| [x] | M7-5 | Seed instance: two templates and a guided project | S | M7-3 | A first-time visitor can run the loop |
+| [ ] | M7-6 | Synthetic-data notice on upload | S | M6-5 | Banner present **Status: backend done (`GET /api/access` data_notice); web banner open.** |
 
 ## M8 Evidence and robustness in the platform (after the loop works)
 

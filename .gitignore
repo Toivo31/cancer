@@ -18,3 +18,7 @@ web/*.tsbuildinfo
 # Service data (SQLite and result blobs)
 data/
 web/shots/
+
+# Deployment secrets
+deploy/*.env
+!deploy/platform.env.example
