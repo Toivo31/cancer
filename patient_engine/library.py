@@ -234,7 +234,9 @@ def load_library(path: str | os.PathLike, catalogue=None) -> Library:
         raise LibraryError(f"unexpected card file name {file_info['name']!r}")
     if len(payload) != file_info.get("bytes") or hashlib.sha256(payload).hexdigest() != file_info.get("sha256"):
         raise LibraryError(f"{CARDS_FILE} does not match the hash recorded in the manifest (file changed)")
-    if payload[:10] != _gzip_header():
+    # Byte 9 is the gzip "OS" byte: Python writes 0xff on Linux but a platform code on macOS, so
+    # a library written on a Mac would be rejected here. Compare everything else.
+    if payload[:9] != _gzip_header()[:9]:
         raise LibraryError(f"{CARDS_FILE} has an unexpected gzip header")
     try:
         raw = gzip.decompress(payload)
