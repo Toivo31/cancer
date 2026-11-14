@@ -122,3 +122,63 @@ def test_unknown_trainer_and_bad_field(loop):
         jev.train("jev", ds, sc, fc)
     with pytest.raises(ValueError):
         jev.train("frequency", ds, sc, fc, {"context_fields": ["colour"]})
+
+
+# ----------------------------------------------------------------------------- M6-7 local trainer
+def test_local_trainer_imitates_and_is_usable_at_a_decision_point(loop):
+    sc, fc, pts, log = loop
+    ds = D.dataset_from_log(sc, fc, log, 1)
+    res = jev.train("local", ds, sc, fc, {"epochs": 15, "decision_points": ["first_contact"]})
+    assert res.kind == "local_model" and res.decision_points == ["first_contact"]
+    ev = res.evaluation
+    assert ev["label"].startswith("Agreement") and ev["log_loss"] < ev["log_loss_uniform"]
+    be = jev.LocalModelBackend(res.artifact, "m_test")
+    ctx = {"group": "site_specific", "age": 60, "t_days": 0.0, "fast_track": False, "attributes": {}, "history": []}
+    other = dict(ctx, group="non_specific")
+    ask = lambda c: be.decide([jev.DecisionRequest("p1:first_contact", "first_contact", c, [{"id": "nurse_visit"}, {"id": "gp_visit"}])])[0].probs["nurse_visit"]
+    assert ask(ctx) > 0.6 > 0.45 > ask(other) - 0.15 and ask(ctx) > ask(other) + 0.2        # learned: site_specific goes to the nurse more often
+    # an uncovered decision point is uniform and counted, never silent
+    r = be.decide([jev.DecisionRequest("p1:sample_choice", "sample_choice", ctx, [{"id": "bronch"}, {"id": "ttnb"}])])[0]
+    assert r.probs == {"bronch": 0.5, "ttnb": 0.5} and be.summary() == {"model_fallbacks": 1}
+    # carried in the flowchart's decision_policy, a run uses it
+    fc2 = fc.copy()
+    fc2.decision_policy = {"backend": "stub", "mode": "sample", "points": {**copy.deepcopy(fc.decision_policy["points"]),
+                           "first_contact": {"backend": "local", "model": "m_test"}}, "models": {"m_test": res.artifact}}
+    fc3, pol = jev.prepare(sc, fc2, backend="stub", seed=1)
+    log2 = simulate(sc, fc3, generate_patients(sc, 400, 2), policy=pol, seed=2)
+    assert {c["backend"] for p in log2.patients for c in p.choices if c["node"] == "first_contact"} == {"local"}
+    with pytest.raises(ValueError):
+        jev.prepare(sc, sc.flowcharts["baseline"].copy(), backend="local", seed=1)       # no model attached: a clear refusal
+
+
+def test_local_trainer_does_not_read_outcomes(loop):
+    sc, fc, _, log = loop
+    ds = D.dataset_from_log(sc, fc, log, 1)
+    cfg = {"epochs": 3, "decision_points": ["first_contact"]}
+    a = jev.train("local", ds, sc, fc, cfg).artifact["params"]
+    for i, r in enumerate(ds.rows):
+        r["outcome"] = {"usable_result": bool(i % 3)}
+    assert jev.train("local", ds, sc, fc, cfg).artifact["params"] == a
+
+
+# ----------------------------------------------------------------------------- M6-8 exploration
+def test_exploration_gives_outcome_labelled_rows_for_every_option(loop):
+    sc, fc, pts, _ = loop
+    rows, log = jev.explore.explore(sc, fc, 3500, seed=4, points=["sample_choice"], patients=pts)
+    assert rows and {r["decision_point"] for r in rows} == {"sample_choice"}
+    by_opt = {}
+    for r in rows:
+        by_opt.setdefault(r["chosen"], []).append(r)
+    assert set(by_opt) == {"bronch", "ttnb"}
+    assert all(r["outcome"].keys() >= {"usable_result", "days_to_result", "days_to_next_milestone", "treated"} for r in rows)
+    assert all(any(r["outcome"]["usable_result"] is not None for r in rs) for rs in by_opt.values())
+    ds = D.Dataset.from_rows(rows)
+    assert not ds.read_problems and D.validate(ds, sc, fc)["decision_points"]["sample_choice"]["rows"] == len(rows)
+    # the context holds no outcome and nothing hidden
+    assert all("outcome" not in r["context"] for r in rows)
+    # other decision points still follow the stub, and the choice at the explored point is independent of location (random)
+    assert {c["backend"] for p in log.patients for c in p.choices if c["node"] == "sample_choice"} == {"explore"}
+    assert {c["backend"] for p in log.patients for c in p.choices if c["node"] == "first_contact"} == {"stub"}
+    with pytest.raises(ValueError):
+        jev.explore.explore(sc, fc, 100, points=["ct"])
+    assert jev.explore.outcome_summary(rows)["sample_choice"].keys() == {"bronch", "ttnb"}

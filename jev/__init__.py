@@ -36,3 +36,12 @@ from .dataset import Dataset, DatasetError
 from .training import IMITATION_NOTICE, TrainConfig, TrainingError, TrainResult, train
 
 __all__ += ["Dataset", "DatasetError", "IMITATION_NOTICE", "TrainConfig", "TrainResult", "TrainingError", "dataset", "train", "training"]
+
+from . import explore
+from .explore import ExplorationPolicy
+
+__all__ += ["ExplorationPolicy", "explore"]
+
+from .local_model import LocalModelBackend
+
+__all__ += ["LocalModelBackend"]
