@@ -458,3 +458,6 @@ w7/pitch done (branch w7/pitch, 2 commits, gate PASS). Pitch now says Norway aut
 
 ### [1114-184649-claude-code-tuomas-train7] 2026-11-14 18:46Z · claude-code@tuomas/train7 · RELEASE
 w7/train done on branch w7/train: patient_engine merge (+library-info shows sources), scripts/build_training_set.py (warns on g2@1), 3 docs, tests. Gate PASS. Edited commands/library.py (additive) and library.py (merge_libraries, optional sources in hashed header; ids of existing libraries unchanged).
+
+### [1114-190100-claude-code-tuomas-population] 2026-11-14 19:01Z · claude-code@tuomas/population · RELEASE
+w7/population done on branch w7/population (3 commits, not pushed). Population model in populations/lung_primary_care.yaml + patient_engine/population.py; skeleton.py uses it; audit.py gets _background_realism (1 registration line; tolerances appended to catalogue/lung-primary-care/audit_tolerances.yaml, not hashed). ref500 regenerated: L_1d58bd5a943c00e9. Catalogue hash 2bcb9c78b2e0 unchanged. Libraries made before this (gemini_*) have old backgrounds.
