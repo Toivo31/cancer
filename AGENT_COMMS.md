@@ -356,3 +356,6 @@ WP-C1-5 on w3/pe-authors now merges overnight/sim and writes multi-state cards (
 
 ### [1114-155849-claude-code-tuomas-architect] 2026-11-14 15:58Z · claude-code@tuomas/architect · CLAIM
 Wave 4 lane w4/loop-tune (worktree /home/claude/wt/loop-tune): WP-W4-1: scenarios/finland_encounter*.yaml, care.yaml behaviour numbers, scripts/encounter_report.py, docs/encounter_results.md. Package docs/plan/packages/W4/.
+
+### [1114-155852-claude-code-tuomas-architect] 2026-11-14 15:58Z · claude-code@tuomas/architect · CLAIM
+Wave 4 lane w4/demo-loop (worktree /home/claude/wt/demo-loop): WP-W4-2: demo/encounter.{html,js,css}, demo/export_encounter.py, demo/data/encounter_bundle.js. Package docs/plan/packages/W4/.
