@@ -13,6 +13,8 @@ from pathway_sim.policy import RulePolicy
 
 from .adapter import BackendPolicy
 from .migrate import migrate_flowchart
+from .http import HttpBackend
+from .routing import RoutingBackend
 from .stub import StubBackend
 
 
@@ -35,23 +37,39 @@ def set_probability(points: dict, point: str, option: str, prob: float) -> None:
         raise ValueError(f"{point}: a one-option row must have probability 1")
 
 
+def _make_backend(kind: str, cfg: dict, stub: StubBackend, where: str):
+    """One backend from its config (``decision_policy`` or a per-point override)."""
+    if kind == "stub":
+        return stub
+    if kind == "http":
+        if not cfg.get("url"):
+            raise ValueError(f"{where}: the http backend needs a url")
+        on_error = cfg.get("on_error", "fail")
+        return HttpBackend(cfg["url"], cfg.get("model"), timeout=float(cfg.get("timeout", 2.0)),
+                           on_error=on_error, fallback=stub if on_error == "fallback_stub" else None)
+    raise ValueError(f"{where}: unknown backend {kind!r}")
+
+
 def prepare(scenario, flowchart, backend: str | None = None, mode: str | None = None, seed: int = 0,
-            sets: dict | None = None):
+            sets: dict | None = None, **options):
     """Policy for ``flowchart``.
 
-    ``backend``: ``"stub"`` (default when the flowchart has a ``decision_policy`` or none), ``"rule"``
-    (today's :class:`RulePolicy`, unchanged). ``mode``: ``"sample"`` or ``"argmax"``; default is
-    the flowchart's ``decision_policy.mode``, else ``"sample"``. ``sets``: ``{(point, option): prob}``
-    overrides applied to the stub table.
+    ``backend``: ``"stub"`` (default), ``"rule"`` (today's :class:`RulePolicy`, unchanged), ``"http"``
+    or a URL ``"http://host:port"``. ``mode``: ``"sample"`` or ``"argmax"``; default is the
+    flowchart's ``decision_policy.mode``, else ``"sample"``. ``sets``: ``{(point, option): prob}``
+    overrides applied to the stub table. ``options`` (``url``, ``model``, ``on_error``, ``timeout``)
+    override the flowchart's ``decision_policy`` for the default backend. Per-point overrides live in
+    ``decision_policy.points.<point>.backend``.
     """
-    dp = flowchart.decision_policy or {}
+    dp = dict(flowchart.decision_policy or {})
     backend = backend or dp.get("backend", "stub")
+    cfg = {**{k: v for k, v in dp.items() if k not in ("points", "backend", "mode")}, **options}
+    if backend.startswith(("http://", "https://")):
+        cfg["url"], backend = backend, "http"
     if backend == "rule":
         if sets:
             raise ValueError("--set needs the stub backend")
         return flowchart, RulePolicy(flowchart.policy, seed)
-    if backend != "stub":
-        raise ValueError(f"unknown backend {backend!r}")
     fc = migrate_flowchart(flowchart)
     points = fc.decision_policy["points"]
     for (pt, opt), p in (sets or {}).items():
@@ -60,5 +78,13 @@ def prepare(scenario, flowchart, backend: str | None = None, mode: str | None = 
     problems = stub.validate_against(fc, scenario)
     if problems:
         raise ValueError("decision_policy does not fit the flowchart: " + "; ".join(problems))
+    default = _make_backend(backend, cfg, stub, "decision_policy")
+    routes = {}
+    for pt, spec in points.items():
+        kind = spec.get("backend")
+        if kind and kind != backend:
+            routes[pt] = _make_backend(kind, {**cfg, **{k: v for k, v in spec.items() if k not in ("default", "rules", "backend")}},
+                                       stub, f"points.{pt}")
+    be = RoutingBackend(default, routes) if routes else default
     mode = mode or fc.decision_policy.get("mode", "sample")
-    return fc, BackendPolicy(stub, mode=mode, scenario=scenario, flowchart=fc)
+    return fc, BackendPolicy(be, mode=mode, scenario=scenario, flowchart=fc)

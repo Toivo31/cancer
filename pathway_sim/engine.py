@@ -171,8 +171,6 @@ class Simulation:
         self.decision_mode = getattr(self.policy, "decision_mode", "argmax")
         if self.decision_mode not in ("sample", "argmax"):
             raise ValueError(f"decision mode must be 'sample' or 'argmax', not {self.decision_mode!r}")
-        self.backend_name = getattr(self.policy, "backend_name", type(self.policy).__name__)
-        self.model_id = getattr(self.policy, "model_id", None)
         self.resources = {k: dict(v) for k, v in sc.resources.items()}
         for rid, ov in fc.resource_overrides.items():
             self.resources[rid] = {**self.resources[rid], **ov}
@@ -415,8 +413,9 @@ class Simulation:
                     pr.choices.append({"node": nid, "t": round(t - pr.patient.arrival, 4), "chosen": pick,
                                        "offered": offered,
                                        "probs": {k: round(float(v), 4) for k, v in probs.items()},
-                                       "mode": self.decision_mode, "backend": self.backend_name,
-                                       "model": self.model_id})
+                                       "mode": self.decision_mode,
+                                       "backend": getattr(self.policy, "backend_name", type(self.policy).__name__),
+                                       "model": getattr(self.policy, "model_id", None)})
                     for o in n.options:
                         if o == pick:
                             pr.status[o] = "enabled"
