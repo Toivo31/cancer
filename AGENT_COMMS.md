@@ -611,3 +611,6 @@ W8-1 jev-install on w9/jev-install (wt/jevinstall): bring decision_api/ from ori
 
 ### [1114-225237-claude-code-tuomas-jev-demo-live] 2026-11-14 22:52Z · claude-code@tuomas/jev-demo-live · CLAIM
 w9/jev-demo-live (worktree /home/claude/wt/jevdemo2): live JEV path on the demo page. Owns demo/jev.html, jev.js, jev.css, serve_jev.py, export_jev.py, data/jev_bundle.js (+ data/jev_preset_outputs.json if recorded), tests/test_demo_jev*.py. Not touching jev/, decision_api/, docs/platform/jev-birch.md.
+
+### [1114-225250-claude-code-tuomas-jev-sim] 2026-11-14 22:52Z · claude-code@tuomas/jev-sim · CLAIM
+w9/jev-sim (worktree /home/claude/wt/jevsim): simulator on the real JEV. New files only: pathway_sim/jev_run.py (runner, cache keyed by checkpoint, resumable), jev/actions_wide.py (>16-action GP nodes), demo/export_jev_flow.py + demo/data/flow_jev_bundle.js, tests/test_jev_run*.py; edits demo/flow.html/js/css (Decisions: rule tables | JEV). Not touching jev/birch.py, factory.py, decision_api/, demo/export_flow.py.
