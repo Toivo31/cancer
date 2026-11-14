@@ -34,7 +34,7 @@ both, as he asked. The accents are the video's own honey/ochre, broken (greyed) 
 | `--brick` | `#9E3B2A` | queue "piled up", cancer missed, harm; text allowed | 5.9 / 6.4 / 5.4 |
 | `--brick-tint` | `#E8CFC4` | queue "piled up" fill | ink on it 11.4 |
 | `--brown` | `#6A4B30` | links and the rare second accent (e.g. the published-value ring in Evidence charts) | 6.9 / 7.5 / 6.3 |
-| `--night` | `#161512` | the one dark element: terminal/command chips, a possible title card | card text on it 17.3 |
+| `--carbon` | `#161512` | the one dark element: terminal/command chips, a possible title card | card text on it 17.3 |
 
 Rules: at most one accent per view besides ink; mustard and brick mean "waiting" and "wrong", never decoration;
 "today" is grey and "after" is ink (as `live_demo` already does); no green anywhere (the video's `#1e8755` is the one
@@ -42,7 +42,7 @@ thing left out; "good" is simply ink). Mustard vs brick differ in lightness (2.3
 red-green colour blindness, and the outline weight and "N waiting" text carry the meaning anyway.
 The frames' very light graph labels fall below AA. The site uses `--ink-3` for labels; `--faint` stays for dots and lines.
 
-Paper alternatives for Q6: neutral like the frames `#F8F7F2`; video `#FBF9EF`; proposed `#F4F0E4`; stronger "80s"
+Paper alternatives (D61 chose #F4F0E4): neutral like the frames `#F8F7F2`; video `#FBF9EF`; proposed `#F4F0E4`; stronger "80s"
 `#EFE9D8` (ink-3 still 4.9:1 on it). The rest of the palette works on all four.
 
 ## Type
@@ -55,7 +55,7 @@ Paper alternatives for Q6: neutral like the frames `#F8F7F2`; video `#FBF9EF`; p
 | Body | Inter | 16 / 400, line-height 1.55, max 64ch, `--ink-2` | |
 | Big numbers, `DAY 021` | Inter | 56–72 / 700, `font-variant-numeric: tabular-nums` | numbers stay in Inter, as in the video's DAY counter |
 | Labels, eyebrows, legend, stamps, captions | Courier Prime | 12–13 / 400–700, CAPS for labels, tracking +0.06em | the typewriter |
-| Commands, file paths | Courier Prime on `--night` | 13 | the terminal chip |
+| Commands, file paths | Courier Prime on `--carbon` | 13 | the terminal chip |
 
 Fallback stacks (no network): `"Inter", "Helvetica Neue", Helvetica, Arial, system-ui, sans-serif` and
 `"Courier Prime", "Courier New", Courier, monospace`. Vendor the fonts as `woff2` with `OFL.txt` (SIL Open Font
@@ -92,7 +92,7 @@ cannot be downloaded tonight, the stacks above still give the look (Helvetica/Ar
 | `web/` | **new `web/src/theme.css`** (same names) imported by `styles.css`; `web/src/theme.ts` exports the values for TSX | replaces the 41 literals in `FlowCanvas.tsx`, `DiffView.tsx`, `layers.ts`, `PlaybackLayer.tsx` |
 | `live_demo/` | Eemeli's; offer him `demo/theme.css` | |
 
-Migration trick for tonight: `theme.css` also defines the **old variable names** as aliases (`--night: var(--paper)`,
+Migration trick: `theme.css` also defines the **old variable names** as aliases (`--night: var(--paper)` (the old pages use `--night` as their background, so the new dark token is called `--carbon`),
 `--text: var(--ink)`, `--mint: var(--ink)`, `--amber: var(--mustard)`, `--coral: var(--faint)`, `--red: var(--brick)`,
 `--blue: var(--ink-2)`, and `--line` simply redefined …). It loads *after* each page's own `:root`. A page then changes theme by
 adding one `<link>` and deleting its background-grid rule. A deeper clean-up (removing the per-page copies)

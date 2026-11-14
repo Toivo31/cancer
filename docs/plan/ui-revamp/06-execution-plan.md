@@ -1,5 +1,7 @@
 # Execution plan: small packages, demoable after every merge
 
+> Update 21:30 UTC: with everything else paused, the packages run as parallel lanes. See [07-parallel-lanes.md](07-parallel-lanes.md); its cut line replaces the one below. The file map, guards and rollback below still apply.
+
 **In one line:** nine work packages, each one branch, one merge and one revert. Tokens first, because they are new
 files and break nothing. The simulator next, because it carries the most demo value and no other lane is in its files.
 The start page only after `w8/jev-demo` merges. New info pages last. Before the 04:00 UTC freeze: WP1 to WP4, and WP5 if there is room.

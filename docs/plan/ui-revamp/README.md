@@ -1,69 +1,84 @@
 # UI revamp plan (start here)
 
 **In one line:** one quiet paper-coloured site with five pages, and a simulator whose default view shows the
-graph, a day counter, three numbers and one Optimise button. Everything else moves one click down.
+graph, a day counter, three numbers and one Optimise button. It is built by six page lanes in parallel on a shared
+contract, with everything else paused, and closed with a handoff that paused agents read before resuming.
 
-Status: plan only, written Sat 14 Nov ~21:00 UTC on branch `w8/ui-plan`. No product code has changed.
-Submission Sun 10:00 Helsinki; code freeze 04:00 UTC.
+Status: plan only (branch `w8/ui-plan`), no product code changed. Written Sat 14 Nov 21:00 to 21:40 UTC.
+Submission Sun 10:00 Helsinki; code freeze 04:00 UTC. Tuomas's choices are recorded as D60 to D63 in `docs/decisions.md`.
 
-| Proposal | Where it is argued |
+| Document | What it holds |
 |---|---|
-| **Which surface the judges see:** the offline `demo/` pages are the site. `demo/flow.html` is the simulator. The React app (`web/`) is "the platform behind it": it stays out of the default path until after the submission | [02-audit.md](02-audit.md) |
-| **Five pages:** Overview, Simulator, How the patients work (data cards and hidden variables), Does it hold up (Norway and robustness, with the case-study paper), Decision model (JEV demo and model card). The dashboard (`index.html`) and the encounter loop stay reachable, but from page bottoms, not the nav | [03-information-architecture.md](03-information-architecture.md) |
-| **Simulator default view:** graph, `DAY 021` counter, three numbers (treated within target, median days to treatment, cancers missed), Play, speed, **Optimise**. Before/after is a flip between two views on one layout and one clock. Side by side and per-step deltas are options. Nodes turn mustard, then brick, as patients pile up. Slowest speed 0.5 days/s, down from about 2 | [04-sim-view.md](04-sim-view.md) |
-| **Theme:** warm off-white paper, near-black ink, Inter for headings (caps) and body, Courier Prime for labels, stamps and command chips. Mustard and brick appear only where something is waiting or wrong. Fonts are vendored so the pages work offline. Implemented as one tokens file per surface | [05-theme.md](05-theme.md) |
-| **Execution:** nine small work packages. Four fit before the freeze (tokens, simulator, Overview, theme on the remaining pages), plus one stretch (patients page). Each package is one branch and can be reverted with one merge revert | [06-execution-plan.md](06-execution-plan.md) |
-| Principles and what each one changes here | [01-principles.md](01-principles.md) |
+| [01-principles.md](01-principles.md) | UI principles and the concrete change each one makes here |
+| [02-audit.md](02-audit.md) | Every surface as it is today (screenshots in `current/`), clutter, duplication |
+| [03-information-architecture.md](03-information-architecture.md) | The five pages: message, top infographic, what goes below DETAILS; site maps weighed |
+| [04-sim-view.md](04-sim-view.md) | Simulator: default vs hidden, three numbers, Optimise flip, queue colours, speed |
+| [05-theme.md](05-theme.md) | Palette (contrast checked), type, spacing, charts, tokens; based on `reference/` frames |
+| [06-execution-plan.md](06-execution-plan.md) | File map, test guards, couplings, work packages, rollback |
+| [07-parallel-lanes.md](07-parallel-lanes.md) | **Lanes, the shared contract, ownership, merge order, critical path, what fits** |
+| [08-pause-and-handoff.md](08-pause-and-handoff.md) | **Pause protocol, rollback point, handoff rule and template** |
+| [lanes/](lanes/) | **One self-contained brief per lane**, ready for a fresh agent |
 
-Evidence used: screenshots at 1440×900 of every surface as it is today (`current/`, taken 20:48 to 20:50 UTC), and
-Tuomas's six reference frames from the pitch video (`reference/`).
+## Decided (D60, D61; D62 and D63 shape two lanes)
 
-## The cut line
-
-| Before the 04:00 UTC freeze (in this order) | After the submission |
+| Question | Decision |
 |---|---|
-| WP1 tokens and vendored fonts (new files only) | WP6 "Does it hold up" page and the Norway case-study paper |
-| WP2 simulator: theme, default view, Optimise flip, queue colours, slower speed (`demo/flow.*`) | WP7 web app: tokens, the same default-view rules, one Optimise entry |
-| WP3 Overview: restyle `start.html` with the three-card top (after `w8/jev-demo` merges) | WP8 one simulator instead of three (`demo/flow`, `web/`, `live_demo/`), with Eemeli |
-| WP4 theme on `encounter.html` and `jev.html` (token swap only) | WP9 screenshot regression script and an offline test for every page |
-| *Stretch:* WP5 "How the patients work" page | |
-| Presenter script `docs/demo_path.md` updated inside WP2 and WP3, not afterwards | |
+| What judges see | The offline `demo/` site (`start.html`, simulator `flow.html`), also the main submission page; `live_demo/` is the hosted secondary; the React app stays off the judges' path |
+| Pages | Five: Overview, Simulator, Patients, Evidence, Decision model |
+| Before/after | A flip on one layout and clock; side by side optional |
+| Optimise offline | Labelled a saved run, results on held-out patients |
+| Queue colour | By pile size (mustard, then brick) |
+| Speed | Default 2 days/s, slowest 0.5 |
+| Look | Paper `#F4F0E4` (check on the projector); the video's three-card look, not its words; no "clinician-validated" stamp |
+| White paper | Printable page after the submission; tonight the Evidence page links `docs/norway_case_study.md` |
+| React app | Not restyled for Sunday (lane L7 waits) |
+| Norway framing (D62) | Plausibility framing of `docs/norway_case_study.md`; ranges always; never "beats the authors" |
+| JEV page wording (D63) | Kept as built; restructure and restyle only |
 
-Rough total before the freeze: 5 to 7 focused hours of agent time plus about 1 hour of Tuomas's review, against
-about 7 hours left. The other lanes merge at the same time (status "Next": jev-demo, fi-sens, bundle regeneration),
-so the realistic target is **WP1 + WP2**, with WP3 and WP4 if they go cleanly. WP2 is the one with the most demo value.
+## Lanes, critical path, cut line
+
+| Lane | Owns | Before the freeze |
+|---|---|---|
+| L0 Foundation | `theme.css`, fonts, `site.js` (nav), skeleton, page stubs, test helper, `ui_shots.sh` | yes, first (A: 30 min, then frozen; B: 45 min) |
+| L1 Simulator | `demo/flow.*` | yes, **critical path** (3 to 3.5 h) |
+| L2 Overview | `demo/start.*` | yes |
+| L3 Patients | `demo/patients.*` (new) | yes |
+| L4 Evidence | `demo/evidence.*` (new), additive `export_start.py` + `start_bundle.js` | yes (top + robustness) |
+| L5 Decision model | `demo/jev.*` | yes |
+| L6 Secondary | `demo/encounter.*`, CSS of `index.html` | yes |
+| L7 Web tokens | `web/src/**` | no (after the submission) |
+| L8 Integrator | merges, `docs/demo_path.md`, READMEs, `CLAUDE.md` pointer, `HANDOFF.md` | throughout |
+
+**Critical path:** pause and snapshot (20 min) → L0-A (30 min) → L1 (3 to 3.5 h) → integration and rehearsal (1 h).
+That is about 5 hours. **Everything from L0 to L6 fits before 04:00 UTC if the pause starts by about 22:00 UTC.** Each
+half hour of delay comes out of the buffer first, then out of L1's last step. Cut order if late: L4's small multiples, then L3's
+reveal interaction, then L1's Optimise animation (keep the plain toggle). L0, L1 steps 1 to 4 and L2 are not cut. At
+03:15 UTC, whatever is merged into `ui/main` ships, as one merge into `overnight/sim`. Rollback point: tag `ui-revamp-base`.
+
+Merges cannot conflict, because files are owned exclusively. Shared things go through one owner: nav in `site.js` (L0),
+docs and READMEs (integrator), bundles frozen (except L4's additive one), new tests per lane, existing tests unchanged.
+Each lane writes `handoff/<lane>.md`. The integrator assembles `HANDOFF.md` and points `CLAUDE.md` and the channel to it.
 
 ## Riskiest parts
 
-1. **`demo/flow.js` (737 lines, untested in the browser by CI).** No automated test opens the page. A broken
-   simulator is the worst outcome of the night. Mitigation: URL parameters stay backwards compatible, there is a
-   headless-Chrome console-error check and a screenshot pass per package, and the old palette stays one URL away
-   (`?theme=night`) until after the submission.
-2. **`demo/start.html` is guarded and contended.** `tests/test_demo_start.py` forbids typed digits in the page text and limits
-   numbers in `start.js`. `w8/jev-demo` is editing row 5 right now. `docs/demo_path.md` refers to rows by number.
-   Do it only after jev-demo merges, and update the script in the same package.
-3. **Honesty drift while rewriting text.** Shorter text tempts rounding and dropping caveats. Every number stays
-   bound from a bundle, caveats move down the page but are not deleted, and the video's "CLINICIAN-VALIDATED" stamp
-   must not appear on the site (no clinician has reviewed anything).
-4. **Fonts offline.** Inter and Courier Prime are loaded from Google Fonts today (video, `live_demo/`). The site must
-   vendor them (SIL OFL allows that). If the files cannot be fetched tonight, the fallback stacks still look right.
-5. **Mustard and brick at the queues read as a judgement.** A node marked brick says "problem here". The thresholds
-   are ours and the playback clock is patient days, not calendar days. The legend has to say what drives the colour.
+1. **The simulator lane is long and has no browser CI.** Five separately mergeable commits, a screenshot and
+   console-error pass each, URL parameters kept, and `?theme=night` as a colour fallback.
+2. **Seven agents on a 2-core machine.** Lanes run only their own tests and shots; the full gate runs in the
+   integrator. If the machine chokes, run L5 and L6 after L2 and L3 instead of beside them.
+3. **The contract has to be right the first time.** L0-A is small and frozen within about 30 minutes. Later changes are additive only, through the integrator.
+4. **Honesty drift in rewritten text**, above all on the new Patients and Evidence pages. Numbers bound from bundles,
+   caveats moved down and not deleted, Norway framing per D62, and a human read of L3 and L4 text before they go into the nav.
+5. **Guarded pages:** `start.html` and `jev.html` have tests forbidding typed digits and limiting JS numerals; design
+   constants have to live in CSS or `data-*` attributes.
 
-## Decisions for Tuomas (short; each with my lean)
+## Still for Tuomas
 
 | # | Question | Lean |
 |---|---|---|
-| Q1 | Judges' main surface: offline `demo/` site, or the hosted `live_demo/` (Eemeli), or the React app? | `demo/` site, with `flow.html` as the simulator. It works from disk, its results are the held-out ones and it has tests. `live_demo/` stays the hosted URL if Eemeli wants that, restyled to match later |
-| Q2 | Five pages (Overview, Simulator, Patients, Evidence, Decision model) or three (Overview, Simulator, Evidence)? | Five. You asked for the patients page explicitly. Three only if the night runs short |
-| Q3 | Optimise in the offline simulator replays the saved optimiser result. It does not search live. OK to label it "Optimiser result (saved run)"? | Yes. A live search needs the service and minutes of compute. The React app keeps the live one for later |
-| Q4 | Before/after: flip (default), side by side, or deltas overlaid? | Flip by default, side by side on screens 1600 px and wider, deltas as a toggle. All three exist in code today |
-| Q5 | Queue colour driven by how many sampled patients are waiting at a step (pile size), or by how long they have waited? | Pile size, with fixed thresholds per scenario shared by before and after. Waiting time stays in the "Time" detail layer |
-| Q6 | Paper tint: near-neutral like the video (`#F8F7F2`) or more yellow "80s paper" (`#F4F0E4`)? | `#F4F0E4`. Check it next to the reference frames on the projector |
-| Q7 | Reuse the video's DEFINE / AUTOMATE / VALIDATE three cards on the Overview? | Reuse the look, not the words. Our three are "Simulate", "Optimise", "Check against a real hospital". In the video, VALIDATE means clinicians approve a pipeline, and nobody has done that here |
-| Q8 | Norway white paper before the freeze? | No, after. Before the freeze, link `docs/validation.md`. Written fast at night it is where overclaiming would slip in |
-| Q9 | Default playback speed | 2 days/s (Finland's whole run about 85 s); slowest 0.5 |
-| Q10 | Does the React app need restyling for Sunday? | No, unless it is shown live. Then WP7's token swap alone (about 1 h) |
+| N1 | Go time for the pause, and whether the Gemini library run on his Mac continues (it is outside the repo; merged only after the handoff) | Pause at once when the briefs are accepted; let the Mac run continue |
+| N2 | How many agents: seven (L0 to L6) plus the integrator, or fewer if the machine is slow | Seven; fall back to running L5 and L6 after L2 and L3 |
+| N3 | The synthetic-patients card moves from the Overview to the Patients page | Yes |
+| N4 | The JEV page's model card moves below DETAILS (wording unchanged, D63) | Yes |
+| N5 | A 01:00 UTC look at the merged screenshots, to catch taste problems while there is time to fix them | Yes, 10 minutes |
 
-Open item: compare the proposed palette and type against the reference frames on the actual presentation screen.
-They were read from compressed video frames, and their tint differs from the video's own CSS (`#fbf9ef`, see 05-theme.md).
+Open item: compare the palette and type against the reference frames on the actual presentation screen.
