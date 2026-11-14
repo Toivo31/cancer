@@ -38,7 +38,9 @@ def shipped_expressions() -> list[str]:
                 walk(v)
 
     for f in glob.glob(str(ROOT / "scenarios" / "**" / "*.yaml"), recursive=True):
-        walk(yaml.safe_load(open(f)))
+        d = yaml.safe_load(open(f)) or {}
+        if "flowcharts" in d:                  # C8 encounter tables use dotted record names (pathway_sim.encounter)
+            walk(d)
     return sorted(out)
 
 
@@ -71,6 +73,8 @@ def test_shipped_scenarios_give_identical_results():
     h = lambda o: hashlib.sha256(json.dumps(o, default=str).encode()).hexdigest()[:20]
     got = {}
     for path in sorted(glob.glob(str(ROOT / "scenarios" / "**" / "*.yaml"), recursive=True)):
+        if "flowcharts" not in (yaml.safe_load(open(path)) or {}):     # C8 encounter files are other formats
+            continue
         rel = str(Path(path).relative_to(ROOT))
         sc = load_scenario(path)
         for fid in sc.flowcharts:
