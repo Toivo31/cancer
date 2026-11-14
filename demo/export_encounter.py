@@ -316,7 +316,7 @@ def median(xs):
     return round(statistics.median(xs), 2) if xs else None
 
 
-def build(n: int | None, seed: int, sample: int, target_cancers: int, scenario: Path = SCENARIO) -> dict:
+def build(n: int | None, seed: int, sample: int, target_cancers: int, scenario: Path = SCENARIO, proposals: dict | None = None) -> dict:
     t0 = time.time()
     world = load_world(scenario)
     if n is None:
@@ -393,6 +393,8 @@ def build(n: int | None, seed: int, sample: int, target_cancers: int, scenario: 
                               f"{bg.get('smoking_status', '?')} smoker, {bg.get('region', '?')}",
                          "age": bg.get("age"), "out": pr.outcome, "ep": pr.episode,
                          "path": paths[pid], "lines": lines})
+        if proposals and proposals.get(str(pid)):      # optional: decision model proposals, shown in a labelled panel slot
+            patients[-1]["proposals"] = proposals[str(pid)]
         marks = {}
         for i, e in enumerate(rec.entries):
             if e.kind == "treatment":
@@ -440,9 +442,10 @@ def main(argv=None):
     ap.add_argument("--cancers", type=int, default=50, help="cancers to expect in the run, and at most this many drawn")
     ap.add_argument("--scenario", default=str(SCENARIO))
     ap.add_argument("--out", default=str(OUT))
+    ap.add_argument("--proposals", default=None, help="JSON {patient id: [{decision_point, options[{id,label,score}], proposed, chosen, delivery}]}")
     a = ap.parse_args(argv)
     t0 = time.time()
-    b = build(a.n, a.seed, a.sample, a.cancers, Path(a.scenario))
+    b = build(a.n, a.seed, a.sample, a.cancers, Path(a.scenario), json.loads(Path(a.proposals).read_text()) if a.proposals else None)
     out = Path(a.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     text = "window.ENC_DATA = " + json.dumps(b, separators=(",", ":"), ensure_ascii=False).replace("</", "<\\/") + ";\n"
