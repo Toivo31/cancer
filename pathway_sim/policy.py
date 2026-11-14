@@ -10,6 +10,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Protocol
 
+from .expr import parse as parse_expr
+
 
 @dataclass
 class PatientView:
@@ -55,14 +57,14 @@ class RulePolicy:
         self.seed = seed
         self._compiled: dict[str, list] = {}
         for node, c in self.config.items():
-            self._compiled[node] = [(compile(r["when"], f"<rule {node}>", "eval"), r["choose"]) for r in c.get("rules", [])]
+            self._compiled[node] = [(parse_expr(r["when"]), r["choose"]) for r in c.get("rules", [])]
 
     def choose(self, view: PatientView, options: list[str]) -> dict[str, float]:
         c = self.config.get(view.node, {})
         pick = None
         names = _Names(view.names())
         for code, opt in self._compiled.get(view.node, []):
-            if opt in options and eval(code, {"__builtins__": {}}, names):
+            if opt in options and code(names):
                 pick = opt
                 break
         if pick is None and c.get("mix"):
