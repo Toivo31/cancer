@@ -1,0 +1,14 @@
+{
+  "case_id": "synthetic-photo-demo",
+  "context": "Synthetic patient reports a changing skin lesion. The supplied photograph and available history require clinician review.",
+  "image_ids": [],
+  "questions": [{
+    "id": "skin-category",
+    "text": "Is this skin lesion malignant?",
+    "candidate_format": "inline",
+    "choices": [
+      {"id": "non-malignant", "text": "Non-malignant"},
+      {"id": "malignant", "text": "Malignant"}
+    ]
+  }]
+}

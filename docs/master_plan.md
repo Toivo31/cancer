@@ -169,3 +169,22 @@ The first two block a first run or the pitch.
 - [Radiotherapy pathway simulation review](https://salford-repository.worktribe.com/OutputFile/2660286): capacity does not help behind a rate-limiting step.
 - [Cooke et al. 2022, London simulation and optimisation](https://discovery.ucl.ac.uk/10165787/1/1-s2.0-S277244252200034X-main.pdf): real capacity shortages in imaging and endoscopy.
 - [Swedish cancer pathways, staff interviews](https://link.springer.com/doi/10.1186/s12913-019-4413-6): risk of longer waits for other patients.
+
+## Decision API demo integration (14 November)
+
+`decision_api/` is a small frontend integration kit for the separately hosted
+checkpoint1138 model on Modal (one RTX PRO6000, NF4 expert quantization). It
+provides a dependency-free JavaScript client with types, an optional embeddable
+review panel, and a standard-library Python proxy mounted into the existing
+`note_reader.server`. The interface receives visible patient state and allowed
+flowchart actions; a person accepts or corrects the proposal. It does not
+advance simulator state or overwrite simulator sensitivity/time estimates.
+
+The demo includes recorded model outputs for instant, clearly labelled playback
+and three unchanged, attributed CC BY4.0 PAD-UFES-20 pictures. These are public
+medical-dataset training examples, distinct from the simulator's synthetic
+patients; they do not establish held-out photo performance. Users do not upload
+files or author raw API/decision JSON. Live inference is an explicit action and
+never silently falls back to stored scores. Owner/team handles overnight pausing;
+no new schedule or training changes are part of this integration. The teammate
+coding brief is `decision_api/INTEGRATION_PROMPT.md`.
