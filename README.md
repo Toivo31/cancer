@@ -3,6 +3,9 @@
 Junction2026 prototype for the AstraZeneca challenge. Start with
 [the master plan](docs/master_plan.md).
 
+**Video:** https://vimeo.com/1246915943/8fbe835297?share=copy
+**Technology challenges** (Modal, Nemotron, Gemini API, Verda): [what we claim and what backs it](docs/submission_tech_challenges.md).
+
 ## Decision model integration for the demo team
 
 Read [the teammate setup guide](decision_api/README.md) or give

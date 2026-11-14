@@ -189,10 +189,11 @@ const TRAILER = (() => {
       const c = TL.credit;
       text("THE CHALLENGE", W / 2, H * 0.3, H * 0.022, GREY, 600);
       text("AstraZeneca: Equal Care Across Finland", W / 2, H * 0.37, H * 0.045, INK, 700);
-      if (t >= c.b1) text("BUILT WITH", W * 0.3, H * 0.55, H * 0.022, GREY, 600);
-      if (t >= c.nem) text("NVIDIA Nemotron", W * 0.3, H * 0.62, H * 0.055, INK, 800);
-      if (t >= c.b2) { ctx.fillStyle = "rgba(0,0,0,0.25)"; ctx.fillRect(W * 0.5 - 1, H * 0.52, 2, H * 0.15); text("POWERED BY", W * 0.7, H * 0.55, H * 0.022, GREY, 600); }
-      if (t >= c.ver) text("Verda", W * 0.7, H * 0.62, H * 0.055, INK, 800);
+      if (t >= c.b1) {                         // three parts, true to what runs where: the model, where it is served, the note reader
+        [[0.2, "DECISION MODEL", "NVIDIA Nemotron"], [0.5, "SERVED ON", "Modal"], [0.8, "NOTE READER", "Verda"]].forEach(([x, lab, name]) => {
+          text(lab, W * x, H * 0.55, H * 0.022, GREY, 600); text(name, W * x, H * 0.62, H * 0.05, INK, 800); });
+        ctx.fillStyle = "rgba(0,0,0,0.25)"; ctx.fillRect(W * 0.35 - 1, H * 0.52, 2, H * 0.15); ctx.fillRect(W * 0.65 - 1, H * 0.52, 2, H * 0.15);
+      }
       return;
     }
     // the suggestion, a beat, then the punchline alone
