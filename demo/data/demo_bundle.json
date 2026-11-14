@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-14T08:12:12+00:00",
+ "generated_at": "2026-11-14T09:00:49+00:00",
  "fixture": false,
  "scenarios": [
   {
@@ -269,16 +269,21 @@
      },
      "by_group": {
       "all": {
-       "n": 1000,
-       "n_cancer": 1000,
-       "median_days_to_treatment": 45.52,
-       "share_within_target": 0.416,
-       "median_days_to_diagnosis": 31.52,
-       "missed_cancers": 0,
-       "median_days_to_exit_all": 45.52
+       "n": 1000.0,
+       "n_cancer": 1000.0,
+       "median_days_to_treatment": 45.6833,
+       "share_within_target": 0.401,
+       "median_days_to_diagnosis": 31.85,
+       "missed_cancers": 0.0,
+       "median_days_to_exit_all": 45.6833
       }
      },
-     "utilisation": {}
+     "utilisation": {},
+     "cohort_objectives": [
+      0.32496,
+      0.30724,
+      0.2967
+     ]
     }
    },
    "variants": [
@@ -514,23 +519,28 @@
       },
       "by_group": {
        "all": {
-        "n": 1000,
-        "n_cancer": 1000,
-        "median_days_to_treatment": 26.47,
-        "share_within_target": 0.881,
-        "median_days_to_diagnosis": 6.14,
-        "missed_cancers": 0,
-        "median_days_to_exit_all": 26.47
+        "n": 1000.0,
+        "n_cancer": 1000.0,
+        "median_days_to_treatment": 27.0067,
+        "share_within_target": 0.882,
+        "median_days_to_diagnosis": 6.17,
+        "missed_cancers": 0.0,
+        "median_days_to_exit_all": 27.0067
        }
       },
-      "utilisation": {}
+      "utilisation": {},
+      "cohort_objectives": [
+       0.82806,
+       0.82156,
+       0.83434
+      ]
      },
      "changes": [
       "Use the faster PET-CT scanner (the same assumption the authors made)",
-      "Hold the tumour board without waiting for tissue sampling to finish; sampling runs alongside while treatment is booked",
+      "Plan tissue sampling at the first hospital visit, not after it",
       "Always order the PET-CT scan at triage or the first visit, never late",
       "Always order the exercise test early, together with the other tests",
-      "Plan tissue sampling at the first hospital visit, not after it"
+      "Hold the tumour board without waiting for tissue sampling to finish; sampling runs alongside while treatment is booked"
      ],
      "role": "optimiser"
     },
@@ -796,16 +806,21 @@
       },
       "by_group": {
        "all": {
-        "n": 1000,
-        "n_cancer": 1000,
-        "median_days_to_treatment": 38.29,
-        "share_within_target": 0.615,
-        "median_days_to_diagnosis": 23.23,
-        "missed_cancers": 0,
-        "median_days_to_exit_all": 38.29
+        "n": 1000.0,
+        "n_cancer": 1000.0,
+        "median_days_to_treatment": 38.2433,
+        "share_within_target": 0.603,
+        "median_days_to_diagnosis": 23.52,
+        "missed_cancers": 0.0,
+        "median_days_to_exit_all": 38.2433
        }
       },
-      "utilisation": {}
+      "utilisation": {},
+      "cohort_objectives": [
+       0.53842,
+       0.51774,
+       0.52338
+      ]
      },
      "role": "faster_pet"
     },
@@ -1041,16 +1056,21 @@
       },
       "by_group": {
        "all": {
-        "n": 1000,
-        "n_cancer": 1000,
-        "median_days_to_treatment": 30.9,
-        "share_within_target": 0.787,
-        "median_days_to_diagnosis": 28.62,
-        "missed_cancers": 0,
-        "median_days_to_exit_all": 30.9
+        "n": 1000.0,
+        "n_cancer": 1000.0,
+        "median_days_to_treatment": 31.0367,
+        "share_within_target": 0.801,
+        "median_days_to_diagnosis": 28.78,
+        "missed_cancers": 0.0,
+        "median_days_to_exit_all": 31.0367
        }
       },
-      "utilisation": {}
+      "utilisation": {},
+      "cohort_objectives": [
+       0.7252,
+       0.73688,
+       0.7547
+      ]
      },
      "role": "authors_pathway"
     },
@@ -1286,16 +1306,21 @@
       },
       "by_group": {
        "all": {
-        "n": 1000,
-        "n_cancer": 1000,
-        "median_days_to_treatment": 36.68,
-        "share_within_target": 0.68,
-        "median_days_to_diagnosis": 21.53,
-        "missed_cancers": 0,
-        "median_days_to_exit_all": 36.68
+        "n": 1000.0,
+        "n_cancer": 1000.0,
+        "median_days_to_treatment": 36.9833,
+        "share_within_target": 0.671,
+        "median_days_to_diagnosis": 21.9733,
+        "missed_cancers": 0.0,
+        "median_days_to_exit_all": 36.9833
        }
       },
-      "utilisation": {}
+      "utilisation": {},
+      "cohort_objectives": [
+       0.60664,
+       0.59258,
+       0.59188
+      ]
      },
      "changes": [
       "Always order the PET-CT scan at triage or the first visit, never late",
@@ -1591,17 +1616,19 @@
    "optimiser": {
     "steps": [
      {
-      "kind": "detach",
-      "target": "diagnosis",
-      "other": "sampling_done",
-      "plain": "Diagnostic workup complete: don't wait for sampling finished (it runs in parallel; treatment still waits for it)",
-      "score": 8.619,
+      "kind": "relax",
+      "target": "sample_plan",
+      "other": "visit",
+      "plain": "Tissue sampling planned?: order it at the same time as first hospital visit, not after",
+      "score": 6.705,
       "evidence": {
-       "predicted_days_saved": 8.62,
-       "train_on_time_before": 0.581,
-       "train_on_time_after": 0.68,
-       "train_median_before": 38.64,
-       "train_median_after": 33.54
+       "predicted_days_saved": 6.7,
+       "train_on_time_before": 0.5845,
+       "train_on_time_after": 0.681,
+       "train_median_before": 38.765,
+       "train_median_after": 34.07,
+       "accepted_together_with": [],
+       "records_reading": "In the records, the step 'tissue sampling planned?' was held back by first hospital visit: on average 6.7 days per patient on the critical path"
       }
      },
      {
@@ -1609,13 +1636,15 @@
       "target": "pet_timing",
       "other": "pet_on_time",
       "plain": "When PET-CT is ordered: always pet-ct ordered at triage or at the first visit",
-      "score": 5.15,
+      "score": 4.659,
       "evidence": {
-       "predicted_days_saved": 5.15,
-       "train_on_time_before": 0.68,
-       "train_on_time_after": 0.779,
-       "train_median_before": 33.54,
-       "train_median_after": 29.98
+       "predicted_days_saved": 4.66,
+       "train_on_time_before": 0.681,
+       "train_on_time_after": 0.787,
+       "train_median_before": 34.07,
+       "train_median_after": 30.3,
+       "accepted_together_with": [],
+       "records_reading": "In the records, patients for whom 'pet-ct ordered at triage or at the first visit' was chosen left the pathway sooner; spread over everyone else that is about 4.7 days per patient (a biased, unadjusted comparison)"
       }
      },
      {
@@ -1623,84 +1652,88 @@
       "target": "ex_timing",
       "other": "ex_early",
       "plain": "When the exercise test is ordered: always exercise test",
-      "score": 2.15,
+      "score": 1.847,
       "evidence": {
-       "predicted_days_saved": 2.15,
-       "train_on_time_before": 0.779,
-       "train_on_time_after": 0.852,
-       "train_median_before": 29.98,
-       "train_median_after": 29.02
+       "predicted_days_saved": 1.85,
+       "train_on_time_before": 0.787,
+       "train_on_time_after": 0.8525,
+       "train_median_before": 30.3,
+       "train_median_after": 29.485,
+       "accepted_together_with": [],
+       "records_reading": "In the records, patients for whom 'exercise test' was chosen left the pathway sooner; spread over everyone else that is about 1.8 days per patient (a biased, unadjusted comparison)"
       }
      },
      {
-      "kind": "relax",
-      "target": "sample_plan",
-      "other": "visit",
-      "plain": "Tissue sampling planned?: order it at the same time as first hospital visit, not after",
-      "score": 3.733,
+      "kind": "detach",
+      "target": "diagnosis",
+      "other": "sampling_done",
+      "plain": "Diagnostic workup complete: don't wait for sampling finished (it runs in parallel; treatment still waits for it)",
+      "score": 3.242,
       "evidence": {
-       "predicted_days_saved": 3.73,
-       "train_on_time_before": 0.852,
-       "train_on_time_after": 0.883,
-       "train_median_before": 29.02,
-       "train_median_after": 26.79
+       "predicted_days_saved": 3.24,
+       "train_on_time_before": 0.8525,
+       "train_on_time_after": 0.88,
+       "train_median_before": 29.485,
+       "train_median_after": 27.02,
+       "accepted_together_with": [],
+       "records_reading": "In the records, the step 'diagnostic workup complete' was held back by sampling finished: on average 3.2 days per patient on the critical path"
       }
      }
     ],
-    "selection_optimism_pp": 2.3,
-    "candidates_evaluated": 54,
+    "selection_optimism_pp": 1.65,
+    "candidates_evaluated": 69,
     "guardrails_heldout": [],
     "details": [
      {
-      "label": "Hold the tumour board without waiting for tissue sampling to finish; sampling runs alongside while treatment is booked",
-      "raw": "Diagnostic workup complete: don't wait for sampling finished (it runs in parallel; treatment still waits for it)",
-      "kind": "detach",
-      "records_said": "In the clinic records, patients waited on average 8.62 days for this step while it held back on an earlier one",
+      "label": "Plan tissue sampling at the first hospital visit, not after it",
+      "raw": "Tissue sampling planned?: order it at the same time as first hospital visit, not after",
+      "kind": "relax",
+      "records_said": "In the records, the step 'tissue sampling planned?' was held back by first hospital visit: on average 6.7 days per patient on the critical path.",
       "rerun_said": "Rerunning the same patients confirmed it: treated on time 58% to 68%, median 39 to 34 days.",
-      "predicted_days_saved": 8.62,
-      "train_on_time_before": 0.581,
-      "train_on_time_after": 0.68,
-      "train_median_before": 38.64,
-      "train_median_after": 33.54,
-      "heldout_on_time_after": 0.6967
+      "predicted_days_saved": 6.7,
+      "train_on_time_before": 0.5845,
+      "train_on_time_after": 0.681,
+      "train_median_before": 38.765,
+      "train_median_after": 34.07,
+      "heldout_on_time_after": 0.697
      },
      {
       "label": "Always order the PET-CT scan at triage or the first visit, never late",
       "raw": "When PET-CT is ordered: always pet-ct ordered at triage or at the first visit",
       "kind": "standardise",
-      "records_said": "The clinic records point to about 5.15 days of average waiting at this point",
-      "rerun_said": "Rerunning the same patients confirmed it: treated on time 68% to 78%, median 34 to 30 days.",
-      "predicted_days_saved": 5.15,
-      "train_on_time_before": 0.68,
-      "train_on_time_after": 0.779,
-      "train_median_before": 33.54,
-      "train_median_after": 29.98,
-      "heldout_on_time_after": 0.788
+      "records_said": "In the records, patients for whom 'pet-ct ordered at triage or at the first visit' was chosen left the pathway sooner; spread over everyone else that is about 4.7 days per patient (a biased, unadjusted comparison).",
+      "rerun_said": "Rerunning the same patients confirmed it: treated on time 68% to 79%, median 34 to 30 days.",
+      "predicted_days_saved": 4.66,
+      "train_on_time_before": 0.681,
+      "train_on_time_after": 0.787,
+      "train_median_before": 34.07,
+      "train_median_after": 30.3,
+      "heldout_on_time_after": 0.792
      },
      {
       "label": "Always order the exercise test early, together with the other tests",
       "raw": "When the exercise test is ordered: always exercise test",
       "kind": "standardise",
-      "records_said": "The clinic records point to about 2.15 days of average waiting at this point",
-      "rerun_said": "Rerunning the same patients confirmed it: treated on time 78% to 85%, median 30 to 29 days.",
-      "predicted_days_saved": 2.15,
-      "train_on_time_before": 0.779,
-      "train_on_time_after": 0.852,
-      "train_median_before": 29.98,
-      "train_median_after": 29.02,
-      "heldout_on_time_after": 0.854
+      "records_said": "In the records, patients for whom 'exercise test' was chosen left the pathway sooner; spread over everyone else that is about 1.8 days per patient (a biased, unadjusted comparison).",
+      "rerun_said": "Rerunning the same patients confirmed it: treated on time 79% to 85%, median 30 to 29 days.",
+      "predicted_days_saved": 1.85,
+      "train_on_time_before": 0.787,
+      "train_on_time_after": 0.8525,
+      "train_median_before": 30.3,
+      "train_median_after": 29.485,
+      "heldout_on_time_after": 0.8583
      },
      {
-      "label": "Plan tissue sampling at the first hospital visit, not after it",
-      "raw": "Tissue sampling planned?: order it at the same time as first hospital visit, not after",
-      "kind": "relax",
-      "records_said": "In the clinic records, patients waited on average 3.73 days for this step while it held back on an earlier one",
+      "label": "Hold the tumour board without waiting for tissue sampling to finish; sampling runs alongside while treatment is booked",
+      "raw": "Diagnostic workup complete: don't wait for sampling finished (it runs in parallel; treatment still waits for it)",
+      "kind": "detach",
+      "records_said": "In the records, the step 'diagnostic workup complete' was held back by sampling finished: on average 3.2 days per patient on the critical path.",
       "rerun_said": "Rerunning the same patients confirmed it: treated on time 85% to 88%, median 29 to 27 days.",
-      "predicted_days_saved": 3.73,
-      "train_on_time_before": 0.852,
-      "train_on_time_after": 0.883,
-      "train_median_before": 29.02,
-      "train_median_after": 26.79,
+      "predicted_days_saved": 3.24,
+      "train_on_time_before": 0.8525,
+      "train_on_time_after": 0.88,
+      "train_median_before": 29.485,
+      "train_median_after": 27.02,
       "heldout_on_time_after": 0.882
      }
     ],
@@ -1725,10 +1758,10 @@
      },
      {
       "step": 1,
-      "label": "Hold the tumour board without waiting for tissue sampling to finish; sampling runs alongside while treatment is booked",
+      "label": "Plan tissue sampling at the first hospital visit, not after it",
       "kind": "change",
-      "share": 0.6967,
-      "median_days": 34.0967,
+      "share": 0.697,
+      "median_days": 34.08,
       "missed_cancers": 0.0,
       "tests_per_patient": 2.3797
      },
@@ -1736,8 +1769,8 @@
       "step": 2,
       "label": "Always order the PET-CT scan at triage or the first visit, never late",
       "kind": "change",
-      "share": 0.788,
-      "median_days": 29.6833,
+      "share": 0.792,
+      "median_days": 30.04,
       "missed_cancers": 0.0,
       "tests_per_patient": 2.3797
      },
@@ -1745,14 +1778,14 @@
       "step": 3,
       "label": "Always order the exercise test early, together with the other tests",
       "kind": "change",
-      "share": 0.854,
-      "median_days": 28.74,
+      "share": 0.8583,
+      "median_days": 29.13,
       "missed_cancers": 0.0,
       "tests_per_patient": 2.3797
      },
      {
       "step": 4,
-      "label": "Plan tissue sampling at the first hospital visit, not after it",
+      "label": "Hold the tumour board without waiting for tissue sampling to finish; sampling runs alongside while treatment is booked",
       "kind": "change",
       "share": 0.882,
       "median_days": 27.0067,
@@ -1771,13 +1804,15 @@
       "target": "pet_timing",
       "other": "pet_on_time",
       "plain": "When PET-CT is ordered: always pet-ct ordered at triage or at the first visit",
-      "score": 6.502,
+      "score": 5.983,
       "evidence": {
-       "predicted_days_saved": 6.5,
-       "train_on_time_before": 0.406,
-       "train_on_time_after": 0.518,
-       "train_median_before": 45.78,
-       "train_median_after": 41.53
+       "predicted_days_saved": 5.98,
+       "train_on_time_before": 0.393,
+       "train_on_time_after": 0.5105,
+       "train_median_before": 46.415,
+       "train_median_after": 41.735,
+       "accepted_together_with": [],
+       "records_reading": "In the records, patients for whom 'pet-ct ordered at triage or at the first visit' was chosen left the pathway sooner; spread over everyone else that is about 6.0 days per patient (a biased, unadjusted comparison)"
       }
      },
      {
@@ -1785,13 +1820,15 @@
       "target": "sample_plan",
       "other": "visit",
       "plain": "Tissue sampling planned?: order it at the same time as first hospital visit, not after",
-      "score": 5.575,
+      "score": 5.727,
       "evidence": {
-       "predicted_days_saved": 5.57,
-       "train_on_time_before": 0.518,
-       "train_on_time_after": 0.604,
-       "train_median_before": 41.53,
-       "train_median_after": 38.73
+       "predicted_days_saved": 5.73,
+       "train_on_time_before": 0.5105,
+       "train_on_time_after": 0.5955,
+       "train_median_before": 41.735,
+       "train_median_after": 39.005,
+       "accepted_together_with": [],
+       "records_reading": "In the records, the step 'tissue sampling planned?' was held back by first hospital visit: on average 5.7 days per patient on the critical path"
       }
      },
      {
@@ -1799,13 +1836,15 @@
       "target": "ex_timing",
       "other": "ex_early",
       "plain": "When the exercise test is ordered: always exercise test",
-      "score": 1.872,
+      "score": 1.537,
       "evidence": {
-       "predicted_days_saved": 1.87,
-       "train_on_time_before": 0.604,
-       "train_on_time_after": 0.658,
-       "train_median_before": 38.73,
-       "train_median_after": 37.57
+       "predicted_days_saved": 1.54,
+       "train_on_time_before": 0.5955,
+       "train_on_time_after": 0.643,
+       "train_median_before": 39.005,
+       "train_median_after": 37.875,
+       "accepted_together_with": [],
+       "records_reading": "In the records, patients for whom 'exercise test' was chosen left the pathway sooner; spread over everyone else that is about 1.5 days per patient (a biased, unadjusted comparison)"
       }
      },
      {
@@ -1813,70 +1852,72 @@
       "target": "diagnosis",
       "other": "sampling_done",
       "plain": "Diagnostic workup complete: don't wait for sampling finished (it runs in parallel; treatment still waits for it)",
-      "score": 0.686,
+      "score": 0.684,
       "evidence": {
-       "predicted_days_saved": 0.69,
-       "train_on_time_before": 0.658,
-       "train_on_time_after": 0.671,
-       "train_median_before": 37.57,
-       "train_median_after": 37.09
+       "predicted_days_saved": 0.68,
+       "train_on_time_before": 0.643,
+       "train_on_time_after": 0.6575,
+       "train_median_before": 37.875,
+       "train_median_after": 37.3,
+       "accepted_together_with": [],
+       "records_reading": "In the records, the step 'diagnostic workup complete' was held back by sampling finished: on average 0.7 days per patient on the critical path"
       }
      }
     ],
-    "selection_optimism_pp": -0.5,
-    "candidates_evaluated": 55,
+    "selection_optimism_pp": -0.55,
+    "candidates_evaluated": 69,
     "guardrails_heldout": [],
     "details": [
      {
       "label": "Always order the PET-CT scan at triage or the first visit, never late",
       "raw": "When PET-CT is ordered: always pet-ct ordered at triage or at the first visit",
       "kind": "standardise",
-      "records_said": "The clinic records point to about 6.5 days of average waiting at this point",
-      "rerun_said": "Rerunning the same patients confirmed it: treated on time 41% to 52%, median 46 to 42 days.",
-      "predicted_days_saved": 6.5,
-      "train_on_time_before": 0.406,
-      "train_on_time_after": 0.518,
-      "train_median_before": 45.78,
-      "train_median_after": 41.53,
+      "records_said": "In the records, patients for whom 'pet-ct ordered at triage or at the first visit' was chosen left the pathway sooner; spread over everyone else that is about 6.0 days per patient (a biased, unadjusted comparison).",
+      "rerun_said": "Rerunning the same patients confirmed it: treated on time 39% to 51%, median 46 to 42 days.",
+      "predicted_days_saved": 5.98,
+      "train_on_time_before": 0.393,
+      "train_on_time_after": 0.5105,
+      "train_median_before": 46.415,
+      "train_median_after": 41.735,
       "heldout_on_time_after": 0.5253
      },
      {
       "label": "Plan tissue sampling at the first hospital visit, not after it",
       "raw": "Tissue sampling planned?: order it at the same time as first hospital visit, not after",
       "kind": "relax",
-      "records_said": "In the clinic records, patients waited on average 5.57 days for this step while it held back on an earlier one",
-      "rerun_said": "Rerunning the same patients confirmed it: treated on time 52% to 60%, median 42 to 39 days.",
-      "predicted_days_saved": 5.57,
-      "train_on_time_before": 0.518,
-      "train_on_time_after": 0.604,
-      "train_median_before": 41.53,
-      "train_median_after": 38.73,
+      "records_said": "In the records, the step 'tissue sampling planned?' was held back by first hospital visit: on average 5.7 days per patient on the critical path.",
+      "rerun_said": "Rerunning the same patients confirmed it: treated on time 51% to 60%, median 42 to 39 days.",
+      "predicted_days_saved": 5.73,
+      "train_on_time_before": 0.5105,
+      "train_on_time_after": 0.5955,
+      "train_median_before": 41.735,
+      "train_median_after": 39.005,
       "heldout_on_time_after": 0.6097
      },
      {
       "label": "Always order the exercise test early, together with the other tests",
       "raw": "When the exercise test is ordered: always exercise test",
       "kind": "standardise",
-      "records_said": "The clinic records point to about 1.87 days of average waiting at this point",
-      "rerun_said": "Rerunning the same patients confirmed it: treated on time 60% to 66%, median 39 to 38 days.",
-      "predicted_days_saved": 1.87,
-      "train_on_time_before": 0.604,
-      "train_on_time_after": 0.658,
-      "train_median_before": 38.73,
-      "train_median_after": 37.57,
+      "records_said": "In the records, patients for whom 'exercise test' was chosen left the pathway sooner; spread over everyone else that is about 1.5 days per patient (a biased, unadjusted comparison).",
+      "rerun_said": "Rerunning the same patients confirmed it: treated on time 60% to 64%, median 39 to 38 days.",
+      "predicted_days_saved": 1.54,
+      "train_on_time_before": 0.5955,
+      "train_on_time_after": 0.643,
+      "train_median_before": 39.005,
+      "train_median_after": 37.875,
       "heldout_on_time_after": 0.6567
      },
      {
       "label": "Hold the tumour board without waiting for tissue sampling to finish; sampling runs alongside while treatment is booked",
       "raw": "Diagnostic workup complete: don't wait for sampling finished (it runs in parallel; treatment still waits for it)",
       "kind": "detach",
-      "records_said": "In the clinic records, patients waited on average 0.69 days for this step while it held back on an earlier one",
-      "rerun_said": "Rerunning the same patients confirmed it: treated on time 66% to 67%, median 38 to 37 days.",
-      "predicted_days_saved": 0.69,
-      "train_on_time_before": 0.658,
-      "train_on_time_after": 0.671,
-      "train_median_before": 37.57,
-      "train_median_after": 37.09,
+      "records_said": "In the records, the step 'diagnostic workup complete' was held back by sampling finished: on average 0.7 days per patient on the critical path.",
+      "rerun_said": "Rerunning the same patients confirmed it: treated on time 64% to 66%, median 38 to 37 days.",
+      "predicted_days_saved": 0.68,
+      "train_on_time_before": 0.643,
+      "train_on_time_after": 0.6575,
+      "train_median_before": 37.875,
+      "train_median_after": 37.3,
       "heldout_on_time_after": 0.671
      }
     ],
@@ -1964,12 +2005,115 @@
    "headline_no_new_equipment": {
     "share": 0.671,
     "median_days": 36.9833
-   }
+   },
+   "sensitivity": [
+    {
+     "parameter": "PET-CT wait before the scanner, derived from the published 20.5 d referral-to-report",
+     "low_gain_pp": 33.1,
+     "high_gain_pp": 48.6,
+     "base_gain_pp": 40.7,
+     "swing_pp": 15.4,
+     "comparison": "optimal vs observed",
+     "low": 13.5,
+     "high": 22.5
+    },
+    {
+     "parameter": "wait from tumour board to surgery / RT start (calibrated, joint)",
+     "low_gain_pp": 36.9,
+     "high_gain_pp": 44.1,
+     "base_gain_pp": 40.7,
+     "swing_pp": 7.1,
+     "comparison": "optimal vs observed",
+     "low": 4.5,
+     "high": 7.5
+    },
+    {
+     "parameter": "non-diagnostic rate of bronchoscopy / needle biopsy (all, joint)",
+     "low_gain_pp": 39.2,
+     "high_gain_pp": 41.7,
+     "base_gain_pp": 40.7,
+     "swing_pp": 2.5,
+     "comparison": "optimal vs observed",
+     "low": 0.15,
+     "high": 0.25
+    },
+    {
+     "parameter": "CT report not ready at first visit, extra wait median (calibrated)",
+     "low_gain_pp": 41.1,
+     "high_gain_pp": 39.8,
+     "base_gain_pp": 40.7,
+     "swing_pp": 1.4,
+     "comparison": "optimal vs observed",
+     "low": 1.5,
+     "high": 2.5
+    },
+    {
+     "parameter": "policy pet_on_time: share pet_triage (rest pet_early_route), all flowcharts",
+     "low_gain_pp": 41.8,
+     "high_gain_pp": 40.7,
+     "base_gain_pp": 40.7,
+     "swing_pp": 1.1,
+     "comparison": "optimal vs observed",
+     "low": 0.75,
+     "high": 1.0
+    },
+    {
+     "parameter": "further_workup: wait median",
+     "low_gain_pp": 40.9,
+     "high_gain_pp": 40.3,
+     "base_gain_pp": 40.7,
+     "swing_pp": 0.7,
+     "comparison": "optimal vs observed",
+     "low": 5.25,
+     "high": 8.75
+    },
+    {
+     "parameter": "bronchoscopy wait median (calibrated)",
+     "low_gain_pp": 40.2,
+     "high_gain_pp": 40.9,
+     "base_gain_pp": 40.7,
+     "swing_pp": 0.7,
+     "comparison": "optimal vs observed",
+     "low": 2.25,
+     "high": 3.75
+    },
+    {
+     "parameter": "further_workup: report_days median",
+     "low_gain_pp": 40.7,
+     "high_gain_pp": 40.3,
+     "base_gain_pp": 40.7,
+     "swing_pp": 0.4,
+     "comparison": "optimal vs observed",
+     "low": 3.375,
+     "high": 5.625
+    },
+    {
+     "parameter": "tumour-board cutoff (days before the meeting, calibrated)",
+     "low_gain_pp": 40.7,
+     "high_gain_pp": 41.1,
+     "base_gain_pp": 40.7,
+     "swing_pp": 0.4,
+     "comparison": "optimal vs observed",
+     "low": 0.0,
+     "high": 2.0
+    },
+    {
+     "parameter": "attribute location: share central (rest peripheral)",
+     "low_gain_pp": 40.3,
+     "high_gain_pp": 40.4,
+     "base_gain_pp": 40.7,
+     "swing_pp": 0.1,
+     "comparison": "optimal vs observed",
+     "low": 0.225,
+     "high": 0.375
+    }
+   ]
   },
   {
    "id": "finland_lung",
    "title": "Finnish lung pathway (synthetic)",
    "description": "Synthetic Finnish lung-cancer pathway in one wellbeing services county, clock from first contact in primary care (nurse or GP) to start of treatment. target_days: 90 is a PROVISIONAL display target (decisions.md D20): with the clock starting at first contact in primary care, every flowchart is at 0% within the Norwegian 42 days (which counts from referral receipt). We found no Finnish national first-contact-to-treatment target; IHE2026 gives assessment within 21 days of referral, and the strategy goal is \"treatment within target times\". Chest-symptom presenters arrive as a Poisson stream; lung cancer is about 1.6% of them, the rest is pneumonia, COPD exacerbation, benign nodule, other benign chest conditions and self-limiting illness. Half see a nurse first (KHALIFE2025). Queues form at GP appointments, chest X-ray, specialist clinic, CT, bronchoscopy / needle biopsy, PET-CT and treatment slots. Chest X-ray misses about one in five lung cancers (HSSIB2021, BRADLEY2021); a safety net (persisting symptoms -> re-presentation weeks later) catches some of them, the rest are discharged = missed cancers.\n",
+   "summary": "Synthetic patients with chest symptoms in one large Finnish county, followed from first contact in primary care (nurse or GP) to the start of treatment. Time to treatment is counted against a provisional 90-day target.",
    "target_days": 90.0,
    "baseline": {
     "label": "Today's pathway",
@@ -2245,22 +2389,22 @@
      },
      "by_group": {
       "non_specific": {
-       "n": 13663,
-       "n_cancer": 176,
-       "median_days_to_treatment": 107.23,
-       "share_within_target": 0.1591,
-       "median_days_to_diagnosis": 74.19,
-       "missed_cancers": 24,
-       "median_days_to_exit_all": 16.79
+       "n": 13632.0,
+       "n_cancer": 180.5,
+       "median_days_to_treatment": 107.54,
+       "share_within_target": 0.1336,
+       "median_days_to_diagnosis": 73.35,
+       "missed_cancers": 22.5,
+       "median_days_to_exit_all": 16.815
       },
       "site_specific": {
-       "n": 2493,
-       "n_cancer": 78,
-       "median_days_to_treatment": 93.66,
-       "share_within_target": 0.3077,
-       "median_days_to_diagnosis": 62.25,
-       "missed_cancers": 6,
-       "median_days_to_exit_all": 17.08
+       "n": 2544.5,
+       "n_cancer": 80.0,
+       "median_days_to_treatment": 96.385,
+       "share_within_target": 0.2697,
+       "median_days_to_diagnosis": 62.26,
+       "missed_cancers": 5.0,
+       "median_days_to_exit_all": 17.07
       }
      },
      "utilisation": {
@@ -2273,7 +2417,11 @@
       "ttnb_slot": 0.6858,
       "pet_scanner": 0.7893,
       "treatment_slot": 0.3563
-     }
+     },
+     "cohort_objectives": [
+      0.00124,
+      -0.05968
+     ]
     }
    },
    "variants": [
@@ -2286,239 +2434,263 @@
       "n": 16176.5,
       "n_cancer": 260.5,
       "target_days": 90.0,
-      "median_days_to_treatment": 79.58,
-      "share_within_target": 0.6376,
-      "median_days_to_diagnosis": 53.56,
-      "mean_days_to_treatment": 83.71,
-      "missed_cancers": 25.0,
+      "median_days_to_treatment": 80.01,
+      "share_within_target": 0.6147,
+      "median_days_to_diagnosis": 52.775,
+      "mean_days_to_treatment": 84.325,
+      "missed_cancers": 27.5,
       "confirmed_cancers": 0.0,
-      "untreated_cancers": 25.0,
+      "untreated_cancers": 27.5,
       "stuck": 0.0,
       "false_treatments": 1.0,
-      "tests_per_patient": 0.3875,
-      "invasive_per_patient": 0.0275,
-      "cost_per_patient": 74.0,
-      "median_days_to_exit_noncancer": 13.8,
+      "tests_per_patient": 0.41,
+      "invasive_per_patient": 0.027,
+      "cost_per_patient": 74.25,
+      "median_days_to_exit_noncancer": 16.75,
       "stage_breakdown": {
        "detection": {
-        "wait": 30.29,
-        "service": 1.4
+        "wait": 29.69,
+        "service": 1.55
        },
        "referral": {
-        "wait": 10.23,
+        "wait": 10.29,
         "service": 0.06
        },
        "diagnosis": {
-        "wait": 12.26,
-        "service": 11.63
+        "wait": 11.47,
+        "service": 11.65
        },
        "treatment_start": {
-        "wait": 16.83,
+        "wait": 17.0,
         "service": 0.51
        }
       },
       "node_breakdown": {
-       "gp_assessment": {
-        "wait": 12.96,
-        "service": 0.04,
-        "n": 229,
+       "nurse_assessment": {
+        "wait": 1.42,
+        "service": 0.02,
+        "n": 110,
+        "stage": "detection"
+       },
+       "gp_assessment_after_nurse": {
+        "wait": 4.69,
+        "service": 0.01,
+        "n": 77,
         "stage": "detection"
        },
        "symptoms_persist": {
         "wait": 0.0,
         "service": 0.0,
-        "n": 107,
+        "n": 102,
         "stage": "detection"
        },
        "gp_represent": {
-        "wait": 15.25,
+        "wait": 14.8,
         "service": 0.02,
-        "n": 107,
+        "n": 102,
         "stage": "detection"
        },
        "referral_triage": {
-        "wait": 2.56,
+        "wait": 2.58,
         "service": 0.0,
-        "n": 229,
+        "n": 224,
         "stage": "referral"
        },
        "specialist_visit": {
-        "wait": 5.68,
+        "wait": 5.67,
         "service": 0.06,
-        "n": 229,
+        "n": 224,
         "stage": "referral"
        },
        "chest_ct": {
-        "wait": 1.86,
-        "service": 3.4,
-        "n": 229,
+        "wait": 1.9,
+        "service": 3.41,
+        "n": 224,
         "stage": "diagnosis"
        },
        "ttnb": {
-        "wait": 1.91,
-        "service": 2.44,
-        "n": 119,
+        "wait": 1.82,
+        "service": 2.41,
+        "n": 115,
         "stage": "diagnosis"
        },
        "pet_ct": {
-        "wait": 4.46,
-        "service": 2.86,
-        "n": 229,
+        "wait": 4.14,
+        "service": 2.85,
+        "n": 224,
         "stage": "diagnosis"
        },
        "tumour_board": {
-        "wait": 4.41,
+        "wait": 4.52,
         "service": 0.5,
-        "n": 229,
+        "n": 224,
         "stage": "treatment_start"
        },
        "treatment_booking": {
-        "wait": 12.42,
+        "wait": 12.49,
         "service": 0.01,
-        "n": 229,
+        "n": 224,
         "stage": "treatment_start"
        },
+       "gp_assessment": {
+        "wait": 6.7,
+        "service": 0.02,
+        "n": 114,
+        "stage": "detection"
+       },
        "bronchoscopy": {
-        "wait": 4.03,
-        "service": 2.93,
-        "n": 146,
+        "wait": 3.61,
+        "service": 2.99,
+        "n": 145,
         "stage": "diagnosis"
        },
        "chest_xray": {
         "wait": 1.74,
-        "service": 1.34,
-        "n": 145,
+        "service": 1.47,
+        "n": 146,
         "stage": "detection"
        },
        "gp_referral_letter": {
-        "wait": 1.98,
+        "wait": 2.03,
         "service": 0.0,
         "n": 122,
         "stage": "referral"
        },
        "gp_second_look": {
-        "wait": 0.33,
+        "wait": 0.35,
         "service": 0.0,
-        "n": 37,
+        "n": 38,
         "stage": "detection"
        }
       },
       "stage_breakdown_all": {
        "detection": {
-        "wait": 30.29,
-        "service": 1.4
+        "wait": 29.69,
+        "service": 1.55
        },
        "referral": {
-        "wait": 10.23,
+        "wait": 10.29,
         "service": 0.06
        },
        "diagnosis": {
-        "wait": 12.26,
-        "service": 11.63
+        "wait": 11.47,
+        "service": 11.65
        },
        "treatment_start": {
-        "wait": 16.83,
+        "wait": 17.0,
         "service": 0.51
        }
       },
       "node_breakdown_all": {
-       "gp_assessment": {
-        "wait": 12.96,
-        "service": 0.04,
-        "n": 229,
+       "nurse_assessment": {
+        "wait": 1.42,
+        "service": 0.02,
+        "n": 110,
+        "stage": "detection"
+       },
+       "gp_assessment_after_nurse": {
+        "wait": 4.69,
+        "service": 0.01,
+        "n": 77,
         "stage": "detection"
        },
        "symptoms_persist": {
         "wait": 0.0,
         "service": 0.0,
-        "n": 107,
+        "n": 102,
         "stage": "detection"
        },
        "gp_represent": {
-        "wait": 15.25,
+        "wait": 14.8,
         "service": 0.02,
-        "n": 107,
+        "n": 102,
         "stage": "detection"
        },
        "referral_triage": {
-        "wait": 2.56,
+        "wait": 2.58,
         "service": 0.0,
-        "n": 229,
+        "n": 224,
         "stage": "referral"
        },
        "specialist_visit": {
-        "wait": 5.68,
+        "wait": 5.67,
         "service": 0.06,
-        "n": 229,
+        "n": 224,
         "stage": "referral"
        },
        "chest_ct": {
-        "wait": 1.86,
-        "service": 3.4,
-        "n": 229,
+        "wait": 1.9,
+        "service": 3.41,
+        "n": 224,
         "stage": "diagnosis"
        },
        "ttnb": {
-        "wait": 1.91,
-        "service": 2.44,
-        "n": 119,
+        "wait": 1.82,
+        "service": 2.41,
+        "n": 115,
         "stage": "diagnosis"
        },
        "pet_ct": {
-        "wait": 4.46,
-        "service": 2.86,
-        "n": 229,
+        "wait": 4.14,
+        "service": 2.85,
+        "n": 224,
         "stage": "diagnosis"
        },
        "tumour_board": {
-        "wait": 4.41,
+        "wait": 4.52,
         "service": 0.5,
-        "n": 229,
+        "n": 224,
         "stage": "treatment_start"
        },
        "treatment_booking": {
-        "wait": 12.42,
+        "wait": 12.49,
         "service": 0.01,
-        "n": 229,
+        "n": 224,
         "stage": "treatment_start"
        },
+       "gp_assessment": {
+        "wait": 6.7,
+        "service": 0.02,
+        "n": 114,
+        "stage": "detection"
+       },
        "bronchoscopy": {
-        "wait": 4.03,
-        "service": 2.93,
-        "n": 146,
+        "wait": 3.61,
+        "service": 2.99,
+        "n": 145,
         "stage": "diagnosis"
        },
        "chest_xray": {
         "wait": 1.74,
-        "service": 1.34,
-        "n": 145,
+        "service": 1.47,
+        "n": 146,
         "stage": "detection"
        },
        "gp_referral_letter": {
-        "wait": 1.98,
+        "wait": 2.03,
         "service": 0.0,
         "n": 122,
         "stage": "referral"
        },
        "gp_second_look": {
-        "wait": 0.33,
+        "wait": 0.35,
         "service": 0.0,
-        "n": 37,
+        "n": 38,
         "stage": "detection"
        }
       },
       "stage_breakdown_everyone": {
        "detection": {
-        "wait": 18.19,
-        "service": 0.67
+        "wait": 19.51,
+        "service": 0.74
        },
        "referral": {
-        "wait": 0.92,
+        "wait": 0.95,
         "service": 0.01
        },
        "diagnosis": {
-        "wait": 0.29,
-        "service": 0.32
+        "wait": 0.26,
+        "service": 0.31
        },
        "treatment_start": {
         "wait": 0.28,
@@ -2527,39 +2699,42 @@
       },
       "by_group": {
        "non_specific": {
-        "n": 13663,
-        "n_cancer": 176,
-        "median_days_to_treatment": 83.4,
-        "share_within_target": 0.5966,
-        "median_days_to_diagnosis": 58.5,
-        "missed_cancers": 19,
-        "median_days_to_exit_all": 13.81
+        "n": 13632.0,
+        "n_cancer": 180.5,
+        "median_days_to_treatment": 84.195,
+        "share_within_target": 0.535,
+        "median_days_to_diagnosis": 57.85,
+        "missed_cancers": 22.5,
+        "median_days_to_exit_all": 16.8
        },
        "site_specific": {
-        "n": 2493,
-        "n_cancer": 78,
-        "median_days_to_treatment": 76.14,
-        "share_within_target": 0.7821,
-        "median_days_to_diagnosis": 48.7,
-        "missed_cancers": 6,
-        "median_days_to_exit_all": 13.88
+        "n": 2544.5,
+        "n_cancer": 80.0,
+        "median_days_to_treatment": 74.47,
+        "share_within_target": 0.7944,
+        "median_days_to_diagnosis": 47.915,
+        "missed_cancers": 5.0,
+        "median_days_to_exit_all": 17.055
        }
       },
       "utilisation": {
-       "nurse_appt": 0.0,
-       "gp_appt": 0.9333,
-       "xray": 0.7791,
-       "clinic": 0.7422,
-       "ct_scanner": 0.8314,
-       "bronchoscopy": 0.8736,
-       "ttnb_slot": 0.705,
-       "pet_scanner": 0.8352,
-       "treatment_slot": 0.3908
-      }
+       "nurse_appt": 0.8883,
+       "gp_appt": 0.8913,
+       "xray": 0.84,
+       "clinic": 0.7657,
+       "ct_scanner": 0.8365,
+       "bronchoscopy": 0.8391,
+       "ttnb_slot": 0.7011,
+       "pet_scanner": 0.8161,
+       "treatment_slot": 0.3851
+      },
+      "cohort_objectives": [
+       0.477,
+       0.43236
+      ]
      },
      "changes": [
-      "Fast lane: once the hospital has handled a referral, give that patient priority in every later queue",
-      "Book a GP appointment, not a nurse, at first contact"
+      "Fast lane: once the hospital has handled a referral, give that patient priority in every later queue"
      ],
      "role": "optimiser"
     },
@@ -2837,22 +3012,22 @@
       },
       "by_group": {
        "non_specific": {
-        "n": 13663,
-        "n_cancer": 176,
-        "median_days_to_treatment": 107.75,
-        "share_within_target": 0.142,
-        "median_days_to_diagnosis": 75.91,
-        "missed_cancers": 24,
-        "median_days_to_exit_all": 16.78
+        "n": 13632.0,
+        "n_cancer": 180.5,
+        "median_days_to_treatment": 108.215,
+        "share_within_target": 0.1142,
+        "median_days_to_diagnosis": 74.305,
+        "missed_cancers": 22.5,
+        "median_days_to_exit_all": 16.8
        },
        "site_specific": {
-        "n": 2493,
-        "n_cancer": 78,
-        "median_days_to_treatment": 90.81,
-        "share_within_target": 0.4359,
-        "median_days_to_diagnosis": 57.29,
-        "missed_cancers": 5,
-        "median_days_to_exit_all": 17.08
+        "n": 2544.5,
+        "n_cancer": 80.0,
+        "median_days_to_treatment": 92.595,
+        "share_within_target": 0.407,
+        "median_days_to_diagnosis": 58.78,
+        "missed_cancers": 4.0,
+        "median_days_to_exit_all": 17.11
        }
       },
       "utilisation": {
@@ -2865,7 +3040,11 @@
        "ttnb_slot": 0.7356,
        "pet_scanner": 0.7893,
        "treatment_slot": 0.3563
-      }
+      },
+      "cohort_objectives": [
+       0.03052,
+       -0.02964
+      ]
      },
      "role": "hand_written",
      "flowchart_id": "direct_ct"
@@ -3144,22 +3323,22 @@
       },
       "by_group": {
        "non_specific": {
-        "n": 13663,
-        "n_cancer": 176,
-        "median_days_to_treatment": 91.58,
-        "share_within_target": 0.4091,
-        "median_days_to_diagnosis": 88.72,
-        "missed_cancers": 24,
-        "median_days_to_exit_all": 16.79
+        "n": 13632.0,
+        "n_cancer": 180.5,
+        "median_days_to_treatment": 91.15,
+        "share_within_target": 0.4234,
+        "median_days_to_diagnosis": 86.49,
+        "missed_cancers": 22.5,
+        "median_days_to_exit_all": 16.815
        },
        "site_specific": {
-        "n": 2493,
-        "n_cancer": 78,
-        "median_days_to_treatment": 74.46,
-        "share_within_target": 0.7821,
-        "median_days_to_diagnosis": 71.13,
-        "missed_cancers": 6,
-        "median_days_to_exit_all": 17.08
+        "n": 2544.5,
+        "n_cancer": 80.0,
+        "median_days_to_treatment": 74.12,
+        "share_within_target": 0.7935,
+        "median_days_to_diagnosis": 71.455,
+        "missed_cancers": 5.0,
+        "median_days_to_exit_all": 17.07
        }
       },
       "utilisation": {
@@ -3172,7 +3351,11 @@
        "ttnb_slot": 0.6667,
        "pet_scanner": 0.7497,
        "treatment_slot": 0.4674
-      }
+      },
+      "cohort_objectives": [
+       0.35628,
+       0.38782
+      ]
      },
      "role": "hand_written",
      "flowchart_id": "bundled_workup"
@@ -3523,22 +3706,22 @@
       },
       "by_group": {
        "non_specific": {
-        "n": 13663,
-        "n_cancer": 176,
-        "median_days_to_treatment": 100.21,
-        "share_within_target": 0.3295,
-        "median_days_to_diagnosis": 71.67,
-        "missed_cancers": 24,
-        "median_days_to_exit_all": 16.79
+        "n": 13632.0,
+        "n_cancer": 180.5,
+        "median_days_to_treatment": 99.45,
+        "share_within_target": 0.3296,
+        "median_days_to_diagnosis": 70.77,
+        "missed_cancers": 24.0,
+        "median_days_to_exit_all": 16.805
        },
        "site_specific": {
-        "n": 2493,
-        "n_cancer": 78,
-        "median_days_to_treatment": 91.64,
-        "share_within_target": 0.4231,
-        "median_days_to_diagnosis": 61.74,
-        "missed_cancers": 6,
-        "median_days_to_exit_all": 17.08
+        "n": 2544.5,
+        "n_cancer": 80.0,
+        "median_days_to_treatment": 90.73,
+        "share_within_target": 0.4555,
+        "median_days_to_diagnosis": 60.61,
+        "missed_cancers": 5.0,
+        "median_days_to_exit_all": 17.07
        }
       },
       "utilisation": {
@@ -3551,7 +3734,11 @@
        "ttnb_slot": 0.7088,
        "pet_scanner": 0.7931,
        "treatment_slot": 0.3659
-      }
+      },
+      "cohort_objectives": [
+       0.168,
+       0.19014
+      ]
      },
      "role": "hand_written",
      "flowchart_id": "fast_track_nonspecific"
@@ -3830,22 +4017,22 @@
       },
       "by_group": {
        "non_specific": {
-        "n": 13663,
-        "n_cancer": 176,
-        "median_days_to_treatment": 103.37,
-        "share_within_target": 0.2159,
-        "median_days_to_diagnosis": 72.56,
-        "missed_cancers": 24,
-        "median_days_to_exit_all": 16.79
+        "n": 13632.0,
+        "n_cancer": 180.5,
+        "median_days_to_treatment": 101.82,
+        "share_within_target": 0.2431,
+        "median_days_to_diagnosis": 72.165,
+        "missed_cancers": 22.5,
+        "median_days_to_exit_all": 16.815
        },
        "site_specific": {
-        "n": 2493,
-        "n_cancer": 78,
-        "median_days_to_treatment": 90.68,
-        "share_within_target": 0.4487,
-        "median_days_to_diagnosis": 61.14,
-        "missed_cancers": 6,
-        "median_days_to_exit_all": 17.08
+        "n": 2544.5,
+        "n_cancer": 80.0,
+        "median_days_to_treatment": 90.665,
+        "share_within_target": 0.456,
+        "median_days_to_diagnosis": 61.115,
+        "missed_cancers": 5.0,
+        "median_days_to_exit_all": 17.07
        }
       },
       "utilisation": {
@@ -3858,7 +4045,11 @@
        "ttnb_slot": 0.6897,
        "pet_scanner": 0.2669,
        "treatment_slot": 0.3563
-      }
+      },
+      "cohort_objectives": [
+       0.0921,
+       0.138
+      ]
      },
      "role": "hand_written",
      "flowchart_id": "baseline_plus_capacity"
@@ -4251,59 +4442,34 @@
       "target": "triage",
       "other": null,
       "plain": "Fast track patients after referral handling at hospital",
-      "score": 0.999,
+      "score": 1.051,
       "evidence": {
-       "predicted_days_saved": 1.0,
-       "train_on_time_before": 0.192,
-       "train_on_time_after": 0.652,
-       "train_median_before": 100.66,
-       "train_median_after": 78.68
-      }
-     },
-     {
-      "kind": "standardise",
-      "target": "first_contact",
-      "other": "gp_visit",
-      "plain": "Nurse or GP first: always gp appointment",
-      "score": 1.192,
-      "evidence": {
-       "predicted_days_saved": 1.19,
-       "train_on_time_before": 0.652,
-       "train_on_time_after": 0.672,
-       "train_median_before": 78.68,
-       "train_median_after": 77.32
+       "predicted_days_saved": 1.05,
+       "train_on_time_before": 0.1339,
+       "train_on_time_after": 0.5589,
+       "train_median_before": 106.14,
+       "train_median_after": 83.82,
+       "accepted_together_with": [],
+       "records_reading": "In the records, patients spent on average 2.1 days in appointment queues after 'referral handling at hospital'; half of that is counted as the possible saving"
       }
      }
     ],
-    "selection_optimism_pp": 1.78,
-    "candidates_evaluated": 36,
+    "selection_optimism_pp": -1.43,
+    "candidates_evaluated": 39,
     "guardrails_heldout": [],
     "details": [
      {
       "label": "Fast lane: once the hospital has handled a referral, give that patient priority in every later queue",
       "raw": "Fast track patients after referral handling at hospital",
       "kind": "fast_track",
-      "records_said": "The clinic records point to about 1.0 days of average waiting at this point",
-      "rerun_said": "Rerunning the same patients confirmed it: treated on time 19% to 65%, median 101 to 79 days.",
-      "predicted_days_saved": 1.0,
-      "train_on_time_before": 0.192,
-      "train_on_time_after": 0.652,
-      "train_median_before": 100.66,
-      "train_median_after": 78.68,
+      "records_said": "In the records, patients spent on average 2.1 days in appointment queues after 'referral handling at hospital'; half of that is counted as the possible saving.",
+      "rerun_said": "Rerunning the same patients confirmed it: treated on time 13% to 56%, median 106 to 84 days.",
+      "predicted_days_saved": 1.05,
+      "train_on_time_before": 0.1339,
+      "train_on_time_after": 0.5589,
+      "train_median_before": 106.14,
+      "train_median_after": 83.82,
       "heldout_on_time_after": 0.6147
-     },
-     {
-      "label": "Book a GP appointment, not a nurse, at first contact",
-      "raw": "Nurse or GP first: always gp appointment",
-      "kind": "standardise",
-      "records_said": "The clinic records point to about 1.19 days of average waiting at this point",
-      "rerun_said": "Rerunning the same patients confirmed it: treated on time 65% to 67%, median 79 to 77 days.",
-      "predicted_days_saved": 1.19,
-      "train_on_time_before": 0.652,
-      "train_on_time_after": 0.672,
-      "train_median_before": 78.68,
-      "train_median_after": 77.32,
-      "heldout_on_time_after": 0.6376
      }
     ],
     "cumulative": [
@@ -4324,15 +4490,6 @@
       "median_days": 80.01,
       "missed_cancers": 27.5,
       "tests_per_patient": 0.41
-     },
-     {
-      "step": 2,
-      "label": "Book a GP appointment, not a nurse, at first contact",
-      "kind": "change",
-      "share": 0.6376,
-      "median_days": 79.58,
-      "missed_cancers": 25.0,
-      "tests_per_patient": 0.3875
      }
     ],
     "n_train": 18800,
@@ -4437,12 +4594,113 @@
      {
       "kind": "order",
       "label": "Suggested change: new order and a fast lane, no new capacity",
-      "share": 0.6376,
-      "median_days": 79.58
+      "share": 0.6147,
+      "median_days": 80.01
      }
     ]
    },
-   "summary": "Synthetic patients with chest symptoms in one large Finnish county, followed from first contact in primary care (nurse or GP) to the start of treatment. Time to treatment is counted against a provisional 90-day target."
+   "sensitivity": [
+    {
+     "parameter": "ct_scanner: slots per day (also the flowchart capacity overrides)",
+     "low_gain_pp": 7.4,
+     "high_gain_pp": 42.1,
+     "base_gain_pp": 43.0,
+     "swing_pp": 34.7,
+     "comparison": "bundled_workup vs baseline",
+     "low": 2,
+     "high": 4
+    },
+    {
+     "parameter": "symptoms_persist: P(positive), cancer conditions",
+     "low_gain_pp": 30.6,
+     "high_gain_pp": 46.3,
+     "base_gain_pp": 43.0,
+     "swing_pp": 15.7,
+     "comparison": "bundled_workup vs baseline",
+     "low": 0.7125,
+     "high": 1.0
+    },
+    {
+     "parameter": "clinic: slots per day",
+     "low_gain_pp": 29.8,
+     "high_gain_pp": 43.0,
+     "base_gain_pp": 43.0,
+     "swing_pp": 13.2,
+     "comparison": "bundled_workup vs baseline",
+     "low": 5,
+     "high": 9
+    },
+    {
+     "parameter": "pet_scanner: slots per day (also the flowchart capacity overrides)",
+     "low_gain_pp": 13.2,
+     "high_gain_pp": 25.6,
+     "base_gain_pp": 43.0,
+     "swing_pp": 12.4,
+     "comparison": "bundled_workup vs baseline",
+     "low": 1,
+     "high": 2
+    },
+    {
+     "parameter": "gp_assessment: P(positive), cancer conditions",
+     "low_gain_pp": 38.0,
+     "high_gain_pp": 49.6,
+     "base_gain_pp": 43.0,
+     "swing_pp": 11.6,
+     "comparison": "bundled_workup vs baseline",
+     "low": 0.7275,
+     "high": 1.0
+    },
+    {
+     "parameter": "arrivals per day (county size)",
+     "low_gain_pp": 39.4,
+     "high_gain_pp": 48.7,
+     "base_gain_pp": 43.0,
+     "swing_pp": 9.3,
+     "comparison": "bundled_workup vs baseline",
+     "low": 39.6,
+     "high": 48.4
+    },
+    {
+     "parameter": "clinic: min_lead_days",
+     "low_gain_pp": 39.7,
+     "high_gain_pp": 47.1,
+     "base_gain_pp": 43.0,
+     "swing_pp": 7.4,
+     "comparison": "bundled_workup vs baseline",
+     "low": 9.0,
+     "high": 15.0
+    },
+    {
+     "parameter": "specialist_visit: P(positive), non-cancer conditions",
+     "low_gain_pp": 43.0,
+     "high_gain_pp": 49.6,
+     "base_gain_pp": 43.0,
+     "swing_pp": 6.6,
+     "comparison": "bundled_workup vs baseline",
+     "low": 0.2625,
+     "high": 0.4375
+    },
+    {
+     "parameter": "gp_represent: extra_wait median",
+     "low_gain_pp": 47.9,
+     "high_gain_pp": 42.2,
+     "base_gain_pp": 43.0,
+     "swing_pp": 5.8,
+     "comparison": "bundled_workup vs baseline",
+     "low": 10.5,
+     "high": 17.5
+    },
+    {
+     "parameter": "treatment_slot: min_lead_days",
+     "low_gain_pp": 38.8,
+     "high_gain_pp": 43.8,
+     "base_gain_pp": 43.0,
+     "swing_pp": 5.0,
+     "comparison": "bundled_workup vs baseline",
+     "low": 7.5,
+     "high": 12.5
+    }
+   ]
   }
  ],
  "assumptions": [
