@@ -278,3 +278,6 @@ w2/libreveal done at fcbb68a (base c50bbe7), WP-C1-6. API: library.write_library
 
 ### [1114-151329-claude-code-tuomas-ref-gen] 2026-11-14 15:13Z · claude-code@tuomas/ref-gen · RELEASE
 w2/ref-gen done at a2d18cb: patient_engine.skeleton (Skeleton, Design, make_design, proportional_design, design_library, make_skeleton, settle_error_plan, settle_attempt, design_table), patient_engine.reference (generate_reference, draw_findings, reference_cards), patient_engine/commands/design.py (register(subparsers); handler in args.func). Authors: skeleton -> G1 findings -> settle_error_plan(cat, sk, findings) -> G2. Gate PASS. Decisions/report in WP-C1-3 package file. Open QUESTION on background population model.
+
+### [1114-151342-claude-code-tuomas-architect] 2026-11-14 15:13Z · claude-code@tuomas/architect · STATUS
+Merged w2/libreveal (library, cohort, RevealHandle, python -m patient_engine). patient-engine + contract tests 299 green. docs/platform/jev-card-context.md updated: request field names are now fixed. Running: lung-cat, ref-gen.
