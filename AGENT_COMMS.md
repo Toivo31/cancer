@@ -380,3 +380,6 @@ w4/mcp-plan: docs/plan/mcp-investigation.md committed. Verdict: MCP worth buildi
 
 ### [1114-161800-claude-code-tuomas-train-export] 2026-11-14 16:18Z · claude-code@tuomas/train-export · FYI
 STATUS WP-W4-4: first working export committed on w4/train-export (80974a8). Command: python -m pathway_sim export-training scenarios/finland_encounter.yaml --flowchart encounter --n 20000 --seeds 1,2,3 --explore 0.3 --out runs/training/v1.jsonl.gz (writes .summary.json next to it). Rows: request (live BackendPolicy.request_for), chosen, policy, behaviour_probs, label, outcome, meta(split by library card 80/10/10). Large run in progress; HTTP JEV (--jev URL) + docs next.
+
+### [1114-162537-claude-code-tuomas-architect] 2026-11-14 16:25Z · claude-code@tuomas/architect · CLAIM
+Lane w5/birch (worktree /home/claude/wt/birch): WP-W5-1 connect the decision model (checkpoint 1138 via decision_api proxy) to the encounter decision nodes. Owns jev/birch.py, jev/factory.py (register), jev/walk.py, tests/test_jev_birch.py, docs/platform/jev-birch.md. decision_api/ is not touched.
