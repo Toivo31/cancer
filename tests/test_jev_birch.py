@@ -286,3 +286,37 @@ def test_walk_override_by_a_person(tmp_path):
                   work_dir=str(tmp_path), world="scenarios/finland_encounter.yaml", seed=1, out=None)
     res = walk(a, out=lambda *_: None, input_fn=lambda *_: next(answers))
     assert res["steps"][0]["overridden"] is False and res["steps"][1]["overridden"] is True
+
+
+def test_pick_random_is_seeded_and_reproducible():
+    from jev.walk import PICKS, resolve_pick
+    a, b = resolve_pick("random", 7, None), resolve_pick("random", 7, None)
+    assert a == b and a[0] in PICKS and 0 <= a[1] < 3 and a[2] == 7
+    assert len({resolve_pick("random", s, None)[:2] for s in range(1, 60)}) > 3          # the seed varies the patient
+    kind, ix, seed, _ = resolve_pick("random", None, None)
+    assert seed is not None and resolve_pick("random", seed, None)[:2] == (kind, ix)       # a printed seed repeats it
+    assert resolve_pick("cancer", None, None) == ("cancer", None, None, None)
+
+
+def test_walk_pick_random_prints_the_seed_and_hides_the_kind_until_the_end(tmp_path):
+    from jev.walk import main
+    import io, contextlib
+    argv = ["--pick", "random", "--pick-seed", "7", "--jev", "mock", "--auto-accept", "--cache-dir", str(tmp_path / "c"),
+            "--work-dir", str(tmp_path), "--out", str(tmp_path / "w.json")]
+    buf = io.StringIO()
+    with contextlib.redirect_stdout(buf):
+        assert main(argv) == 0
+    text = buf.getvalue()
+    head, tail = text.split("hidden truth (not shown to the decider):")
+    assert "pick seed 7" in head and "--pick-seed 7" in head
+    saved = json.loads((tmp_path / "w.json").read_text())
+    truth = saved["hidden_block_scoring_only"]
+    assert truth["pick_seed"] == 7 and truth["pick"] == "random"
+    intro = "\n".join(head.splitlines()[:2])                                        # (action labels later may name a condition)
+    assert truth["primary_condition"] not in intro and "hidden truth withheld" in intro
+    # no --pick and no --library defaults to random (seed printed)
+    buf2 = io.StringIO()
+    with contextlib.redirect_stdout(buf2):
+        assert main(["--jev", "mock", "--auto-accept", "--cache-dir", str(tmp_path / "c"), "--work-dir", str(tmp_path),
+                     "--out", str(tmp_path / "w2.json")]) == 0
+    assert "Random patient, pick seed" in buf2.getvalue()

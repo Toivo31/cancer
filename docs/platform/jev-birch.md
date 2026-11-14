@@ -23,6 +23,7 @@ The model's owner's kit is `decision_api/` (we do not edit it).
 # terminal 1 (the owner shares the key out of band; never commit it)
 BIRCH_API_KEY_FILE=/private/path/to/key python -m decision_api.server     # http://127.0.0.1:8771, no GPU starts until a call
 # terminal 2
+python -m jev.walk                                # a random patient (same as --pick random); the seed is printed, repeat with --pick-seed N
 python -m jev.walk --pick cancer                  # or pneumonia, worried_well; Enter accepts a proposal, or type an id or number
 python -m jev.walk --pick cancer --placeholder    # also show the placeholder decision table's numbers
 python -m jev.walk --pick pneumonia --auto-accept --max-calls 20
@@ -36,6 +37,8 @@ walk stops with that message. Retry the command (answers already received are in
 row the backend sends nothing more until a new run. The walk saves `runs/walks/walk_<pick>_<n>_<jev>.json`: every step
 (record, scores, proposal, choice), the record, and, in a separate block marked for scoring only, the patient's hidden
 condition. Treat that file as hidden-side data.
+
+**Who is blind.** The model always is. The person at the keyboard is blind with `--pick random` (the default: a seeded random kind and card; the seed is printed and `--pick-seed N` repeats the patient) and with a `--library` patient they did not select by condition. With `--pick cancer`, `pneumonia` or `worried_well` the person chooses the condition before the walk, so they are not blind (the walk prints a note); use those for rehearsal and say so on stage if used in the "person decides" demo.
 
 ## What one request looks like
 

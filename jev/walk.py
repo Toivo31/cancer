@@ -1,7 +1,9 @@
 """Walk one synthetic patient through the encounter loop, one decision at a time (demo and test tool).
 
     python -m decision_api.server                                   # terminal 1: the owner's proxy (key via BIRCH_API_KEY_FILE)
-    python -m jev.walk --pick cancer                                 # terminal 2: you review each proposal
+    python -m jev.walk                                               # terminal 2: a random patient (blind for you too); you review each proposal
+    python -m jev.walk --pick random --pick-seed 7                   # the same random patient again
+    python -m jev.walk --pick cancer                                 # you choose the kind: NOT blind for the person
     python -m jev.walk --pick pneumonia --auto-accept --max-calls 20 # unattended, accepts every proposal
     python -m jev.walk --pick cancer --auto-accept --jev mock        # no model, no key: a local mock of the API
 
@@ -9,12 +11,18 @@ At each decision it prints the record so far, the offered actions with the model
 (and the decision tables' numbers with ``--placeholder``), then waits: Enter accepts the proposal, or type an
 action id or its number. The chosen action is what the simulator does (the model proposes, a person decides).
 The patient's hidden truth is shown only after the walk ends. The walk is saved as JSON.
+
+Who is blind: the model always is (it sees the record only). The person at the keyboard is blind only with
+``--pick random`` (the default) and ``--library`` with a patient the person did not choose by condition.
+``--pick cancer|pneumonia|worried_well`` tells the person the condition before the walk: use it for rehearsal,
+not for a "person decides" demo.
 """
 
 from __future__ import annotations
 
 import argparse
 import json
+import random
 import sys
 import tempfile
 from pathlib import Path
@@ -26,6 +34,7 @@ from patient_engine.record_text import render
 from .birch import BirchBackend, BirchError, BirchPolicy, DEFAULT_MAX_CALLS, DEFAULT_URL, parse_spec
 from .birch_mock import MockProxy
 
+RANDOM_PICK = "random"
 PICKS = {"cancer": "lung_cancer", "pneumonia": "pneumonia", "worried_well": "worried_well"}
 WORLD = "scenarios/finland_encounter.yaml"
 LIBRARY_SEED, LIBRARY_CARDS = 1, 3
@@ -51,6 +60,18 @@ def one_patient_cohort(lib, index: int, seed: int) -> Cohort:
     return Cohort(spec=CohortSpec(library_id=lib.id, prevalence={cond: 1.0}, n=1, seed=seed),
                   arrivals={"rate_per_day": 44}, library_id=lib.id, card_index=(index,), condition=(cond,),
                   arrival=(0.0,), library=lib)
+
+
+def resolve_pick(pick: str | None, pick_seed: int | None, patient) -> tuple[str, int | None, int | None, int | None]:
+    """``(kind, patient index or None, pick seed or None, pick seed used)``. ``random`` draws the kind and the card
+    from ``random.Random(seed)`` (a fresh seed when none is given), so the same seed gives the same patient."""
+    if pick != RANDOM_PICK:
+        return pick, (int(patient) if patient is not None else None), None, None
+    seed = pick_seed if pick_seed is not None else random.SystemRandom().randrange(1, 10 ** 6)
+    rng = random.Random(seed)
+    kind = rng.choice(sorted(PICKS))
+    ix = int(patient) if patient is not None else rng.randrange(LIBRARY_CARDS)
+    return kind, ix, seed, seed
 
 
 class StepPolicy:
@@ -139,8 +160,11 @@ def walk(args, out=print, input_fn=input) -> dict:
         lib = load_library(args.library, world.catalogue)
         ix = int(args.patient) if str(args.patient).isdigit() else next(i for i, c in enumerate(lib.cards) if c.id == args.patient)
     else:
-        lib = library_for(world, PICKS[args.pick], Path(args.work_dir) / "walk_library")
-        ix = int(args.patient or 0)
+        kind, ix, pick_seed, _ = resolve_pick(args.pick, getattr(args, "pick_seed", None), args.patient)
+        ix = ix or 0
+        lib = library_for(world, PICKS[kind], Path(args.work_dir) / "walk_library")
+    if args.library:
+        pick_seed = None
     cohort = one_patient_cohort(lib, ix, args.seed)
     table = world.policy if args.placeholder else None
     mock = None
@@ -161,6 +185,11 @@ def walk(args, out=print, input_fn=input) -> dict:
                               forbidden_values=frozenset(world.catalogue.conditions))
             inner = BirchPolicy(be, mode="argmax", catalogue=world.catalogue, care=world.care)
         step = StepPolicy(inner, world, table, args.auto_accept, input_fn, out)
+        if pick_seed is not None:
+            out(f"Random patient, pick seed {pick_seed} (repeat with --pick random --pick-seed {pick_seed}); the kind is not shown until the end.")
+        elif args.pick in PICKS:
+            out(f"Note: --pick {args.pick} tells you the condition up front, so you are not blind; the model is. "
+                "Use --pick random for a blind walk.")
         out(f"Walking patient {ix} of {lib.id[:12]} (hidden truth withheld until the end); decider: {args.jev}"
             + ("; auto-accept" if args.auto_accept else ""))
         log = run_encounter(world, 1, args.seed, policy=step, cohort=cohort)
@@ -181,8 +210,9 @@ def walk(args, out=print, input_fn=input) -> dict:
         out("Model calls: " + json.dumps(summary))
     result = {"format": "jev_walk/1", "decider": args.jev, "outcome": pr.outcome, "steps": step.steps,
               "record": pr.record.to_json(), "record_text": record_lines, "model_calls": summary,
-              "hidden_block_scoring_only": {"primary_condition": pr.primary_condition, "library": lib.id, "patient": ix}}
-    p = Path(args.out) if args.out else Path(args.work_dir) / "walks" / f"walk_{args.pick or 'card'}_{ix}_{args.jev.replace(':', '_').replace('/', '_')}.json"
+              "hidden_block_scoring_only": {"primary_condition": pr.primary_condition, "library": lib.id, "patient": ix,
+                                            "pick": args.pick, "pick_seed": pick_seed}}
+    p = Path(args.out) if args.out else Path(args.work_dir) / "walks" / f"walk_{args.pick or 'card'}{'' if pick_seed is None else pick_seed}_{ix}_{args.jev.replace(':', '_').replace('/', '_')}.json"
     p.parent.mkdir(parents=True, exist_ok=True)
     p.write_text(json.dumps(result, indent=1))
     out(f"Saved {p}")
@@ -191,8 +221,11 @@ def walk(args, out=print, input_fn=input) -> dict:
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="python -m jev.walk", description=__doc__.split("\n\n")[0])
-    g = ap.add_mutually_exclusive_group(required=True)
-    g.add_argument("--pick", choices=sorted(PICKS), help="a synthetic patient of this kind")
+    g = ap.add_mutually_exclusive_group()
+    g.add_argument("--pick", choices=sorted(PICKS) + [RANDOM_PICK],
+                   help="random (default): a seeded random kind and card, so the person is blind too; the seed is printed. "
+                        "cancer, pneumonia, worried_well: you choose the kind, so you know it before the walk (the model still does not): not blind for the person")
+    ap.add_argument("--pick-seed", type=int, default=None, help="seed for --pick random (default: a fresh one, printed); the same seed gives the same patient")
     g.add_argument("--library", help="a patient library directory (with --patient)")
     ap.add_argument("--patient", default=None, help="card index or card id in the library (default 0)")
     ap.add_argument("--jev", default="birch", help="birch (proxy on 127.0.0.1:8771), birch+http://host:port, mock "
@@ -208,6 +241,10 @@ def main(argv=None) -> int:
     ap.add_argument("--seed", type=int, default=1)
     ap.add_argument("--out", help="where to save the walk (JSON)")
     a = ap.parse_args(argv)
+    if a.pick is None and not a.library:
+        if a.patient is not None:
+            ap.error("--patient needs --library (or --pick)")
+        a.pick = RANDOM_PICK
     try:
         walk(a)
     except (BirchError, EOFError, KeyboardInterrupt) as e:
