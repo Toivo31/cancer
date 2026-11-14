@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The encounter loop: how patients move through primary care</title>
+<link rel="stylesheet" href="encounter.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand"><span class="eyebrow">Care pathway simulator · primary-care encounter loop</span><h1 id="title">Nurse, GP, tests, home, and back again</h1>
+    <p class="sub">Each dot is a simulated patient: amber waiting, blue being seen or tested. Click a dot, or pick an example, to read that patient's record.</p></div>
+  <nav class="layers" id="layers" aria-label="Layers"></nav>
+  <div class="views">
+    <button id="truth" class="chip warn" aria-pressed="false" title="Show what the simulator knows and the clinicians do not. Off by default.">Reveal truth (teaching view)</button>
+  </div>
+  <span class="badge sim" title="Every patient here is simulated. No real patient data.">Simulated patients</span>
+</header>
+
+<main class="stage" id="stage">
+  <section class="left">
+    <div class="pane" id="pane">
+      <div class="counters" id="counters"></div>
+      <div class="gwrap" id="gw"><div id="svgbox"></div><canvas id="cv"></canvas><div class="hit" id="hit"></div></div>
+    </div>
+    <section id="results"></section>
+  </section>
+  <aside class="side" id="side"></aside>
+</main>
+
+<footer class="bar" id="bar">
+  <button id="play" class="play" aria-label="Play or pause">Pause</button>
+  <button id="restart" class="chip">Restart</button>
+  <div class="clock"><span class="eyebrow" title="Days since each patient's first contact">Patient day</span><span id="day" class="num">0</span></div>
+  <input id="slider" type="range" min="0" max="100" step="0.1" value="0" aria-label="Time in days since first contact">
+  <label class="spd"><span class="eyebrow">Speed</span><select id="speed"></select></label>
+  <div class="legend" id="legend"></div>
+</footer>
+<div class="note" id="note"></div>
+<div class="tip" id="tip" hidden></div>
+
+<script src="data/encounter_bundle.js"></script>
+<script src="encounter.js"></script>
+</body>
+</html>
