@@ -1,3 +1,5 @@
+> **Deployment update (2026-11-14):** native refinement is now deployed on Modal and a real tool + summary + final classifier call has succeeded. Use [HOSTED_API.md](HOSTED_API.md) for the credential-free team endpoint and current validation report. The owner-preflight instructions below describe the original preparation stage; the isolated deployment source now lives in `modal_inference.py` with `runtime/decision_model/`. Do not apply the old patch to teammates’ working trees.
+
 # Handoff 2: optional context refinement on the shared Nemotron backbone
 
 Read [handoff 1](INTEGRATION_PROMPT.md) first. This is the follow-up brief for the
@@ -35,7 +37,7 @@ flowchart LR
   V --> T[Bounded read-only tool requests / brief evidence summary]
   T --> R[Context plus actual retrieved evidence]
   R --> P
-  P --> D[Checkpoint 1138 decision suffix: LoRA-derived blocks 81–87]
+  P --> D[Checkpoint 2350 decision suffix: LoRA-derived blocks 81–87]
   D --> H[Trained interaction / decision head]
   H --> S[Every allowed choice score + proposal]
   S --> U[Human review]
@@ -69,7 +71,7 @@ Defaults, enforced on the backend:
 
 | Setting | Default | Hard maximum |
 | --- | ---: | ---: |
-| Total new generated tokens, across every turn | 128 | 512 |
+| Total output tokens across turns (cached output included) | 128 | 512 |
 | Generation turns | 3 | 4 |
 | Read-only tool calls | 2 | 4 |
 | Refined context characters | 12,000 | 20,000 |
@@ -213,3 +215,6 @@ and keeps native refinement disabled. Normal live scoring remains available.
 
 No training, checkpoint, overnight-schedule or live-deployment changes have been
 made as part of this handoff. Overnight pausing remains with the owner/team.
+
+
+Current inference cache semantics and runtime are described in `HOSTED_API.md`. `tokens_used` is the bounded logical output count; `tokens_generated` counts actual new computation. Cached generation never replaces an actual tool retrieval. The batched encoding experiment was removed after GPU score drift; keep the original independent encoding path.

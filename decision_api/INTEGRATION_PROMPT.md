@@ -31,7 +31,7 @@ PAD-UFES-20 training examples. **Do not add uploads** or fabricate patient image
 
 Include the precomputed examples in `decision_api/web/precomputed.json` so the
 demo works instantly without cloud credentials or a GPU. They contain recorded
-checkpoint1138 outputs, not guessed scores. Use `api.precomputed(id)` and label
+checkpoint2350 outputs, not guessed scores. Use `api.precomputed(id)` and label
 these results **Saved example**, with their recorded timestamp. Use the bundled
 synthetic pathway case as the default workflow example. It is a configurable
 integration example, not a validated cancer protocol.
@@ -76,3 +76,8 @@ the original frozen Nemotron generation path. Share the frozen prefix with the
 trained decision path; do not create another full model or external LLM service.
 The second handoff distinguishes the working scripted tool preview from the
 native generation hook, which still requires owner GPU preflight/deployment.
+
+
+## Hosted access migration
+
+Read `decision_api/HOSTED_API.md` first for the credential-free team URL and job-polling SDK. Use `python3 -m decision_api.agent --reason` to test the integration. The project proxy now works without local secrets. Keep reasoning off by default and use the existing user-facing controls; do not expose raw JSON inputs. The standalone hosted page includes the same ready medical pictures and recorded examples.

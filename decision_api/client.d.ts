@@ -35,7 +35,7 @@ export interface ReasoningInput {
 export interface Refinement {
   enabled: boolean; mode: 'disabled' | 'scripted_tool_demo' | 'frozen_pretrained_nemotron';
   original_context: string; context: string; includes_question: boolean;
-  tokens_used: number; rounds_used: number; tool_calls_used: number;
+  tokens_used: number; tokens_generated?: number; generation_cache_hits?: number; rounds_used: number; tool_calls_used: number;
   source_ids: string[]; stop_reason: string; trace: Record<string, unknown>[];
   budget: {max_tokens: number; max_rounds: number; max_tool_calls: number; max_context_chars: number};
 }
@@ -52,5 +52,5 @@ export interface DecisionClient {
   decision(id: string, options?: RequestOptions): Promise<Decision & {input: Record<string, unknown>}>;
   review(id: string, payload: Review, options?: RequestOptions): Promise<SavedReview>;
 }
-export class DecisionAPIError extends Error {status: number; retryable: boolean}
+export class DecisionAPIError extends Error {status: number; retryable: boolean; jobStatusUrl?: string}
 export function createDecisionClient(options?: {baseUrl?: string; fetch?: typeof fetch; timeoutMs?: number}): DecisionClient;
