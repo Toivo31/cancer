@@ -46,3 +46,7 @@ Per scenario, written by `export.py`:
 ```
 
 `parameter` is shown as written, so use plain words. The gain is the suggested change's gain in percentage points of patients treated on time, with that one input at its low and high value. The page draws a tornado (widest bar first, dashed line at the central estimate) on screen 3. If the field is absent, the panel is hidden.
+
+## Flowchart simulation page (`flow.html`)
+
+The main screen of the product, offline: the pathway as a graph with simulated patients moving through it. Open `demo/flow.html` from disk (no server, no build). Data: `data/flow_bundle.js`, written by `python demo/export_flow.py` (about 40 s; same held-out cohorts and optimiser results as the dashboard, and the script prints each share next to the dashboard's). Layers: Flow (counts), Time (median wait per step), Queues (waiting over the simulated year), Decisions (shares chosen); Compare shows the change per step against the left pathway. Space plays and pauses, arrow keys step, `r` restarts; click a dot for that patient's trace. URL options: `?s=finland`, `?layer=time`, `?compare`, `?paused&day=60`, `?view=both|left|right`, `?left=observed&right=authors`. Data shape: `docs/platform/flow-format.md`; library: `pathway_sim/flow.py`.

@@ -12,6 +12,7 @@ metrics = compute_metrics(run) ──► dict (JSON)
 optimiser.propose(scenario, flowchart, run) ──► [Edit]
 optimiser.search(...) ──► accepted edits, before/after metrics on train + held-out
 demo/export.py ──► demo/data/demo_bundle.json ──► demo/index.html
+build_flow(run log) ──► flow document (docs/platform/flow-format.md); demo/export_flow.py ──► demo/data/flow_bundle.js ──► demo/flow.html
 ```
 
 ## Packages
@@ -23,7 +24,7 @@ demo/export.py ──► demo/data/demo_bundle.json ──► demo/index.html
 | `decision_model/` | decision model | Jev-type correction model + dot-product baseline; implements `Policy` |
 | `scenarios/` | core + params | scenario YAML (`stokstad_observed`, `stokstad_optimal`, `finland_lung`) |
 | `params/` | params | sourced parameter tables (`sources.yaml`, `*.yaml`), each number traceable |
-| `demo/` | demo | static dashboard `index.html` + `data/demo_bundle.json` |
+| `demo/` | demo | static dashboard `index.html` + `data/demo_bundle.json`; flowchart simulation page `flow.html` (+ `flow.js`, `flow.css`, `data/flow_bundle.js` from `export_flow.py`; `pathway_sim/flow.py` builds the data) |
 | `docs/pitch/` | pitch | evidence brief, equity framing, video script, deck outline |
 | `technique_classifier/` | separate deliverable | **do not modify** |
 

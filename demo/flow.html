@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flowchart simulation: where patients wait</title>
+<link rel="stylesheet" href="flow.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand"><span class="eyebrow">Care pathway simulator</span><h1 id="title">Where time is lost</h1><p class="sub">Each dot is a simulated patient: amber waiting, blue being served. Click a dot for that patient's journey.</p></div>
+  <div class="scn" id="scn"></div>
+  <nav class="layers" id="layers" aria-label="Layers"></nav>
+  <div class="views">
+    <button id="cmp" class="chip" title="Show change per step against the left pathway">Compare</button>
+    <button id="zoom" class="chip" title="Fit to the screen, or draw larger and scroll">Large</button>
+    <button id="view" class="chip" title="Both pathways side by side, or one at a time">View</button>
+  </div>
+  <span class="badge sim" title="Every patient here is simulated. No real patient data.">Simulated patients</span>
+</header>
+
+<main class="stage" id="stage">
+  <section class="panes" id="panes"></section>
+  <aside class="side" id="side"></aside>
+</main>
+
+<footer class="bar" id="bar">
+  <button id="play" class="play" aria-label="Play or pause">Pause</button>
+  <button id="restart" class="chip">Restart</button>
+  <div class="clock"><span class="eyebrow" title="Days since each patient's first contact">Patient day</span><span id="day" class="num">0</span></div>
+  <input id="slider" type="range" min="0" max="100" step="0.1" value="0" aria-label="Time in days since first contact">
+  <label class="spd"><span class="eyebrow">Speed</span>
+    <select id="speed"></select></label>
+  <div class="legend" id="legend"></div>
+</footer>
+<div class="note" id="note"></div>
+<div class="tip" id="tip" hidden></div>
+
+<script src="data/flow_bundle.js"></script>
+<script src="flow.js"></script>
+</body>
+</html>
