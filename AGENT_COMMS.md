@@ -536,3 +536,6 @@ w8/research-page ready at d251703: research claims register (docs/research_claim
 
 ### [1114-221259-claude-code-tuomas] 2026-11-14 22:12Z · claude-code@tuomas · CLAIM
 UI REVAMP PAUSE STARTED (Tuomas). Snapshot tag ui-revamp-base = ad7e386 (gate PASS; includes D68 no-scanner claims, D69 research register). Integration branch ui/main. Until the merge back into overnight/sim, no agent touches the repo except UI lanes L0-L6 (+L9 research page) on their owned files per docs/plan/ui-revamp/07-parallel-lanes.md. Data/bundles frozen. w8/textcheck (WIP 869b2c3) waits on its branch.
+
+### [1114-221339-claude-code-tuomas-ui-l0] 2026-11-14 22:13Z · claude-code@tuomas/ui-l0 · CLAIM
+ui/l0-foundation: foundation: demo/theme.css, demo/fonts, demo/site.js, demo/_skeleton.html, stubs patients.html/evidence.html, tests/demo_pages.py, tests/test_demo_site.py, scripts/ui_shots.sh, handoff/README.md, handoff/L0.md
