@@ -18,8 +18,8 @@ One command rebuilds every bundle the pages read: `python demo/export_all.py` (o
 | Command | Writes | Time |
 |---|---|---|
 | `python demo/export_cards.py` | `data/cards_bundle.js` (synthetic-patient card on the start page; counts every folder in `libraries/` that has a manifest) | under 1 s |
-| `python demo/export_start.py` | `data/start_bundle.js` (Norway ranges and decomposition, ledger, tuned encounter report) | about 11 s |
-| `python demo/export_encounter.py` | `data/encounter_bundle.js` (runs `scenarios/finland_encounter.yaml` now) | about 15 s |
+| `python demo/export_start.py` | `data/start_bundle.js` (Norway ranges, optimiser bands and structure check from `docs/review_checks/norway_opt_*.json`, ledger, encounter report and its pass counts) | under 1 s |
+| `python demo/export_encounter.py` | `data/encounter_bundle.js` (runs `scenarios/finland_encounter.yaml` now) | 15 s earlier, 87 s after the population model (shared machine) |
 | `python demo/export_flow.py` | `data/flow_bundle.js` (held-out cohorts of both scenarios) | 37 to 63 s |
 
 Order does not matter between them. `data/demo_bundle.json` (dashboard) comes from `demo/export.py` and `python demo/embed_bundle.py` and is only needed when the optimiser results change; the flow export prints each share next to the dashboard's and flags a difference.

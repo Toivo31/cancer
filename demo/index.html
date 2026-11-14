@@ -6297,6 +6297,9 @@ function wrap(t,max){
   return lines;
 }
 
+/* Norway optimiser ranges over the settings that fit (data/start_bundle.js, from demo/export_start.py) */
+function nwOpt(){var N=window.START_DATA&&window.START_DATA.norway;return N&&N.optimiser||null}
+function nwRange(b){return b?pct(b.min)+' to '+pct(b.max)+', median '+pct(b.median):''}
 /* ---------- Screen 1 ---------- */
 function screen1(sc){
   var b=g(sc,"baseline","metrics")||{}, cv=changeVariant(sc), a=g(cv,"metrics")||{};
@@ -6305,9 +6308,11 @@ function screen1(sc){
   var h='<p class="eyebrow">1 &middot; What should we change, and what does it gain</p>';
   var noEq=g(sc,"headline_no_new_equipment"), s2=noEq?pctNum(noEq.share):null;
   if(s0!=null&&s1!=null){
-    h+='<h1>From '+s0+'% to '+s1+'% treated on time'+(noEq?' with reordering and the faster PET-CT scanner':' with the suggested change')+'</h1>';
+    h+='<h1>From '+s0+'% to '+s1+'% treated on time'+(noEq?' with reordering and the faster PET-CT scanner'+(nwOpt()?' (best fit; '+pct(nwOpt().bands.optimiser_scanner.min)+' to '+pct(nwOpt().bands.optimiser_scanner.max)+' across fitting settings)':''):' with the suggested change')+'</h1>';
   }else{h+='<h1>What should we change, and what does it gain</h1>'}
   h+='<p class="lede">Share of cancer patients who start treatment within '+esc(ts)+'. '+esc(plain(sc.summary||sc.description||""))+'</p>';
+  var NO=noEq?nwOpt():null;
+  if(NO)h+='<p class="lede"><b>Read with the range.</b> These are best-fitting-setting values. Over the '+esc(NO.n_settings)+' settings that fit the observed data, today is '+nwRange(NO.bands.observed)+' and reordering with the faster scanner is '+nwRange(NO.bands.optimiser_scanner)+'. Started from the observed pathway and without being told the answer, the optimiser arrived at the authors&rsquo; redesign (plus a fourth, overlapping change that needs a clinical check) and performs the same as it. It does not beat the authors.</p>';
   h+='<div class="panel hero">';
   h+='<div class="cell"><div class="lab">Treated on time today</div><div class="big today">'+(s0!=null?s0+'<small>%</small>':'n/a')+'</div><div class="sub">'+esc(plain(g(sc,"baseline","label")||"Today"))+'</div></div>';
   h+='<div class="arrow" aria-hidden="true">&rarr;</div>';
@@ -6318,8 +6323,8 @@ function screen1(sc){
   h+='</div>';
   if(noEq&&s2!=null){
     var fp=null;(sc.variants||[]).forEach(function(v){if(v.role==="faster_pet")fp=v});
-    h+='<div class="panel pair"><div><div class="lab">The same reordering with no new equipment</div><div class="mid good">'+s2+'%</div><div class="sub">'+(s2-s0>=0?'+':'')+(s2-s0)+' points on today, median '+d1(noEq.median_days)+' days</div></div>'+
-       '<div><div class="lab">The faster scanner alone, no reordering</div><div class="mid wait">'+(fp?pct(fp.metrics.share_within_target):'n/a')+'</div><div class="sub">the scanner is included in the headline number above</div></div></div>';
+    h+='<div class="panel pair"><div><div class="lab">The same reordering with no new equipment</div><div class="mid good">'+s2+'%</div><div class="sub">'+(s2-s0>=0?'+':'')+(s2-s0)+' points on today, median '+d1(noEq.median_days)+' days'+(NO?'. Over the '+esc(NO.n_settings)+' fitting settings: '+nwRange(NO.bands.optimiser_no_equipment)+'; better than today in '+esc(NO.counts.noeq_beats_observed)+' of '+esc(NO.n_settings):'')+'</div></div>'+
+       '<div><div class="lab">The faster scanner alone, no reordering</div><div class="mid wait">'+(fp?pct(fp.metrics.share_within_target):'n/a')+'</div><div class="sub">the scanner is included in the headline number above'+(NO?'. Range '+nwRange(NO.bands.faster_pet)+'. Reordering without equipment beats the scanner alone in only '+esc(NO.counts.noeq_beats_scanner_alone)+' of '+esc(NO.n_settings)+' settings':'')+'</div></div></div>';
   }else{
     var cr=(g(sc,"capacity_vs_order","rows")||[]).filter(function(r){return r.kind==="capacity"});
     if(cr.length){var best=cr.reduce(function(p,r){return r.share>p.share?r:p},cr[0]);
@@ -6596,7 +6601,7 @@ function validation(sc,cv){
   var G=[["Observed pathway",g(b,"share_within_target"),pub.baseline_share],
          ["Faster PET scan only",g(pv,"metrics","share_within_target"),pub.faster_pet_share]];
   if(av){G.push(["Authors' reordered pathway",g(av,"metrics","share_within_target"),pub.optimal_share]);
-         G.push(["Our suggested change (same scanner), found blind",g(a,"share_within_target"),null]);}
+         G.push(["Optimiser, same scanner, found blind",g(a,"share_within_target"),null]);}
   else G.push(["Reordered steps (suggested change)",g(a,"share_within_target"),pub.optimal_share]);
   G=G.filter(function(r){return isNum(r[1])||isNum(r[2])});
   if(!G.length)return '';
@@ -6617,11 +6622,11 @@ function validation(sc,cv){
   h+='<p class="lede">Share of patients treated within '+esc(sc.target_days||42)+' days. The left bar of each pair is our simulation. The observed pathway is fitted to the study; every other bar is a prediction made without looking at the published result. The right bars are from '+esc(plain(pub.source||"the published study"))+'.</p>';
   h+='<div class="legend"><span><i style="background:'+C.serve+'"></i>Our simulation</span><span><i style="background:'+C.pub+'"></i>Published study</span></div>';
   h+='<div class="panel">'+s+'</div>';
-  var N=window.START_DATA&&window.START_DATA.norway,P=N&&N.all_settings&&N.all_settings.pred,ne=sc.headline_no_new_equipment;
+  var N=window.START_DATA&&window.START_DATA.norway,P=N&&N.all_settings&&N.all_settings.pred,NO=nwOpt();
   if(av&&P&&P.optimal&&isNum(pub.optimal_share)){
-    h+='<p class="lede" style="margin-top:1rem"><b>How to read the bars.</b> The authors&rsquo; '+pct(pub.optimal_share)+' assumes a new, faster PET-CT scanner; our suggested-change bar uses the same scanner, so the fair comparison is '+pct(g(a,"share_within_target"))+' against '+pct(g(av,"metrics","share_within_target"))+' in the simulator.'
-      +(ne&&isNum(ne.share)?' With no new equipment our suggested change gives '+pct(ne.share)+'.':'')
-      +' The '+pct(pub.optimal_share)+' match is the best fit: over all '+esc(N.all_settings.accepted)+' settings that fit the observed data the authors&rsquo; pathway comes out at '+pct(P.optimal.min)+' to '+pct(P.optimal.max)+', typically about '+pct(P.optimal.median)+'. The model also over-predicts the faster scanner alone ('+pct(g(pv,"metrics","share_within_target"))+' against '+pct(pub.faster_pet_share)+' published). Trust the ranking of reorderings, not their exact size.</p>';
+    h+='<p class="lede" style="margin-top:1rem"><b>How to read the bars.</b> The '+pct(pub.optimal_share)+' match is the best fit, not a sharp hit: over all '+esc(N.all_settings.accepted)+' settings that fit the observed data the authors&rsquo; pathway as we built it comes out at '+pct(P.optimal.min)+' to '+pct(P.optimal.max)+', typically about '+pct(P.optimal.median)+'. The model over-predicts the faster scanner alone ('+pct(g(pv,"metrics","share_within_target"))+' against '+pct(pub.faster_pet_share)+' published'+(P.faster_pet?'; range '+pct(P.faster_pet.min)+' to '+pct(P.faster_pet.max):'')+'). Trust the ranking of reorderings, not their exact size.</p>';
+    if(NO)h+='<p class="lede"><b>The fourth bar is not &ldquo;better than the authors&rdquo;.</b> It uses the same new scanner as the authors&rsquo; '+pct(pub.optimal_share)+', and it is the optimiser arriving at the authors&rsquo; redesign without being told it. The gap to our simulated authors&rsquo; bar is a modelling difference: in our version treatment waits for a tissue sample that only starts after the tumour board, which the paper does not have. Over the '+esc(NO.n_settings)+' fitting settings the optimiser with the scanner is '+nwRange(NO.bands.optimiser_scanner)+'; with no new equipment '+nwRange(NO.bands.optimiser_no_equipment)+'.</p>'
+      +(NO.structure?'<p class="lede"><b>Structure check.</b> Read literally (treatment does not wait for the tissue sample; PET-CT ordered at the first visit), the simulated authors&rsquo; pathway gives a median of '+pct(NO.structure.literal_median)+', with '+esc(NO.structure.literal_in_published_ci)+' of '+esc(NO.structure.settings)+' settings inside the published '+pct(NO.structure.published_ci[0])+' to '+pct(NO.structure.published_ci[1])+'. Only the paper&rsquo;s text was read, and the observed pathway was not recalibrated for it.</p>':'');
   }
   return h;
 }

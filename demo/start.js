@@ -23,6 +23,12 @@
   function variant(sc, key) { return sc && sc.variants.filter(function (v) { return v.key === key; })[0]; }
   function scen(id) { return FLOW && FLOW.scenarios.filter(function (s) { return s.id === id; })[0]; }
   function when(iso) { return iso ? String(iso).slice(0, 16).replace("T", " ") + " UTC" : "unknown time"; }
+  function rg(b) { return b ? pct(b.min) + " to " + pct(b.max) + ", median " + pct(b.median) : null; }
+  function consistencyText() {
+    var c = ST && ST.encounter_consistency; if (!c || !c.tuning) return "";
+    return "The loop agrees with the calibrated chain on " + c.tuning.passed + " of " + c.tuning.total + " checks on the tuning seeds" + (c.fresh ? ", " + c.fresh.passed + " of " + c.fresh.total + " on fresh seeds" : "") + (c.pooled ? ", " + c.pooled.passed + " of " + c.pooled.total + " pooled" : "") + ", only just.";
+  }
+  function norwayOpt() { return ST && ST.norway && ST.norway.optimiser; }
   function guard(id, fn) {
     var box = document.getElementById(id);
     try { fn(box); } catch (e) { box.textContent = ""; pending(box, "could not read the data (" + e.message + ")"); }
@@ -48,7 +54,7 @@
       " days to referral, " + esc(dd(o.cancer_median_days_to_treatment)) + " to treatment; <b>" + esc(o.cancer_left_with_symptoms) + "</b> cancers left primary care with symptoms still present.");
     var R = ST && ST.encounter_results, cs = R && R.consistency;
     cap(box, "<b>One illustration run</b> of " + esc(when(ENC.generated_at)) + " (one seed, no warm-up); queues fill up as a run gets longer." + (cs && cs.within90 ?
-      " The multi-seed report (<code>docs/encounter_results.md</code>, " + esc(R.seeds.length) + " seeds of " + esc(R.n) + ", " + esc(dd(R.warmup_days)) + "-day warm-up) gives <b>" + esc(pct(cs.within90.loop.mean)) + "</b> within " + esc(dd(ENC.target_days)) + " days (range " + esc(pct(cs.within90.loop.lo)) + " to " + esc(pct(cs.within90.loop.hi)) + "), median " + esc(dd(cs.ref_med.loop.mean)) + " days to referral. Quote the report; decisions are placeholder tables."
+      " The multi-seed report (<code>docs/encounter_results.md</code>, " + esc(R.seeds.length) + " seeds of " + esc(R.n) + ", " + esc(dd(R.warmup_days)) + "-day warm-up) gives <b>" + esc(pct(cs.within90.loop.mean)) + "</b> within " + esc(dd(ENC.target_days)) + " days (range " + esc(pct(cs.within90.loop.lo)) + " to " + esc(pct(cs.within90.loop.hi)) + "), median " + esc(dd(cs.ref_med.loop.mean)) + " days to referral. Quote the report. " + consistencyText() + " Decisions are placeholder tables."
       : " Multi-seed report: <span class=\"pending\">pending</span>."));
     var ex = document.getElementById("ex-links");
     (ENC.examples || []).slice(0, 2).forEach(function (e) {
@@ -65,16 +71,15 @@
     big(box, [a, b]);
     cap(box, "treated within " + esc(dd(fin.target_days)) + " days, synthetic Finnish county, two reorders, no new capacity. Missed cancers per cohort " +
       esc(dd(fb.flow.metrics.missed_cancers)) + " → " + esc(dd(fs.flow.metrics.missed_cancers)) + " (guardrail). Scenario: <code>" + esc(fb.flow.scenario) + "</code>, the hospital-chain model.");
-    var nb = nor && variant(nor, "observed"), ns = nor && variant(nor, "suggested"), nf = nor && variant(nor, "suggested_faster_pet"), na = nor && variant(nor, "authors");
+    var nb = nor && variant(nor, "observed"), ns = nor && variant(nor, "suggested"), O = norwayOpt();
     if (nb && ns) {
-      var line = "<b>Norway, no new equipment:</b> " + esc(pct(nb.flow.metrics.share_within_target)) + " → <b>" + esc(pct(ns.flow.metrics.share_within_target)) + "</b> treated within " + esc(dd(nor.target_days)) + " days, simulated.";
-      if (nf && na) line += " The authors' " + esc(pct(nor.published.authors_estimate_share)) + " needs a new, faster PET-CT scanner; with that same scanner our pathway gives <b>" + esc(pct(nf.flow.metrics.share_within_target)) + "</b> and theirs " + esc(pct(na.flow.metrics.share_within_target)) + " in the simulator. Detail in step 4.";
+      var line = "<b>Norway, no new equipment:</b> " + esc(pct(nb.flow.metrics.share_within_target)) + " → <b>" + esc(pct(ns.flow.metrics.share_within_target)) + "</b> treated within " + esc(dd(nor.target_days)) + " days, simulated, best-fitting setting.";
+      if (O && O.bands.optimiser_no_equipment) line += " Over the " + esc(O.n_settings) + " settings that fit the observed data: " + esc(rg(O.bands.optimiser_no_equipment)) + " (today: " + esc(rg(O.bands.observed)) + "); better than today in " + esc(O.counts.noeq_beats_observed) + " of " + esc(O.n_settings) + ".";
       cap(box, line);
     }
     var gb = document.getElementById("go-order");
     if (gb && nor) {
       var a1 = el("a", "btn sm", "Norway: no new equipment"); a1.href = "flow.html?s=norway&compare&left=observed&right=suggested"; gb.appendChild(a1);
-      var a2 = el("a", "btn sm", "Norway: same scanner as the authors"); a2.href = "flow.html?s=norway&compare&left=authors&right=suggested_faster_pet"; gb.appendChild(a2);
     }
   });
 
@@ -87,21 +92,21 @@
     var sh = function (v) { return v.flow.metrics.share_within_target; };
     big(box, [pct(pub.authors_estimate_share) + " published", pct(sh(au)) + " simulated"]);
     cap(box, "The authors' reordered pathway, <b>predicted, not fitted</b>: the model was fitted only on today's order (" + esc(pct(sh(obs))) + " vs published " + esc(pct(pub.observed_share)) + "). This is the best-fitting setting.");
-    var N = ST && ST.norway, p = N && N.all_settings && N.all_settings.pred, r = N && N.ranges, w = N && N.without_fourth;
-    if (p && p.optimal) cap(box, "<b>The range is wider.</b> Over all " + esc(N.all_settings.accepted) + " settings that fit the observed data, the authors' pathway comes out at " + esc(pct(p.optimal.min)) + " to " + esc(pct(p.optimal.max)) +
+    var N = ST && ST.norway, p = N && N.all_settings && N.all_settings.pred, O = N && N.optimiser, S = O && O.structure;
+    if (p && p.optimal) cap(box, "<b>The range is wider.</b> Over all " + esc(N.all_settings.accepted) + " settings that fit the observed data, the authors' pathway as we built it comes out at " + esc(pct(p.optimal.min)) + " to " + esc(pct(p.optimal.max)) +
       ", typically about " + esc(pct(p.optimal.median)) + ". The " + esc(pct(pub.authors_estimate_share)) + " is the best match, not a sharp hit.");
     else cap(box, "Range over all settings that fit: <span class=\"pending\">pending</span>.");
     cap(box, "<b>It over-predicts the faster scanner alone:</b> " + esc(pct(sh(fp))) + " in the model against " + esc(pct(pub.faster_pet_share)) + " published" +
       (p && p.faster_pet ? " (range " + esc(pct(p.faster_pet.min)) + " to " + esc(pct(p.faster_pet.max)) + ")" : "") + ". Trust the ranking of reorderings, not the exact size.");
-    if (nf) {
+    if (S) cap(box, "<b>Structure check:</b> read literally (treatment does not wait for the tissue sample; PET-CT ordered at the first visit, not at triage), the authors' pathway gives a median of " + esc(pct(S.literal_median)) + " over the " + esc(S.settings) + " settings, with " + esc(S.literal_in_published_ci) + " of " + esc(S.settings) +
+      " inside the published " + esc(pct(S.published_ci[0])) + " to " + esc(pct(S.published_ci[1])) + " interval (the shipped version: " + esc(S.shipped_in_published_ci) + "). Caveats: only the paper's text was read, not its figures; the observed pathway was not recalibrated under that reading; the shipped scenario is unchanged.");
+    if (nf && O) {
       var d = document.createElement("details"); d.className = "more"; d.open = true;
-      d.appendChild(el("summary", null, "Our optimiser against the authors' pathway"));
-      var h = "<p><b>Same scanner, fair comparison:</b> the authors' " + esc(pct(pub.authors_estimate_share)) + " assumes a new, faster PET-CT scanner. With that same scanner our optimiser's pathway gives <b>" + esc(pct(sh(nf))) + "</b> in the simulator, against " + esc(pct(sh(au))) + " for the authors' pathway" +
-        (r && r.optimiser_faster_scanner && r.authors ? " (across " + esc(r.n_sets) + " fitting settings: " + esc(pct(r.optimiser_faster_scanner.min)) + " to " + esc(pct(r.optimiser_faster_scanner.max)) + " against " + esc(pct(r.authors.min)) + " to " + esc(pct(r.authors.max)) + "; ahead in " + esc(r.optimiser_above_authors_in) + " of " + esc(r.n_sets) + ")" : "") + ".</p>" +
-        "<p><b>No new equipment:</b> our pathway gives <b>" + esc(pct(sh(ns))) + "</b>. That is not comparable with the authors' " + esc(pct(pub.authors_estimate_share)) + ", which needs the scanner.</p>" +
-        "<p><b>What the optimiser found:</b> the authors' three changes plus a fourth, planning tissue sampling when the referral is triaged. That fourth change is beyond the paper and <b>needs a clinical check</b>." +
-        (w ? " Without it the pathway gives " + esc(pct(w.three_changes)) + ", so the fourth change adds about " + esc(dd((w.all_four - w.three_changes) * 100)) + " points; most of the lead over the authors comes from how the optimiser orders the same steps." : "") + "</p>" +
-        "<p>The optimiser's numbers come from a model fitted to one hospital. Treat them as a ranking, not a forecast.</p>";
+      d.appendChild(el("summary", null, "What our optimiser did on this test"));
+      var h = "<p><b>It found the authors' redesign without being told it.</b> Started from the observed pathway only, it arrived at the authors' three changes (PET-CT and exercise test ordered early, tumour board without waiting for the tissue sample) plus a fourth, overlapping change: planning tissue sampling when the referral is triaged, which <b>needs a clinical check</b>. It performs the same as the authors' redesign, not better: the gap in our simulator (" + esc(pct(sh(nf))) + " against " + esc(pct(sh(au))) + " at the best fit) comes from how we built the authors' pathway, where treatment waits for a tissue sample that only starts after the tumour board. Without that wait the two are within a few points in every setting.</p>" +
+        "<p><b>With the faster scanner:</b> " + esc(rg(O.bands.optimiser_scanner)) + " across the " + esc(O.n_settings) + " settings (best fit " + esc(pct(sh(nf))) + "). It beats the scanner alone in " + esc(O.counts.scanner_beats_scanner_alone) + " of " + esc(O.n_settings) + ".</p>" +
+        "<p><b>No new equipment:</b> " + esc(rg(O.bands.optimiser_no_equipment)) + " (best fit " + esc(pct(sh(ns))) + "), better than today in " + esc(O.counts.noeq_beats_observed) + " of " + esc(O.n_settings) + ". It beats the faster scanner alone (" + esc(rg(O.bands.faster_pet)) + ") in only " + esc(O.counts.noeq_beats_scanner_alone) + " of " + esc(O.n_settings) + ". The authors' " + esc(pct(pub.authors_estimate_share)) + " needs the scanner, so it is not comparable with this number.</p>" +
+        "<p>The numbers come from a model fitted to one hospital. Treat them as a ranking, not a forecast.</p>";
       var c = el("div", "cap"); c.innerHTML = h; d.appendChild(c); box.appendChild(d);
     }
     var v = ST && ST.validation;

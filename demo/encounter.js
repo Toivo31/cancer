@@ -365,5 +365,7 @@ function multiSeedNote() {
   let h = ` <b>This is one illustration run.</b> The loop's queues fill up as a run gets longer, so a longer run gives different numbers.`;
   if (c && c.within90 && c.within90.loop && c.ref_med && c.ref_med.loop)
     h += ` The multi-seed report (docs/encounter_results.md: ${R.seeds.length} seeds of ${R.n} patients, ${Math.round(R.warmup_days)}-day warm-up) gives ${pc(c.within90.loop.mean)} of cancers treated within 90 days (range ${pc(c.within90.loop.lo)} to ${pc(c.within90.loop.hi)}) and a median of ${Math.round(c.ref_med.loop.mean)} days to referral. Quote that report for the number; use this page to see how the loop behaves.`;
+  const k = window.START_DATA && window.START_DATA.encounter_consistency;
+  if (k && k.tuning) h += ` The loop agrees with the calibrated chain on ${k.tuning.passed} of ${k.tuning.total} checks on the tuning seeds${k.fresh ? ', ' + k.fresh.passed + ' of ' + k.fresh.total + ' on fresh seeds' : ''}${k.pooled ? ', ' + k.pooled.passed + ' of ' + k.pooled.total + ' pooled' : ''}, only just.`;
   return h;
 }

@@ -6,9 +6,10 @@ from disk as JSON:
 
   docs/validation_results.json                      Norway calibration (accepted grid points, published numbers)
   docs/review_checks/norway_leave_one_out.json      Norway robustness (optional, written by another lane)
-  docs/review_checks/encounter_results.json         tuned encounter-loop report (optional, another lane)
+  docs/review_checks/encounter_results*.json        tuned encounter-loop report: tuning seeds, fresh seeds, pooled (optional)
   docs/ranges_norway.json                           Norway: spread across the calibration sets that fit (optimiser vs authors' pathway)
-  runs/opt_stokstad_fastpet.json                    the optimiser's four Norwegian changes; re-simulated here with and without the fourth
+  docs/review_checks/norway_opt_summary.json        the optimiser over the 184 settings that fit (ranges and counts)
+  docs/review_checks/norway_opt_structure.json      the authors' pathway read literally (structure check)
   docs/ledger.json                                  how many inputs are sourced and how many are assumptions
   catalogue/lung-primary-care/*.yaml                every `source:` in the care catalogue, counted here
 
@@ -96,37 +97,51 @@ def norway_ranges() -> dict | None:
     return out
 
 
-def norway_without_fourth() -> dict | None:
-    """Re-simulate the optimiser's faster-scanner pathway without its fourth change (tissue sampling planned at
-    referral triage), on the same three held-out cohorts the flow page uses (seeds 201-203, 1000 patients each)."""
-    try:
-        import sys
-        sys.path.insert(0, str(ROOT))
-        from optimiser.apply import apply_changes
-        from optimiser.search import cohorts
-        from pathway_sim import compute_metrics, load_scenario, simulate
-
-        sc = load_scenario(ROOT / "scenarios" / "generated" / "stokstad_calibrated.yaml")
-        run = read_json("runs/opt_stokstad_fastpet.json")
-        steps = run["steps"]
-        fourth = [i for i, st in enumerate(steps) if st["kind"] == "relax" and st["target"] == "sample_plan"]
-        if len(fourth) != 1:
-            return None
-        held = cohorts(sc, (201, 202, 203), 1000)
-
-        def share(fc):
-            ms = [compute_metrics(simulate(sc, fc, pts, seed=s), sc)["share_within_target"] for s, pts in held]
-            return sum(ms) / len(ms)
-
-        base = sc.flowcharts["faster_pet"]
-        keep = [i for i in range(len(steps)) if i != fourth[0]]
-        return {"source_file": "runs/opt_stokstad_fastpet.json", "n_changes": len(steps),
-                "faster_scanner_only": share(base),
-                "three_changes": share(apply_changes(sc, base, steps, accept=keep)),
-                "all_four": share(apply_changes(sc, base, steps))}
-    except Exception as e:  # the page then says "pending" for this line
-        print("  norway_without_fourth failed:", e)
+def norway_optimiser() -> dict | None:
+    """The optimiser over the 184 settings that fit the observed data, and the structure check (docs/validation.md,
+    "Optimiser robustness, ablation and structure check"). Shares as fractions; read from the cached check files."""
+    summ = read_json("docs/review_checks/norway_opt_summary.json")
+    struct = read_json("docs/review_checks/norway_opt_structure.json")
+    if not summ:
         return None
+
+    def band(key):
+        b = (summ.get("bands_percent") or {}).get(key)
+        return {k: b[k] / 100 for k in ("min", "median", "max")} if b else None
+
+    c = summ.get("counts") or {}
+    out = {
+        "source_file": "docs/review_checks/norway_opt_summary.json",
+        "n_settings": summ.get("n_settings"),
+        "bands": {"observed": band("observed"), "faster_pet": band("faster_pet"), "authors": band("optimal"),
+                  "optimiser_no_equipment": band("full_nofast"), "optimiser_scanner": band("full_fast")},
+        "counts": {"noeq_beats_observed": c.get("opt_nofast_beats_observed"),
+                   "noeq_beats_scanner_alone": c.get("opt_nofast_beats_fasterpet"),
+                   "scanner_beats_scanner_alone": c.get("opt_fast_beats_fasterpet")},
+        "structure": None,
+    }
+    gb = pick(struct, "grid_bands")
+    if gb:
+        lit, shipped = gb.get("optimal_petvisit_nogate"), gb.get("optimal")
+        out["structure"] = {
+            "source_file": "docs/review_checks/norway_opt_structure.json",
+            "literal_median": lit["share"]["median"] / 100, "literal_in_published_ci": lit["in_published_CI_72_87"],
+            "shipped_in_published_ci": shipped["in_published_CI_72_87"], "settings": summ.get("n_settings"),
+            "published_ci": [0.72, 0.87],
+        }
+    return out
+
+
+def consistency_counts() -> dict | None:
+    """How many of the loop-against-chain checks pass, on the tuning seeds, on fresh seeds and pooled
+    (docs/encounter_results.md, written by scripts/encounter_report.py)."""
+    out = {}
+    for key, rel in (("tuning", "encounter_results"), ("fresh", "encounter_results_oos"), ("pooled", "encounter_results_8seeds")):
+        d = read_json(f"docs/review_checks/{rel}.json")
+        c = d and d.get("consistency")
+        if c:
+            out[key] = {"seeds": d.get("seeds"), "passed": sum(1 for v in c.values() if v.get("passes")), "total": len(c)}
+    return out or None
 
 
 def build() -> dict:
@@ -139,6 +154,7 @@ def build() -> dict:
         "validation": None,
         "norway_robustness": None,
         "encounter_results": read_json("docs/review_checks/encounter_results.json"),
+        "encounter_consistency": consistency_counts(),
         "norway": None,
         "ledger": None,
         "catalogue": catalogue_counts("catalogue/lung-primary-care"),
@@ -159,7 +175,7 @@ def build() -> dict:
         }
     out["norway"] = {
         "ranges": norway_ranges(),
-        "without_fourth": norway_without_fourth(),
+        "optimiser": norway_optimiser(),
         # the robustness band over every setting that fits the observed data (docs/validation.md, Robustness)
         "all_settings": out["norway_robustness"],
     } if val else None

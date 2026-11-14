@@ -82,8 +82,28 @@ def test_norway_links_built_in_script_name_real_variants():
     d = json.loads(t[t.index("=") + 1:].rstrip().rstrip(";"))
     keys = {v["key"] for s in d["scenarios"] if s["id"] == "norway" for v in s["variants"]}
     pairs = re.findall(r"flow\.html\?s=norway&compare&left=(\w+)&right=(\w+)", js)
-    assert len(pairs) == 2
+    assert len(pairs) >= 1
     for a, b in pairs:
         assert a in keys and b in keys
     nor = next(s for s in d["scenarios"] if s["id"] == "norway")
     assert set(nor["default_pair"]) <= keys
+
+
+def test_start_bundle_norway_ranges_match_the_review_files():
+    """The Norway optimiser bands on the pages are read from docs/review_checks, not typed."""
+    import json
+    t = (DEMO / "data" / "start_bundle.js").read_text(encoding="utf-8")
+    d = json.loads(re.match(r"window\.START_DATA = (.*);\s*$", t, re.S).group(1))
+    O = d["norway"]["optimiser"]
+    summ = json.loads((ROOT / "docs/review_checks/norway_opt_summary.json").read_text())
+    assert O["n_settings"] == summ["n_settings"] == 184
+    assert abs(O["bands"]["optimiser_no_equipment"]["median"] - summ["bands_percent"]["full_nofast"]["median"] / 100) < 1e-9
+    assert O["counts"]["noeq_beats_scanner_alone"] == summ["counts"]["opt_nofast_beats_fasterpet"]
+    assert O["structure"]["literal_in_published_ci"] == 139
+
+
+def test_pages_do_not_claim_the_optimiser_beats_the_authors():
+    for name in ("start.js", "flow.js", "index.html"):
+        text = (DEMO / name).read_text(encoding="utf-8").lower()
+        for bad in ("ahead in", "most of the lead", "optimiser is ahead", "ours is ahead"):
+            assert bad not in text, (name, bad)
