@@ -553,6 +553,7 @@ class EncounterSimulation(Simulation):
         self.natural = world.raw.get("natural_course") or {}
         self.symptoms = [v for v, x in self.cat.variables.items() if x.kind == "symptom"]
         self.backend = getattr(self.enc_policy, "backend_name", type(self.enc_policy).__name__)
+        self._handles: dict[int, RevealHandle] = {}
 
     # ------------------------------------------------------------------ helpers (hidden side)
     def new_run(self, p: Patient) -> EncounterRun:
@@ -564,7 +565,17 @@ class EncounterSimulation(Simulation):
         return self.cohort.card(pr.patient.id)
 
     def handle(self, pr) -> RevealHandle:
-        return self.cohort.handle(pr.patient.id)
+        """The patient's reveal handle, given the catalogue so that it can serve fresh attempts beyond
+        ``max_attempts`` and later states (WP-C8-2); same public label as ``Cohort.handle``."""
+        h = self._handles.get(pr.patient.id)
+        if h is None:
+            i = pr.patient.id
+            try:
+                h = RevealHandle(self.cohort.card(i), public_id=f"P{i:06d}", catalogue=self.cat)
+            except TypeError:              # pragma: no cover - handle without catalogue support (before WP-C8-2)
+                h = self.cohort.handle(i)
+            self._handles[i] = h
+        return h
 
     def u(self, pr, *key) -> float:
         return uniform(self.seed, pr.patient.id, *key)
