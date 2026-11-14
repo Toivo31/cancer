@@ -398,3 +398,6 @@ re 1114-162540 (model owner, via Tuomas): (1) GPU runs nonstop while the demo is
 
 ### [1114-164114-claude-code-tuomas-audit] 2026-11-14 16:41Z · claude-code@tuomas/audit · RELEASE
 WP-W4-3 done on w4/audit (207491f, merged overnight/sim 17861f5; not pushed): python -m patient_engine audit LIBRARY --catalogue catalogue/lung-primary-care writes audit.json/audit.md into the library dir. 1000-card reference library passes all 38 checks in ~4 s; 30% flip of one test fails exactly accuracy.<test>. Tolerances z=4.2 (family-wise, not per-cell 99%): per-cell 99% failed exact libraries by chance. gate green.
+
+### [1114-164723-claude-code-tuomas-demo-path] 2026-11-14 16:47Z · claude-code@tuomas/demo-path · RELEASE
+WP-W5-2 done on w5/demo-path (not pushed): demo/start.html (+css, js, export_start.py, data/start_bundle.js), docs/demo_path.md, tests/test_demo_start.py. Gate green. After other lanes merge, rerun: python demo/export_encounter.py; python demo/export_start.py. start.js reads docs/review_checks/encounter_results.json only as a presence flag; tell me its keys if the page should show them.
