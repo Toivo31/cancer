@@ -33,8 +33,7 @@ reserved for "wrong", so think about whether a revealed cancer ring should be br
 `?layer=time`, `?truth` and the keys (Space, arrows, r, t). `demo/jev.js` and `demo/start.js` link to
 `encounter.html?p=<id>`. For `index.html`, the theme can probably be applied by linking `theme.css` after the inline
 `<style>` (the aliases do most of the work); the dashboard draws charts with fixed colours in its script, so look at what
-still clashes and decide whether a CSS-level fix is enough. If it is not, record it as an open issue rather than editing
-the script heavily.
+still clashes. **Decided (D66, Tuomas): screen 5, "Before and after: what the suggested change does to the pathway" (the stacked before and after pathway drawings, `screen3()` / `flowSvg`), is good as it is. Do not change its layout, wording or content; re-theme it only.** That includes the colours `flowSvg` and the other drawing helpers set in the script: replace those colour literals with the theme's values (or CSS variables) so the page matches the other pages, keeping the drawing logic and every output identical. Do not touch the `<script id="bundle">` block. Check with a screenshot of screen 5 for both scenarios before and after; the geometry and text must be unchanged. The other dashboard screens get the same colour treatment where it is a small change; anything larger is an open issue.
 
 ## Context (read this even if you know the project)
 

@@ -72,7 +72,7 @@ and a patient-record panel; results tables below the graph; footer like flow.htm
 
 Six numbered tabs plus a scenario switch. The H1 of screen 1 is a 22-word sentence with two ranges in it. The
 40% → 88% numbers are about 130 px tall. Text-heavy explanations ("Read with the range") follow. Screen 5 draws
-before and after pathways as two stacked DAGs.
+before and after pathways as two stacked DAGs. **Tuomas, 14 Nov: this page ("Before and after: what the suggested change does to the pathway") is good as it is. Keep its layout, wording and content; the revamp only re-themes it (D66).**
 - It overlaps start rows 1, 3, 4 and flow.html's side panel. Keep it as the "full report" for the few who want
   everything, and for us.
 - 6,750 lines, including the embedded bundle (`<script id="bundle">`) that `tests/test_demo_fixture.py` compares with

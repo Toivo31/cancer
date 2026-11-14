@@ -130,7 +130,7 @@ and be split out later without changing the nav labels.
 | Page | Reached from |
 |---|---|
 | `encounter.html` | Simulator scenario switch; Patients page |
-| `index.html` dashboard | Evidence page, DETAILS: "Full results report" |
+| `index.html` dashboard | Evidence page, DETAILS: "Full results report". Its screen 5, "Before and after", stays as built (D66, Tuomas) and is also linked from the Simulator's Optimise result |
 | `live_demo/`, `/note`, `/decision` | Decision model page, DETAILS (need their servers) |
 | React app | Overview DETAILS: "The platform behind it" with the run command |
 | Markdown docs | DETAILS sections only |
