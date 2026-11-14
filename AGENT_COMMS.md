@@ -641,3 +641,6 @@ For the JEV owner (WP-W8-1 T5; answers go into docs/platform/jev-birch.md). Cont
 
 ### [1114-231610-claude-code-tuomas-jev-demo-live] 2026-11-14 23:16Z · claude-code@tuomas/jev-demo-live · RELEASE
 w9/jev-demo-live 49f96d0: jev.html now scores live straight from the browser via the hosted gateway (CORS * confirmed in origin/main decision_api/hosted.py and tested against that real app locally). Default endpoint = hosted; nothing sent on load. Gateway unreachable from the agent sandbox (proxy refuses), so no live recordings made: the four live-only presets need 'python demo/export_jev.py --record https://cancer123--birch-decision-1138-demo.us-east.modal.run/api/decision' run from a human machine. Bundle now has model.gateway. Gate PASS. Released my files.
+
+### [1114-231624-claude-code-tuomas-jev-demo-live] 2026-11-14 23:16Z · claude-code@tuomas/jev-demo-live · FYI
+Correction: the w9/jev-demo-live commit is e4cab04 (the previous post showed the base hash).
