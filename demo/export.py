@@ -23,6 +23,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from optimiser import Config, search  # noqa: E402
+from optimiser.edits import Edit, apply as apply_edit  # noqa: E402
 from optimiser.search import cohorts, evaluate  # noqa: E402
 from pathway_sim import load_scenario  # noqa: E402
 from pathway_sim.scenario import Flowchart, Scenario  # noqa: E402
@@ -158,6 +159,122 @@ def assumptions() -> list[dict]:
     return rows
 
 
+
+# ---------------------------------------------------------------- plain-language change labels
+# Hand-written wording for the changes the search is known to find; anything else falls back to a
+# generator built from the edit kind and the step labels. The raw optimiser text is kept as "raw".
+POLISHED = {
+    ("standardise", "first_contact", "gp_visit"): "Book a GP appointment, not a nurse, at first contact",
+    ("standardise", "first_contact", "nurse_visit"): "Book a nurse appointment, not a GP, at first contact",
+    ("fast_track", "triage", None): "Fast lane: once the hospital has handled a referral, give that patient priority in every later queue",
+    ("detach", "diagnosis", "sampling_done"): "Hold the tumour board without waiting for tissue sampling to finish; sampling runs alongside while treatment is booked",
+    ("standardise", "pet_timing", "pet_on_time"): "Always order the PET-CT scan at triage or the first visit, never late",
+    ("standardise", "ex_timing", "ex_early"): "Always order the exercise test early, together with the other tests",
+    ("relax", "sample_plan", "visit"): "Plan tissue sampling at the first hospital visit, not after it",
+}
+
+
+def _lab(fc: Flowchart, nid: str) -> str:
+    n = fc.nodes[nid]
+    return _clean(n.label or nid.replace("_", " "))
+
+
+def polish_change(fc: Flowchart, kind: str, target: str, other: str | None) -> str:
+    if (kind, target, other) in POLISHED:
+        return POLISHED[(kind, target, other)]
+    if kind == "fast_track":
+        return f"Fast lane: patients who have completed {_lab(fc, target).lower()} get priority in every later queue"
+    if kind == "standardise":
+        return f"At \u201c{_lab(fc, target)}\u201d always choose \u201c{_lab(fc, other).lower()}\u201d"
+    a = _lab(fc, other.split("/")[-1] if other else target).lower() if other else ""
+    x = _lab(fc, target)
+    if kind == "detach":
+        return f"{x}: no longer waits for {a}; it runs alongside and treatment still waits for it"
+    if kind == "relax":
+        return f"Order {x.lower()} at the same time as {a}, not after it"
+    return kind
+
+
+def _pp(x):
+    return None if x is None else round(100 * x)
+
+
+def why_text(step: dict) -> dict:
+    """The evidence for one accepted change, in plain words (numbers come from the search record)."""
+    ev = step.get("evidence") or {}
+    d = ev.get("predicted_days_saved")
+    kind = step["kind"]
+    if kind in ("detach", "relax"):
+        read = f"In the clinic records, patients waited on average {d} days for this step while it held back on an earlier one" if d else ""
+    else:
+        read = f"The clinic records point to about {d} days of average waiting at this point" if d else ""
+    b, a = ev.get("train_on_time_before"), ev.get("train_on_time_after")
+    rerun = ""
+    if b is not None and a is not None:
+        rerun = (f"Rerunning the same patients confirmed it: treated on time {_pp(b)}% to {_pp(a)}%, median "
+                 f"{round(ev['train_median_before'])} to {round(ev['train_median_after'])} days.")
+    return {"records_said": read, "rerun_said": rerun}
+
+
+def step_details(sc: Scenario, fc0: Flowchart, res: dict, cum: list[dict]) -> list[dict]:
+    out = []
+    for i, st in enumerate(res["steps"]):
+        ev = st.get("evidence") or {}
+        out.append({
+            "label": polish_change(fc0, st["kind"], st["target"], st["other"]),
+            "raw": st["plain"], "kind": st["kind"],
+            **why_text(st),
+            "predicted_days_saved": ev.get("predicted_days_saved"),
+            "train_on_time_before": ev.get("train_on_time_before"), "train_on_time_after": ev.get("train_on_time_after"),
+            "train_median_before": ev.get("train_median_before"), "train_median_after": ev.get("train_median_after"),
+            "heldout_on_time_after": cum[i + 1]["share"] if i + 1 < len(cum) else None,
+        })
+    return out
+
+
+def cumulative_view(sc: Scenario, fc0: Flowchart, res: dict, held, start_label: str, lead_rows=None) -> list[dict]:
+    """Held-out metrics after 0, 1, 2 ... accepted changes (steps applied one by one, same cohorts)."""
+    def row(step, label, m, kind):
+        return {"step": step, "label": label, "kind": kind, "share": m["share_within_target"],
+                "median_days": m["median_days_to_treatment"], "missed_cancers": m["missed_cancers"],
+                "tests_per_patient": m["tests_per_patient"]}
+    steps = res["steps"]
+    rows = list(lead_rows or [])
+    rows.append(row(0, start_label, res["heldout"]["before"], "start"))
+    cur = fc0.copy(f"{fc0.id}_optimised")
+    for i, st in enumerate(steps):
+        cur = apply_edit(sc, cur, Edit(st["kind"], st["target"], st["other"]))
+        if cur is None:
+            raise RuntimeError(f"step {i + 1} no longer applies: {st['plain']}")
+        last = i == len(steps) - 1
+        m = res["heldout"]["after"] if last else metrics_on(sc, cur, held)
+        rows.append(row(i + 1, polish_change(fc0, st["kind"], st["target"], st["other"]), m, "change"))
+    return rows
+
+
+def optimiser_view(sc, fc0, res, held, start_label, lead_rows=None) -> dict:
+    cum = cumulative_view(sc, fc0, res, held, start_label, lead_rows)
+    core = [r for r in cum if r["kind"] != "lead"]
+    cfg = res["config"]
+    n_held = (cfg.get("n_heldout") or cfg["n_train"])
+    return {**{k: res[k] for k in ("steps", "selection_optimism_pp", "candidates_evaluated", "guardrails_heldout") if k in res},
+            "details": step_details(sc, fc0, res, core), "cumulative": cum,
+            "n_train": cfg["n_train"], "n_heldout": n_held, "heldout_cohorts": len(cfg["heldout_seeds"])}
+
+
+def sensitivity_rows(scenario_id: str):
+    """Optional tornado data from docs/sensitivity_<scenario id>.json (see demo/README.md)."""
+    f = ROOT / "docs" / f"sensitivity_{scenario_id}.json"
+    if not f.exists():
+        return None
+    try:
+        raw = json.loads(f.read_text())
+    except ValueError:
+        return None
+    rows = raw if isinstance(raw, list) else raw.get("rows") or (raw.get("scenarios") or {}).get(scenario_id)
+    return rows or None
+
+
 # ---------------------------------------------------------------- scenarios
 def metrics_on(sc, fc, held):
     m, _ = evaluate(sc, fc, held)
@@ -170,13 +287,21 @@ def build_stokstad(quick: bool) -> dict:
     cfg = Config(n_train=n, heldout_seeds=(201, 202, 203), n_heldout=n)
     held = cohorts(sc, cfg.heldout_seeds, n)
     obs, fpet, opt = (sc.flowcharts[k] for k in ("observed", "faster_pet", "optimal"))
+    m_obs0 = metrics_on(sc, obs, held)
     res_fast = search(sc, "faster_pet", cfg, log=lambda *a: None)
     res_noeq = search(sc, "observed", cfg, log=lambda *a: None)
+    m_fpet = metrics_on(sc, fpet, held)
+    m_opt = metrics_on(sc, opt, held)
+    lead = [{"step": -1, "label": "Observed pathway", "kind": "lead", "share": m_obs0["share_within_target"],
+             "median_days": m_obs0["median_days_to_treatment"], "missed_cancers": m_obs0["missed_cancers"],
+             "tests_per_patient": m_obs0["tests_per_patient"]}]
+    view_fast = optimiser_view(sc, fpet, res_fast, held, "Faster PET-CT scanner", lead)
+    view_noeq = optimiser_view(sc, obs, res_noeq, held, "Observed pathway")
     from pathway_sim.scenario import parse_flowchart
     after_fast = parse_flowchart("suggested", res_fast["flowchart_after"])
     from pathway_sim.scenario import validate_flowchart
     validate_flowchart(sc, after_fast)
-    m_obs = rekey_nodes(metrics_on(sc, obs, held), sc, obs)
+    m_obs = rekey_nodes(m_obs0, sc, obs)
     pub = sc.raw["published"]
     return {
         "id": "stokstad",
@@ -188,13 +313,13 @@ def build_stokstad(quick: bool) -> dict:
         "variants": [
             {"label": "Suggested change (found without seeing the authors' answer)",
              "metrics": rekey_nodes(res_fast["heldout"]["after"], sc, after_fast),
-             "changes": ["Use the faster PET-CT scanner (the same assumption the authors made)"] + [s["plain"] for s in res_fast["steps"]],
+             "changes": ["Use the faster PET-CT scanner (the same assumption the authors made)"] + [d["label"] for d in view_fast["details"]],
              "role": "optimiser"},
-            {"label": "Faster PET-CT scan only", "metrics": rekey_nodes(metrics_on(sc, fpet, held), sc, fpet), "role": "faster_pet"},
-            {"label": "Authors' reordered pathway, simulated", "metrics": rekey_nodes(metrics_on(sc, opt, held), sc, opt), "role": "authors_pathway"},
+            {"label": "Faster PET-CT scan only", "metrics": rekey_nodes(m_fpet, sc, fpet), "role": "faster_pet"},
+            {"label": "Authors' reordered pathway, simulated", "metrics": rekey_nodes(m_opt, sc, opt), "role": "authors_pathway"},
             {"label": "Suggested change without any new equipment",
              "metrics": rekey_nodes(res_noeq["heldout"]["after"], sc, obs),
-             "changes_detail": [s["plain"] for s in res_noeq["steps"]], "role": "optimiser_no_new_equipment"},
+             "changes": [d["label"] for d in view_noeq["details"]], "changes_detail": [d["raw"] for d in view_noeq["details"]], "role": "optimiser_no_new_equipment"},
         ],
         "published": {"baseline_share": pub["observed"]["share_within_target"],
                       "faster_pet_share": pub["faster_pet"]["share_within_target"],
@@ -202,9 +327,31 @@ def build_stokstad(quick: bool) -> dict:
                       "source": "Stokstad et al. 2019, BMC Health Services Research"},
         "flowchart_before": display_flowchart(sc, obs),
         "flowchart_after": display_flowchart(sc, after_fast),
-        "optimiser": {k: res_fast[k] for k in ("steps", "selection_optimism_pp", "candidates_evaluated", "guardrails_heldout")},
-        "optimiser_no_new_equipment": {k: res_noeq[k] for k in ("steps", "selection_optimism_pp", "candidates_evaluated")},
+        "optimiser": view_fast,
+        "optimiser_no_new_equipment": view_noeq,
+        "capacity_vs_order": {
+            "title": "Faster scanner or better order?",
+            "capacity_label": "New equipment: the faster PET-CT scanner alone",
+            "rows": [
+                {"kind": "today", "label": "Observed pathway", "share": m_obs0["share_within_target"], "median_days": m_obs0["median_days_to_treatment"]},
+                {"kind": "capacity", "label": "Faster PET-CT scanner only (7-day wait)", "share": m_fpet["share_within_target"], "median_days": m_fpet["median_days_to_treatment"]},
+                {"kind": "order", "label": "Reordered steps, no new equipment", "share": res_noeq["heldout"]["after"]["share_within_target"], "median_days": res_noeq["heldout"]["after"]["median_days_to_treatment"]},
+                {"kind": "both", "label": "Reordered steps and the faster scanner", "share": res_fast["heldout"]["after"]["share_within_target"], "median_days": res_fast["heldout"]["after"]["median_days_to_treatment"]},
+            ],
+        },
+        "headline_no_new_equipment": {"share": res_noeq["heldout"]["after"]["share_within_target"],
+                                      "median_days": res_noeq["heldout"]["after"]["median_days_to_treatment"]},
+        **({"sensitivity": sens} if (sens := sensitivity_rows("stokstad")) else {}),
     }
+
+
+NICE_RESOURCE = {"pet_scanner": "PET-CT scanner", "ct_scanner": "CT scanner", "ttnb_slot": "Needle biopsy slots",
+                 "bronchoscopy": "Bronchoscopy", "nurse_appt": "Nurse appointments", "gp_appt": "GP appointments",
+                 "xray": "Chest X-ray", "clinic": "Specialist clinic", "treatment_slot": "Treatment slots"}
+
+
+def nice_resource(rid: str, fallback: str) -> str:
+    return NICE_RESOURCE.get(rid, fallback.capitalize())
 
 
 def capacity_probe(sc: Scenario, fc: Flowchart, held, base: dict) -> list[dict]:
@@ -216,12 +363,45 @@ def capacity_probe(sc: Scenario, fc: Flowchart, held, base: dict) -> list[dict]:
         new = fc.copy(fc.id)
         new.resource_overrides = {**new.resource_overrides, rid: {"capacity_per_day": int(r["capacity_per_day"]) + 1}}
         m = metrics_on(sc, new, held)
-        rows.append({"resource": rid, "label": r.get("label", rid.replace("_", " ")),
+        rows.append({"resource": rid, "label": nice_resource(rid, r.get("label", rid.replace("_", " "))),
                      "capacity_per_day": r["capacity_per_day"],
                      "delta_share_pp": round(100 * (m["share_within_target"] - base["share_within_target"]), 1),
                      "delta_median_days": round(m["median_days_to_treatment"] - base["median_days_to_treatment"], 1),
                      "utilisation": base["utilisation"].get(rid)})
     return sorted(rows, key=lambda x: -x["delta_share_pp"])
+
+
+
+def capacity_vs_order(sc: Scenario, fc0: Flowchart, base: dict, probe: list[dict], hand: dict, res: dict) -> dict | None:
+    """Same patients: one more slot at the busiest step, a large capacity increase, and the suggested reorder."""
+    ctl = sc.flowcharts.get("baseline_plus_capacity")
+    if not probe or ctl is None or "baseline_plus_capacity" not in hand:
+        return None
+    top = probe[0]
+    big = hand["baseline_plus_capacity"]
+    ov = ctl.resource_overrides or {}
+    parts = []
+    for rid, o in ov.items():
+        lab = nice_resource(rid, sc.resources.get(rid, {}).get("label", rid.replace("_", " ")))
+        parts.append(f"{lab} {o.get('capacity_per_day')} a day (from {sc.resources[rid]['capacity_per_day']})")
+    h = res["heldout"]["after"]
+    b = base
+    return {
+        "title": "More capacity or a better order?",
+        "rows": [
+            {"kind": "today", "label": "Today", "share": b["share_within_target"], "median_days": b["median_days_to_treatment"]},
+            {"kind": "capacity", "label": f"One more appointment a day at the busiest step ({top['label'].replace(' appointments', '')}, from {top['capacity_per_day']} to {top['capacity_per_day'] + 1})",
+             "share": round(b["share_within_target"] + top["delta_share_pp"] / 100, 4),
+             "median_days": round(b["median_days_to_treatment"] + top["delta_median_days"], 1)},
+            {"kind": "capacity", "label": "A large capacity increase, same order: " + "; ".join(parts),
+             "share": big["share_within_target"], "median_days": big["median_days_to_treatment"]},
+            {"kind": "order", "label": "Suggested change: new order and a fast lane, no new capacity",
+             "share": h["share_within_target"], "median_days": h["median_days_to_treatment"]},
+        ],
+    }
+
+
+FINLAND_SUMMARY = ("Synthetic patients with chest symptoms in one large Finnish county, followed from first contact in primary care (nurse or GP) to the start of treatment. Time to treatment is counted against a provisional 90-day target.")
 
 
 def build_capacity_scenario(path: Path, quick: bool, start: str = "baseline", compare: list[str] | None = None) -> dict:
@@ -237,20 +417,28 @@ def build_capacity_scenario(path: Path, quick: bool, start: str = "baseline", co
     after = parse_flowchart("suggested", res["flowchart_after"])
     validate_flowchart(sc, after)
     base = metrics_on(sc, fc0, held)
+    view = optimiser_view(sc, fc0, res, held, "Today's pathway")
     variants = [{"label": "Suggested change", "metrics": rekey_nodes(res["heldout"]["after"], sc, after),
-                 "changes": [s["plain"] for s in res["steps"]] or ["No change passed the safety checks"], "role": "optimiser"}]
+                 "changes": [d["label"] for d in view["details"]] or ["No change passed the safety checks"], "role": "optimiser"}]
+    hand = {}
     for fid in compare or [k for k in sc.flowcharts if k != start]:
         fc = sc.flowcharts[fid]
-        variants.append({"label": fc.description or fid.replace("_", " "), "metrics": rekey_nodes(metrics_on(sc, fc, held), sc, fc),
-                         "role": "hand_written"})
+        mm = metrics_on(sc, fc, held)
+        hand[fid] = mm
+        variants.append({"label": fc.description or fid.replace("_", " "), "metrics": rekey_nodes(mm, sc, fc),
+                         "role": "hand_written", "flowchart_id": fid})
+    probe = capacity_probe(sc, fc0, held, base)
+    cvo = capacity_vs_order(sc, fc0, base, probe, hand, res)
     return {
         "id": sc.id, "title": sc.raw.get("title", "Finnish lung pathway (synthetic)"),
-        "description": sc.description, "target_days": sc.target_days,
-        "baseline": {"label": fc0.description or "Today's pathway", "metrics": rekey_nodes(base, sc, fc0)},
+        "description": sc.description, "summary": FINLAND_SUMMARY, "target_days": sc.target_days,
+        "baseline": {"label": "Today's pathway", "metrics": rekey_nodes(base, sc, fc0)},
         "variants": variants,
         "flowchart_before": display_flowchart(sc, fc0), "flowchart_after": display_flowchart(sc, after),
-        "optimiser": {k: res[k] for k in ("steps", "selection_optimism_pp", "candidates_evaluated", "guardrails_heldout")},
-        "capacity_probe": capacity_probe(sc, fc0, held, base),
+        "optimiser": view,
+        "capacity_probe": probe,
+        **({"capacity_vs_order": cvo} if cvo else {}),
+        **({"sensitivity": sens} if (sens := sensitivity_rows(sc.id)) else {}),
     }
 
 

@@ -69,3 +69,27 @@ def test_embedded_copy_matches_fixture():
     real = INDEX.parent / "data" / "demo_bundle.json"
     expected = json.loads(real.read_text()) if real.exists() else load()
     assert json.loads(m.group(1)) == expected
+
+
+def test_real_bundle_wave2_fields():
+    real = INDEX.parent / "data" / "demo_bundle.json"
+    if not real.exists():
+        return
+    for s in json.loads(real.read_text())["scenarios"]:
+        o = s["optimiser"]
+        assert len(o["details"]) == len(o["steps"])
+        assert len(o["cumulative"]) >= len(o["steps"]) + 1
+        assert all(0 <= r["share"] <= 1 for r in o["cumulative"])
+        assert all(d["label"] and d["raw"] for d in o["details"])
+        for r in (s.get("capacity_vs_order") or {}).get("rows", []):
+            assert {"kind", "label", "share"} <= set(r)
+    st = next(s for s in json.loads(real.read_text())["scenarios"] if s["id"] == "stokstad")
+    assert "headline_no_new_equipment" in st
+
+
+def test_polish_change_has_no_internal_words():
+    import sys
+    sys.path.insert(0, str(DEMO.parent))
+    from demo.export import POLISHED
+    for text in POLISHED.values():
+        assert not re.search(r"\b(node|optimi[sz]er|flowchart|guard)\b", text, re.I)
