@@ -67,10 +67,8 @@ def _describe_decisions(pol, run) -> dict:
 def cmd_run(a) -> None:
     from .encounter import is_world_file
     if is_world_file(a.scenario):                            # encounter world (C8): primary care as an encounter loop
-        if a.jev or a.decision_mode or a.set:
-            raise SystemExit("error: the JEV flags are not supported for encounter worlds yet; the world's decision tables are used")
-        from .encounter import cli_run
-        cli_run(a)
+        from .training_export import cli_run_world         # encounter.cli_run plus --library and --jev URL
+        cli_run_world(a)
         return
     sc = load_scenario(a.scenario)
     pts = generate_patients(sc, _n(sc, a.n), a.seed)
@@ -142,6 +140,7 @@ def main(argv=None) -> None:
     r.add_argument("--n", type=int, default=0)
     r.add_argument("--seed", type=int, default=1)
     r.add_argument("--out")
+    r.add_argument("--library", action="append", metavar="DIR", help="encounter worlds: card library directory (default: the world's reference library)")
     _jev_flags(r)
     r.set_defaults(f=cmd_run)
     c = sub.add_parser("compare", help="compare flowcharts averaged over seeds")
@@ -151,6 +150,8 @@ def main(argv=None) -> None:
     c.add_argument("--seeds", default="1-10")
     _jev_flags(c)
     c.set_defaults(f=cmd_compare)
+    from .training_export import add_cli as add_training_cli
+    add_training_cli(sub)
     try:
         from .demo import add_cli  # optional, added by integration
         add_cli(sub)
