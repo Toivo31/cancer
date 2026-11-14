@@ -1,3 +1,5 @@
+> Reruns of the conflicts in section 1 (diagnosis to treatment, delay and survival, chest X-ray, PET-CT): see `docs/evidence_sensitivity.md`.
+
 # Evidence research: what to add to the evidence base (14 Nov 2026, evening)
 
 Research done in the coordinating chat. It is input for the team and the tracks, not a decision: nothing in `params/` was changed. Each item says what it would affect, so the person or agent who owns that file can decide whether and how to use it.

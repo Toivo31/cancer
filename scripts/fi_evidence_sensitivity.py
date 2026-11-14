@@ -240,7 +240,15 @@ def main(argv=None) -> int:
     held = [(s, generate_patients(sc0, N, s)) for s in held_seeds]   # patients do not depend on the changed inputs
     held_rank = [c for c in held if c[0] in rank_seeds]
 
+    base_med_a = run_set(sc0, sc0.flowcharts['baseline'], held, [90])['mean'][90]['median_days_to_treatment']
+    log(f'world A baseline median {base_med_a}')
     worlds_info, results = {}, {}
+    for fn, store in (('fi_evidence_worlds.json', worlds_info), ('fi_evidence_results.json', results)):
+        pth = OUT / fn
+        if pth.exists():
+            store.update(json.loads(pth.read_text())['worlds' if 'worlds' in fn else 'results'])
+    for w_ in worlds:
+        worlds_info.pop(w_, None); results.pop(w_, None)
     leads = {}
     base_eq_target = {}
     for w in worlds:
@@ -269,21 +277,26 @@ def main(argv=None) -> int:
         assert sc_disk.resources["treatment_slot"]["min_lead_days"] == sc.resources["treatment_slot"]["min_lead_days"]
         worlds_info[w] = {"file": str(path.relative_to(ROOT)), "what": what, "changes": raw["_evidence_world"], "calibration": cal_info}
 
+        # test accuracy is drawn when the patients are generated (hidden results), so a world that changes accuracy needs its own
+        # patients; the same seeds give the same underlying uniform draws, so comparisons stay paired
+        if w in ("X1", "X2", "P", "ALT"):
+            held_w = [(sd, generate_patients(sc, N, sd)) for sd, _ in held]
+        else:
+            held_w = held
+        held_rank_w = [c for c in held_w if c[0] in rank_seeds]
         # 'equivalent target': the 90-day target moved by the shift of the baseline's median so that the baseline sits at the same
         # place in the distribution as in world A (so shares are comparable across worlds)
+        probe = run_set(sc, sc.flowcharts["baseline"], held_w, [90])
+        t_eq = int(round(90 + probe["mean"][90]["median_days_to_treatment"] - base_med_a))
         if w == "A":
-            run_a = run_set(sc, sc.flowcharts["baseline"], held, [90])
-            base_med_a = run_a["mean"][90]["median_days_to_treatment"]
-        probe = run_set(sc, sc.flowcharts["baseline"], held[:1], [90])
-        shift = probe["mean"][90]["median_days_to_treatment"] - (base_med_a if w != "A" else probe["mean"][90]["median_days_to_treatment"])
-        t_eq = int(round(90 + shift)) if w != "A" else 90
+            t_eq = 90
         base_eq_target[w] = t_eq
         targets = sorted({90, t_eq})
 
         fcs = {"baseline": sc.flowcharts["baseline"], "suggested": sug_fc}
         res = {"target_equivalent_days": t_eq, "pair": {}, "rank": {}}
         for name, fc in fcs.items():
-            r = run_set(sc, fc, held, targets)
+            r = run_set(sc, fc, held_w, targets)
             res["pair"][name] = {"interval_median": r["interval_median"],
                                  "by_target": {str(t): {"mean": pick(r["mean"][t]), "per_cohort_share": [m["share_within_target"] for m in r["per_cohort"][t]],
                                                         "per_cohort_median": [m["median_days_to_treatment"] for m in r["per_cohort"][t]]} for t in targets},
@@ -317,7 +330,7 @@ def main(argv=None) -> int:
         # ranking of all six pathways on the ranking cohorts (baseline and suggested restricted to the same cohorts for a like-for-like order)
         shares, medians = {}, {}
         for name, fc in {"baseline": sc.flowcharts["baseline"], "suggested": sug_fc, **{o: sc.flowcharts[o] for o in OTHERS}}.items():
-            r = run_set(sc, fc, held_rank, [t_eq])
+            r = run_set(sc, fc, held_rank_w, [t_eq])
             m = r["mean"][t_eq]
             shares[name], medians[name] = m["share_within_target"], m["median_days_to_treatment"]
             res["rank"][name] = {"share": m["share_within_target"], "median_days": m["median_days_to_treatment"], "missed_cancers": m["missed_cancers"],
