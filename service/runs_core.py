@@ -158,13 +158,14 @@ def decision_rows(sc, fc, pr, seed: int, warmup: float):
 
 # ------------------------------------------------------------------------------------ policy hook
 def policy_for(sc, fc, doc: dict, seed: int):
-    """Decision policy object for one seed, or None for the engine's default rule policy.
+    """``(flowchart, policy)`` to simulate with for one seed.
 
-    The ``rule`` backend (today's YAML policies) is what the engine builds itself. Other backends are
-    built by the ``jev`` package once it is merged (see ``service/policy.py``)."""
+    The ``rule`` backend (today's YAML policies) is the engine's default (policy None). ``stub`` and
+    ``http`` go through ``jev.prepare``, which may hand back a migrated copy of the flowchart."""
     dp = doc.get("decision_policy") or {}
-    if dp.get("backend", "rule") == "rule":
-        return None
+    backend = dp.get("backend", "rule")
+    if backend == "rule":
+        return fc, None
     from .policy import build_policy
     return build_policy(sc, fc, doc, seed)
 
@@ -221,7 +222,8 @@ def execute_run(ctx, data_dir: str, project_id: str, run_id: str) -> dict:
             ctx.log(f"seed {seed}: generating {n} patients")
             pts = generate_patients(sc, n, seed)
             ctx.progress(i, len(seeds), f"seed {seed} ({i + 1} of {len(seeds)})", force=True)
-            log = simulate(sc, fc, pts, policy=policy_for(sc, fc, doc, seed), seed=seed,
+            fc_run, pol = policy_for(sc, fc, doc, seed)
+            log = simulate(sc, fc_run, pts, policy=pol, seed=seed,
                            progress=lambda d, t, i=i, seed=seed: ctx.progress(i + d / max(t, 1), len(seeds),
                                                                              f"seed {seed}: {d} of {t} patients"),
                            progress_every=250)

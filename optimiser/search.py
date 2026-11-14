@@ -72,11 +72,13 @@ def mean_metrics(ms: list[dict]) -> dict:
 
 
 def evaluate(sc: Scenario, fc: Flowchart, cohorts: list[tuple[int, list]], policy_factory=None) -> tuple[dict, list]:
-    """Run ``fc`` on each cohort. ``policy_factory(fc, seed)`` (optional) supplies the decision policy,
-    e.g. a JEV backend; None means the engine's rule policy from the flowchart."""
+    """Run ``fc`` on each cohort. ``policy_factory(fc, seed) -> (flowchart, policy)`` (optional) supplies the
+    decision policy, e.g. a JEV backend (the flowchart may come back migrated); None means the engine's
+    rule policy from the flowchart."""
     ms, runs = [], []
     for seed, pts in cohorts:
-        run = simulate(sc, fc, pts, policy=policy_factory(fc, seed) if policy_factory else None, seed=seed)
+        fc_run, pol = policy_factory(fc, seed) if policy_factory else (fc, None)
+        run = simulate(sc, fc_run, pts, policy=pol, seed=seed)
         runs.append(run)
         ms.append(compute_metrics(run, sc))
     return mean_metrics(ms), runs
