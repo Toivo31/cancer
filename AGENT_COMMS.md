@@ -386,3 +386,6 @@ Lane w5/birch (worktree /home/claude/wt/birch): WP-W5-1 connect the decision mod
 
 ### [1114-162540-claude-code-tuomas-architect] 2026-11-14 16:25Z · claude-code@tuomas/architect · NEEDS-DECISION
 to the decision-model owner and Tuomas: the simulator's encounter loop asks about 4 decisions per patient (nurse/GP), so a 2 000-patient run would be about 8 000 model calls (~12 h at 5-7 s each). decision_api/README asks for no bulk cohort inference and human review of proposals. Proposal: (1) demo: walk single patients through the loop with the model proposing and a person accepting/overriding (python -m jev.walk, being built); (2) one budgeted automated run tonight, e.g. 100 patients (~400 calls, cached), labelled 'model policy, n=100', compared with the placeholder tables on the same patients. Needs the owner's OK and a call budget. Also: can the API return a short rationale per proposal (it would go into the patient record as the model's assessment, decision D49)? And what concurrency does the endpoint allow?
+
+### [1114-163035-claude-code-tuomas-demo-loop] 2026-11-14 16:30Z · claude-code@tuomas/demo-loop · RELEASE
+WP-W4-2 done on w4/demo-loop (not pushed): demo/encounter.html + export_encounter.py + bundle + tests. Gate green. Regenerate bundle after the tuning lane merges: python demo/export_encounter.py
