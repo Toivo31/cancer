@@ -37,28 +37,32 @@ M1-9 (GP judgement as a decision; now C3 E4 and C4 J4), M3-7, M3-8, M3-9, M4-1 t
 M5-9, M6-5, M6-6, M7-1, M7-3, M7-4 (written, never run), M7-6 web part, M8-1 to M8-6 (in
 progress on `plat/evidence`). See `components/C6-platform.md` for how they are regrouped.
 
-## Running now (14 Nov, 17:00 UTC)
+## Running now (14 Nov, 16:40 UTC)
 
-Waves 2 and 3. Merged into `overnight/sim`, gate green (`scripts/gate.sh`): patient-engine contracts,
-LLM client, both catalogue research notes, the lung catalogue, reference generator, validator,
-library/cohort/reveal handle, test gate, security fixes (F16, F3, F5, F6, F7), record/1 and care/1
-contracts, record to JEV request (WP-C8-4), card states and unlimited fresh repeats (WP-C8-2).
+Merged and green since the last update: encounter loop engine, card states, care content with
+definitive and group tests, record to JEV request, model-written cards (offline-tested), MCP
+investigation (verdict: after the submission), the encounter-loop demo page, and `main` (the
+decision-model kit `decision_api/`). Catalogue locked as `catalogue-v1` (hash 2bcb9c78b2e0).
 
 | Lane | Package | State |
 |---|---|---|
-| `w3/c8-engine` | WP-C8-1 encounter loop in the simulator (Opus) | running |
-| `w3/c8-care` | WP-C8-3 care content, definitive and group tests, costs, capacity, worried well | running |
-| `w3/pe-authors` | WP-C1-5 model-written cards | built; fixing multi-state support before merge |
+| `w4/loop-tune` | Tune placeholder decisions to match the calibrated chain; second finding | resumed after the usage limit |
+| `w4/audit` | Library audit G4 | resumed |
+| `w4/train-export` | JEV training export, `--library`, `--jev` for encounter runs | resumed |
+| `w3/norway-robust` | Norway validation robustness | resumed |
+| `w5/birch` | Connect the team's decision model to the nodes; `python -m jev.walk` | resumed |
+| `w5/demo-path` | One start page and a presenter's script | running |
 
 ## Next (in order)
 
 | # | What | When |
 |---|---|---|
-| 1 | Merge c8-care, then c8-engine; run the loop on the lung library; first outcome table | as they finish |
-| 2 | Wave 4: tune nurse/GP decision tables to plausible Finnish rates; patient record and loop results in the demo (flow page and web app); audit G4 (WP-C1-7); pitch numbers for the second finding | after 1 |
-| 3 | Independent review of the loop (I1, numbers, what a judge would challenge) | before 01:00 UTC |
-| 4 | 01:00 UTC checkpoint: if the loop is not green, show cards and records next to the calibrated model only | 01:00 UTC |
-| 5 | Freeze 04:00 UTC (06:00 Helsinki); everything goes into the submission (D45) | |
+| 1 | Merge the six lanes as they finish; regenerate `demo/data/encounter_bundle.js` after loop-tune | as they finish |
+| 2 | End-to-end smoke: offline library → encounter run with `--library` → training export → `jev.walk` against the mock; then against the live model when the owner's GPU is up | after 1 |
+| 3 | Independent review (Opus, read-only): information boundary end to end, the second finding's numbers, demo path, what a judge would challenge | after 2, before 01:00 UTC |
+| 4 | Pitch numbers for the second finding (with Eemeli's pitch and video files) | after 3 |
+| 5 | Gemini-written library (Tuomas runs it) → audit → held-out test set for the JEV | when Tuomas has it |
+| 6 | 01:00 UTC checkpoint; freeze 04:00 UTC | |
 
 ## Waiting for a human
 
