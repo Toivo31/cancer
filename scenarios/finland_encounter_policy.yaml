@@ -1,0 +1,94 @@
+# Decision tables for the primary-care encounter loop (format encounter_policy/1, WP-C8-1).
+# ALL NUMBERS BELOW ARE PLACEHOLDERS (source: assumption) until WP-C8-3 fills them from research.
+#
+# FORMAT
+#   format: encounter_policy/1
+#   points:
+#     <role>_encounter:                 # one decision point per care.yaml role: nurse_encounter, gp_encounter, ...
+#       default: {<action id>: p, ...}  # used when no rule holds
+#       source: <id in params/sources.yaml> | assumption      # for the default row
+#       note: "why"                                           # optional
+#       rules:                          # checked in order; the first whose `when` holds and that puts
+#         - when: "<condition>"         # probability on an offered action wins
+#           probs: {<action id>: p, ...}
+#           source: assumption
+#           note: "why"
+#
+# Same shape as the stub tables (`decision_policy.points`, jev/stub.py): a row is restricted to the
+# actions the role offers (care.yaml `roles[].actions`) and renormalised; a point or row with no mass on
+# what is offered gives uniform probabilities and a `missing_probabilities` warning. Rows should sum to 1.
+# The engine draws the action from the row with a keyed random number (seed, patient, episode, encounter),
+# so the same patient facing the same row makes the same choice under every policy (I3).
+#
+# CONDITIONS are safe expressions (pathway_sim/expr.py: and/or/not, comparisons, in, constants).
+# Dotted names are allowed and read the patient RECORD only (record/1, invariant I1). Names:
+#
+#   age, sex, smoking_status, pack_years, region     background (catalogue `background`)
+#   found.<output>          latest value revealed by any gather (history, examination outputs), e.g.
+#                           found.cough, found.haemoptysis, found.finger_clubbing; None if never asked
+#   reported.<variable>     True if the patient mentioned it themselves in this episode
+#   last.<test>.<output>    output of the latest `ok` result of an ordered test, e.g. last.chest_xray.abnormal,
+#                           last.crp.crp (a number); None if not done / no ok result
+#   last.<test>.positive    the test's `positive_when` read on that result (True/False/None)
+#   last.<test>.days        days since that result arrived (None if none)
+#   attempts.<test>         how many results of an ordered test are in the record (0 if none)
+#   treated.<treatment>     True if that treatment was started in this episode (e.g. treated.antibiotics)
+#   treatments              number of treatments started in this episode
+#   episode                 1 at first contact, +1 at every return after a discharge
+#   encounters              encounters so far in this episode, including this one (1 at the first)
+#   encounters_total        encounters since first contact, including this one
+#   role_encounters         encounters with this role in this episode, including this one
+#   reason                  why this encounter happens: 'first' (first contact of an episode), 'booked'
+#                           (another role booked it), 'result' (review of an ordered test), 'treatment'
+#                           (review after a treatment), 'follow_up'
+#   last_action             the action chosen at the previous encounter of this episode (None at the first)
+#   t                       days since first contact (episode 1); t_episode: days since this episode began
+#
+# Action ids come from the catalogue's care.yaml (catalogue/lung-primary-care/care.yaml, WP-C8-3). The
+# example below uses the ids of catalogue/_examples/tiny/care.yaml; tests in tests/test_encounter*.py check
+# that every action named here exists in the care model the scenario uses.
+format: encounter_policy/1
+points:
+  nurse_encounter:
+    default: {book_gp_routine: 0.55, advice_return: 0.4, book_gp_urgent: 0.05}
+    source: assumption
+    note: "PLACEHOLDER. Most chest-symptom contacts with a nurse are passed on to a GP (KHALIFE2025 says nurse first contact is common; the split is not sourced)"
+    rules:
+      - when: "found.haemoptysis or found.weight_loss"
+        probs: {book_gp_urgent: 0.9, book_gp_routine: 0.1}
+        source: assumption
+        note: "PLACEHOLDER: alarm symptoms go to a GP soon"
+      - when: "episode >= 2"
+        probs: {book_gp_routine: 0.8, book_gp_urgent: 0.15, advice_return: 0.05}
+        source: assumption
+        note: "PLACEHOLDER: a patient who comes back is rarely sent home by the nurse again"
+  gp_encounter:
+    default: {order_chest_xray: 0.35, treat_antibiotics: 0.2, advice_return: 0.4, order_blood_count: 0.05}
+    source: assumption
+    note: "PLACEHOLDER first visit without alarm findings"
+    rules:
+      - when: "last.chest_xray.abnormal"
+        probs: {refer_urgent: 0.85, refer_routine: 0.1, follow_up: 0.05}
+        source: assumption
+        note: "PLACEHOLDER: suspicious film is referred"
+      - when: "found.haemoptysis and attempts.chest_xray == 0"
+        probs: {order_chest_xray: 0.85, refer_urgent: 0.15}
+        source: assumption
+      - when: "reason == 'result' and last.chest_xray.abnormal is False and episode >= 2"
+        probs: {refer_routine: 0.4, treat_antibiotics: 0.2, advice_return: 0.4}
+        source: assumption
+        note: "PLACEHOLDER: clear film but the patient keeps coming back"
+      - when: "reason == 'result' and last.chest_xray.abnormal is False"
+        probs: {advice_return: 0.6, treat_antibiotics: 0.3, follow_up: 0.1}
+        source: assumption
+      - when: "reason == 'treatment'"
+        probs: {advice_return: 0.6, order_chest_xray: 0.3, follow_up: 0.1}
+        source: assumption
+        note: "PLACEHOLDER review after a treatment"
+      - when: "episode >= 3"
+        probs: {order_chest_xray: 0.5, refer_routine: 0.4, advice_return: 0.1}
+        source: assumption
+        note: "PLACEHOLDER third episode: work up or refer"
+      - when: "episode >= 2 and attempts.chest_xray == 0"
+        probs: {order_chest_xray: 0.7, treat_antibiotics: 0.1, advice_return: 0.2}
+        source: assumption

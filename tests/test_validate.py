@@ -75,7 +75,8 @@ def test_base_scenario_is_clean_and_loads():
 
 
 def test_every_shipped_scenario_validates_clean():
-    files = glob.glob(str(ROOT / "scenarios" / "**" / "*.yaml"), recursive=True)
+    files = [f for f in glob.glob(str(ROOT / "scenarios" / "**" / "*.yaml"), recursive=True)
+             if "flowcharts" in (yaml.safe_load(open(f)) or {})]      # C8 encounter files are other formats
     assert len(files) >= 8
     for f in files:
         r = validate_scenario_dict(yaml.safe_load(open(f)))

@@ -3,6 +3,7 @@
     python -m pathway_sim run scenarios/stokstad.yaml --flowchart observed --n 100 --seed 1
     python -m pathway_sim compare scenarios/stokstad.yaml --n 100 --seeds 1-20
     python -m pathway_sim run scenarios/finland_lung.yaml --flowchart baseline --out runs/fi.json
+    python -m pathway_sim run scenarios/finland_encounter.yaml --flowchart encounter --n 2000 --seed 1
 """
 
 from __future__ import annotations
@@ -64,6 +65,13 @@ def _describe_decisions(pol, run) -> dict:
 
 
 def cmd_run(a) -> None:
+    from .encounter import is_world_file
+    if is_world_file(a.scenario):                            # encounter world (C8): primary care as an encounter loop
+        if a.jev or a.decision_mode or a.set:
+            raise SystemExit("error: the JEV flags are not supported for encounter worlds yet; the world's decision tables are used")
+        from .encounter import cli_run
+        cli_run(a)
+        return
     sc = load_scenario(a.scenario)
     pts = generate_patients(sc, _n(sc, a.n), a.seed)
     fc, pol, _ = _decision_policy(a, sc, a.flowchart, a.seed)

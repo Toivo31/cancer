@@ -8,7 +8,10 @@ probability (ties broken by option order).
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Protocol
+from typing import TYPE_CHECKING, Protocol
+
+if TYPE_CHECKING:                                       # no runtime import: patient_engine imports pathway_sim
+    from patient_engine.record import Record
 
 from .expr import parse as parse_expr
 
@@ -25,6 +28,7 @@ class PatientView:
     priority: bool = False                               # fast-tracked patient
     offered: list[str] = field(default_factory=list)     # options actually on offer at this choice
     option_leads: dict = field(default_factory=dict)     # option -> days until its earliest appointment (queue state)
+    record: Record | None = None                                   # patient_engine.record.Record at encounter decisions (C8), else None
 
     def names(self) -> dict:
         d = {"group": self.group, "age": self.age, "t": self.t_now}
@@ -36,6 +40,21 @@ class PatientView:
 
 class Policy(Protocol):
     def choose(self, view: PatientView, options: list[str]) -> dict[str, float]: ...
+
+
+class NotingPolicy(Policy, Protocol):
+    """A policy that may also return its own words (decision D49): ``(probs, note, assessment)``, where
+    ``note`` is free text or None and ``assessment`` a dict with keys from
+    ``patient_engine.record.ASSESSMENT_KEYS`` or None. Optional: callers use :func:`choose_with_note`."""
+    def choose_with_note(self, view: PatientView, options: list[str]) -> tuple[dict[str, float], str | None, dict | None]: ...
+
+
+def choose_with_note(policy, view: PatientView, options: list[str]) -> tuple[dict[str, float], str | None, dict | None]:
+    """``policy.choose_with_note`` when the policy has it, else ``(policy.choose(...), None, None)``."""
+    fn = getattr(policy, "choose_with_note", None)
+    if fn is not None:
+        return fn(view, options)
+    return policy.choose(view, options), None, None
 
 
 class _Names(dict):
