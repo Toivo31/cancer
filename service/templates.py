@@ -7,12 +7,14 @@ from pathlib import Path
 
 from pathway_sim.documents import load_yaml_as_documents
 
-# id, file, name, description. Order is display order.
+# id, file (or files in order of preference), name, description. Order is display order.
+# The Norway check must use the calibrated world (the one the dashboard and docs/validation.md report):
+# the uncalibrated file gives about 11% on time where the published and calibrated figure is 40%.
 SOURCES = [
     ("finland_lung", "finland_lung.yaml", "Finnish lung cancer pathway (synthetic)",
      "One Finnish wellbeing services county, from first contact in primary care to the start of treatment. "
      "All numbers are synthetic and each carries its source or is marked as an assumption."),
-    ("norway_check", "stokstad.yaml", "Norway check (Stokstad 2019)",
+    ("norway_check", ("generated/stokstad_calibrated.yaml", "stokstad.yaml"), "Norway check (Stokstad 2019)",
      "The published Norwegian stage I-II lung cancer pathway, re-timed with published waits. Used to check the "
      "simulator against a known result."),
 ]
@@ -21,8 +23,9 @@ SOURCES = [
 def load_templates(scenario_dir: Path) -> dict[str, dict]:
     out: dict[str, dict] = {}
     for tid, filename, name, description in SOURCES:
-        path = Path(scenario_dir) / filename
-        if not path.exists():
+        names = (filename,) if isinstance(filename, str) else filename
+        path = next((Path(scenario_dir) / f for f in names if (Path(scenario_dir) / f).exists()), None)
+        if path is None:
             continue
         world, fcs = load_yaml_as_documents(path)
         world["name"] = name

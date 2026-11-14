@@ -1,7 +1,8 @@
 # Platform master development plan
 
-Status: **draft for Tuomas, 14 Nov 2026.** Nothing in this folder has been built yet. Direction set
-by Tuomas; every choice marked *fork* is open and has a lean, not a decision.
+Status: **14 Nov 2026, evening: milestones M1, M2, most of M3, the backend of M6 and the files of M7 are built
+and merged into `overnight/sim`** (see `docs/plan/04-status.md`). Every choice marked *fork* is still open and was
+built on its lean. The planning framework that now sits above this folder is `docs/plan/README.md`.
 
 ## 1. What we are building
 

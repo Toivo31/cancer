@@ -1,7 +1,8 @@
 # Platform tickets
 
-Plan: `README.md`. Specs: `specs/`. Nothing here has been started. Tick a box when its acceptance
-line is met and the test suite passes.
+Plan: `README.md`. Specs: `specs/`. This is the record of the first wave: ticked rows are merged into
+`overnight/sim`. New work is ticketed in work packages under `docs/plan/packages/` (see `docs/plan/03-speccing-guide.md`),
+not here.
 
 Size: **S** up to about an hour, **M** a few hours, **L** half a day or more, for one agent or
 person. "Needs" lists tickets that must be done first; tickets without a shared need can run in
