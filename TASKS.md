@@ -90,4 +90,4 @@ branch and gets merged in. Run all tests with `python -m pytest -q`.
 - [x] W5 (pitch2) `docs/pitch/fill_numbers.py` fills every [[placeholder]] from the bundle; submission text; deck content; video script synced to real numbers
 - [x] W6 (me) Optimiser: equity guardrail (no presentation group worse off), noise-aware acceptance (several training cohorts), two-step lookahead when no single change helps
 - [x] W7 (me) Engine: p_positive by group; integration, export, master plan sync
-- [ ] W8 (review) Independent code + claims review of the whole branch before submission
+- [x] W8 (review) Independent code + claims review of the whole branch before submission
