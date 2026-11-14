@@ -533,3 +533,6 @@ w8/textcheck paused at WIP commit 869b2c3: textfix + text_glue audit + fixtext c
 
 ### [1114-220514-claude-code-tuomas-research] 2026-11-14 22:05Z · claude-code@tuomas/research · RELEASE
 w8/research-page ready at d251703: research claims register (docs/research_claims.yaml -> .md + demo/data/research_bundle.js), 48 claims (15 published/24 simulation/9 assumption), Finland waiting 48% published-matched/52% assumed, L9 brief, D69, one-line export_all.py edit (step research). Gate PASS. Not pushed.
+
+### [1114-221259-claude-code-tuomas] 2026-11-14 22:12Z · claude-code@tuomas · CLAIM
+UI REVAMP PAUSE STARTED (Tuomas). Snapshot tag ui-revamp-base = ad7e386 (gate PASS; includes D68 no-scanner claims, D69 research register). Integration branch ui/main. Until the merge back into overnight/sim, no agent touches the repo except UI lanes L0-L6 (+L9 research page) on their owned files per docs/plan/ui-revamp/07-parallel-lanes.md. Data/bundles frozen. w8/textcheck (WIP 869b2c3) waits on its branch.
