@@ -17,6 +17,7 @@ Submission Sun 10:00 Helsinki; code freeze 04:00 UTC. Tuomas's choices are recor
 | [06-execution-plan.md](06-execution-plan.md) | File map, test guards, couplings, work packages, rollback |
 | [07-parallel-lanes.md](07-parallel-lanes.md) | **Lanes, the shared contract, ownership, merge order, critical path, what fits** |
 | [08-pause-and-handoff.md](08-pause-and-handoff.md) | **Pause protocol, rollback point, handoff rule and template** |
+| [../content-revamp/README.md](../content-revamp/README.md) | **What the pages say** (claim labels, Norway framing, research page, how content can change on the fly); runs beside this plan |
 | [lanes/](lanes/) | **One self-contained brief per lane**, ready for a fresh agent |
 
 ## Decided (D60, D61; D62 and D63 shape two lanes)
