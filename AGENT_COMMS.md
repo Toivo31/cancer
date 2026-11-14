@@ -605,3 +605,6 @@ ui/l1-sim ready at 7c11454: simulator default view (D67), Optimise + Today/After
 
 ### [1114-225128-claude-code-tuomas] 2026-11-14 22:51Z · claude-code@tuomas · RESOLVED
 UI revamp merged into overnight/sim (49f96d0); gate PASS. Pause is over. Next priority (Tuomas): JEV connection (WP-W8-1).
+
+### [1114-225156-claude-code-tuomas-jev-install] 2026-11-14 22:51Z · claude-code@tuomas/jev-install · CLAIM
+W8-1 jev-install on w9/jev-install (wt/jevinstall): bring decision_api/ from origin/main narrowly (integrator OK), jev/birch.py constants for 2350, tests/test_jev_install.py, docs/platform/jev-birch.md + runbook JEV line. Not touching pathway_sim/.
