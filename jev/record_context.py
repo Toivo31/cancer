@@ -8,11 +8,15 @@ hidden field can reach it, because a ``Record`` holds none. Field meanings are i
 
 from __future__ import annotations
 
+import json
 from typing import Any
 
 from patient_engine.record import Record
 
 CARD_FORMAT = "card/1"
+#: Budget for all assessment text in one request (notes plus structured fields), in characters. The newest
+#: assessments come first; older ones that no longer fit are left out (the mechanical log is always complete).
+ASSESSMENT_BUDGET_CHARS = 12_000
 
 
 def _positive(catalogue, test: str, status: str, values: dict) -> bool | None:
@@ -35,7 +39,7 @@ def context_from_record(record: Record, *, role: str | None, now_days: float, ca
     ``catalogue`` (optional) only turns results into the yes/no ``history[].result`` via the test's
     ``positive_when``; without it ``result`` is null.
     """
-    entries = list(record.entries)
+    entries = [e for e in record.entries if e.kind != "assessment"]      # the mechanical log
     episode = record.episode
     in_ep = [e for e in entries if e.episode == episode]
 
@@ -43,8 +47,12 @@ def context_from_record(record: Record, *, role: str | None, now_days: float, ca
     for e in entries:
         for o in e.observations:
             observations.append({"test": o.test, "attempt": o.attempt, "status": o.status,
-                                 "values": dict(o.values), "report": o.report, "t_days": round(float(e.t_days), 3)})
-            history.append({"step": o.test, "test": o.test, "result": _positive(catalogue, o.test, o.status, dict(o.values)),
+                                 "values": dict(o.values), "report": o.report,
+                                 "positive": getattr(o, "positive", None), "t_days": round(float(e.t_days), 3)})
+            pos = getattr(o, "positive", None)
+            if pos is None:
+                pos = _positive(catalogue, o.test, o.status, dict(o.values))
+            history.append({"step": o.test, "test": o.test, "result": pos,
                             "t_days": round(float(e.t_days), 3)})
 
     notes = [{"id": f"n{i + 1}", "kind": f"{e.role or e.kind}_note", "text": e.note, "t_days": round(float(e.t_days), 3)}
@@ -52,6 +60,17 @@ def context_from_record(record: Record, *, role: str | None, now_days: float, ca
 
     # what the patient reported when this episode began: its first entry that lists anything
     reported = next((list(e.reported) for e in in_ep if e.reported), [])
+
+    assessments, used = [], 0
+    for e in reversed([e for e in record.entries if e.kind == "assessment"]):    # newest first
+        a = {"author": e.author, "t_days": round(float(e.t_days), 3), "role": e.role, "note": e.note}
+        if e.assessment:
+            a["assessment"] = dict(e.assessment)
+        size = len(e.note) + len(json.dumps(dict(e.assessment), ensure_ascii=False))
+        if assessments and used + size > ASSESSMENT_BUDGET_CHARS:
+            break
+        assessments.append(a)
+        used += size
 
     bg = dict(record.background)
     age = bg.get("age")
@@ -63,6 +82,6 @@ def context_from_record(record: Record, *, role: str | None, now_days: float, ca
         "encounters_so_far": sum(1 for e in entries if e.kind == "encounter"),
         "presenting": {"reported": reported},
         "found": record.latest_found(),
-        "observations": observations, "notes": notes,
+        "observations": observations, "notes": notes, "assessments": assessments,
         "actions": record.actions(),
     }

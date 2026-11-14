@@ -30,7 +30,11 @@ def make_record():
                      found={"weight_loss": False}, action="order_chest_xray", note="Chest X-ray ordered."))
     rec.append(Entry(11.5, 1, "result", observations=(
         Observation("chest_xray", 1, "ok", {"abnormal": False, "consolidation": True},
-                    "Right lower lobe consolidation."),)))
+                    "Right lower lobe consolidation.", positive=False),)))
+    rec.add_assessment(11.5, "gp_encounter/example", role="gp",
+                       note="Cough with fever, no weight loss. Chest X-ray first.",
+                       assessment={"working_diagnosis": "likely infection", "differential": ["other lung disease"],
+                                   "plan": "chest X-ray, review on result", "confidence": 0.6})
     return rec
 
 

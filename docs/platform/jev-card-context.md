@@ -79,11 +79,12 @@ Same keys as above, plus these (new names marked; nothing above was renamed):
 | `role` (new) | `nurse`, `gp` or `specialist`: who is deciding. Null at steps with no role |
 | `encounters_so_far` (new) | Number of visits (encounters) in the record |
 | `found` (new) | Latest revealed value of each variable asked or examined (`{"cough_3wk": true, "weight_loss": false}`), from the encounters |
+| `assessments` (new) | The JEV's own earlier assessments (decision D49), newest first: `{author, t_days, role, note, assessment}`. Budget: 12 000 characters of assessment text in total (note plus structured fields; `ASSESSMENT_BUDGET_CHARS` in `jev/record_context.py`); older ones that no longer fit are left out, the newest is always sent. Mechanical entries are never cut |
 | `actions` (new) | Ids of the actions already taken, oldest first (orders, bookings, treatments), so a repeat can be recognised |
-| `notes` | Now the clinicians' encounter notes: `{id: "n1", kind: "gp_note", text, t_days}` (`kind` is `<role>_note`) |
-| `observations` | As above; `attempt` counts from 1; `t_days` is when the result arrived |
+| `notes` | Now the mechanical log's encounter notes (assessments are in `assessments`): `{id: "n1", kind: "gp_note", text, t_days}` (`kind` is `<role>_note`) |
+| `observations` | As above, plus `positive` (the simulator's `positive_when` reading: true, false or null); `attempt` counts from 1; `t_days` is when the result arrived |
 | `presenting` | `reported` only (the record keeps no free text); `text` is absent |
-| `history` | One entry per result: `step` and `test` are the test id; `result` is the yes/no reading through the test's `positive_when` when the catalogue is passed, otherwise `null` |
+| `history` | One entry per result: `step` and `test` are the test id; `result` is the observation's `positive`, else the reading through the test's `positive_when` when the catalogue is passed, else `null` |
 | `group`, `fast_track`, `attributes` | Kept for old JEVs. `group` is whatever the engine's view has (absent when the record is all there is) |
 
 A request example: `jev/examples/decide_request_record.json` (decision point `gp_encounter`, options are
@@ -93,6 +94,25 @@ entry for the demo. The request builder has the I1 test the section below promis
 `tests/test_jev_record_context.py` builds a record from a card with a co-existing illness and checks that
 no condition id or hidden field name reaches the context (a clinician's note may use a diagnosis word
 the clinician wrote; the test treats notes as the clinician's own prose).
+
+## The JEV can write to the record (decision D49)
+
+The response may carry, next to `probs`, the JEV's own words; the simulator appends them to the
+patient record as an `assessment` entry right after the decision, and every later request includes
+them. This is where the JEV's enriched context lives.
+
+```json
+{"request_id": "p1042:gp_encounter:3", "probs": {"order_chest_xray": 0.7, "follow_up": 0.3},
+ "record_note": "Cough 5 weeks after antibiotics, ex-smoker 30 pack-years, CXR 4 weeks ago read as consolidation. Persisting symptoms after treatment: repeat CXR.",
+ "assessment": {"working_diagnosis": "unresolved pneumonia", "differential": ["lung cancer", "COPD"],
+                "plan": "repeat chest X-ray, refer if abnormal", "confidence": 0.5}}
+```
+
+Rules: at most 2 000 characters per note; `assessment` keys as above, all optional; the note is
+interpretation and never replaces the **mechanical log** the simulator keeps by itself (every step,
+every result with `positive` true or false). Requests carry both layers: mechanical entries in full,
+assessments newest first within a size budget. `explanation` stays a free comment that is logged but
+not put in the record.
 
 ## What is never in a request
 
@@ -117,3 +137,10 @@ follow-ups as well as tests. The envelope does not change.
 - Contract and stub: `python -m jev.stub_server --scenario scenarios/finland_lung.yaml --flowchart baseline --port 8100`, then `python -m pytest -q tests/test_jev_contract.py`.
 
 Questions or requests for fields: post on the agent channel (`python scripts/comms.py post --type QUESTION ...`, to `claude-code@tuomas/architect`) or ask Tuomas.
+
+## Engine side of the record note
+
+`BackendPolicy.choose_with_note(view, options)` returns `(probs, record_note, assessment)` from the
+response (both `None` when the backend wrote none, as the stub does); `choose` returns `probs` only.
+`patient_engine.record_text.render` shows an assessment on its own kind of line
+(`Day 9 · GP assessment · working diagnosis: ... · plan: ...`).

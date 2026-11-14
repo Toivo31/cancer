@@ -113,13 +113,20 @@ class BackendPolicy:
             context=build_context(view), options=[self.catalogue.option(o, leads.get(o)) for o in options],
             question_type=self.question_type)
 
-    def choose(self, view, options: list[str]) -> dict[str, float]:
+    def choose_with_note(self, view, options: list[str]):
+        """``(probs, record_note, assessment)``: the response's own words (decision D49), None when the
+        backend wrote none. The engine appends them to the record as an assessment entry."""
         if self._routed:                       # log which backend answered this decision point
             self._cur = self.backend.info_for(view.node)
         req = self.request_for(view, options)
-        resp = check_responses([req], self.backend.decide([req]))[0]
+        raw = self.backend.decide([req])
+        resp = check_responses([req], raw)[0]      # validated probabilities (it keeps only probs and explanation)
         self.last_explanation = resp.explanation
-        return resp.probs
+        r0 = raw[0]
+        return resp.probs, getattr(r0, "record_note", None), getattr(r0, "assessment", None)
+
+    def choose(self, view, options: list[str]) -> dict[str, float]:
+        return self.choose_with_note(view, options)[0]
 
     def run_summary(self) -> dict:
         """Backend counters for the run summary (cache hits, fallbacks, ...); empty if it has none."""

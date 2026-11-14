@@ -72,7 +72,26 @@ def _values(catalogue, test: str, values) -> str:
     return ", ".join(parts)
 
 
+def _assessment_line(e: Entry) -> str:
+    who = _ROLE.get(e.role or "", e.role or "")
+    a = dict(e.assessment)
+    segs = [_day(e.t_days), f"{who} assessment" if who else "assessment"]
+    if a.get("working_diagnosis"):
+        segs.append(f"working diagnosis: {a['working_diagnosis']}")
+    if a.get("differential"):
+        segs.append("differential: " + ", ".join(map(str, a["differential"])))
+    if a.get("plan"):
+        segs.append(f"plan: {a['plan']}")
+    if a.get("confidence") is not None:
+        segs.append(f"confidence {a['confidence']}")
+    if e.note:
+        segs.append(f"note: {e.note}")
+    return " · ".join(segs).replace(" · working", " · working", 1)
+
+
 def _line(e: Entry, catalogue, care) -> str:
+    if e.kind == "assessment":
+        return _assessment_line(e)
     who = _ROLE.get(e.role or "", e.role or "")
     head = _day(e.t_days)
     if e.kind == "result":

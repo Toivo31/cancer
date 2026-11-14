@@ -160,3 +160,56 @@ def test_render_example_line_format():
     rec.append(Entry(9, 1, "encounter", encounter=1, role="gp", found={"cough_3wk": True, "fever": False},
                      action="order_chest_xray"))
     assert render(rec) == ["Day 9 · GP · cough 3wk, no fever · order chest xray"]
+
+
+# ---------------------------------------------------------------- D49: assessments, choose_with_note
+
+def test_assessments_newest_first_within_budget_and_mechanical_stays_complete(tiny):
+    import jev.record_context as rc
+    rec = record_from(RevealHandle(coexisting_card(tiny)[0]))
+    for i in range(5):
+        rec.add_assessment(12.0 + i, "gp_encounter/stub", note="x" * 1000, assessment={"plan": f"plan {i}"})
+    ctx = context_from_record(rec, role="gp", now_days=20.0, catalogue=tiny)
+    a = ctx["assessments"]
+    assert [x["t_days"] for x in a] == sorted([x["t_days"] for x in a], reverse=True)
+    assert a[0]["author"] == "gp_encounter/stub" and a[0]["assessment"] == {"plan": "plan 4"}
+    assert len(a) == 5 and len(ctx["observations"]) == 1 and len(ctx["notes"]) == 2    # notes stay mechanical
+    assert ctx["observations"][0]["positive"] is None or isinstance(ctx["observations"][0]["positive"], bool)
+    old = rc.ASSESSMENT_BUDGET_CHARS
+    rc.ASSESSMENT_BUDGET_CHARS = 2500
+    try:
+        small = context_from_record(rec, role="gp", now_days=20.0)["assessments"]
+    finally:
+        rc.ASSESSMENT_BUDGET_CHARS = old
+    assert [x["t_days"] for x in small] == [16.0, 15.0]
+
+
+def test_choose_with_note_returns_the_responses_words():
+    from jev.adapter import BackendPolicy
+    from jev.contract import BackendInfo, DecisionResponse
+
+    class B:
+        def info(self):
+            return BackendInfo("b", "m@1", True, None)
+
+        def decide(self, reqs):
+            return [DecisionResponse(r.request_id, {"a": 0.4, "b": 0.6}, record_note="think", assessment={"plan": "p"})
+                    for r in reqs]
+
+    pol = BackendPolicy(B())
+    probs, note, ass = pol.choose_with_note(view(), ["a", "b"])
+    assert probs == {"a": 0.4, "b": 0.6} and note == "think" and ass == {"plan": "p"}
+    assert pol.choose(view(), ["a", "b"]) == probs
+
+    class Plain(B):
+        def decide(self, reqs):
+            return [DecisionResponse(r.request_id, {"a": 1.0, "b": 0.0}) for r in reqs]
+
+    assert BackendPolicy(Plain()).choose_with_note(view(), ["a", "b"])[1:] == (None, None)
+
+
+def test_render_assessment_is_distinct(tiny):
+    rec = record_from(RevealHandle(coexisting_card(tiny)[0]))
+    rec.add_assessment(12.0, "gp_encounter/stub", note="", assessment={"working_diagnosis": "post-viral cough",
+                                                                     "plan": "review in 3 weeks"}, role="gp")
+    assert "Day 12 · GP assessment · working diagnosis: post-viral cough · plan: review in 3 weeks" in render(rec)

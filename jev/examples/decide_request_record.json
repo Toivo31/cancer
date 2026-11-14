@@ -49,6 +49,7 @@
               "consolidation": true
             },
             "report": "Right lower lobe consolidation.",
+            "positive": false,
             "t_days": 11.5
           }
         ],
@@ -64,6 +65,22 @@
             "kind": "gp_note",
             "text": "Chest X-ray ordered.",
             "t_days": 9.0
+          }
+        ],
+        "assessments": [
+          {
+            "author": "gp_encounter/example",
+            "t_days": 11.5,
+            "role": "gp",
+            "note": "Cough with fever, no weight loss. Chest X-ray first.",
+            "assessment": {
+              "working_diagnosis": "likely infection",
+              "differential": [
+                "other lung disease"
+              ],
+              "plan": "chest X-ray, review on result",
+              "confidence": 0.6
+            }
           }
         ],
         "actions": [
