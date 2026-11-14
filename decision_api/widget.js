@@ -132,7 +132,7 @@ export class BirchDecision extends HTMLElement {
     this._pending = new AbortController(); const options = {signal: this._pending.signal};
     this._busy(true);
     this.$('results').replaceChildren();
-    this.$('status').textContent = live ? 'Starting or scoring… a cold start can take about six minutes. Retry after a startup timeout.' : 'Loading saved example…';
+    this.$('status').textContent = live ? 'Starting or scoring… a cold start can take several minutes. Waiting for this request; no duplicate scoring call is sent.' : 'Loading saved example…';
     try {
       let result, delivery;
       if (!live) {

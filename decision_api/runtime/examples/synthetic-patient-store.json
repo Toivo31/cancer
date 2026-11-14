@@ -1,0 +1,19 @@
+{
+  "synthetic": true,
+  "patients": {
+    "sim:demo-record": {
+      "history": [
+        {"source_id":"sim:intake-01","timestamp":"2026-11-14T08:00:00Z","available_at_step":0,"type":"patient_statement","text":"Synthetic patient reports a changing skin lesion. This statement is not a diagnosis."},
+        {"source_id":"sim:review-02","timestamp":"2026-11-14T09:00:00Z","available_at_step":1,"type":"clinician_note","text":"Synthetic follow-up note: review the supplied photograph and documented history."},
+        {"source_id":"sim:future-03","timestamp":"2026-11-15T09:00:00Z","available_at_step":3,"type":"later_note","text":"Future simulator event; must not be visible at earlier pathway steps."}
+      ],
+      "tests": {
+        "sim:review-completeness": {"source_id":"sim:test-01","timestamp":"2026-11-14T09:05:00Z","allowed_at_steps":[1],"result":{"status":"completed","finding":"Synthetic record completeness check: no previous diagnostic report is present in this fixture."}}
+      }
+    },
+    "sim:other-record": {"history":[],"tests":{}}
+  },
+  "guidelines": [
+    {"source_id":"sim:workflow-v1","timestamp":"2026-11-14T08:00:00Z","available_at_step":0,"title":"Synthetic record review workflow","text":"Simulator instruction fixture, not a medical guideline: review available history and identify missing evidence before choosing an allowed workflow action."}
+  ]
+}

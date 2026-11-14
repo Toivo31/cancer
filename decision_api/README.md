@@ -1,3 +1,5 @@
+> **Hosted access:** teammates need no Modal account or inference key. See [HOSTED_API.md](HOSTED_API.md) for the URL, SDK and one-command agent client.
+
 # Decision model: teammate integration kit
 
 **For the coding model implementing the demo: start with [INTEGRATION_PROMPT.md](INTEGRATION_PROMPT.md).**

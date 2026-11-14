@@ -1,3 +1,5 @@
+> **Deployment update (2026-11-14):** native refinement is now deployed on Modal and a real tool + summary + final classifier call has succeeded. Use [HOSTED_API.md](HOSTED_API.md) for the credential-free team endpoint and current validation report. The owner-preflight instructions below describe the original preparation stage; the isolated deployment source now lives in `modal_inference.py` with `runtime/decision_model/`. Do not apply the old patch to teammates’ working trees.
+
 # Handoff 2: optional context refinement on the shared Nemotron backbone
 
 Read [handoff 1](INTEGRATION_PROMPT.md) first. This is the follow-up brief for the

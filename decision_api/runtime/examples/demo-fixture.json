@@ -1,0 +1,14 @@
+{
+  "synthetic": true,
+  "description": "Scripted API integration responses. These numbers do not come from a model or establish clinical performance.",
+  "questions": {
+    "Which allowed next step should be proposed for review?": {
+      "Review the available history with the clinician": 0.7,
+      "Request the missing intake information": 0.3
+    },
+    "Is this skin lesion malignant?": {
+      "Non-malignant": 0.55,
+      "Malignant": 0.45
+    }
+  }
+}

@@ -52,5 +52,5 @@ export interface DecisionClient {
   decision(id: string, options?: RequestOptions): Promise<Decision & {input: Record<string, unknown>}>;
   review(id: string, payload: Review, options?: RequestOptions): Promise<SavedReview>;
 }
-export class DecisionAPIError extends Error {status: number; retryable: boolean}
+export class DecisionAPIError extends Error {status: number; retryable: boolean; jobStatusUrl?: string}
 export function createDecisionClient(options?: {baseUrl?: string; fetch?: typeof fetch; timeoutMs?: number}): DecisionClient;

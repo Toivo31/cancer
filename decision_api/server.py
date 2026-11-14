@@ -8,13 +8,15 @@ import os
 from pathlib import Path
 import re
 import socket
+import time
 from urllib.error import HTTPError, URLError
-from urllib.parse import unquote, urlsplit
+from urllib.parse import unquote, urlsplit, urljoin
 from urllib.request import build_opener, HTTPRedirectHandler, Request
 
 ROOT = Path(__file__).resolve().parent
 WEB = ROOT/'web'
 DEFAULT_URL = 'https://cancer123--birch-decision-1138-inference-web.us-east.modal.run'
+TEAM_URL = 'https://cancer123--birch-decision-1138-demo.us-east.modal.run'
 MAX_BODY = 512 * 1024
 
 
@@ -61,21 +63,32 @@ class DecisionAPI:
         if data is not None:
             headers['Content-Type'] = 'application/json'
         request = Request(self.base_url+path, data=data, headers=headers)
-        try:
-            with self.opener.open(request, timeout=145) as response:
-                if not 200 <= response.status < 300:
-                    raise APIError(503, 'Model may still be starting. Retry shortly.')
-                return json.load(response)
-        except HTTPError as error:
-            if 300 <= error.code < 400:
-                raise APIError(503, 'Model may still be starting. Retry shortly.') from None
+        deadline=time.monotonic()+650
+        for redirects in range(5):
             try:
-                detail = json.loads(error.read(4000)).get('detail', 'Remote inference failed')
-            except (ValueError, AttributeError):
-                detail = 'Remote inference unavailable; no substitute scores generated'
-            raise APIError(error.code, detail) from None
-        except (URLError, TimeoutError, socket.timeout, json.JSONDecodeError):
-            raise APIError(503, 'Model unavailable or still starting. Retry shortly; no substitute scores generated.') from None
+                with self.opener.open(request, timeout=max(1,deadline-time.monotonic())) as response:
+                    if not 200 <= response.status < 300:
+                        raise APIError(503, 'Model may still be starting. Retry shortly.')
+                    return json.load(response)
+            except HTTPError as error:
+                if error.code==303 and redirects<4 and time.monotonic()<deadline:
+                    location=urljoin(request.full_url,error.headers.get('Location',''))
+                    old,new=urlsplit(request.full_url),urlsplit(location)
+                    # Modal's result redirect polls THIS accepted call. Never replay
+                    # its POST or carry the credential to another host/path.
+                    if new.scheme==old.scheme=='https' and new.netloc==old.netloc and new.path==old.path and new.query and not new.fragment and not new.username:
+                        request=Request(location,headers={'Authorization':'Bearer '+self.api_key},method='GET')
+                        continue
+                if 300 <= error.code < 400:
+                    raise APIError(503, 'Model may still be starting. Retry shortly.') from None
+                try:
+                    detail = json.loads(error.read(4000)).get('detail', 'Remote inference failed')
+                except (ValueError, AttributeError):
+                    detail = 'Remote inference unavailable; no substitute scores generated'
+                raise APIError(error.code, detail) from None
+            except (URLError, TimeoutError, socket.timeout, json.JSONDecodeError):
+                raise APIError(503, 'Model unavailable or still starting. Retry shortly; no substitute scores generated.') from None
+        raise APIError(503,'Model result wait timed out; do not automatically resubmit the request')
 
     def reasoning_call(self, body, *, preview=False):
         from .reasoning import refine,settings,PatientTools,DemoGenerator
@@ -163,12 +176,32 @@ class DecisionAPI:
         return self.remote(mapping[method, route], body)
 
 
+class HostedDecisionAPI:
+    """Project-side relay to the hosted credential holder; no local secrets needed."""
+    mode = 'live'
+    def __init__(self, base_url=TEAM_URL, opener=None):
+        parsed=urlsplit(base_url)
+        if parsed.scheme!='https' or not parsed.hostname or not parsed.hostname.endswith('.modal.run') or parsed.path not in ('','/') or parsed.query or parsed.fragment or parsed.username or parsed.password:
+            raise ValueError('BIRCH_TEAM_URL must be a root HTTPS Modal URL')
+        self.base_url=base_url.rstrip('/');self.opener=opener or build_opener(NoRedirect())
+    def call(self,method,route,body=None):
+        if os.environ.get('BIRCH_DECISION_PAUSED')=='1':raise APIError(503,'Decision service paused by the operator')
+        from .agent import call
+        try:return call(route,body,base_url=self.base_url)
+        except (RuntimeError,TimeoutError,URLError) as error:
+            raise APIError(503,str(error)) from None
+
+
 def from_environment():
+    if os.environ.get('BIRCH_DECISION_MODE','live')=='live' and not os.environ.get('BIRCH_API_KEY') and not os.environ.get('BIRCH_API_KEY_FILE'):
+        return HostedDecisionAPI(os.environ.get('BIRCH_TEAM_URL',TEAM_URL))
     token = os.environ.get('BIRCH_API_KEY', '')
     if not token:
         path = Path(os.environ.get('BIRCH_API_KEY_FILE', str(Path.home()/'.config/birch/demo-api-key')))
         if path.is_file():
             token = path.read_text().strip()
+    if not token and os.environ.get('BIRCH_DECISION_MODE','live')=='live':
+        return HostedDecisionAPI(os.environ.get('BIRCH_TEAM_URL',TEAM_URL))
     return DecisionAPI(mode=os.environ.get('BIRCH_DECISION_MODE', 'live'),
                        base_url=os.environ.get('BIRCH_API_URL', DEFAULT_URL), api_key=token)
 
