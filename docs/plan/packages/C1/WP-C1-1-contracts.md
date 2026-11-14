@@ -152,7 +152,7 @@ content (WP-C2-1), the LLM client (WP-C1-2), anything in `pathway_sim/`.
 | `catalogue/_examples/tiny/` | 3 conditions (cancer with stage and location, pneumonia, healthy), 9 variables, 4 tests, 1 co-occurrence pair |
 | `catalogue/_examples/broken/` | one mistake per required problem kind |
 | `tests/fixtures/patient_engine/` | `card_example.json`, `library_manifest_example.json`, `cohort_spec_example.json` |
-| `tests/test_pe_contract.py`, `tests/test_pe_contract_schema.py`, `tests/test_pe_catalogue.py` | 82 tests, about 2 s |
+| `tests/test_pe_contract.py`, `tests/test_pe_contract_schema.py`, `tests/test_pe_catalogue.py` | 80 tests, about 2 s |
 
 **Public API**
 
