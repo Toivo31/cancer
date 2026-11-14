@@ -270,13 +270,27 @@ function renderSide() {
       const mk = tr && tr.marks && tr.marks[i] != null ? `<span class="mk ${tr.marks[i] ? 'ok' : 'bad'}">${tr.marks[i] ? 'treatment matches a true condition' : 'treatment matches none of the true conditions'}</span>` : '';
       h += `<div class="ln ${l[1] ? 'a' : 'm'}" data-i="${i}" data-t="${l[0]}">${l[1] ? '<b>assessment</b>' : ''}${esc(l[2])}${mk}</div>`;
     });
-    h += '</div></div>';
+    h += '</div>' + proposalsHtml(p) + '</div>';
   } else h += `<div class="card"><h3>Patient record</h3><p>Nothing selected. A record has two layers: the <b style="color:${C.blue}">mechanical log</b> (what happened, written by the simulator) and the clinicians' <b style="color:${C.coral}">assessments</b> (their working diagnosis and plan, in their own words).</p></div>`;
   side.innerHTML = h;
   side.querySelectorAll('.ex button').forEach(b => b.onclick = () => select(byId[b.dataset.p]));
   const cl = $('#close'); if (cl) cl.onclick = () => { S.sel = null; renderGraph(); renderSide(); };
   side.querySelectorAll('.ln').forEach(el => el.onclick = () => el.classList.toggle('open'));
   lastVis = -2;
+}
+function proposalsHtml(p) {
+  // Slot for the decision model's proposals (bundle field p.proposals, optional; the exporter leaves it empty unless given a file).
+  let h = `<h3 style="margin-top:14px">Decision model proposals</h3>`;
+  if (!p.proposals || !p.proposals.length) return h + `<p>None in this bundle yet. When present: per decision, the offered actions with scores, the model's proposal and what was chosen.</p>`;
+  p.proposals.forEach(d => {
+    const mx = Math.max(1e-9, ...d.options.map(o => o.score || 0));
+    h += `<div class="prop"><div class="ph"><b>${esc(String(d.decision_point || '').replace(/_/g, ' '))}</b><span class="dl ${esc(d.delivery || '')}">${esc(d.delivery || '')}</span></div>`;
+    d.options.forEach(o => {
+      h += `<div class="po${o.id === d.proposed ? ' pr' : ''}"><span>${esc(o.label || o.id)}${o.id === d.proposed ? ' <i>proposed</i>' : ''}${o.id === d.chosen ? ' <i class="ch">chosen</i>' : ''}</span><em>${o.score == null ? '–' : (+o.score).toFixed(2)}</em><u style="width:${Math.max(2, 100 * (o.score || 0) / mx)}%"></u></div>`;
+    });
+    h += '</div>';
+  });
+  return h;
 }
 function outcomeText(p) {
   return ({treatment: 'treatment started', left_resolved: 'left, symptoms gone', left_with_symptoms: 'left with symptoms and did not return', undiagnosed_at_horizon: 'still in primary care at 1 year'})[p.out] || p.out;
