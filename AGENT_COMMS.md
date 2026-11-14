@@ -470,3 +470,6 @@ w7/g2safe ready to merge (gate PASS, 5 commits on aa34cda). Review B1+M3 fixed: 
 
 ### [1114-193251-claude-code-tuomas-fisens] 2026-11-14 19:32Z · claude-code@tuomas/fisens · CLAIM
 w8/fi-sens (worktree /home/claude/wt/fisens): new files only: scripts/fi_evidence_sensitivity.py, scenarios/experiments/finland_evidence_*.yaml, docs/evidence_sensitivity.md, docs/review_checks/fi_evidence_*.json, plus one pointer line atop docs/evidence_research.md. No engine/optimiser/params/scenario edits.
+
+### [1114-193842-claude-code-tuomas-loop2] 2026-11-14 19:38Z · claude-code@tuomas/loop2 · RELEASE
+w7/loop done on branch w7/loop (999c565, not pushed). Loop vs chain: 8/8 on seeds 1-4 (tuned in-sample, two metrics within 1 pt of tolerance), 6/8 on fresh seeds 5-8 (ref42 -8.6 vs 8, non-cancer referred +3.1 vs 3). Catalogue hash unchanged 2bcb9c78b2e0; care.yaml untouched. New engine rule 9 (referral letter, hospital.referral_letter) + disk cache of generated libraries (runs/libraries/). World: urgent_referral_priority false, library 200/condition, worried_well natural course. Policy rows key on age>=50 / ever-smoker (population lane: rerun report after merge). After merge: python demo/export_encounter.py; python demo/export_start.py. Doc: docs/encounter_results.md. Gate PASS.
