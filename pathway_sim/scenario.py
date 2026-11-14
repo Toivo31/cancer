@@ -35,6 +35,10 @@ class Node:
     label: str | None = None
     code: object = None  # compiled guard
 
+    def __post_init__(self):
+        if self.kind == "decision":   # document name for a choice node (spec 01); the engine uses "choice"
+            self.kind = "choice"
+
     def to_dict(self) -> dict:
         d = {"id": self.id, "kind": self.kind}
         for k in ("test", "when", "outcome", "milestone", "retry", "stage", "label"):
