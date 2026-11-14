@@ -111,11 +111,11 @@ def main():
     clip = round(TL["hook"]["end"] + 2 / 1.5, 2)                       # the 2 s clip at 1.5x, then its last frame held 1 s
     TL["scan"] = {"a": TL["hook"]["end"], "clip": clip, "end": round(clip + 1.0, 2)}
     t = TL["scan"]["end"]; place("n2", t)                               # the two failure modes: LOCKED, as approved (trailer.js)
-    TL["modes"] = {"a": t, "l1": round(t + 0.5, 2), "l2": round(t + 2.0, 2), "end": round(t + 8.0, 2)}
+    TL["modes"] = {"a": t, "l1": round(t + 0.5, 2), "l2": round(t + 2.0, 2), "end": round(t + 6.5, 2)}
     t = TL["modes"]["end"]; place("n3", t + 0.2)                        # the framework, three lines
-    TL["fw"] = {"a": t, "h": on("n3", 0), "l1": on("n3", 1), "l2": on("n3", 2), "l3": on("n3", 3), "end": round(end("n3") + 1.5, 2)}
+    TL["fw"] = {"a": t, "h": on("n3", 0), "l1": on("n3", 1), "l2": on("n3", 2), "l3": on("n3", 3), "end": round(end("n3") + 2.5, 2)}
     t = TL["fw"]["end"]; place("n4a", t + 0.3)                          # the visualisation: chart, then the flow, then the fast track
-    TL["anim"] = {"a": t, "dots": on("n4a", 1), "fast": word("n4a", "automated", on("n4a", 2)), "end": round(end("n4a") + 1.0, 2)}
+    TL["anim"] = {"a": t, "dots": on("n4a", 1), "fast": word("n4a", "automated", on("n4a", 2)), "end": round(end("n4a") + 2.5, 2)}
     t = TL["anim"]["end"]; place("n4b", t + 0.2)                        # the manifesto, its points on the words
     TL["man"] = {"a": t, "lab": on("n4b", 0), "m1": on("n4b", 1), "i1": on("n4b", 2), "i2": on("n4b", 3), "i3": on("n4b", 4), "end": round(end("n4b") + 2.5, 2)}
     t = TL["man"]["end"]; place("n5", t + 0.3)                          # a model reads the note
@@ -123,8 +123,9 @@ def main():
     t = TL["doc"]["end"]; names = round(t + 1.0, 2)                    # credit, no voice: both names at once, on one soft chime
     TL["credit"] = {"a": t, "b1": names, "nem": names, "b2": names, "ver": names, "end": round(names + 3.0, 2)}
     t = TL["credit"]["end"]; place("n7", t + 0.2)                       # the suggestion, a beat, the punchline alone
-    punch = round(end("n7") + 1.5, 2); place("n8", punch)
-    TL["fin"] = {"a": t, "lab": on("n7", 0), "l1": on("n7", 1), "l2": on("n7", 2), "l3": on("n7", 3), "punch": punch, "repo": round(end("n8") + 1.5, 2)}
+    punch = round(end("n7") + 1.5, 2)                                   # the last slide is not narrated: a beat, then the line alone
+    n8_len = 2.5
+    TL["fin"] = {"a": t, "lab": on("n7", 0), "l1": on("n7", 1), "l2": on("n7", 2), "l3": on("n7", 3), "punch": punch, "repo": round(punch + n8_len + 1.5, 2)}
     TL["len"] = round(TL["fin"]["repo"] + 1.5, 2)
     TL["music_out"] = round(TL["scan"]["a"] - 3.0, 2)
     ticks = []; k = 0; tt = TL["anim"]["a"]                             # a clock under the waiting, stopping dead on the fast track

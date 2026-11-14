@@ -2,7 +2,7 @@
 
 Four entries: Modal, Nemotron, Gemini API, Verda. Everything below is from the repo (`decision_api/`, `note_reader/`, `technique_classifier/`, `video/`). Items marked **[VERIFY]** need a teammate to confirm before they go in the submission form; **[BUILD]** is work that would make the entry stronger.
 
-Video: https://vimeo.com/1246915943/8fbe835297?share=copy
+Video: https://vimeo.com/1246920559/41ca86218a?share=copy&fl=sv&fe=ci
 
 ## One sentence for the judges
 

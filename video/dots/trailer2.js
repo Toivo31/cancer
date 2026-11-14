@@ -212,6 +212,7 @@ const TRAILER = (() => {
 
   // over the animation: it runs inside our framework
   function overlay(mode) {
+    return;                                  // no box over the animation
     if (mode !== "flow" || !TL) return;
     const a = clamp((T() - TL.anim.a) / 0.3);
     ctx.save(); ctx.globalAlpha = a;
