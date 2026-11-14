@@ -219,7 +219,7 @@ def execute_run(ctx, data_dir: str, project_id: str, run_id: str) -> dict:
     runs.update(run_id, status="running", started_at=_now())
     sc, fc, doc = _scenario_for(spec)
     seeds, n = spec["seeds"], spec["n"]
-    per_seed, resources, written = [], {}, []
+    per_seed, resources, written, kept, kept_n = [], {}, [], [], 0
     pw = dw = None
     try:
         for i, seed in enumerate(seeds):
@@ -244,10 +244,18 @@ def execute_run(ctx, data_dir: str, project_id: str, run_id: str) -> dict:
             pw.close()
             dw.close()
             pw = dw = None
+            if kept_n + len(log.patients) <= FLOW_MAX_PATIENTS:
+                kept.append(log)
+                kept_n += len(log.patients)
+            fc_flow = fc_run
             del log, pts
+        flow = flow_from_logs(sc, fc_flow, kept, seeds) if kept else None
+        kept.clear()
         metrics = mean_deep(per_seed)
         bundle = build_bundle(sc, fc, spec.get("label") or run_id, metrics, title=spec["world"].get("name"))
         store.put_blob(project_id, "bundles", run_id, bundle)
+        if flow:
+            store.put_blob(project_id, "flows", run_id, flow)
         store.put_blob(project_id, "metrics", run_id, {"mean": metrics, "per_seed": per_seed, "seeds": seeds})
         runs.update(run_id, status="succeeded", finished_at=_now(), metrics_json=json.dumps(metrics),
                     headline_json=json.dumps(headline(metrics)),
@@ -260,6 +268,30 @@ def execute_run(ctx, data_dir: str, project_id: str, run_id: str) -> dict:
             if w is not None:
                 w.abort()
         raise
+
+
+FLOW_MAX_PATIENTS = 60_000      # patients kept in memory to build the flow document (about 0.5 GB)
+FLOW_DEFAULT_SAMPLE = 300
+
+
+def flow_from_logs(sc, fc, logs: list, all_seeds: list[int], sample: int = FLOW_DEFAULT_SAMPLE, sample_seed: int = 0) -> dict:
+    """Flow document (``docs/platform/flow-format.md``) pooled over ``logs``; ``meta`` says which seeds it covers."""
+    from pathway_sim.flow import build_flow
+    doc = build_flow(logs, sc, fc, sample=sample, seed=sample_seed,
+                     meta={"pooled_seeds": [lg.seed for lg in logs], "run_seeds": list(all_seeds),
+                           "complete": len(logs) == len(all_seeds), "sample": sample, "sample_seed": sample_seed})
+    return doc
+
+
+def compute_flow(spec: dict, sample: int, sample_seed: int, seeds: list[int] | None = None) -> dict:
+    """Re-simulate the stored spec (deterministic) to build a flow document with a different sample or seed subset."""
+    sc, fc, doc = _scenario_for(spec)
+    use = [s for s in spec["seeds"] if seeds is None or s in seeds]
+    logs = []
+    for seed in use:
+        fc_run, pol = policy_for(sc, fc, doc, seed)
+        logs.append(simulate(sc, fc_run, generate_patients(sc, spec["n"], seed), policy=pol, seed=seed))
+    return flow_from_logs(sc, fc, logs, spec["seeds"], sample, sample_seed)
 
 
 def _now() -> str:

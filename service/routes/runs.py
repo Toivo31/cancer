@@ -17,7 +17,8 @@ from pydantic import BaseModel, Field
 from ..deps import get_project
 from ..errors import ERROR_RESPONSES, ApiError, not_found
 from ..run_service import start_run
-from ..runs_core import (_scenario_for, build_bundle, headline, read_lines, stream_path)
+from ..runs_core import (FLOW_DEFAULT_SAMPLE, FLOW_MAX_PATIENTS, _scenario_for, build_bundle, compute_flow, read_lines,
+                         stream_path)
 from ..runtime import Runtime, drop_runtime, ensure_runtime, get_runtime
 from ..store import NotFound
 
@@ -174,6 +175,34 @@ def get_patients(r: str, offset: int = Query(0, ge=0), limit: int = Query(100, g
     path = stream_path(rt.store, pid, "runlogs", f"{r}_s{seed}")
     return {"run_id": r, "seed": seed, "offset": offset, "limit": limit, "total": row["n"],
             "patients": list(read_lines(path, offset, limit))}
+
+
+@router.get("/projects/{p}/runs/{r}/flow")
+def get_flow(r: str, sample: int | None = Query(None, ge=1, le=2000, description="Patients in the playback cohort (default 300)"),
+             sample_seed: int | None = Query(None, ge=0, description="Seed of the playback sample (default 0)"),
+             seeds: list[int] | None = Query(None, description="Only these seeds of the run"),
+             project: dict = Depends(get_project), rt: Runtime = Depends(get_runtime)):
+    """Flow document (``flow/1``, ``docs/platform/flow-format.md``): per-step and per-edge counts, waits, critical-path
+    share, queues, decision shares and a sampled cohort of patient traces for playback. Counts cover every measured
+    patient of the run's seeds, so the totals equal the run's metrics. The stored document (sample 300, seed 0) is
+    served as is; another sample size, sample seed or seed subset re-simulates the run (same patients, a few seconds,
+    refused above 60,000 patients)."""
+    pid = project["id"]
+    row = _finished(_get_run(rt, pid, r))
+    default = sample in (None, FLOW_DEFAULT_SAMPLE) and sample_seed in (None, 0) and not seeds
+    if default:
+        try:
+            return rt.store.get_blob(pid, "flows", r)
+        except NotFound:
+            pass   # a run too large to keep in memory: fall through to the resimulation (which will refuse)
+    use = [s for s in row["seeds"] if not seeds or s in seeds]
+    if not use:
+        raise ApiError(404, "not_found", f"Run {r} has none of the seeds {seeds}")
+    if len(use) * row["n"] > FLOW_MAX_PATIENTS:
+        raise ApiError(422, "flow_too_large", f"The flow of {len(use) * row['n']} patients is too large to rebuild on request "
+                                              f"(limit {FLOW_MAX_PATIENTS}); ask for fewer seeds")
+    spec = rt.store.get_blob(pid, "runspec", r)
+    return compute_flow(spec, sample or FLOW_DEFAULT_SAMPLE, sample_seed or 0, use)
 
 
 # ------------------------------------------------------------------------------------------ compare

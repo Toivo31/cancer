@@ -64,14 +64,22 @@ class Job:
     result: dict | None = None
     log: collections.deque = field(default_factory=lambda: collections.deque(maxlen=LOG_TAIL))
     owner: dict = field(default_factory=dict)   # free-form back-reference, e.g. {"project": p, "run": r}
+    published: bool = True   # False between reaching a final state and the on_finish hook returning
+
+    @property
+    def shown(self) -> str:
+        """Status as clients see it: a final state is shown only after ``on_finish`` has updated the owner's row,
+        so "job finished" always means "the run row says so too"."""
+        return self.status if self.published or self.status not in FINAL else "running"
 
     def to_dict(self, include_result: bool = True) -> dict:
-        d = {"id": self.id, "kind": self.kind, "label": self.label, "status": self.status, "state": self.status,
-             "progress": round(self.progress, 4), "message": self.message,
-             "created": self.created, "started": self.started, "finished": self.finished,
-             "error": self.error, "log_tail": list(self.log), "owner": self.owner}
+        shown = self.shown
+        d = {"id": self.id, "kind": self.kind, "label": self.label, "status": shown, "state": shown,
+             "progress": round(self.progress if shown in FINAL else min(self.progress, 0.999), 4), "message": self.message,
+             "created": self.created, "started": self.started, "finished": self.finished if shown in FINAL else None,
+             "error": self.error if shown in FINAL else None, "log_tail": list(self.log), "owner": self.owner}
         if include_result:
-            d["result"] = self.result
+            d["result"] = self.result if shown in FINAL else None
         return d
 
 
@@ -171,7 +179,7 @@ class JobRunner:
 
     def list(self, status: str | None = None) -> list[Job]:
         with self._lock:
-            return [j for j in self._jobs.values() if status is None or j.status == status]
+            return [j for j in self._jobs.values() if status is None or j.shown == status]
 
     def cancel(self, job_id: str) -> Job | None:
         """Queued job: cancelled at once. Running job: its process is stopped. Finished job: unchanged."""
@@ -191,14 +199,14 @@ class JobRunner:
         end = time.monotonic() + timeout
         while time.monotonic() < end:
             job = self.get(job_id)
-            if job is None or job.status in FINAL:
+            if job is None or job.shown in FINAL:
                 return job
             time.sleep(poll)
         raise TimeoutError(f"job {job_id} still {self.get(job_id).status} after {timeout}s")
 
     def counts(self) -> dict:
         with self._lock:
-            c = collections.Counter(j.status for j in self._jobs.values())
+            c = collections.Counter(j.shown for j in self._jobs.values())
         return {s: c.get(s, 0) for s in ("queued", "running", "succeeded", "failed", "cancelled")}
 
     def shutdown(self, cancel_running: bool = True) -> None:
@@ -228,6 +236,7 @@ class JobRunner:
         with self._lock:
             if job.status in FINAL:
                 return
+            job.published = self.on_finish is None
             job.status, job.finished = status, time.time()
             if error:
                 job.error = error
@@ -237,12 +246,13 @@ class JobRunner:
                 job.progress = 1.0
             if message is not None:
                 job.message = message
-            self._save(job)
         if self.on_finish:
             try:
                 self.on_finish(job)
             except Exception as e:   # noqa: BLE001
                 job.log.append(f"on_finish hook failed: {e}")
+            job.published = True
+        self._save(job)
 
     def _pump(self) -> None:
         with self._lock:
