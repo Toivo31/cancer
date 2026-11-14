@@ -10,5 +10,11 @@ __pycache__/
 .idea/
 .DS_Store
 
+# Web app
+web/node_modules/
+web/dist/
+web/*.tsbuildinfo
+
 # Service data (SQLite and result blobs)
 data/
+web/shots/
