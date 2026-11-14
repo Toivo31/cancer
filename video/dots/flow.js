@@ -9,6 +9,7 @@
 // Standalone: index.html?flow ; also used by ?show.
 
 const FLOW = (() => {
+  const SHOW_DOCS = false; // strategy picture and article cards (sources stay in README)
   // node -> [row (0 = bottom), x offset in panel widths]
   const POS = {
     nurse_visit: [0, -0.2], gp_visit: [0, 0.2], gp_after_nurse: [1, -0.2], cxr: [2, 0],
@@ -80,9 +81,9 @@ const FLOW = (() => {
   const PICS = [
     { src: "img/strategy.png", at: 3, rot: -0.03, x: 0.03, y: 0.12, w: 0.2,
       head: "NATIONAL CANCER STRATEGY 2026-2035 · GOAL 3",
-      cap: "\"Varmistetaan yhdenvertainen ja vaikuttava syövänhoito\": equal and effective cancer care. Sosiaali- ja terveysministeriö." },
+      cap: "Indicator 3.1: \"Potilaat pääsevät hoitoon tavoiteaikojen puitteissa\" (patients reach treatment within target times). STM, p. 33." },
   ];
-  PICS.forEach(p => { p.img = new Image(); p.img.onload = () => { p.ok = true; }; p.img.src = p.src; });
+  if (SHOW_DOCS) PICS.forEach(p => { p.img = new Image(); p.img.onload = () => { p.ok = true; }; p.img.src = p.src; });
 
   const ARTICLES = [
     { at: 18, rot: 0.025, x: 0.255, y: 0.11, w: 0.2,
@@ -138,7 +139,7 @@ const FLOW = (() => {
   }
 
   function evidencePanel(day) {
-    for (const p of PICS) {
+    if (SHOW_DOCS) for (const p of PICS) {
       const a = Math.min(1, Math.max(0, (day - p.at) / 4));
       if (!a || !p.ok) continue;
       const w = W * p.w, h = w * p.img.height / p.img.width, x = W * p.x, y = H * p.y;
@@ -154,14 +155,14 @@ const FLOW = (() => {
       wrap(p.cap, 0, h + 8 + H * 0.02, w, H * 0.016);
       ctx.restore();
     }
-    for (const a of ARTICLES) {
+    if (SHOW_DOCS) for (const a of ARTICLES) {
       const al = Math.min(1, Math.max(0, (day - a.at) / 4));
       if (al) articleCard(a, al);
     }
     // who falls behind: sourced facts, cycling, bottom left
     if (day > 8) {
       const idx = Math.floor(performance.now() / 4000), [head, text, src] = EVIDENCE[idx % EVIDENCE.length];
-      const x = W * 0.03, y = H * 0.775, w = W * 0.4;
+      const x = W * 0.03, y = H * 0.7, w = W * 0.22;
       ctx.globalAlpha = Math.min(1, (day - 8) / 4);
       ctx.fillStyle = "rgba(205,40,125,0.9)"; ctx.fillRect(x, y, W * 0.003, H * 0.1);
       ctx.textAlign = "left"; ctx.textBaseline = "top";
@@ -177,9 +178,16 @@ const FLOW = (() => {
 
   let layer = null, lctx = null;    // offscreen layer for balls with motion trails
 
-  const SINGLE = true;   // only our solution's flowchart; the left half shows the evidence pictures
+  // titles per shown variant: [title, subtitle prefix]
+  const TITLES = {
+    baseline: ["TODAY'S PATHWAY", ""],
+    solution: ["SUGGESTED CHANGE", "specialist booked when the referral arrives, treatment slot reserved at the board · "],
+    fastlane: ["WITH A FAST LANE (CONDITIONAL)", "assumes urgent booking times hold · "],
+    bundled: ["CT AND PET-CT ORDERED TOGETHER", ""],
+  };
+  const SINGLE = true;     // only our solution's flowchart
   function geom(side) {
-    const pw = SINGLE && side ? W * 0.44 : W * 0.4, cx = side ? (SINGLE ? W * 0.72 : W * 0.73) : W * 0.27;
+    const pw = SINGLE && side ? W * 0.5 : W * 0.4, cx = side ? (SINGLE ? W * 0.56 : W * 0.73) : W * 0.27;
     const yb = H * 0.86, yt = H * 0.3;
     return { pw, cx, side, y: r => yb - (yb - yt) * r / ROWS };
   }
@@ -233,7 +241,7 @@ const FLOW = (() => {
     ctx.fillStyle = "rgba(30,135,85,0.9)"; ctx.fillText("TREATMENT STARTS", tx, ty + H * 0.008);
   }
 
-  function groupRGB(p) { return p.g === VAGUE ? [205, 40, 125] : [70, 70, 66]; }
+  function groupRGB(p) { return p.g === VAGUE ? [20, 20, 20] : [150, 150, 145]; }   // vague = black, alarm = mid grey
 
   function balls(g, v, day, target, fastOn, draw = true) {
     const n = v.patients.length, swarm = {}, laneQ = {};
@@ -250,7 +258,7 @@ const FLOW = (() => {
         if (s.ontime) { out.on++; out.grp[gk][0]++; }
         const [tx, ty] = nodeXY(g, "__finish", false);
         x = tx + (rnd(i, 7) - 0.5) * g.pw * 0.8; y = ty - H * 0.008 - rnd(i, 8) * H * 0.05;
-        col = s.ontime ? (p.g === VAGUE ? "rgba(205,60,140,0.95)" : "rgba(30,135,85,0.95)") : "rgba(160,160,155,0.55)";
+        col = s.ontime ? (p.g === VAGUE ? "rgba(20,20,20,0.95)" : "rgba(150,150,145,0.95)") : "rgba(215,212,205,0.8)";
       } else if (s.kind === "gone") {
         out.missed++; if (p.g === VAGUE) out.missedVague++;
         const since = day - (p.tx || 0);
@@ -286,6 +294,7 @@ const FLOW = (() => {
       if (halo > 0.3) { lctx.fillStyle = `rgba(225,150,20,${0.12 * halo})`; lctx.beginPath(); lctx.arc(x, y, rad * 2.6, 0, Math.PI * 2); lctx.fill(); }
       lctx.fillStyle = col; lctx.beginPath(); lctx.arc(x, y, rad, 0, Math.PI * 2); lctx.fill();
       if (fastOn && i === FLOW.focus) FLOW.focusXY = [x, y];
+      if (fastOn) FLOW.pos.push([x, y, i]);
     }
     return out;
   }
@@ -298,7 +307,7 @@ const FLOW = (() => {
     ctx.font = `${Math.round(H * 0.016)}px "Inter", sans-serif`; ctx.fillStyle = "rgba(105,105,100,0.9)";
     ctx.fillText(sub, g.cx, H * 0.086);
     // per-group share treated within 90 days (the inequality, in two bars)
-    const rows = [[VAGUE, "vague symptoms", "rgba(205,40,125,0.95)"], ["other", "alarm symptoms", "rgba(70,70,66,0.95)"]];
+    const rows = [[VAGUE, "vague symptoms", "rgba(20,20,20,0.95)"], ["other", "alarm symptoms", "rgba(150,150,145,0.95)"]];
     const bx = g.cx - g.pw * 0.45, bw = g.pw * 0.5;
     rows.forEach(([k, lab, c], i) => {
       const [on, tot] = out.grp[k], sh = tot ? on / tot : 0, y = H * (0.12 + i * 0.04);
@@ -366,7 +375,7 @@ const FLOW = (() => {
 
   function draw(day, dt) {
     const sc = D.scenarios[0], target = sc.target_days;
-    const vOld = sc.variants[0], vNew = sc.variants[1];
+    const vOld = sc.variants[0], vNew = current();
     if (!vNew._fl) {
       vNew.patients.forEach((p, i) => { const b = vOld.patients[i]; p.fl = !!(p.ft && p.tt !== null && b.tt !== null && b.tt - p.tt >= FAST_GAIN); });
       vNew._fl = true;
@@ -386,9 +395,9 @@ const FLOW = (() => {
       ctx.beginPath(); ctx.moveTo(W / 2, H * 0.03); ctx.lineTo(W / 2, H * 0.9); ctx.stroke();
       drawChart(gL, vOld, false);
     }
-    drawChart(gR, vNew, true);
+    drawChart(gR, vNew, vNew.patients.some(p => p.fl));
     const oL = balls(gL, vOld, day, target, false, !SINGLE);
-    FLOW.focusXY = null;
+    FLOW.focusXY = null; FLOW.pos = [];
     const oR = balls(gR, vNew, day, target, true);
     ctx.drawImage(layer, 0, 0, W, H);
     if (FLOW.focusXY && FLOW.ring) {
@@ -397,7 +406,8 @@ const FLOW = (() => {
       ctx.beginPath(); ctx.arc(fx, fy, H * 0.016 + 3 * Math.sin(performance.now() / 150), 0, Math.PI * 2); ctx.stroke();
     }
     if (SINGLE) {
-      header(gR, oR, vNew.patients.length, "OUR SOLUTION", `notes read, warning signs flagged, fast lane · median ${median(vNew)} days (today ${median(vOld)})`, oL);
+      const T = TITLES[vNew.key] || [vNew.label.toUpperCase(), ""];
+      header(gR, oR, vNew.patients.length, T[0], `${T[1]}median ${median(vNew)} days (today ${median(vOld)})`, vNew === vOld ? null : oL);
       evidencePanel(day);
     } else {
     header(gL, oL, vOld.patients.length, "TODAY", "median " + median(vOld) + " days to treatment");
@@ -420,7 +430,7 @@ const FLOW = (() => {
     // clock
     ctx.textAlign = "center"; ctx.textBaseline = "alphabetic"; ctx.font = `600 ${Math.round(H * 0.045)}px "Inter", sans-serif`;
     ctx.fillStyle = day >= target ? "rgba(200,125,0,0.95)" : "rgba(45,45,42,0.95)";
-    const cxk = SINGLE ? W * 0.25 : W / 2;
+    const cxk = SINGLE ? W * 0.13 : W / 2;
     ctx.fillText("DAY " + String(Math.floor(day)).padStart(3, "0"), cxk, H * 0.06);
     ctx.font = `${Math.round(H * 0.013)}px "Inter", sans-serif`; ctx.fillStyle = "rgba(105,105,100,0.85)";
     ctx.fillText("since first contact · 521 simulated lung cancer patients", cxk, H * 0.082);
@@ -432,10 +442,10 @@ const FLOW = (() => {
 
   // a vague-symptom patient on the fast lane whose referral is being handled around this day
   function pickFocus(day) {
-    const v = D.scenarios[0].variants[1];
+    const v = current(), anyFl = v.patients.some(p => p.fl);
     let best = null, bd = 1e9;
     v.patients.forEach((p, i) => {
-      if (p.g !== VAGUE || !p.fl) return;
+      if (p.g !== VAGUE || (anyFl && !p.fl) || p.tt === null) return;
       const tr = p.path.find(e => e[0] === "triage"); if (!tr) return;
       const d = Math.abs(tr[2] - day);
       if (d < bd) { bd = d; best = i; }
@@ -443,5 +453,10 @@ const FLOW = (() => {
     return best;
   }
 
-  return { draw, pickFocus, focus: null, focusXY: null, ring: false };
+  function current() {
+    const vs = D.scenarios[0].variants;
+    return vs.find(v => v.key === FLOW.newKey) || vs[1];
+  }
+
+  return { draw, pickFocus, current, focus: null, focusXY: null, ring: false, pos: [], newKey: "fastlane" };
 })();

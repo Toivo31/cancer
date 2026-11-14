@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Equal Care Pathways</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root { --bg: #fdfcf8; --ink: #1f1f1d; --dim: #6b6a65; --line: #dcd9d0; --card: #ffffff; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); font: 15px/1.45 "Inter", system-ui, sans-serif; }
+  body { display: grid; grid-template-rows: auto auto 1fr; height: 100vh; overflow: hidden; }
+  header { display: flex; align-items: center; gap: 18px; padding: 10px 18px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+  header h1 { font-size: 18px; margin: 0; font-weight: 700; letter-spacing: .02em; }
+  header .gap { color: var(--dim); font-size: 13px; }
+  nav { margin-left: auto; display: flex; gap: 6px; }
+  nav a, nav button { font: inherit; font-size: 14px; color: var(--ink); background: none; border: 1px solid var(--line); padding: 5px 12px; text-decoration: none; cursor: pointer; border-radius: 3px; }
+  nav a:hover, nav button:hover { border-color: var(--ink); }
+  .bar { display: flex; align-items: center; gap: 10px; padding: 8px 18px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+  .bar button { font: inherit; font-size: 14px; background: var(--card); color: var(--ink); border: 1px solid var(--line); padding: 6px 12px; cursor: pointer; border-radius: 3px; }
+  .bar button[aria-pressed=true] { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .bar .play { min-width: 84px; font-weight: 600; }
+  .bar input[type=range] { width: 260px; accent-color: #1f1f1d; }
+  .bar .day { font-weight: 700; min-width: 70px; }
+  .bar .sep { width: 1px; height: 24px; background: var(--line); margin: 0 4px; }
+  .bar .hint { color: var(--dim); font-size: 13px; margin-left: auto; }
+  main { position: relative; overflow: hidden; }
+  canvas { position: absolute; inset: 0; width: 100%; height: 100%; filter: grayscale(1); cursor: crosshair; }
+  /* side panels */
+  .panel { position: absolute; top: 14px; right: 14px; bottom: 14px; width: min(560px, 46vw); background: var(--card); border: 1px solid var(--line);
+    box-shadow: 0 6px 30px rgba(0,0,0,.12); overflow: auto; padding: 18px 20px; display: none; }
+  .panel.open { display: block; }
+  #trace, #actions { z-index: 3; }
+  .panel h2 { margin: 0 0 4px; font-size: 18px; }
+  .panel .close { position: absolute; top: 10px; right: 12px; border: 0; background: none; font-size: 20px; cursor: pointer; }
+  .muted { color: var(--dim); font-size: 13px; }
+  table.trace { width: 100%; border-collapse: collapse; margin: 10px 0 14px; font-size: 14px; }
+  table.trace th { text-align: left; font-weight: 600; color: var(--dim); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; border-bottom: 1px solid var(--line); padding: 4px 6px; }
+  table.trace td { padding: 5px 6px; border-bottom: 1px solid #efede6; }
+  table.trace td.n { text-align: right; font-variant-numeric: tabular-nums; }
+  table.trace tr.long td { font-weight: 700; }
+  .btn { font: inherit; font-weight: 600; background: var(--ink); color: #fff; border: 0; padding: 8px 14px; cursor: pointer; border-radius: 3px; }
+  .btn:disabled { opacity: .5; cursor: wait; }
+  .paper { background: #fff; border: 1px solid var(--line); border-top: 3px solid var(--ink); padding: 12px 14px; margin: 12px 0; font-size: 15px; line-height: 1.9; }
+  mark { background: #efeee9; color: inherit; border: 1.5px solid #1f1f1d; padding: 0 2px; }
+  .flag { border-left: 3px solid var(--ink); padding: 4px 10px; margin: 8px 0; }
+  .flag b { display: block; font-size: 13px; letter-spacing: .05em; }
+  .opt { margin: 6px 0 10px; }
+  .opt .row { display: flex; justify-content: space-between; font-size: 14px; }
+  .opt .bar2 { height: 14px; background: #efede6; margin-top: 3px; }
+  .opt .bar2 i { display: block; height: 100%; background: #9c9a94; }
+  .opt.pick .bar2 i { background: var(--ink); }
+  .stamp { display: inline-block; border: 2px solid var(--ink); padding: 6px 12px; font-weight: 700; letter-spacing: .04em; transform: rotate(-1.5deg); margin-top: 8px; }
+  .cards { display: grid; gap: 12px; margin-top: 12px; }
+  .card { border: 1px solid var(--line); border-top: 3px solid var(--ink); padding: 10px 14px; background: #fff; }
+  .card h3 { margin: 0 0 4px; font-size: 16px; }
+  .card dl { margin: 6px 0 0; display: grid; grid-template-columns: 110px 1fr; gap: 3px 10px; font-size: 14px; }
+  .card dt { color: var(--dim); }
+  .card dd { margin: 0; }
+  .norway { padding: 6px 0; }
+  .nrow { display: grid; grid-template-columns: 300px 1fr 60px; gap: 12px; align-items: center; margin: 10px 0; }
+  .nrow .b { height: 22px; background: #efede6; } .nrow .b i { display: block; height: 100%; background: var(--ink); }
+  .nrow.light .b i { background: #9c9a94; }
+</style>
+</head>
+<body>
+<header>
+  <h1>EQUAL CARE PATHWAYS</h1>
+  <span class="gap">Same cancer, different door: 123 vs 207 days to treatment (Kuitunen et al. 2026) · Goal 3, indicator 3.1: patients reach treatment within target times</span>
+  <nav>
+    <button id="actionsBtn">What a county does</button>
+    <a href="/note" target="_blank">Note reader</a>
+    <a href="/report/" target="_blank">Report</a>
+  </nav>
+</header>
+<div class="bar">
+  <button class="play" id="play">▶ Play</button>
+  <input type="range" id="scrub" min="0" max="180" step="0.5" value="0">
+  <span class="day" id="day">Day 0</span>
+  <span class="sep"></span>
+  <button data-view="baseline" aria-pressed="true">Today</button>
+  <button data-view="solution">Suggested change</button>
+  <button data-view="fastlane">+ Fast lane (conditional)</button>
+  <span class="sep"></span>
+  <button data-view="norway">Norway check</button>
+  <span class="sep"></span>
+  <label class="muted">speed <select id="speed"><option value="2">slow</option><option value="4" selected>normal</option><option value="8">fast</option></select></label>
+  <span class="hint">Click a patient to open their trace</span>
+</div>
+<main id="main">
+  <canvas id="c"></canvas>
+  <section class="panel" id="trace"></section>
+  <section class="panel" id="actions"></section>
+  <section class="panel" id="norway" style="left:14px;width:auto"></section>
+</main>
+
+<script src="/dots/dots_data.js"></script>
+<script>
+"use strict";
+// Shared globals that video/dots/flow.js expects (it was written for the video page).
+const D = window.DOTS_DATA, qs = new URLSearchParams(location.search);
+const cv = document.getElementById("c"), ctx = cv.getContext("2d");
+const SHOW = { active: false };
+let W = 0, H = 0, DPR = 1;
+function rnd(i, k) { const x = Math.sin(i * 127.1 + k * 311.7) * 43758.5453; return x - Math.floor(x); }
+function ease(x) { return x < .5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2; }
+function stateOf(p, t, target) {
+  if (p.tt !== null && t >= p.tt) return { kind: "done", ontime: p.tt <= target };
+  if (p.tt === null && p.tx !== null && t >= p.tx) return { kind: "gone" };
+  const path = p.path; let k = -1;
+  for (let i = 0; i < path.length; i++) { if (path[i][2] <= t) k = i; else break; }
+  if (k < 0) return { kind: "start", node: path.length ? path[0][0] : null };
+  const e = path[k], next = path[k + 1];
+  if (t < e[3]) return { kind: "wait", node: e[0], ready: e[2], waitFor: t - e[2] };
+  return { kind: "move", from: e[0], to: next ? next[0] : "__finish", frac: Math.min(1, (t - e[3]) / Math.max(e[4] - e[3], 1e-6)) };
+}
+function resize() {
+  const r = document.getElementById("main").getBoundingClientRect();
+  DPR = window.devicePixelRatio || 1; W = r.width; H = r.height;
+  cv.width = W * DPR; cv.height = H * DPR; ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+}
+window.addEventListener("resize", resize);
+</script>
+<script src="/dots/flow.js"></script>
+<script>
+"use strict";
+const st = { day: 0, playing: false, speed: 4, view: "baseline", end: 180 };
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const fin = D.scenarios[0], nor = D.scenarios[1];
+const LABEL = {
+  nurse_visit: "Nurse", gp_visit: "GP", gp_after_nurse: "GP after nurse", cxr: "Chest X-ray", persist: "Symptoms persist?",
+  second_look: "GP re-reads X-ray", represent: "Back to GP", gp_referral: "GP referral", triage: "Hospital handles referral",
+  spec_visit: "Specialist", ct: "CT", bronch: "Bronchoscopy", ttnb: "Needle biopsy", pet: "PET-CT", mdt: "Tumour board",
+  book_treat: "Waiting for treatment slot",
+};
+
+// ---- controls
+function setView(v) {
+  st.view = v;
+  document.querySelectorAll("[data-view]").forEach(b => b.setAttribute("aria-pressed", b.dataset.view === v));
+  $("norway").classList.toggle("open", v === "norway");
+  if (v !== "norway") { FLOW.newKey = v; FLOW.focus = null; }
+}
+document.querySelectorAll("[data-view]").forEach(b => b.onclick = () => setView(b.dataset.view));
+$("play").onclick = () => { st.playing = !st.playing; if (st.day >= st.end) st.day = 0; syncPlay(); };
+function syncPlay() { $("play").textContent = st.playing ? "❚❚ Pause" : "▶ Play"; }
+$("scrub").oninput = e => { st.day = +e.target.value; };
+$("speed").onchange = e => { st.speed = +e.target.value; };
+window.addEventListener("keydown", e => {
+  if (e.key === " ") { e.preventDefault(); $("play").click(); }
+  if (e.key === "Escape") document.querySelectorAll(".panel").forEach(p => { if (p.id !== "norway") p.classList.remove("open"); });
+});
+
+// ---- click a patient: trace panel
+cv.addEventListener("click", e => {
+  if (st.view === "norway") return;
+  const r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+  let best = null, bd = 14 * 14;
+  for (const [px, py, i] of FLOW.pos) { const d = (px - x) ** 2 + (py - y) ** 2; if (d < bd) { bd = d; best = i; } }
+  if (best !== null) openTrace(best);
+});
+
+function openTrace(i) {
+  const v = FLOW.current(), base = fin.variants[0], p = v.patients[i], b = base.patients[i];
+  FLOW.focus = i; FLOW.ring = true;
+  const rows = p.path.map(e => ({ step: LABEL[e[0]] || e[0], start: e[2], waited: e[3] - e[2], took: e[4] - e[3] }));
+  const longest = Math.max(...rows.map(r => r.waited));
+  const fmt = x => x < 0.05 ? "–" : x.toFixed(1);
+  const outcome = p.tt !== null ? `treated on day ${p.tt.toFixed(0)}` + (p.tt <= 90 ? " (within 90 days)" : " (after 90 days)") : "sent home, cancer not found";
+  const today = b.tt !== null ? `today's pathway: day ${b.tt.toFixed(0)}` : "today's pathway: not found";
+  $("trace").innerHTML = `
+    <button class="close" onclick="this.parentElement.classList.remove('open');FLOW.ring=false">×</button>
+    <h2>Patient ${i + 1}</h2>
+    <div class="muted">${p.g === "non_specific" ? "vague symptoms (tiredness, weight loss, cough)" : "alarm symptoms (e.g. coughing blood)"} · simulated</div>
+    <p><b>${outcome}</b>${v !== base ? ` · ${today}` : ""}</p>
+    <table class="trace"><tr><th>Step</th><th class="n">Day</th><th class="n">Waited</th><th class="n">Took</th></tr>
+      ${rows.map(r => `<tr class="${r.waited === longest && longest > 3 ? "long" : ""}"><td>${esc(r.step)}</td><td class="n">${r.start.toFixed(0)}</td><td class="n">${fmt(r.waited)}</td><td class="n">${fmt(r.took)}</td></tr>`).join("")}
+    </table>
+    <div class="muted">Days since first contact. Bold row = the longest wait on this patient's path.</div>
+    <h2 style="margin-top:18px">Referral note</h2>
+    <div class="muted">Example referral note for a patient like this one (synthetic, written for the demo; not generated from this simulated patient).</div>
+    <div class="paper" id="notetext">${esc(noteFor(p))}</div>
+    <button class="btn" id="readBtn">Read the note</button> <label class="muted"><input type="checkbox" id="stored"> stored result (instant)</label>
+    <span class="muted" id="readStatus"></span>
+    <div id="readOut"></div>`;
+  $("trace").classList.add("open");
+  $("readBtn").onclick = () => readNote(noteFor(p));
+}
+
+let EXAMPLES = [];
+fetch("/api/examples").then(r => r.json()).then(x => { EXAMPLES = x; }).catch(() => {});
+function noteFor(p) {
+  const pick = id => (EXAMPLES.find(e => e.id === id) || {}).text;
+  return (p.g === "non_specific" ? pick("weight_loss_visit3") : pick("good_note_control")) ||
+    "Visit 3. Woman, 64, former smoker. Cough for 7 weeks. Tired, lost 6 kg since summer. Chest X-ray 4 weeks ago: no clear finding. Likely post-viral cough. Advised rest.";
+}
+
+async function readNote(text) {
+  $("readBtn").disabled = true; const t0 = Date.now();
+  const tick = setInterval(() => { $("readStatus").textContent = " reading… " + ((Date.now() - t0) / 1000).toFixed(0) + " s"; }, 250);
+  try {
+    const r = await fetch("/api/read", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text, stored: $("stored").checked }) });
+    const d = await r.json(); if (!r.ok) throw new Error(d.error || r.status);
+    renderRead(d);
+    $("readStatus").textContent = d.precomputed ? " stored result" : ` read in ${d.seconds} s`;
+  } catch (e) { $("readStatus").textContent = " error: " + e.message; }
+  finally { clearInterval(tick); $("readBtn").disabled = false; }
+}
+
+function renderRead(d) {
+  const text = d.text, flags = d.verdict.flags.slice().sort((a, b) => a.span.start - b.span.start);
+  let html = "", pos = 0;
+  for (const f of flags) { if (f.span.start < pos) continue; html += esc(text.slice(pos, f.span.start)) + `<mark title="${esc(f.name)}">${esc(text.slice(f.span.start, f.span.end))}</mark>`; pos = f.span.end; }
+  $("notetext").innerHTML = html + esc(text.slice(pos));
+  let out = flags.length ? flags.map(f => `<div class="flag"><b>${esc(f.name.toUpperCase())} · ${Math.round(100 * f.confidence)}%</b>${esc(f.explanation)}</div>`).join("")
+    : `<p><b>No flags:</b> nothing in this note needs a second look.</p>`;
+  for (const p of d.next.panels) {
+    out += `<p class="muted" style="margin:12px 0 2px">${esc(p.question)}</p>`;
+    for (const o of p.options) out += `<div class="opt ${o.label === p.pick ? "pick" : ""}"><div class="row"><span>${esc(o.label)}${o.label === p.pick ? " · suggested" : ""}</span><b>${Math.round(100 * o.p)}%</b></div><div class="bar2"><i style="width:${100 * o.p}%"></i></div><div class="muted">${esc(o.detail)} · ${esc(o.source)}</div></div>`;
+  }
+  out += `<div class="stamp">ROUTE: ${esc(d.next.route.toUpperCase())}</div><p class="muted">${esc(d.next.note)} Flags come from an LLM reading the note against our taxonomy; every quote is checked against the text.</p>`;
+  $("readOut").innerHTML = out;
+}
+
+// ---- actions panel
+$("actionsBtn").onclick = () => { $("actions").classList.toggle("open"); };
+const ACTIONS = [
+  ["1 · Book the specialist visit when the referral arrives", "Wellbeing services county: hospital lung unit and referral handling",
+   "Change the booking rule so the slot is booked on arrival, not after the referral has been handled", "Indicator 3.1: share treated within target time; days from referral to specialist"],
+  ["2 · Reserve the treatment slot when the case goes to the tumour board", "Hospital oncology and surgery units; county medical director",
+   "Pencil in a treatment slot at referral to the board; release it if not needed", "Days from tumour board to treatment start"],
+  ["3 · Read referral notes for missed warning signs", "Health centres and referral handling; national care pathways (FICAN, Duodecim)",
+   "Pilot the note reader as a second look on referrals with vague symptoms; a clinician decides", "Share of flagged referrals with a test within 14 days; missed cancers"],
+  ["4 · Publish waits per step, per county", "THL and the Finnish Cancer Registry; STM and Palko for the national targets (strategy p. 34)",
+   "Report the existing timestamps for lung cancer per step", "Indicator 3.1, by county and by symptom group"],
+];
+$("actions").innerHTML = `<button class="close" onclick="this.parentElement.classList.remove('open')">×</button>
+  <h2>What a wellbeing services county does</h2>
+  <div class="muted">Actions 1-2 are the suggested change tested in our simulator (18% → 33% within 90 days, same patients, no more cancers missed). Actions 3-4 rest on the cited evidence. Start in one county as a pilot, measured before and after.</div>
+  <div class="cards">${ACTIONS.map(([h, who, first, measure]) => `<div class="card"><h3>${esc(h)}</h3><dl><dt>Who</dt><dd>${esc(who)}</dd><dt>First step</dt><dd>${esc(first)}</dd><dt>Measure</dt><dd>${esc(measure)}</dd></dl></div>`).join("")}</div>
+  <p class="muted">Owners for national care pathways and targets from the National Cancer Strategy 2026-2035, pp. 33-34. Fast lane for every referral reaches 61% only if urgent booking times hold; it needs real booking data first.</p>`;
+
+// ---- Norway panel
+const nv = Object.fromEntries(nor.variants.map(v => [v.key, v.share]));
+const NROWS = [["Observed pathway, simulated (published: 40%)", nv.observed, true], ["Authors' reordered pathway, simulated (published: 80%, a model estimate)", nv.authors, false], ["Our optimiser, found blind, with the faster PET-CT", nv.optimiser, false]];
+$("norway").innerHTML = `<h2>Can you trust it? A real Norwegian hospital</h2>
+  <div class="muted">Stokstad et al., BMC Health Serv Res 2019;19:679: 100 early-stage lung cancer patients, share treated within 42 days. The simulator was fitted to the observed pathway only.</div>
+  <div class="norway">${NROWS.map(([l, v, light]) => `<div class="nrow ${light ? "light" : ""}"><span>${esc(l)}</span><div class="b"><i style="width:${100 * v}%"></i></div><b>${Math.round(100 * v)}%</b></div>`).join("")}</div>
+  <p>Searching on its own, the optimiser finds the same reordering the authors proposed. Without any new equipment it reaches 67%.</p>`;
+
+// ---- loop
+let last = performance.now();
+function frame(now) {
+  const dt = Math.min(0.1, (now - last) / 1000); last = now;
+  if (st.playing) { st.day = Math.min(st.end, st.day + dt * st.speed); if (st.day >= st.end) { st.playing = false; syncPlay(); } }
+  $("scrub").value = st.day; $("day").textContent = "Day " + Math.floor(st.day);
+  ctx.clearRect(0, 0, W, H);
+  if (st.view !== "norway") FLOW.draw(st.day, dt);
+  requestAnimationFrame(frame);
+}
+FLOW.newKey = "baseline";
+resize(); requestAnimationFrame(frame);
+</script>
+</body>
+</html>

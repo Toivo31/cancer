@@ -1,0 +1,25 @@
+/* Light greyscale theme for our COPY of the team dashboard (live_demo/report/index.html; the original
+   demo/index.html on overnight/sim is not changed).
+   Loaded after the dashboard's own <style> by note_reader/server.py, so the team's file is untouched.
+   Colour roles become grey levels: today = light grey, after the change = black,
+   waiting = mid grey, being served = dark grey. */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap");
+:root {
+  --bg: #fdfcf8; --panel: #ffffff; --panel2: #ffffff; --line: #dcd9d0;
+  --text: #1f1f1d; --muted: #5f5e59; --dim: #8a8882;
+  --wait: #8a8780; --serve: #4a4945; --good: #111110; --warn: #6b6964; --today: #a9a69f;
+  --sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --mono: "Inter", ui-monospace, Menlo, monospace;
+}
+html { background: var(--bg); }
+body { background: var(--bg) !important; color: var(--text); }
+body::after { display: none !important; }                     /* no scan lines */
+header.top { background: rgba(253, 252, 248, .96) !important; }
+.panel { background: var(--panel) !important; box-shadow: 0 2px 14px rgba(0, 0, 0, .05); }
+.panel::before, .panel::after { border-color: var(--line) !important; }
+ul.changes li b, .ev .evh b { color: #fff !important; background: var(--good) !important; }
+.badge.illus { color: #fff; background: var(--wait); border-color: var(--wait); }
+td { border-bottom-color: #efede6 !important; }
+.big, .card .val, .pair .mid, .gcard .row .v { letter-spacing: -.03em; }
+/* anything drawn with fixed colours inside charts ends up grey too */
+main svg, main canvas { filter: grayscale(1); }
