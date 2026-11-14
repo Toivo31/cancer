@@ -20,7 +20,7 @@ from pathlib import Path
 
 from ..card import INITIAL_STATE, CohortSpec, card_to_json
 from ..cohort import CohortError, draw_cohort
-from ..library import load_library
+from ..library import library_sources, load_library
 from ..reveal import RevealHandle
 
 
@@ -67,8 +67,9 @@ def _out(text: str = "") -> None:
 def _library_info(args) -> int:
     lib = load_library(args.path)
     m = lib.manifest
+    sources = library_sources(args.path)
     if args.json:
-        _out(json.dumps(m.to_json(), indent=2, sort_keys=True))
+        _out(json.dumps(m.to_json() | ({"sources": sources} if sources else {}), indent=2, sort_keys=True))
         return 0
     _out(f"library {m.id}  (verified: file hash and content hash match)")
     _out(f"  catalogue   {m.catalogue_id}  {m.catalogue_hash[:12]}")
@@ -78,6 +79,11 @@ def _library_info(args) -> int:
     _out(f"  cards       {m.n_cards}")
     for cond, k in m.card_count_by_condition.items():
         _out(f"    {cond:<28}{k:>7}")
+    if sources:
+        _out(f"  merged from {len(sources)} libraries:")
+        for s in sources:
+            _out(f"    {s['id']}  {s['n_cards']:>5} cards  {s['generator']}  model={s['model']}  "
+                 f"error_source={s['error_source']}  prompts={s['prompts'] or '-'}  created {s['created']}")
     return 0
 
 
