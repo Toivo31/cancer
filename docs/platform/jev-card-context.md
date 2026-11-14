@@ -1,9 +1,10 @@
 # What a JEV decision request contains once patient cards are in
 
-For whoever builds the JEV. One page. Status: **proposal by the architect, 14 Nov**. The field
-names follow the merged card contract (`card/1`, `patient_engine/card.py`). They become final
-when the reveal handle (work package WP-C1-6, running now) is merged; this file will be updated
-then, and any change will be posted on the agent channel.
+For whoever builds the JEV. One page. Status: **field names fixed, 14 Nov.** They follow the card
+contract (`card/1`, `patient_engine/card.py`) and the reveal handle (`patient_engine/reveal.py`),
+both merged on `overnight/sim`. What is not built yet is the step that puts them into a request
+(the simulator adapter, WP-C1-8); `episode` and the per-result `t_days` come with it. Any change
+will be posted on the agent channel.
 
 ## The rule that shapes everything
 
@@ -30,7 +31,7 @@ the offered option ids. The existing context keys (`group`, `age`, `t_days`, `fa
   "attributes": {"location": "peripheral"},
   "history": [{"step": "cxr", "test": "chest_xray", "result": false, "t_days": 14.0}],
 
-  "card_format": "card/1",
+  "card_format": "card/1", "patient_id": "c_5f2a91e0",
   "background": {"age": 67, "sex": "f", "smoking_status": "former", "pack_years": 30, "region": "rural_east"},
   "episode": 1,
   "presenting": {"reported": ["cough_3wk", "fever"],
@@ -54,10 +55,11 @@ the offered option ids. The existing context keys (`group`, `age`, `t_days`, `fa
 
 | Key | Meaning | Comes from |
 |---|---|---|
+| `patient_id` | An opaque id (a hash). It never contains the condition or the library's card id | `PublicView.card_id` |
 | `background` | Facts known from arrival. Field names come from the catalogue's `background` list | `PublicView.background` |
 | `episode` | 1 for the first contact; 2, 3 … when the patient comes back after a discharge or treatment that did not help | engine (planned, decision D40) |
 | `presenting` | What the patient says at first contact in this episode: catalogue variable ids plus free text | `PublicView.presenting` |
-| `observations` | Every test result revealed so far, oldest first. `values` are **typed**: booleans, numbers with the catalogue's units, categories. `status` is `ok` or `non_diagnostic` (no values). `report` is the clinician-readable text | `RevealedObservation` (+ `t_days` from the engine) |
+| `observations` | Every test result revealed so far, oldest first. One entry per (test, attempt); a repeated test has attempt 2, 3. `values` are **typed**: booleans, numbers with the catalogue's units, categories. `status` is `ok` or `non_diagnostic` (no values). `report` is the clinician-readable text | `RevealedObservation` (+ `t_days` from the engine) |
 | `notes` | Clinical notes, shown only after every fact they mention has been revealed | `RevealedNote` |
 
 Ids (`cough_3wk`, `chest_xray`, `crp`) are defined in the catalogue: `catalogue/README.md` for the
@@ -84,6 +86,7 @@ follow-ups as well as tests. The envelope does not change.
 
 - Example card: `tests/fixtures/patient_engine/card_example.json` (hidden and revealed parts together; the JEV sees only the revealed part).
 - Types: `patient_engine/card.py` (`PublicView`, `RevealedObservation`, `RevealedNote`, `Presenting`).
+- The handle that produces them: `patient_engine/reveal.py` (`RevealHandle.visible(state, revealed=[(test, attempt), ...])`, `.reveal(test, attempt, state)`). Try `python -m patient_engine show <library> <n>` for a patient's public view.
 - Contract and stub: `python -m jev.stub_server --scenario scenarios/finland_lung.yaml --flowchart baseline --port 8100`, then `python -m pytest -q tests/test_jev_contract.py`.
 
 Questions or requests for fields: post on the agent channel (`python scripts/comms.py post --type QUESTION ...`, to `claude-code@tuomas/architect`) or ask Tuomas.
