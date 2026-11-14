@@ -95,14 +95,14 @@ Critical path to the first browser loop:
 
 | | ID | Ticket | Size | Needs | Done when |
 |---|---|---|---|---|---|
-| [ ] | M6-1 | Dataset rows: schema, CSV reader, validator, report | M | M1-1 | Report lists every problem class in spec 06 |
-| [ ] | M6-2 | Decisions export from run logs; retire the adapter in `decision_model/tasks.py` | S | M6-1 | Exported rows validate against their own flowchart |
-| [ ] | M6-3 | `frequency` trainer producing a stub table; evaluation split by patient | M | M6-2, M1-3 | Loop test: simulate → export → train → table within sampling error → rerun matches |
-| [ ] | M6-4 | Model registry, training jobs, attach-model endpoint | M | M6-3, M2-5 | Train and attach through the API |
+| [x] | M6-1 | Dataset rows: schema, CSV reader, validator, report | M | M1-1 | Report lists every problem class in spec 06 |
+| [x] | M6-2 | Decisions export from run logs; retire the adapter in `decision_model/tasks.py` | S | M6-1 | Exported rows validate against their own flowchart |
+| [x] | M6-3 | `frequency` trainer producing a stub table; evaluation split by patient | M | M6-2, M1-3 | Loop test: simulate → export → train → table within sampling error → rerun matches |
+| [x] | M6-4 | Model registry, training jobs, attach-model endpoint | M | M6-3, M2-5 | Train and attach through the API |
 | [ ] | M6-5 | Data and training screen | M | M6-4, M3-5 | Upload, report, train, attach in the browser; imitation notice shown |
 | [ ] | M6-6 | Real JEV: decide and train against the team's API | M | M1-6, T (F3) | Contract tests pass against the JEV address; a run uses it |
-| [ ] | M6-7 | `local` trainer (numpy model, imitation) | S | M6-4, M1-7 | Registered model usable at a decision point |
-| [ ] | M6-8 | Exploration run mode: random at chosen decision points | S | M1-3 | Produces outcome-labelled rows for every option |
+| [x] | M6-7 | `local` trainer (numpy model, imitation) | S | M6-4, M1-7 | Registered model usable at a decision point |
+| [x] | M6-8 | Exploration run mode: random at chosen decision points | S | M1-3 | Produces outcome-labelled rows for every option |
 
 ## M7 Online (spec 07)
 

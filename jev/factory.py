@@ -45,8 +45,8 @@ def _make_backend(kind: str, cfg: dict, stub: StubBackend, where: str, flowchart
     if kind == "rule":
         return RuleBackend(flowchart.policy if flowchart is not None else {}, seed)
     if kind == "local":
-        raise ValueError(f"{where}: local models need the model registry (ticket M6-4); wrap a policy in "
-                         "jev.LocalBackend(policy) from code for now")
+        from .local_model import backend_from_config       # a trained model carried in decision_policy.models (M6-7)
+        return backend_from_config(cfg, where)
     if kind == "http":
         if not cfg.get("url"):
             raise ValueError(f"{where}: the http backend needs a url")
