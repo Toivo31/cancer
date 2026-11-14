@@ -44,7 +44,7 @@ training export, Norway robustness (band 62 to 86%, not 78 to 86%), the decision
 the start page and presenter's script, `main` with PR #5 (reasoning preview, off by default), the web lane
 (dot paths, draggable boxes, Optimise tab, minimal editor), a library-reader fix (libraries written on a Mac
 now load on Linux), and a patient-background fix (pack-years follows smoking status; `ref500` regenerated,
-new id `L_0dbfc37e2e45d8d4`, **training data exported from the old one is stale**).
+current id `L_424fcb177237f71f` (see `libraries/ref500.md`), **training data exported from the old one is stale**).
 
 Model-written cards (Gemini, on Tuomas's Mac): `gemini_trial` (5) and `gemini_s2_30` (30) are in the repo and
 pass the audit. Five libraries of 500 (`gemini_s3_500` to `gemini_s7_500`) are being generated, about 30 cards

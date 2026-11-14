@@ -1,6 +1,6 @@
 {
   "format": "audit/1",
-  "library_id": "L_1d58bd5a943c00e9",
+  "library_id": "L_424fcb177237f71f",
   "catalogue_id": "lung_primary_care",
   "catalogue_hash": "2bcb9c78b2e07f6f227615a404375794ec002449e0475ecdaf2256be72c24183",
   "generator": "llm",
@@ -76,6 +76,13 @@
         "max_share": 0.0,
         "max_under_50": 0.1,
         "reason": "Added for review w7 M4 (not part of the catalogue hash). Pack-years that do not fit the card's age, and never-smokers with pack-years, are impossible: no violation accepted. The smoking mix and the share of patients 65 and over or under 50 are compared with the population file (populations/<id>.yaml) given each card's own age, sex and condition, with the same interval and 5-point floor as the frequency checks. At most 10% of cancer cards may be under 50 (Finland: a few percent; the old generator gave 22%)."
+      },
+      "report_wording": {
+        "pp": 15.0,
+        "z": 3.0,
+        "min_n": 20,
+        "max_excess_bacc": 0.1,
+        "reason": "Built-in default (review w7 B1); the catalogue's tolerances file may override it."
       }
     }
   },
@@ -9109,13 +9116,56 @@
           "status": "pass"
         }
       ]
+    },
+    {
+      "id": "report_wording",
+      "title": "Report wording separates planned-wrong from planned-correct results (B1)",
+      "status": "pass",
+      "n_cells": 2,
+      "n_fail": 0,
+      "n_skipped": 0,
+      "summary": "positive: hedged 0% wrong vs 0% right (gap +0 pp within strata, z 0.0), NB excess 0.0, n 4591/5739; negative: hedged 0% wrong vs 0% right (gap +0 pp within strata, z 0.0), NB excess 0.0, n 1824/66393",
+      "cells": [
+        {
+          "id": "report_wording.positive",
+          "kind": "wording",
+          "title": "false alarms vs true positives",
+          "n": 4591,
+          "n_right": 5739,
+          "hedge_wrong": 0.0,
+          "hedge_right": 0.0,
+          "hedge_gap_pp_within_strata": 0.0,
+          "z": 0.0,
+          "log_length_diff_within_strata": 0.003,
+          "nb_bacc_report": 0.555,
+          "nb_bacc_values_only": 0.555,
+          "nb_excess_bacc": 0.0,
+          "status": "pass"
+        },
+        {
+          "id": "report_wording.negative",
+          "kind": "wording",
+          "title": "misses vs true negatives",
+          "n": 1824,
+          "n_right": 66393,
+          "hedge_wrong": 0.0,
+          "hedge_right": 0.0,
+          "hedge_gap_pp_within_strata": 0.0,
+          "z": 0.0,
+          "log_length_diff_within_strata": -0.007,
+          "nb_bacc_report": 0.586,
+          "nb_bacc_values_only": 0.586,
+          "nb_excess_bacc": 0.0,
+          "status": "pass"
+        }
+      ]
     }
   ],
   "not_audited": [
     "Measurement error of continuous outputs (reported value against the true value): not compared with the catalogue's error_sd.",
     "Frequencies of findings in resolved states and on cards with a co-existing illness: the catalogue gives no single reference number for a mixture of causes. Those cards and states are covered by accuracy.*, non_diagnostic, state_consistency and presenting.",
     "Correlation between repeated attempts of one test on one card: attempts are treated as independent, so a model-written library whose repeats agree too closely has intervals that are too narrow.",
-    "Free text (notes, reports) beyond the validator's leak rule."
+    "Free text (notes, reports) beyond the validator's leak rule and the report_wording check (hedging words, length, a bag-of-words classifier on binary results)."
   ],
-  "seconds": 1.87
+  "seconds": 2.49
 }
