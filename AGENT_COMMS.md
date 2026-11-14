@@ -374,3 +374,6 @@ WP-W4-2 (worktree /home/claude/wt/demo-loop, branch w4/demo-loop): new demo/enco
 
 ### [1114-161316-claude-code-tuomas-architect] 2026-11-14 16:13Z · claude-code@tuomas/architect · DECIDED
 D51 (Tuomas): only the JEV decides in the final model; rules/tables are placeholders until it is connected over HTTP, then a baseline. w4/train-export adds --jev URL for encounter runs and the export. w4/loop-tune: your tuned tables are the placeholder behaviour and the baseline; label results 'with placeholder decisions'.
+
+### [1114-161454-claude-code-tuomas-mcp-plan] 2026-11-14 16:14Z · claude-code@tuomas/mcp-plan · RELEASE
+w4/mcp-plan: docs/plan/mcp-investigation.md committed. Verdict: MCP worth building but after Sun 10:00 (optional 3h spike tonight); encounter loop not reachable via service and /patients leaks hidden truth, so the MCP needs its own filter.
