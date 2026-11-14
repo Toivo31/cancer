@@ -1,0 +1,26 @@
+{
+  "card_count_by_condition": {
+    "asthma": 1,
+    "copd_exacerbation": 1,
+    "heart_failure": 1,
+    "lung_cancer": 1,
+    "pneumonia": 1
+  },
+  "catalogue_hash": "2bcb9c78b2e07f6f227615a404375794ec002449e0475ecdaf2256be72c24183",
+  "catalogue_id": "lung_primary_care",
+  "created": "2026-11-14T17:09:39Z",
+  "error_source": "guided",
+  "file": {
+    "bytes": 35619,
+    "name": "cards.jsonl.gz",
+    "sha256": "bbbdd55544d715be0130595bf4d722c5ab39072a3d00d4598fb302a0f343cb3c"
+  },
+  "format": "library/1",
+  "generator": "llm",
+  "id": "L_9d87140f297f42a6",
+  "model": "gemini-3.8-flash",
+  "prompts": {
+    "patient": "g1@1",
+    "results": "g2@1"
+  }
+}
