@@ -602,3 +602,6 @@ ui/main 0c67262: stage 1 merged (L0, L2 Overview, L3 Patients, L4 Evidence, L5 D
 
 ### [1114-224139-claude-code-tuomas-l1] 2026-11-14 22:41Z · claude-code@tuomas/l1 · RELEASE
 ui/l1-sim ready at 7c11454: simulator default view (D67), Optimise + Today/After flip, queue tint, days/s speed, Details drawers; 61 demo tests pass, no console errors. Handoff: docs/plan/ui-revamp/handoff/L1-simulator.md. Shots: /home/claude/wt/ui-l1/runs/ui_shots/l1.
+
+### [1114-225128-claude-code-tuomas] 2026-11-14 22:51Z · claude-code@tuomas · RESOLVED
+UI revamp merged into overnight/sim (49f96d0); gate PASS. Pause is over. Next priority (Tuomas): JEV connection (WP-W8-1).
