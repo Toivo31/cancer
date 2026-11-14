@@ -3,7 +3,11 @@
 The older rules (no digits in page text, numeral whitelist in start.js, link targets) stay in test_demo_start.py."""
 import json
 import re
+import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from demo_pages import check_page  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 DEMO = ROOT / "demo"
@@ -13,6 +17,10 @@ JS = (DEMO / "start.js").read_text(encoding="utf-8")
 
 def _top():
     return HTML[HTML.index('<header class="page-top'):HTML.index('class="details"')]
+
+
+def test_shared_page_checks():
+    check_page("start.html", page_id="overview")
 
 
 def test_nav_and_load_order():

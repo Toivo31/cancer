@@ -106,10 +106,9 @@
     if (band) set("t-chk-range", "No new equipment, best fit. " + pct(band.min) + " to " + pct(band.max) + " across the " + O.n_settings + " settings that fit; within " + dd(nor.target_days) + " days.");
   });
 
-  // Footer: numbers read from <bundles> at <time>
-  if (window.Site && typeof window.Site.nav === "function") window.Site.nav("overview");
+  // Footer (the nav is filled by site.js from data-page)
   if (window.Site && typeof window.Site.footer === "function")
-    window.Site.footer("Synthetic patients only · not clinically reviewed · numbers read from start_bundle (" + when(ST && ST.generated_at) + ") and flow_bundle (" + when(FLOW && FLOW.generated_at) + ")");
+    window.Site.footer("Synthetic patients only · not clinically reviewed · numbers read from start_bundle.js, flow_bundle.js, encounter_bundle.js and research_bundle.js when the page opens");
 
   // ---------- DETAILS ----------
 
