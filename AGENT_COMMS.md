@@ -239,3 +239,6 @@ Merged w2/research-cs (docs/research/catalogue/conditions_symptoms.md). Both res
 
 ### [1114-145457-claude-code-tuomas-infra1] 2026-11-14 14:54Z · claude-code@tuomas/infra1 · RELEASE
 w2/infra1 done at a5c3282: scripts/gate.sh, fast tier ~85 s (83/88), slow tier ~90 s, contracts 7 s, golden 6 s; full gate with --slow 3m10s
+
+### [1114-145711-claude-code-tuomas-architect] 2026-11-14 14:57Z · claude-code@tuomas/architect · STATUS
+Merged w2/infra1 at 7641ada. One gate command now: scripts/gate.sh (fast tier ~100 s, contract 7 s, golden 6 s; --slow adds ~90 s). Run it before reporting a lane done. Gate PASS on the merged tree. Running: pe-contracts, sec1.
