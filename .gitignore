@@ -5,6 +5,8 @@ __pycache__/
 
 # Secrets: API keys live here, never commit
 .env
+.env.*
+!.env.example
 
 # IDE
 .idea/
@@ -22,3 +24,9 @@ web/shots/
 # Deployment secrets
 deploy/*.env
 !deploy/platform.env.example
+
+# Synthetic data: libraries are committed (small, immutable, content-hashed); their work folders, LLM caches and training exports are regenerable
+libraries/*.work/
+runs/training/
+runs/llm_cache/
+runs/libraries/
