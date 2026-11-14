@@ -31,6 +31,7 @@ from dataclasses import dataclass, field
 from functools import cached_property
 from datetime import datetime, timezone
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any, Iterable, Mapping
 
 from .card import (
@@ -45,7 +46,8 @@ from .card import (
     card_to_json,
 )
 
-__all__ = ["Library", "LibraryError", "write_library", "load_library", "CARDS_FILE", "MANIFEST_FILE"]
+__all__ = ["Library", "LibraryError", "write_library", "load_library", "merge_libraries", "library_sources",
+           "CARDS_FILE", "MANIFEST_FILE"]
 
 CARDS_FILE = "cards.jsonl.gz"
 MANIFEST_FILE = "manifest.json"
@@ -112,6 +114,8 @@ def _library_id(header: Mapping[str, Any], lines: Iterable[bytes]) -> str:
 def _header(manifest_like: Mapping[str, Any]) -> dict[str, Any]:
     h = {k: manifest_like.get(k) for k in ("catalogue_id", "catalogue_hash", "generator", "model", "error_source")}
     h["prompts"] = dict(manifest_like.get("prompts") or {})
+    if manifest_like.get("sources"):          # merged libraries only; others keep the id they always had
+        h["sources"] = list(manifest_like["sources"])
     return h
 
 
@@ -178,13 +182,16 @@ def write_library(cards: Iterable[Card | Mapping[str, Any]], catalogue, path: st
     header = {"catalogue_id": catalogue.id, "catalogue_hash": catalogue.version_hash, "generator": generator,
               "model": meta.get("model", agreed("model", None)),
               "prompts": dict(meta.get("prompts", agreed("prompts", {})) or {}), "error_source": error_source}
+    if meta.get("sources"):
+        header["sources"] = list(meta["sources"])
     lines = [_canonical(card_to_json(c)) for c in objs]
     counts: dict[str, int] = {}
     for c in objs:
         counts[c.primary_condition] = counts.get(c.primary_condition, 0) + 1
     manifest = LibraryManifest(
         id=_library_id(header, lines), card_count_by_condition=dict(sorted(counts.items())),
-        created=str(meta.get("created") or datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")), **header)
+        created=str(meta.get("created") or datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")),
+        **{k: v for k, v in header.items() if k != "sources"})
 
     root = Path(path)
     existing = root / MANIFEST_FILE
@@ -198,7 +205,7 @@ def write_library(cards: Iterable[Card | Mapping[str, Any]], catalogue, path: st
         raise LibraryError(f"{root} already holds library {old.id}; libraries are immutable (new id would be {manifest.id})")
 
     payload = gzip.compress(b"\n".join(lines) + b"\n", compresslevel=_GZIP_LEVEL, mtime=0)
-    record = manifest.to_json() | {"file": {"name": CARDS_FILE, "bytes": len(payload),
+    record = manifest.to_json() | ({"sources": header["sources"]} if "sources" in header else {}) | {"file": {"name": CARDS_FILE, "bytes": len(payload),
                                             "sha256": hashlib.sha256(payload).hexdigest()}}
     root.parent.mkdir(parents=True, exist_ok=True)
     tmp = Path(tempfile.mkdtemp(prefix=root.name + ".tmp-", dir=root.parent))
@@ -257,3 +264,79 @@ def load_library(path: str | os.PathLike, catalogue=None) -> Library:
         raise LibraryError(f"library {manifest.id} was made for catalogue hash {manifest.catalogue_hash[:12]}, "
                            f"got {catalogue.version_hash[:12]}")
     return Library(manifest=manifest, cards=cards, path=root, catalogue=catalogue)
+
+
+# ============================================================================ merge
+
+_SOURCE_KEYS = ("id", "generator", "model", "prompts", "error_source", "n_cards", "created")
+
+
+def library_sources(path: str | os.PathLike) -> list[dict[str, Any]]:
+    """The ``sources`` list of a merged library (one entry per library it was made from), or ``[]``.
+    Read from ``manifest.json``; ``load_library`` has already checked it is covered by the library id."""
+    root = Path(path)
+    if root.is_file():
+        root = root.parent
+    try:
+        return list(json.loads((root / MANIFEST_FILE).read_text()).get("sources") or [])
+    except (OSError, ValueError):
+        return []
+
+
+def _joined(values: Iterable[Any]) -> str | None:
+    uniq = sorted({str(v) for v in values if v is not None})
+    return "+".join(uniq) if uniq else None
+
+
+def merge_libraries(libraries: Iterable["Library | str | os.PathLike"], path: str | os.PathLike,
+                    catalogue=None) -> LibraryManifest:
+    """Combine libraries made for the same catalogue into one new library under ``path``.
+
+    Refuses (``LibraryError``) fewer than two libraries, different catalogue ids or hashes, and a card id
+    that occurs in more than one library (this also catches the same library given twice). Inputs are
+    sorted by library id first, and ``write_library`` sorts the cards, so the same set of libraries gives
+    the same id and the same bytes whatever the order and whichever machine runs it. ``created`` is the
+    latest source ``created`` (not the time of the merge).
+
+    Manifest of the result: ``generator`` is the common one, else ``llm``; ``model``, and each prompt
+    version, are the distinct values joined with ``+``; ``error_source`` is the common one, else ``None``;
+    ``sources`` lists the id, generator, model, prompts, error source, card count and creation time of every
+    input. ``sources`` is part of the hashed header, so it cannot be edited without breaking the id. Each
+    card keeps its own ``provenance`` (model, prompts), so a single card still says which run made it.
+    Cards are already checked when loaded; with ``catalogue`` they are checked against it again."""
+    libs = [x if isinstance(x, Library) else load_library(x) for x in libraries]
+    if len(libs) < 2:
+        raise LibraryError("a merge needs at least two libraries")
+    libs.sort(key=lambda lb: lb.id)
+    first = libs[0].manifest
+    for lb in libs[1:]:
+        m = lb.manifest
+        if (m.catalogue_id, m.catalogue_hash) != (first.catalogue_id, first.catalogue_hash):
+            raise LibraryError(
+                f"libraries are for different catalogues: {libs[0].id} is {first.catalogue_id} "
+                f"{first.catalogue_hash[:12]}, {lb.id} is {m.catalogue_id} {m.catalogue_hash[:12]}")
+    owner: dict[str, str] = {}
+    clashes: list[str] = []
+    for lb in libs:
+        for c in lb.cards:
+            if c.id in owner:
+                clashes.append(f"{c.id} (in {owner[c.id]} and {lb.id})")
+            else:
+                owner[c.id] = lb.id
+    if clashes:
+        raise LibraryError(f"{len(clashes)} card id(s) occur in more than one library, first: {clashes[0]}", clashes)
+
+    ms = [lb.manifest for lb in libs]
+    generators = {m.generator for m in ms}
+    errors = {m.error_source for m in ms}
+    roles = sorted({r for m in ms for r in m.prompts})
+    sources = [{"id": m.id, "generator": m.generator, "model": m.model, "prompts": dict(sorted(m.prompts.items())),
+                "error_source": m.error_source, "n_cards": m.n_cards, "created": m.created} for m in ms]
+    meta = {"generator": generators.pop() if len(generators) == 1 else "llm",
+            "model": _joined(m.model for m in ms),
+            "prompts": {r: _joined(m.prompts.get(r) for m in ms) for r in roles},
+            "error_source": errors.pop() if len(errors) == 1 else None,
+            "created": max(m.created for m in ms), "sources": sources}
+    stand_in = catalogue or SimpleNamespace(id=first.catalogue_id, version_hash=first.catalogue_hash)
+    cards = [c for lb in libs for c in lb.cards]
+    return write_library(cards, stand_in, path, meta, validate=catalogue is not None)
