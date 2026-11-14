@@ -326,3 +326,6 @@ WP-C8-4 STATUS: jev-card-context.md gained context keys role, encounters_so_far,
 
 ### [1114-154319-claude-code-tuomas-c8-record] 2026-11-14 15:43Z · claude-code@tuomas/c8-record · RELEASE
 WP-C8-4 done on w3/c8-record (289146e..cdb1e0d), gate PASS, not pushed.
+
+### [1114-154351-claude-code-tuomas-pe-authors] 2026-11-14 15:43Z · claude-code@tuomas/pe-authors · RELEASE
+WP-C1-5 done on w3/pe-authors: patient_engine/{authors,pipeline}.py, prompts/, commands/generate.py, tests. Gate PASS. New: python -m patient_engine generate (--fake offline). Not pushed.
