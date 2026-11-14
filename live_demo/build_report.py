@@ -17,7 +17,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 OUT = HERE / "report"
-FILES = ["index.html", "data/demo_bundle.json"]
+FILES = ["index.html", "data/demo_bundle.json", "data/start_bundle.js"]  # start_bundle: Norway ranges over the fitting settings
 
 
 def main(argv=None) -> None:

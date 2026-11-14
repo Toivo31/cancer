@@ -48,19 +48,18 @@ The headline is the mean of two held-out cohorts (seeds 301 and 302, each about 
 
 Caveats: one seed per variant (single-seed noise about the sd above, so ranking among the smaller rows is not reliable); only the 26 default-shortlist assumptions are varied, out of the assumption parameters listed in `docs/ledger.md`; the Finnish scenario is not calibrated to Finnish capacity data, so this is robustness to our assumptions, not to the real county.
 
-## Norway: 40 observed, 80 authors' pathway, 88 optimiser with the faster scanner, 67 without
+## Norway: 40 observed, 80 authors' pathway, optimiser with no new equipment
 
-Two sources of uncertainty, both for the flowcharts the bundle reports (the two optimiser flowcharts were found once, on the best-fit calibration).
+Two sources of uncertainty, both for the flowcharts the bundle reports (the optimiser flowchart was found once, on the best-fit calibration). D68: the optimiser run from the faster-scanner pathway is not reported, so it is not in this table.
 
 | Flowchart | Bundle (3 x 1000 patients) | 100-patient cohorts, central 95% (300 cohorts) | Across the 11 accepted calibration sets (3 x 1000 patients each), min to max |
 |---|---|---|---|
 | Observed pathway | 40.1% | 30 to 51% | 37 to 43% |
 | Faster PET-CT only | 60.3% | 50 to 68% | 55 to 68% |
 | Authors' pathway, simulated | 80.1% | 72 to 87% | 78 to 84% |
-| Optimiser, faster scanner | 88.2% | 81 to 94% | 86 to 93% |
 | Optimiser, no new equipment | 67.1% | 56 to 75% | 56 to 70% |
 
 - A real cohort has 100 patients, so any single-hospital number carries about plus or minus 8 pp (central 95% range 72 to 87% for the authors' pathway); the published 95% intervals (observed 31 to 50, authors' 72 to 87) are of that size and our 100-patient ranges match them.
-- Across the 11 calibration sets that all reproduce the observed pathway (37 to 43% in this check; the fit tolerance is plus or minus 4 pp), the authors' pathway is 78 to 84%, the optimiser with the faster scanner 86 to 93%, and without new equipment 56 to 70%. The no-new-equipment number is the less certain of the two optimiser numbers. The ordering (optimiser above the authors' pathway above faster PET-CT above observed) holds in 11 of 11 sets.
-- The optimiser flowcharts were found under the best-fit calibration and evaluated under the others unchanged, so these ranges are slightly pessimistic for the optimiser (a re-search per calibration might find a better flowchart).
+- Across the 11 calibration sets that all reproduce the observed pathway (37 to 43% in this check; the fit tolerance is plus or minus 4 pp), the authors' pathway is 78 to 84%, and the optimiser with no new equipment 56 to 70%. The ordering (authors' pathway above faster PET-CT above observed) holds in 11 of 11 sets. The authors' pathway includes the shorter PET-CT wait and the optimiser's does not, so the two are not a like-for-like pair.
+- The optimiser flowchart was found under the best-fit calibration and evaluated under the others unchanged, so these ranges are slightly pessimistic for the optimiser (a re-search per calibration might find a better flowchart).
 - Disclosures from the review stand (PET-CT at triage carried into the authors' pathway: 66% if PET-CT is ordered at the first visit; the menu of about 69 changes contained the authors' changes).

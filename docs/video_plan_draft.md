@@ -82,7 +82,7 @@ The fast track for vague symptoms (action 3 in the team recommendation) is left 
 - [ ] "Two changes" (team script opening) vs "it suggests one" (team script, screen 3): which is right in the current bundle?
 - [ ] Does the optimiser's suggested change in the Finnish run match implementation card 1? If not, the 18 -> 61 scene and the cards tell different stories; either show the optimiser's change on the cards or use the "order together" flowchart's number.
 - [ ] D20: is the Finnish target 90 days? (Tuomas)
-- [ ] D17: Norwegian headline 80% / 88% with the faster scanner, or 67% without new equipment? (Tuomas)
+- [x] D17: closed by D62 and D68 (Tuomas): the Norwegian optimiser headline is the no-new-equipment result with its range; no optimiser result with the faster scanner is shown.
 - [ ] D18: keep or drop the optimiser's fourth change (clinical check).
 - [ ] Missed cancers do not rise in the current bundle.
 - [ ] Ask Kaisa Kaitila (AZ Medical Affairs, on site Saturday) whether the three cards are realistic for a county.

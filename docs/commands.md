@@ -26,8 +26,8 @@ python -m pathway_sim compare scenarios/generated/stokstad_calibrated.yaml --n 5
 # calibrate unsourced parameters on the observed pathway, predict the others (writes the --out file; the repo's own result file is docs/validation_results.json)
 python -m pathway_sim.calibrate scenarios/stokstad.yaml --n 50 --out /tmp/cal.json
 
-# optimiser, blind to the hidden diagnosis, from the observed order with the faster PET-CT scanner (one step, small cohort)
-python -m optimiser scenarios/generated/stokstad_calibrated.yaml --start faster_pet --n 100 --steps 1 --out /tmp/opt.json
+# optimiser, blind to the hidden diagnosis, from the observed order with no new equipment (one step, small cohort; D68: the run from faster_pet is not reported)
+python -m optimiser scenarios/generated/stokstad_calibrated.yaml --start observed --n 100 --steps 1 --out /tmp/opt.json
 
 # decision-model benchmark (our own small correction model against a dot-product baseline; about 15 s)
 python -m decision_model.benchmark --quick

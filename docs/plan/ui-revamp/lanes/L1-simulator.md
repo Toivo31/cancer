@@ -106,7 +106,7 @@ integrator's "contract frozen" post, or start with the parts that do not need it
 1. Your own tests and the demo tests: `python -m pytest -q tests/test_demo_flow_page.py tests/test_demo_site.py tests/test_demo_start.py tests/test_demo_jev.py tests/test_demo_encounter.py tests/test_demo_fixture.py tests/test_demo_cards.py -p no:cacheprovider`
    (all must pass; the shared machine has 2 cores, so do not run the full gate; the integrator does).
 2. Headless-Chrome pass: `scripts/ui_shots.sh /tmp/ui_shots/ui-l1 <your url list>` at 1440×900 and 1920×1080 with
-   **no console errors**; look at every screenshot yourself. Your URL list: `flow.html`, `?s=finland`, `?s=finland&compare`, `?s=norway&compare`, `?s=norway&compare&left=authors&right=suggested_faster_pet`, `?s=norway&compare&left=observed&right=faster_pet`, `?paused&day=60`, `?layer=time`, `?view=both` at 1920, `?theme=night`; plus a few seconds of playback (screenshots at two different virtual times) so queue colours are visible.
+   **no console errors**; look at every screenshot yourself. Your URL list: `flow.html`, `?s=finland`, `?s=finland&compare`, `?s=norway&compare`, `?s=norway&compare&left=authors&right=suggested`, `?s=norway&compare&left=observed&right=faster_pet`, `?paused&day=60`, `?layer=time`, `?view=both` at 1920, `?theme=night`; plus a few seconds of playback (screenshots at two different virtual times) so queue colours are visible.
    Fallback without the script: `google-chrome --headless=new --no-sandbox --hide-scrollbars --window-size=1440,900 --virtual-time-budget=4000 --screenshot=<out>.png "file://$PWD/demo/<page>"`.
 3. Offline: open your pages with networking off (`--host-resolver-rules="MAP * ~NOTFOUND"` on the Chrome command line)
    and check they look the same.

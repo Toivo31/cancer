@@ -73,7 +73,7 @@ Numbers keep the run's own precision rules from the numbers sheet (one decimal f
    from the same day, and the headline card shows `today → after` for all three numbers.
 4. A stamp beside the toggle: "SAVED OPTIMISER RUN · results on held-out patients". The offline page replays the
    saved result. It does not search live (D61). For Norway the default pair stays as today (observed vs the
-   no-new-equipment optimiser), and Details lists the other pairs (authors' pathway, faster scanner, with scanner).
+   no-new-equipment optimiser), and Details lists the other pairs (authors' pathway, faster scanner alone; no optimiser-with-scanner pair, D68).
 
 **Comparison options, weighed against what the code already does:**
 

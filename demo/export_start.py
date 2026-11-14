@@ -91,9 +91,9 @@ def norway_ranges() -> dict | None:
     if not sets:
         return None
     out = {"source_file": "docs/ranges_norway.json", "n_sets": len(sets)}
-    for k in ("observed", "faster_pet", "authors", "optimiser_faster_scanner", "optimiser_no_new_equipment"):
+    # D68: the optimiser run from the faster-scanner pathway is not reported, so its range is not exported
+    for k in ("observed", "faster_pet", "authors", "optimiser_no_new_equipment"):
         out[k] = spread([s.get(k) for s in sets])
-    out["optimiser_above_authors_in"] = sum(1 for s in sets if s["optimiser_faster_scanner"] > s["authors"])
     return out
 
 
@@ -114,10 +114,10 @@ def norway_optimiser() -> dict | None:
         "source_file": "docs/review_checks/norway_opt_summary.json",
         "n_settings": summ.get("n_settings"),
         "bands": {"observed": band("observed"), "faster_pet": band("faster_pet"), "authors": band("optimal"),
-                  "optimiser_no_equipment": band("full_nofast"), "optimiser_scanner": band("full_fast")},
+                  "optimiser_no_equipment": band("full_nofast")},
+        # D68: only the optimiser run from today's pathway (no new equipment) is exported
         "counts": {"noeq_beats_observed": c.get("opt_nofast_beats_observed"),
-                   "noeq_beats_scanner_alone": c.get("opt_nofast_beats_fasterpet"),
-                   "scanner_beats_scanner_alone": c.get("opt_fast_beats_fasterpet")},
+                   "noeq_beats_scanner_alone": c.get("opt_nofast_beats_fasterpet")},
         "structure": None,
     }
     gb = pick(struct, "grid_bands")

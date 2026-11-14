@@ -9,7 +9,7 @@ Static, offline dashboard for the Equal Care Across Finland demo. One file (`ind
 
 Keys: `1`-`6` or the left/right arrows switch screens. The scenario switcher is top right. Deep link: `index.html#finland_lung/3`.
 
-Screens: 1 what to change and what it gains (Norway: headline with the faster scanner plus the no-new-equipment number beside it), 2 where time is lost, 3 why these changes (step chart of held-out on-time share after 0, 1, 2 ... changes; per change what the records said, what the rerun confirmed, honesty box; optional sensitivity tornado), 4 capacity or order (same patients: more capacity vs the suggested reorder; one-slot probe table), 5 before/after pathway and Norwegian validation vs published 40/48/80, 6 who waits longest plus sources and assumptions.
+Screens: 1 what to change and what it gains (Norway: headline is the optimiser's reordering with no new equipment, with its range, framed as a plausibility check (D62, D68); the authors' published 80% and the scanner alone beside it), 2 where time is lost, 3 why these changes (step chart of held-out on-time share after 0, 1, 2 ... changes; per change what the records said, what the rerun confirmed, honesty box; optional sensitivity tornado), 4 capacity or order (same patients: more capacity vs the suggested reorder; one-slot probe table), 5 before/after pathway and Norwegian validation vs published 40/48/80, 6 who waits longest plus sources and assumptions.
 
 ## Rerunning the exports
 
@@ -47,7 +47,9 @@ Per scenario, written by `export.py`:
   - `cumulative[]`: held-out `share`, `median_days`, `missed_cancers`, `tests_per_patient` after 0, 1, 2 ... changes (`kind` is `lead` for rows before the search start, e.g. the observed pathway in stokstad, `start`, or `change`);
   - `n_train`, `n_heldout` (per cohort), `heldout_cohorts`.
 - `capacity_vs_order.rows[]`: `kind` (`today`, `capacity`, `order`, `both`), `label`, `share`, `median_days`; stokstad also has `capacity_label`.
-- `headline_no_new_equipment` (stokstad): `share`, `median_days` of the reordering found without the faster scanner.
+- `headline_no_new_equipment` (stokstad): `share`, `median_days` of the reordering found from today's pathway without new equipment (the headline; the optimiser is not run from the faster-scanner pathway, D68).
+- `wait_basis` (both scenarios): where the baseline's waiting days come from (`demo/wait_basis.py`): `waiting_share`, and per group `published` / `assumption` the days, share of waiting and steps with their source; `statement` is the sentence the pages show under screen 2.
+- `capacity_vs_order.n_patients`, `n_cohorts`; rows may carry `published_share` (Norway, scanner alone) or `what_if: true` (capacity values chosen by us).
 - `variants[].flowchart_id` on hand-written variants; `capacity_probe[].label` is plain wording.
 
 ## Sensitivity (optional)
