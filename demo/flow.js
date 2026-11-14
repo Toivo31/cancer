@@ -256,7 +256,7 @@ function renderPane(pa) {
     }
     if (n.kind === 'exit' && ex && !S.compare) line2 = fmt(ex.n) + ' patients' + (ex.n_cancer && ex.outcome !== 'treatment' ? ` (${fmt(ex.n_cancer)} cancer)` : '');
     if (selNodes && selNodes.nodes.has(n.id)) { stroke = C.amber; sw = 2; }
-    if (S.hl === n.id) { stroke = C.text; sw = 2.5; }
+    if (S.hl === n.short) { stroke = C.text; sw = 2.5; }
     const lines = wrap(dn(F, n), 18);
     const ty = lines.length === 1 ? y + 15 : y + 13;
     const shape = n.kind === 'decision'
@@ -359,7 +359,7 @@ function drawPane(pa, t) {
 
 function updateCounters(pa) {
   const c = pa.counts;
-  pa.counterBox.innerHTML =
+  pa.counterBox.innerHTML = `<span style="color:${C.dim}">sample of ${c.n}:</span>` +
     `<span><i style="background:${C.amber}"></i>waiting <b>${c.w}</b></span>` +
     `<span><i style="background:${C.blue}"></i>served <b>${c.s}</b></span>` +
     `<span><i style="background:${C.mint}"></i>treated on time <b>${c.ok}</b></span>` +
@@ -532,20 +532,28 @@ function layerCard() {
 }
 function lostCard() {
   const [A, B] = S.panes.map(p => p.P.F);
-  const ids = new Set();
-  [A, B].forEach(F => F.time_lost.forEach(t => ids.add(t.node)));
-  const get = (F, id) => F.time_lost.find(t => t.node === id);
-  const rows = [...ids].map(id => ({id, a: get(A, id), b: get(B, id)}))
+  // steps that appear on the graph in several variants (e.g. PET-CT ordered early or late) are added up under one name
+  const group = F => {
+    const by = {}, nodeShort = {};
+    F.graph.nodes.forEach(n => { nodeShort[n.id] = n.short; });
+    F.time_lost.forEach(t => {
+      const k = nodeShort[t.node] || t.label, g = by[k] = by[k] || {wait: 0, wait_share: 0};
+      g.wait += t.wait; g.wait_share += t.wait_share;
+    });
+    return by;
+  };
+  const ga = group(A), gb = group(B);
+  const names = [...new Set(Object.keys(ga).concat(Object.keys(gb)))];
+  const rows = names.map(k => ({k, a: ga[k], b: gb[k]}))
     .sort((x, y) => Math.max(y.a ? y.a.wait : 0, y.b ? y.b.wait : 0) - Math.max(x.a ? x.a.wait : 0, x.b ? x.b.wait : 0)).slice(0, 7);
   const mx = Math.max(.1, ...rows.map(r => Math.max(r.a ? r.a.wait : 0, r.b ? r.b.wait : 0)));
-  const nm = id => { let n = A.graph.nodes.find(x => x.id === id), F = A; if (!n) { n = B.graph.nodes.find(x => x.id === id); F = B; } return n ? dn(F, n) : id; };
   const bar = (v, c) => v == null ? `<div class="bar2"><em style="color:${C.dim}">not on path</em></div>` : `<div class="bar2"><i style="width:${100 * v / mx}%;--c:${c}"></i><em>${f1(v)} d</em></div>`;
   let h = `<div class="card"><h3>Where time is lost</h3><p>Days a treated cancer patient spends waiting at each step on their critical path, averaged over patients. Click a step to find it on the graph.</p><div class="lost">`;
   rows.forEach(r => {
-    h += `<div class="nm" data-hl="${r.id}">${esc(nm(r.id))}<span>${r.a ? pct(r.a.wait_share) : '–'} → ${r.b ? pct(r.b.wait_share) : '–'} of path</span></div>${bar(r.a ? r.a.wait : null, C.coral)}${bar(r.b ? r.b.wait : null, C.mint)}`;
+    h += `<div class="nm" data-hl="${esc(r.k)}">${esc(r.k)}<span>${r.a ? pct(r.a.wait_share) : '–'} → ${r.b ? pct(r.b.wait_share) : '–'} of path</span></div>${bar(r.a ? r.a.wait : null, C.coral)}${bar(r.b ? r.b.wait : null, C.mint)}`;
   });
-  const tot = F => F.time_lost.reduce((s, t) => s + t.wait, 0);
-  h += `</div><p style="margin-top:10px">Waiting adds up to <b style="color:${C.coral}">${f1(tot(A))} d</b> on the left and <b style="color:${C.mint}">${f1(tot(B))} d</b> on the right, per treated cancer patient.</p></div>`;
+  const tot = g => Object.values(g).reduce((s, t) => s + t.wait, 0);
+  h += `</div><p style="margin-top:10px">Waiting adds up to <b style="color:${C.coral}">${f1(tot(ga))} d</b> on the left and <b style="color:${C.mint}">${f1(tot(gb))} d</b> on the right, per treated cancer patient.</p></div>`;
   return h;
 }
 function validationCard() {

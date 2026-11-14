@@ -1,6 +1,6 @@
 """Export flow data for the offline flowchart page (demo/flow.html).
 
-    python demo/export_flow.py                 # full export: demo/data/flow_*.json and demo/data/flow_bundle.js
+    python demo/export_flow.py                 # full export: demo/data/flow_bundle.js (all variants in one script)
     python demo/export_flow.py --fixtures      # small fixtures: docs/platform/fixtures/flow_{norway,finland}.json
 
 Uses the same held-out cohorts and the same optimiser results as demo/export.py (runs/opt_*.json, which
@@ -142,9 +142,6 @@ def main(argv=None):
     bundle = {"generated_at": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"), "format": "flow-bundle/1",
               "scenarios": scs}
     DATA.mkdir(parents=True, exist_ok=True)
-    for s in scs:
-        for v in s["variants"]:
-            (DATA / f"flow_{s['id']}_{v['key']}.json").write_text(json.dumps(v["flow"], separators=(",", ":")))
     (DATA / "flow_bundle.js").write_text("window.FLOW_DATA = " + json.dumps(bundle, separators=(",", ":")) + ";\n")
     print("wrote", DATA / "flow_bundle.js", f"{(DATA / 'flow_bundle.js').stat().st_size / 1e6:.2f} MB")
 
