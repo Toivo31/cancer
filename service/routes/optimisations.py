@@ -120,7 +120,8 @@ def apply_optimisation(o: str, body: ApplyRequest, project: dict = Depends(get_p
     except ChangeError as e:
         raise ApiError(409, e.code, e.message, [e.to_dict()]) from None
     world = spec["world"]
-    doc = flowchart_to_document(new_fc, world.get("id"))
+    backend = (parent_doc.get("decision_policy") or {}).get("backend", "rule")
+    doc = flowchart_to_document(new_fc, world.get("id"), decision_backend="rule" if backend == "rule" else "stub")
     ui = {n["id"]: n["ui"] for n in parent_doc.get("nodes", []) if n.get("ui")}
     for n in doc["nodes"]:
         if n["id"] in ui:
@@ -128,8 +129,10 @@ def apply_optimisation(o: str, body: ApplyRequest, project: dict = Depends(get_p
     for k in ("name", "description"):
         if parent_doc.get(k):
             doc[k] = parent_doc[k]
-    if (parent_doc.get("decision_policy") or {}).get("backend", "rule") != "rule":
-        doc["decision_policy"] = parent_doc["decision_policy"]      # structural changes only; the JEV tables stay as they were
+    if backend not in ("rule", "stub"):
+        doc["decision_policy"] = parent_doc["decision_policy"]      # a model (http, local): structural changes only, it stays attached
+    # for rule and stub the new version carries the policy as the optimiser left it (a standardised decision point is
+    # a one-hot row in the stub table, or a `prefer` entry under the rule backend)
     accepted = sorted(set(range(len(steps)) if body.accept is None else body.accept))
     doc["edits_from_parent"] = [{"index": i, "kind": steps[i]["kind"], "target": steps[i]["target"], "other": steps[i]["other"],
                                  "label": report["changes"][i]["label"], "optimisation": o} for i in accepted]

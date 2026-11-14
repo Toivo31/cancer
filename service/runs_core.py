@@ -323,7 +323,9 @@ def execute_optimisation(ctx, data_dir: str, project_id: str, opt_id: str) -> di
     report = build_report(sc, fc0, res, policy_factory=pf,
                           progress=lambda d, t, msg: ctx.progress(0.9 + 0.1 * d / max(t, 1), 1, msg, force=True))
     after = parse_flowchart(doc["id"], res["flowchart_after"])
-    report["proposed_flowchart"] = flowchart_to_document(after, spec["world"].get("id"))
+    backend = (doc.get("decision_policy") or {}).get("backend", "rule")
+    report["proposed_flowchart"] = flowchart_to_document(after, spec["world"].get("id"),
+                                                         decision_backend="rule" if backend == "rule" else "stub")
     report.pop("proposed_flowchart_engine", None)
     store.put_blob(project_id, "optimisations", opt_id, {"report": report, "steps": res["steps"], "config": res["config"]})
     opts.update(opt_id, status="succeeded", finished_at=_now(), progress=1.0,

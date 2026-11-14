@@ -22,6 +22,7 @@ Validity rules (an edit that breaks one is not proposed):
 
 from __future__ import annotations
 
+import copy
 from dataclasses import dataclass, field
 
 from pathway_sim.expr import parse as parse_expr
@@ -186,7 +187,17 @@ def apply(sc: Scenario, fc: Flowchart, e: Edit) -> Flowchart | None:
             if ex != a and a not in ancestors(new, ex) and ex not in ancestors(new, a):
                 nodes[ex].after_optional.append(a)
     elif e.kind == "standardise":
-        new.policy[e.target] = {"prefer": [e.other], "note": "standardised by optimiser"}
+        new.policy[e.target] = {"prefer": [e.other], "note": "standardised by optimiser"}   # the rule backend reads this
+        dp = new.decision_policy or {}
+        if dp.get("backend", "stub") == "stub" and e.target in (dp.get("points") or {}):
+            # the stub backend reads its table, which takes precedence over ``policy`` (jev.migrate_flowchart):
+            # without this the edit would change nothing and the optimiser could never accept it
+            dp = copy.deepcopy(dp)
+            pt = dp["points"][e.target]
+            pt["default"] = {o: (1.0 if o == e.other else 0.0) for o in nodes[e.target].options}
+            pt.pop("rules", None)
+            pt["note"] = "standardised by optimiser"
+            new.decision_policy = dp
     elif e.kind == "fast_track":
         if nodes[e.target].fast_track:
             return None
@@ -230,6 +241,9 @@ def candidates(sc: Scenario, fc: Flowchart, allow: set[str] | None = None) -> li
         if x.kind == "choice" and "standardise" in allow:
             pol = fc.policy.get(x.id) or {}
             current = pol.get("prefer", [None])[0] if "mix" not in pol and not pol.get("rules") else None
+            row = ((fc.decision_policy or {}).get("points") or {}).get(x.id) or {}
+            if current is None and row.get("default") and not row.get("rules"):      # a stub table that already says "always o"
+                current = next((o for o, v in row["default"].items() if v >= 1 - 1e-9), None)
             for o in x.options:
                 if o != current:
                     out.append(Edit("standardise", x.id, o, f"{label(fc, x.id)}: always {label(fc, o).lower()}"))

@@ -1,6 +1,7 @@
 """The whole loop through the API: template -> run -> optimise -> apply -> rerun on the same patients -> compare (M2-9)."""
 
 import copy
+import json
 import time
 
 import pytest
@@ -177,22 +178,45 @@ def test_finnish_template_loop_with_a_short_warm_up(tmp_path):
 
 
 def test_optimiser_under_a_stub_backend(tmp_path):
-    """Decision probabilities come from the flowchart's stub table in training, acceptance and held-out runs;
-    'standardise' (which would override the decision model) is refused unless asked for (F7)."""
+    """Hardcoded stub tables are legitimate for 'standardise' (spec 05); a model backend (http, local) is not
+    overridden unless asked (F7). Decision probabilities come from the flowchart's table in every run."""
     app = create_app(Settings(data_dir=tmp_path / "d", web_dir=tmp_path / "x", max_jobs=2))
     with TestClient(app) as c:
         p = c.post("/api/projects", json={"name": "s", "template": "norway_check"}).json()["id"]
+        base = {"flowchart": {"id": "observed"}, "n": 120, "train_seeds": [101], "heldout_seeds": [301], "max_changes": 1}
+        o = c.post(f"/api/projects/{p}/optimisations", json=base)
+        assert o.status_code == 202 and o.json()["settings"]["allow"] == ["detach", "relax", "standardise"]
+        assert wait(c, o.json()["job_id"])["status"] == "succeeded"
+        # a version that points at a model backend: standardise is refused by default, allowed on request
         doc = c.get(f"/api/projects/{p}/flowcharts/observed/versions/latest").json()
-        doc["decision_policy"] = {"backend": "stub", "mode": "sample", "points": {}}
-        v = c.post(f"/api/projects/{p}/flowcharts/observed/versions", json=doc).json()["version"]
-        base = {"flowchart": {"id": "observed", "version": v}, "n": 120, "train_seeds": [101], "heldout_seeds": [301], "max_changes": 1}
-        e = c.post(f"/api/projects/{p}/optimisations", json={**base, "allow": ["standardise"]})
+        doc["decision_policy"] = {"backend": "http", "url": "http://127.0.0.1:9", "mode": "sample", "points": {}}
+        saved = c.post(f"/api/projects/{p}/flowcharts/observed/versions", json=doc)
+        assert saved.status_code == 201, saved.text
+        model = {**base, "flowchart": {"id": "observed", "version": saved.json()["version"]}}
+        e = c.post(f"/api/projects/{p}/optimisations", json={**model, "allow": ["standardise"]})
         assert e.status_code == 422 and e.json()["error"]["code"] == "standardise_under_jev"
-        o = c.post(f"/api/projects/{p}/optimisations", json=base).json()
-        assert o["settings"]["allow"] == ["detach", "relax"]
+        d = c.post(f"/api/projects/{p}/optimisations", json=model)       # default allow leaves it out (then the unreachable model is reported)
+        assert d.status_code == 422 and d.json()["error"]["code"] == "invalid_decision_policy"
+
+
+def test_standardise_under_stub_changes_the_table_and_the_rerun_reflects_it(tmp_path):
+    """An accepted 'standardise' must change what the stub does, in the new version and in the rerun."""
+    app = create_app(Settings(data_dir=tmp_path / "d", web_dir=tmp_path / "x", max_jobs=2))
+    with TestClient(app) as c:
+        p = c.post("/api/projects", json={"name": "s", "template": "norway_check"}).json()["id"]
+        o = c.post(f"/api/projects/{p}/optimisations", json={"flowchart": {"id": "observed"}, "n": 150, "train_seeds": [101, 102],
+                                                             "heldout_seeds": [301], "max_changes": 3,
+                                                             "allow": ["standardise"]}).json()
         assert wait(c, o["job_id"])["status"] == "succeeded"
         res = c.get(f"/api/projects/{p}/optimisations/{o['id']}").json()
-        assert all(ch["kind"] in ("detach", "relax") for ch in res["changes"])
-        a = c.post(f"/api/projects/{p}/optimisations/{o['id']}/apply", json={"rerun": False}).json()
+        std = [ch for ch in res["changes"] if ch["kind"] == "standardise"]
+        assert std, "the Norway template has standardise changes the optimiser accepts"
+        a = c.post(f"/api/projects/{p}/optimisations/{o['id']}/apply", json={"accept": [std[0]["index"]]}).json()
         new = c.get(f"/api/projects/{p}/flowcharts/observed/versions/{a['flowchart']['version']}").json()
-        assert new["decision_policy"]["backend"] == "stub"
+        row = new["decision_policy"]["points"][std[0]["target"]]["default"]
+        assert row == {opt: (1.0 if opt == std[0]["other"] else 0.0) for opt in row}
+        for r in (a["run_id"], a["baseline_run_id"]):
+            assert wait(c, c.get(f"/api/projects/{p}/runs/{r}").json()["job_id"])["status"] == "succeeded"
+        rows = [json.loads(x) for x in c.get(f"/api/projects/{p}/runs/{a['run_id']}/decisions",
+                                              params={"point": std[0]["target"]}).text.splitlines()]
+        assert rows and {x["chosen"] for x in rows} == {std[0]["other"]}

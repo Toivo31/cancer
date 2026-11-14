@@ -267,4 +267,6 @@ def test_stub_backend_probabilities_move_the_result(client):
 def test_stub_table_that_does_not_fit_is_refused_at_the_request(client):
     p = make(client)
     r = start(client, p, decision_policy=stub({"no_such_point": {"default": {"a": 1.0}}}))
-    assert r.status_code == 422 and r.json()["error"]["code"] == "invalid_decision_policy"
+    e = r.json()["error"]
+    # the document validator (pathway_sim.validate) now names the bad table before the backend is built
+    assert r.status_code == 422 and e["code"] in ("invalid_document", "invalid_decision_policy") and e["problems"]
