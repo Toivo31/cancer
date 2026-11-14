@@ -42,11 +42,15 @@ section.middle { justify-content: center; align-items: center; }
 section.split { flex-direction: row; align-items: center; gap: 72px; }
 .col { display: flex; flex-direction: column; gap: 28px; width: 560px; }
 .shot { width: 1032px; height: 581px; object-fit: contain; border: 2px solid #D9D6CB; border-radius: 8px; }
+/* the pathway graph, cropped to the chart and given most of the width */
+section.wide { gap: 56px; padding: 96px 96px 96px 128px; }
+.col.narrow { width: 420px; }
+.graph { width: 1216px; height: 674px; object-fit: contain; border-radius: 8px; }
 
 /* credit */
-.credits { display: flex; align-items: center; gap: 96px; }
+.credits { display: flex; align-items: center; gap: 72px; }
 .credit { display: flex; flex-direction: column; gap: 12px; align-items: center; }
-.cname { font-size: 80px; font-weight: 800; color: #1F1F1D; }
+.cname { font-size: 64px; font-weight: 800; color: #1F1F1D; }
 .vrule { width: 2px; height: 160px; background: #CFCBBE; }
 .challenge { font-size: 56px; font-weight: 700; color: #1F1F1D; text-align: center; }
 
