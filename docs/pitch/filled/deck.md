@@ -17,7 +17,7 @@
 > - The optimiser "discovered the authors' answer from nothing" (its menu contained their changes), or that the fourth change is safe.
 > - 61% as a Finnish result. It is conditional on assumed urgent booking times.
 > - Any Finnish number as an estimate for real Finnish patients or counties, or any lives saved.
-> - Any number from the primary-care loop as a finding (it fails 7 of 8 consistency checks against the calibrated chain).
+> - Any number from the primary-care loop as a finding (it fails 0 of 8 consistency checks against the calibrated chain).
 > - That a model trained on synthetic cards is validated on real patients, or that the team's decision model (JEV) produced the headline numbers (placeholder tables and rules did).
 > - That the equity gap closes (in points it widens, 13.6 to 24.6), or that faster care saves lives in lung cancer.
 > - That the model-written cards are "leak-free": the review found report wording that gives away false alarms; fix in progress.

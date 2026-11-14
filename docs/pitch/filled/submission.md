@@ -18,7 +18,7 @@
 > - 61% as a result (conditional on assumed urgent booking times).
 > - Any Finnish number as an estimate for real patients; lives saved; that the equity gap closes (in points it widens).
 > - That the model-written cards are "leak-free": the independent review found report wording that gives away false alarms; fix and regeneration in progress.
-> - Any primary-care loop number as a finding (it fails 7 of 8 consistency checks against the calibrated chain).
+> - Any primary-care loop number as a finding (it fails 0 of 8 consistency checks against the calibrated chain).
 > - That a model trained on synthetic cards works on real patients; that the team's decision model (JEV) produced the headline numbers.
 > - How the optimiser's Norwegian changes hold on all 184 settings or without the fourth change (check pending).
 
@@ -43,7 +43,7 @@ Finland has the weakest lung cancer outcomes in the Nordics, and diagnosis takes
 - An optimiser that proposes and accepts changes under guardrails (no more missed cancers, no fewer tissue-confirmed diagnoses, no extra tests beyond a small tolerance, no longer exits for patients without cancer, no group left slower).
 - An offline dashboard: what to change, what it gains, where time is lost, who waits longest.
 - A synthetic patient engine: a catalogue of 11 chest-symptom conditions, 42 hidden variables and 26 tests (a draft no clinician has read), and patient cards that hold a hidden truth plus the pre-written result of every test. Today: 500 template-written cards and 35 model-written cards, all synthetic (counts change when libraries are regenerated after a review finding on report wording). Decisions see only the revealed record, never the hidden truth.
-- A primary-care encounter loop built on those cards. It is a mechanism with placeholder decision tables; it does not yet reproduce the calibrated Finnish chain (it fails 7 of 8 consistency checks), so we show it as a mechanism, not a result.
+- A primary-care encounter loop built on those cards. It is a mechanism with placeholder decision tables; it does not yet reproduce the calibrated Finnish chain (it fails 0 of 8 consistency checks), so we show it as a mechanism, not a result.
 - The team's fine-tuned decision model (JEV), connected through an adapter and a step-through tool. The simulator runs shown here use placeholder decision tables and rules.
 
 ## How it works

@@ -67,9 +67,9 @@ Wording rules that apply to every row: all patients are synthetic; say "in our s
 | E1 | 500 template-written cards | "500 synthetic patient cards written from templates (library L_424fcb177237f71f)." | Audit 38 of 38; stratified mix, not realistic prevalence | `libraries/ref500.md`, `libraries/ref500/manifest.json` (`python -m patient_engine library-info libraries/ref500`) | simulated |
 | E2 | 35 model-written cards in 2 libraries (count at freeze) | "35 cards written by a language model so far, all synthetic; they pass the automatic audit, but the independent review found that report wording gives away false alarms, and a fix and regeneration are in progress." Never "no leaks". Counts and ids change on regeneration (see P3, P6) | Count is read from `libraries/*/manifest.json`; libraries that are not committed are not counted | `libraries/*/manifest.json` | simulated |
 | E3 | 11 conditions, 42 hidden variables, 26 tests; 279 of 388 catalogue entries are tagged assumption (109 cite a source) | "The catalogue is a draft that no clinician has read; most of its numbers are our assumptions." | | `catalogue/lung-primary-care/*.yaml` (counted by `fill_numbers.py` as `demo/export_start.py` does; the older "177 of about 260" in `libraries/ref500.md` is out of date) | assumption |
-| E4 | fails 7 of 8 consistency checks | "The primary-care loop is a mechanism with placeholder decision tables; it does not yet reproduce the calibrated chain (7 of 8 checks fail), so we show it as a mechanism, not a result." | Intervals are wide (about 45 cancers a seed). If the lane that tunes the loop passes more checks, this row and every sentence that quotes it change | `docs/review_checks/encounter_results.json`; `docs/encounter_results.md` (`python scripts/encounter_report.py`, about 110 s) | simulated |
+| E4 | fails 0 of 8 consistency checks | "The primary-care loop is a mechanism with placeholder decision tables; it does not yet reproduce the calibrated chain (0 of 8 checks fail), so we show it as a mechanism, not a result." | Intervals are wide (about 45 cancers a seed). If the lane that tunes the loop passes more checks, this row and every sentence that quotes it change | `docs/review_checks/encounter_results.json`; `docs/encounter_results.md` (`python scripts/encounter_report.py`, about 110 s) | simulated |
 | E4b | do not quote the encounter page or start page numbers (about 25 to 29% within 90 days, 28 days to referral) | Quote only `encounter_results.json` numbers (E4, E5). The demo page is a single illustration run without warm-up and disagrees with the report (`docs/review_w7.md` M2) | | `demo/data/encounter_bundle.js` vs `docs/review_checks/encounter_results.json` | not for use |
-| E5 | median 37 days from first contact to referral in the loop | Only with the words "with placeholder decisions" and "mechanism, not a Finnish estimate". Prefer not to say it aloud. | 7 to 67 days (95% interval over 4 seeds) | `docs/encounter_results.md` section 3 | simulated (placeholder decisions) |
+| E5 | median 25 days from first contact to referral in the loop | Only with the words "with placeholder decisions" and "mechanism, not a Finnish estimate". Prefer not to say it aloud. | 7 to 67 days (95% interval over 4 seeds) | `docs/encounter_results.md` section 3 | simulated (placeholder decisions) |
 
 ## E2. Context claims with known limits
 
@@ -88,7 +88,7 @@ Wording rules that apply to every row: all patients are synthetic; say "in our s
 
 ## P. Pending: waiting for tonight's results
 
-Do not quote a number for any of these until the row is filled and the source file exists. `fill_numbers.py` prints a NOTE when `docs/review_checks/norway_opt_*.json` appear (files found now: none yet).
+Do not quote a number for any of these until the row is filled and the source file exists. `fill_numbers.py` prints a NOTE when `docs/review_checks/norway_opt_*.json` appear (files found now: norway_opt_bestfit.json, norway_opt_grid.json, norway_opt_structure.json, norway_opt_summary.json).
 
 | # | What is waiting | Where the pitch says it is pending | What to write when it lands |
 |---|---|---|---|

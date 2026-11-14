@@ -19,7 +19,7 @@ The demo is one scenario, but the engine behind it is a library: you describe a 
 | Dataset upload, trainers, model registry | Partly built on a separate branch, **not merged**; say "in progress" | tickets M6 (not ticked) |
 | Web editor: drag-and-drop flowchart, decisions table, run and optimise panels, hosting | **Planned**; do not show mock-ups as working software | tickets M3 (except M3-12, M3-13), M4, M5, M7 |
 | Synthetic patient engine: catalogue, cards, reveal handle, audit, training export | **Built**; 500 template-written and 35 model-written cards so far, all synthetic; catalogue is a draft no clinician has read | `patient_engine/`, `catalogue/`, `libraries/`, `docs/synthetic_data_for_jev.md` |
-| Primary-care encounter loop on those cards | **Built as a mechanism** with placeholder decision tables; fails 7 of 8 consistency checks against the calibrated chain, so nothing from it is a result | `pathway_sim/encounter.py`, `docs/encounter_results.md` |
+| Primary-care encounter loop on those cards | **Built as a mechanism** with placeholder decision tables; fails 0 of 8 consistency checks against the calibrated chain, so nothing from it is a result | `pathway_sim/encounter.py`, `docs/encounter_results.md` |
 | The team's fine-tuned decision model (JEV) connected to the decision nodes | **Connected** through an adapter and a step-through tool (`python -m jev.walk`); its scores are relative to the offered options; no headline number depends on it | `jev/birch.py`, `docs/platform/jev-birch.md` |
 | A JEV trained or tested on real decision data | **Planned**; we have no real decision data, only synthetic | tickets M6-6, `docs/platform/README.md` |
 
