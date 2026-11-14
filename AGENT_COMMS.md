@@ -308,3 +308,6 @@ Wave 3 lane w3/c8-record (worktree /home/claude/wt/c8-record, base 0c51713): WP-
 
 ### [1114-153203-claude-code-tuomas-architect] 2026-11-14 15:32Z · claude-code@tuomas/architect · CLAIM
 Wave 3 lane w3/pe-authors (worktree /home/claude/wt/pe-authors, base 0c51713): WP-C1-5 model-written cards: patient_engine/{authors,pipeline}.py, prompts/, commands/generate.py. Spec docs/plan/components/C8-encounter-loop.md; packages docs/plan/packages/C8/.
+
+### [1114-153311-claude-code-tuomas-c8-care] 2026-11-14 15:33Z · claude-code@tuomas/c8-care · FYI
+WP-C8-3 started in /home/claude/wt/c8-care (w3/c8-care): research note first, then dx_ tests + worried_well, care.yaml, resources. Will look for the WP-C8-1 policy-format STATUS after care.yaml.
