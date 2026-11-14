@@ -51,3 +51,16 @@ test('timeout aborts instead of leaving an indefinitely pending call',async()=>{
   })});
   await assert.rejects(client.health(),error=>error instanceof DecisionAPIError&&error.retryable);
 });
+test('reasoning settings are explicit, bounded data sent on a separate route',async()=>{
+  const {client,calls}=mockClient();
+  const payload={example_id:'pathway',reasoning:{enabled:true,max_tokens:128,additional_prompt:'Give a quick review'}};
+  await client.reason(payload);
+  assert.equal(calls[0][0],'/api/decision/reason');
+  assert.deepEqual(JSON.parse(calls[0][1].body),payload);
+  assert.equal(calls.length,1);
+});
+test('tool preview is separate from scoring and has no implicit model call',async()=>{
+  const {client,calls}=mockClient();
+  await client.refinePreview({example_id:'pathway',reasoning:{enabled:true,max_tokens:64}});
+  assert.deepEqual(calls.map(c=>c[0]),['/api/decision/refine-preview']);
+});

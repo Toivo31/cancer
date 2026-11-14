@@ -64,9 +64,12 @@ class Fixture:
             self.decisions[identifier] = trace
             return deepcopy(result)
 
-    def propose(self, body):
+    def propose(self, body, *, allow_refined_context=False):
         bundled = json.loads((ROOT/'web/pathway.json').read_text())
-        if body != bundled:
+        comparison=deepcopy(body)
+        if allow_refined_context:
+            comparison['case']['context']=bundled['case']['context']
+        if comparison != bundled:
             raise ValueError('Fixture pathway accepts only the bundled synthetic graph; use live mode to change it')
         case, graph, node_id = body['case'], body['workflow'], body['node_id']
         node = graph['nodes'][node_id]
