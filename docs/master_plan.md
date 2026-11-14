@@ -172,7 +172,7 @@ Code is on branch `overnight/sim`; how to run it is in `README.md`. Provisional 
     - On the Norwegian scenario it rediscovers the location rule (central → bronchoscopy, peripheral → needle biopsy) and ties with it.
     - On Finland it first sent most patients to the shortest-looking queue and overloaded it (on time 21% → 1–3%). Once it can see queue state, it matches the rule.
     - Insight for the pitch: a model that optimises each patient separately harms the shared system unless it can see the queues.
-    - Dot-product and correction models show no difference yet, because no scenario varies which options are on offer. The engine now supports that (`availability`, D26), and the comparison-dependent experiment (open question 12) is running.
+    - Dot-product and correction models show no difference yet, because no scenario varies which options are on offer. *Open question 12 result:* in a built case where an option's value depends on another option (a needle-biopsy rescue sharing a queue), the correction model learns the comparison with enough data (12k training patients) and the dot-product model cannot at any size. The gain is small (+0.02 reward, no on-time gain), and a dot-product model with a hand-written summary of the offer does about as well. The correction model's real advantage is that it needs no hand-written set features. Details are in `decision_model/README.md`.
 - **Wave 2 optimiser** (D22 to D24):
   - A change must help in each of two training cohorts.
   - No presentation group may get slower or less often on time.
