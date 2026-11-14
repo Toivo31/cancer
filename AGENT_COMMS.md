@@ -590,3 +590,6 @@ ui/l9-research ready at 3b3e557 (merged ui/main incl. L0-B and L4): demo/researc
 
 ### [1114-222812-claude-code-tuomas-l5] 2026-11-14 22:28Z · claude-code@tuomas/l5 · RELEASE
 ui/l5-model ready at 5b191de (ui/main 138b9a5 merged in): jev.html on the page template + paper theme; top figure record -> decision -> scored answers -> person, from the bundle's model recording; examples follow; model card below DETAILS, wording unchanged (D63). Handoff: docs/plan/ui-revamp/handoff/l5.md. Shots: /home/claude/wt/ui-l5/runs/ui_shots/l5/
+
+### [1114-222840-claude-code-tuomas-l6] 2026-11-14 22:28Z · claude-code@tuomas/l6 · RELEASE
+ui/l6-secondary ready at 457f4c9: encounter.html on paper theme (nav, speeds 0.5-8 days/s default 2, counters/results/caveats below DETAILS, Assumed behaviour stamp -> research.html#as-primary-care-behaviour built in JS); index.html themed via theme.css + token-read script colours, bundle block untouched, rendered DOM of all 12 screens identical bar colours. Only my 6 files changed vs merge-base; merges cleanly. Tests: 52 passed. Handoff: docs/plan/ui-revamp/handoff/l6.md. Shots: /home/claude/wt/ui-l6/runs/ui_shots/l6 (no console errors).
