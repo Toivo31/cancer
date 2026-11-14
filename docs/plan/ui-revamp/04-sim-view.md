@@ -72,7 +72,7 @@ Numbers keep the run's own precision rules from the numbers sheet (one decimal f
 3. The card collapses into the toggle `[ TODAY | AFTER THE CHANGE ]`. The view flips to After, the dots continue
    from the same day, and the headline card shows `today → after` for all three numbers.
 4. A stamp beside the toggle: "SAVED OPTIMISER RUN · results on held-out patients". The offline page replays the
-   saved result. It does not search live (Q3). For Norway the default pair stays as today (observed vs the
+   saved result. It does not search live (D61). For Norway the default pair stays as today (observed vs the
    no-new-equipment optimiser), and Details lists the other pairs (authors' pathway, faster scanner, with scanner).
 
 **Comparison options, weighed against what the code already does:**
@@ -89,7 +89,7 @@ then shows everyone treated while Today still has piles. That is the point, and 
 
 ## Queue colouring
 
-**What drives it (lean, Q5):** the number of *sampled* dots waiting at a step at the current playback day (`groups[nid]`
+**What drives it (decided, D61):** the number of *sampled* dots waiting at a step at the current playback day (`groups[nid]`
 with state `w` in `drawDots`). The thresholds are fixed per scenario and shared by Today and After, so the flip compares like with like:
 
 | State | Rule (proposal; tune by eye on both scenarios) | Look |
@@ -119,7 +119,7 @@ with state `w` in `drawDots`). The thresholds are fixed per scenario and shared 
 ## Speed
 
 Today: multipliers of `H/40` days/s, so the slowest is about 2 days/s. Proposal: absolute options
-**0.5, 1, 2, 4, 8 days/s**, default 2 (Q9). Finland's ~168-day run then takes about 85 s at the default and 5½ min at
+**0.5, 1, 2, 4, 8 days/s**, default 2 (D61). Finland's ~168-day run then takes about 85 s at the default and 5½ min at
 the slowest. Keep `?speed=` as a new URL option for the presenter. The same change applies to `encounter.js`
 (same `S.base` code) and, after the submission, to the web clock (`Clock(horizon, seconds = 45)`).
 

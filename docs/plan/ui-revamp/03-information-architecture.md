@@ -62,7 +62,7 @@ and be split out later without changing the nav labels.
   One primary button: **Open the simulator**.
 - **Below DETAILS:** the primary-care loop row (with its "assumed behaviour" caveat), the decision-model row, the
   honesty paragraph, the synthetic-patients card (or move it to the Patients page), presenter commands.
-- On Q7 (reuse DEFINE / AUTOMATE / VALIDATE): reuse the card look so video and site feel like one thing. Change
+- On reusing DEFINE / AUTOMATE / VALIDATE (decided, D61: the look, not the words): reuse the card look so video and site feel like one thing. Change
   the words where ours mean something else. The video's VALIDATE card says "clinician-validated". Here, validate
   would mean the Norway check, and no clinician has validated anything. Keep the video's stamp off the site.
 
@@ -110,14 +110,13 @@ and be split out later without changing the nav labels.
   test in `docs/validation.md` "Robustness" (grid extension, identifiability, leave one out, target noise, the
   faster-PET miss), then the optimiser on 184 settings, ablation and the structure check. Each gets a finding as its
   heading and a single small chart or number.
-- **The case-study paper:** a printable HTML (`demo/norway_case.html`, print CSS → PDF) titled roughly "Rebuilding
-  Stokstad et al. 2019: a calibration and prediction check". It is generated from the sections of
-  `docs/validation.md`, has a review-lane read before it is linked, cites the paper and does not attach it. Lean:
-  after the submission (Q8). Before the freeze the Evidence page links `docs/validation.md`.
+- **The case-study paper:** it now exists as `docs/norway_case_study.md` (merged 14 Nov evening, paper-style, with the
+  plausibility framing of D62). Tonight the Evidence page links it. After the submission (D61) it becomes a printable HTML
+  (`demo/norway_case.html`, print CSS → PDF) that cites the Stokstad paper and does not attach it.
 - **Below DETAILS:** data and honesty (ledger counts, what is sourced vs assumed), and the "Full results report" link to
   `index.html`.
 
-### 5. Decision model (`demo/jev.html`, being built in `w8/jev-demo`)
+### 5. Decision model (`demo/jev.html`, merged from `w8/jev-demo`; restructure in lane L5; wording kept per D63)
 
 - **Message:** "At each clinical decision the model scores the allowed next steps from the visible record; a person
   decides."
