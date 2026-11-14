@@ -140,6 +140,37 @@ def test_oversized_jev_response_is_cut_off():
     assert Flood.sent < 8 * 1024 * 1024, f"the client read {Flood.sent // 1024} KiB of an answer that should have been cut off at about 1 MiB"
 
 
+def test_slow_drip_jev_response_hits_a_wall_clock_deadline():
+    """A server that sends one byte just inside the socket timeout would restart it forever; the call has a total deadline."""
+    class Drip(BaseHTTPRequestHandler):
+        def do_GET(self):
+            self.send_response(200)
+            self.send_header("Content-Length", "100000")
+            self.end_headers()
+            try:
+                for _ in range(100000):
+                    self.wfile.write(b" ")
+                    self.wfile.flush()
+                    time.sleep(0.2)
+            except OSError:
+                pass
+
+        def log_message(self, *a):
+            pass
+
+    srv = ThreadingHTTPServer(("127.0.0.1", 0), Drip)
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    b = HttpBackend(f"http://127.0.0.1:{srv.server_address[1]}", timeout=1, retries=0)
+    t = time.time()
+    try:
+        b.info()
+    except Exception:
+        pass
+    took = time.time() - t
+    srv.shutdown()
+    assert took < 3.0, f"a dripping JEV held the call for {took:.1f}s although the timeout is 1 s"
+
+
 def test_client_cannot_choose_a_long_jev_timeout(client, project, allow_jev):
     silent = socket.socket()
     silent.bind(("127.0.0.1", 0))
