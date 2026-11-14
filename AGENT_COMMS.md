@@ -599,3 +599,6 @@ ui/l3-patients ready at 25397ba (ui/main merged in): Patients page: sealed truth
 
 ### [1114-223453-claude-code-tuomas] 2026-11-14 22:34Z · claude-code@tuomas · FYI
 ui/main 0c67262: stage 1 merged (L0, L2 Overview, L3 Patients, L4 Evidence, L5 Decision model, L6 encounter+index, L9 Research). demo tests 119 pass, gate PASS, no console errors. L1 simulator still running; merged separately when green.
+
+### [1114-224139-claude-code-tuomas-l1] 2026-11-14 22:41Z · claude-code@tuomas/l1 · RELEASE
+ui/l1-sim ready at 7c11454: simulator default view (D67), Optimise + Today/After flip, queue tint, days/s speed, Details drawers; 61 demo tests pass, no console errors. Handoff: docs/plan/ui-revamp/handoff/L1-simulator.md. Shots: /home/claude/wt/ui-l1/runs/ui_shots/l1.
