@@ -76,6 +76,7 @@ from pathway_sim.dists import sample, uniform
 
 from .card import INITIAL_STATE, PlannedAttempt, Value
 from .catalogue import Catalogue, Leaf, Test, TestOutput
+from .states import resolved_in_state, states_for
 
 SKELETON_FORMAT = "skeleton/1"
 OUTCOME_Z = 1.96                        # a measured value this many error SDs from the truth is `wrong`
@@ -226,6 +227,23 @@ def common_facts(skeleton: Skeleton, values: Mapping[str, Value] | None = None) 
     if values:
         facts.update({k: v for k, v in values.items() if v is not None})
     return facts
+
+
+def illness_ids(catalogue: Catalogue, skeleton: "Skeleton") -> tuple[str, ...]:
+    """The ordinary illnesses among the skeleton's conditions (class ``other_illness``): the ones that can
+    resolve. A cancer never resolves by treatment (C8)."""
+    return tuple(c for c in skeleton.condition_ids if catalogue.conditions[c].cls == "other_illness")
+
+
+def active_conditions(catalogue: Catalogue, skeleton: "Skeleton", state: str) -> tuple[str, ...]:
+    """Conditions still active in ``state``. When everything has resolved (a patient with an illness only)
+    nothing is active and accuracy numbers resolve as for a patient without disease: under the catalogue's
+    first ``healthy`` condition if it has one, else under a condition name that no ``by`` level matches."""
+    resolved = resolved_in_state(state, illness_ids(catalogue, skeleton))
+    active = tuple(c for c in skeleton.condition_ids if c not in resolved)
+    if active:
+        return active
+    return (next((c for c, x in catalogue.conditions.items() if x.cls == "healthy"), "none"),)
 
 
 def _resolve_worst(leaf: Leaf | None, conditions: Sequence[str], common: Mapping[str, Any], default: float,
@@ -393,10 +411,11 @@ def _nominal_attempt(test: Test, k: int, conditions: Sequence[str], common: Mapp
 
 
 def nominal_error_plan(catalogue: Catalogue, skeleton: Skeleton) -> dict[str, dict[str, tuple[PlannedAttempt, ...]]]:
-    """The plan from the facts known at skeleton time (condition, attributes, background)."""
+    """The plan from the facts known at skeleton time (condition, attributes, background), per state
+    (accuracy numbers resolved under the conditions still active in that state)."""
     common = common_facts(skeleton)
-    conds = skeleton.condition_ids
-    return {state: {t.id: tuple(_nominal_attempt(t, k, conds, common, skeleton.seed, skeleton.index, state)
+    return {state: {t.id: tuple(_nominal_attempt(t, k, active_conditions(catalogue, skeleton, state), common,
+                                                 skeleton.seed, skeleton.index, state)
                                 for k in range(t.max_attempts))
                     for t in catalogue.tests.values()}
             for state in skeleton.states}
@@ -437,9 +456,13 @@ def settle_attempt(catalogue: Catalogue, test: Test, k: int, skeleton: Skeleton,
     Returns ``(planned, reported)``: the settled plan of the attempt and the values it implies when
     followed literally (``{}`` if non-diagnostic; an output whose ``only_if`` is false is ``None``).
     The reference generator writes ``reported`` as the result; a language-model author is told
-    ``planned`` and writes its own concrete result that fits it."""
+    ``planned`` and writes its own concrete result that fits it.
+
+    ``k`` may be any whole number (not only below ``test.max_attempts``): attempt ``k`` depends on
+    ``(seed, index, state, test, k)`` and the findings only, which is how the reveal handle draws fresh
+    repeats. Accuracy numbers are resolved under the conditions still active in ``state``."""
     seed, index = skeleton.seed, skeleton.index
-    conds = skeleton.condition_ids
+    conds = active_conditions(catalogue, skeleton, state)
     common = common_facts(skeleton, values)
     if test.nondiagnostic is not None and \
             _nd_u(seed, index, state, test.id, k) < nondiagnostic_rate(test, conds, common):
@@ -544,6 +567,7 @@ def make_skeleton(catalogue: Catalogue, index: int, design: Design, seed: int, *
     sk = Skeleton(id=f"{catalogue.id}.s{seed}:{index:06d}", index=index, seed=seed, catalogue_id=catalogue.id,
                   catalogue_hash=catalogue.version_hash, primary=primary, attributes=attrs, coexisting=co,
                   coexisting_attributes=co_attrs, background=bg, brief=brief)
+    sk = Skeleton(**{**sk.__dict__, "states": states_for(illness_ids(catalogue, sk))})
     if plan:
         sk = Skeleton(**{**sk.__dict__, "error_plan": nominal_error_plan(catalogue, sk)})
     return sk

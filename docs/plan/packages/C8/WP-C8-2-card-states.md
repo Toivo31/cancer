@@ -31,16 +31,33 @@
 
 ## Acceptance
 
-- [ ] Tests for each point above; `python -m pytest -q tests/test_pe_*` green; `scripts/gate.sh` green.
-- [ ] I1 tests still fail if a hidden field is added to a revealed type or the handle returns a card.
+- [x] Tests for each point above; `python -m pytest -q tests/test_pe_*` green; `scripts/gate.sh` green.
+- [x] I1 tests still fail if a hidden field is added to a revealed type or the handle returns a card.
 
 ## Tickets
 
 | | ID | Ticket | Done when |
 |---|---|---|---|
-| [ ] | C8-2-T1 | Publish `next_state` / `persisting_symptoms` signatures (stub implementation + docstring), STATUS | posted within ~30 min |
-| [ ] | C8-2-T2 | Multi-state reference cards | validator property test |
-| [ ] | C8-2-T3 | Handle: fresh attempts beyond max, any state | I3 tests |
-| [ ] | C8-2-T4 | Lung catalogue property test; report | green |
+| [x] | C8-2-T1 | Publish `next_state` / `persisting_symptoms` signatures (stub implementation + docstring), STATUS | posted within ~30 min |
+| [x] | C8-2-T2 | Multi-state reference cards | validator property test |
+| [x] | C8-2-T3 | Handle: fresh attempts beyond max, any state | I3 tests |
+| [x] | C8-2-T4 | Lung catalogue property test; report | green |
 
 ## Report (builder fills in)
+
+Built on branch `w3/c8-cards` (base `0c51713`).
+
+- `patient_engine/states.py` (new): `next_state(card, resolved)`, `persisting_symptoms(card, state, catalogue=None)`,
+  `resolvable_conditions`, `states_for`, `resolved_in_state`. A card has `all_active`, `<illness>_resolved` per ordinary
+  illness, and `all_resolved` only with two illnesses (with one illness `<illness>_resolved` is the whole state set).
+- `skeleton.py`: `make_skeleton` sets `states`; `nominal_error_plan` and `settle_attempt` resolve accuracy under the
+  conditions still active in the state (`active_conditions`); `settle_attempt` accepts any `k`.
+- `reference.py`: findings, presenting, attempts, plan and two notes per state (ids `n1..n2k`). A resolved state keeps
+  every finding the resolved illness did not alone explain and redraws the rest without it (a binary one only by the
+  background rate, so no symptom appears because the state changed).
+- `reveal.py`: `RevealHandle(card, public_id=None, catalogue=None)`; any state of the card is served; with a catalogue
+  attempts at or beyond the stored count are fresh keyed draws (blake2b of card id, state, test, attempt, output).
+- Decision: `PublicView.state` and `RevealedObservation.state` are `all_active` or `"later"`, never the real state name
+  (`pneumonia_resolved` names a hidden condition, I1; the new I1 test caught the echo).
+- Not done: tuning (resolved-state frequencies are not audited against the catalogue by G4); LLM authors (WP-C1-5) must
+  write the extra states; `cohort.to_arrays` still defaults to `all_active`.
