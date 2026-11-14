@@ -1,0 +1,3 @@
+Simulation adapted from demo/flow.html, flow.js, flow.css, theme.css, site.js and exported bundles in Toivo31/cancer, content/pages at e9a278abedae7d6c52a1d2704c0758e9a288f355. Exported simulation replay, not a live optimiser or live model-driven run. Font license: fonts/OFL.txt.
+
+The shipped graph is a new simplified rendering. routes.json maps saved patient visits to primary-care assessment, referral, specialist review, imaging, sampling, review and exit stages. Consecutive duplicate stages are collapsed. Original waiting times, metrics and outcome labels are not displayed; animation time is illustrative. Original simulator controls and source implementation are not shipped.

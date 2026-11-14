@@ -34,3 +34,11 @@ Open http://127.0.0.1:8770 for the flowchart demo, `/note` for the note reader,
 Simulator estimates and model candidate scores are separate quantities.
 All model proposals require human review. See the integration guide for the
 prototype's limitations and the difference between live and saved examples.
+
+## Three-slide live website
+
+[Open Equal Care Pathways](https://cancer123--equal-care-pathways-web.us-east.modal.run/) — a moving patient graph, Decision Studio (Text, Photo and Custom question), and a discussion/manifesto placeholder.
+
+[Join our Modal organization](https://modal.com/signup?token=dd6w00V0NL0JDEY0zPvPJ5uZ08k73wqyJLys8mplk8o&shareable-token=true&organization=true) using this invitation link.
+
+Website source and deployment instructions: [website/README.md](website/README.md). The site reuses the existing public decision gateway; visitors do not need a Modal account to try it.
