@@ -200,10 +200,21 @@ def a4(rows, n_resample=500, seed=7):
     return res
 
 
+def ranking(rows, acc):
+    a = [r for r in acc if "optimal" in r and "faster_pet" in r]
+    d = lambda f, g: [round(100 * min(sh(r, f) - sh(r, g) for r in a)), round(100 * max(sh(r, f) - sh(r, g) for r in a))]
+    res = {"accepted": len(a), "optimal>faster_pet>observed_in": sum(1 for r in a if sh(r, "optimal") > sh(r, "faster_pet") > sh(r)),
+           "optimal_gain_pts": d("optimal", "observed"), "faster_pet_gain_pts": d("faster_pet", "observed"), "optimal_minus_faster_pts": d("optimal", "faster_pet"),
+           "all_predicted_grid_points": sum(1 for r in rows if "optimal" in r), "ranking_holds_at_grid_points": sum(1 for r in rows if "optimal" in r and sh(r, "optimal") > sh(r, "faster_pet") > sh(r))}
+    (OUT / "norway_ranking.json").write_text(json.dumps(res, indent=1))
+    return res
+
+
 def run_all(t):
     rows = t["rows"]
     r1, acc = a1(rows)
     print("A1", json.dumps({k: r1[k] for k in ("accepted_original_subset", "accepted_extended", "pred_original_subset", "pred_extended")}, indent=1))
     print("A2", json.dumps(a2(rows, acc), indent=1))
     print("A3", json.dumps(a3(rows), indent=1))
+    print("RANK", ranking(rows, acc))
     print("A4", json.dumps(a4(rows), indent=1))

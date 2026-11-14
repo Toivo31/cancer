@@ -1,0 +1,145 @@
+{
+ "n_grid_original_subset": 192,
+ "n_grid_extended": 1920,
+ "accepted_original_subset": 9,
+ "accepted_extended": 184,
+ "accepted_in_extension_only": 175,
+ "pred_original_subset": {
+  "faster_pet": {
+   "n": 9,
+   "min": 0.537,
+   "p10": 0.574,
+   "median": 0.612,
+   "p90": 0.646,
+   "max": 0.66
+  },
+  "optimal": {
+   "n": 9,
+   "min": 0.797,
+   "p10": 0.797,
+   "median": 0.827,
+   "p90": 0.845,
+   "max": 0.855
+  }
+ },
+ "pred_extended": {
+  "faster_pet": {
+   "n": 184,
+   "min": 0.497,
+   "p10": 0.545,
+   "median": 0.605,
+   "p90": 0.663,
+   "max": 0.742
+  },
+  "optimal": {
+   "n": 184,
+   "min": 0.617,
+   "p10": 0.664,
+   "median": 0.746,
+   "p90": 0.821,
+   "max": 0.859
+  }
+ },
+ "gain_extended": {
+  "faster_pet": {
+   "min": 0.13,
+   "median": 0.199,
+   "max": 0.332
+  },
+  "optimal": {
+   "min": 0.237,
+   "median": 0.345,
+   "max": 0.472
+  }
+ },
+ "param_range_accepted_original": {
+  "bronch": [
+   3,
+   10
+  ],
+  "surg": [
+   6,
+   8
+  ],
+  "cut": [
+   0,
+   2
+  ],
+  "extra": [
+   0.01,
+   2
+  ],
+  "pet": [
+   0.5,
+   1.0
+  ]
+ },
+ "param_range_accepted_extended": {
+  "bronch": [
+   1,
+   10
+  ],
+  "surg": [
+   2,
+   8
+  ],
+  "cut": [
+   0,
+   4
+  ],
+  "extra": [
+   0.01,
+   6
+  ],
+  "pet": [
+   0.0,
+   1.0
+  ]
+ },
+ "n_accepted_at_extended_grid_edge": {
+  "bronch": 87,
+  "surg": 87,
+  "cut": 87,
+  "extra": 88,
+  "pet": 67
+ },
+ "n_accepted_at_original_grid_edge": {
+  "bronch": 7,
+  "surg": 8,
+  "cut": 9,
+  "extra": 9,
+  "pet": 5
+ },
+ "best_fit_original": {
+  "pt": {
+   "bronch": 3,
+   "surg": 6,
+   "rt": 10.5,
+   "cut": 0,
+   "extra": 2,
+   "pet": 1.0
+  },
+  "observed": {
+   "share_within_target": 0.393,
+   "median_days_to_treatment": 46.42,
+   "sampling_per_patient": 0.994
+  }
+ },
+ "best_fit_extended": {
+  "pt": {
+   "bronch": 1,
+   "surg": 2,
+   "rt": 3.5,
+   "cut": 0,
+   "extra": 6,
+   "pet": 0.8
+  },
+  "observed": {
+   "share_within_target": 0.4,
+   "median_days_to_treatment": 46.44,
+   "sampling_per_patient": 0.994
+  }
+ },
+ "note": "cut=0 and pet=1.0 are physical bounds (no negative cutoff; share cannot exceed 1), so 'at the edge' there is not extendable.",
+ "accepted_interior_of_extendable_params": 49
+}

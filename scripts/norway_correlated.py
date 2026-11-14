@@ -79,7 +79,7 @@ def run(scen, rho):
 
 if __name__ == "__main__":
     out = []
-    for scen, rho in (("base", 0.0), ("base", 0.3), ("base", 0.6), ("base", 0.9), ("board", 0.0), ("board", 0.6)):
+    for scen, rho in (("base", 0.0), ("base", 0.3), ("base", 0.6)):   # board variant: see docs/external_checks.md (run_board=True to repeat, ~25 min)
         r = run(scen, rho)
         print(json.dumps(r), flush=True)
         out.append(r)

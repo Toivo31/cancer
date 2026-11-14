@@ -1,0 +1,92 @@
+{
+ "cohort_noise_sd": {
+  "share": 0.0493,
+  "median_days": 1.92
+ },
+ "cohort_noise_corr": -0.81,
+ "n_cohorts": 300,
+ "n_resamples": 500,
+ "note": "targets resampled as published value + a random 100-patient cohort deviation from the model's own best fit (joint share/median).",
+ "tolerance_as_shipped_0.04_2.5": {
+  "tolerance": {
+   "share": 0.04,
+   "median": 2.5
+  },
+  "no_accepted_in_resamples": 0,
+  "median_accepted_sets": 165,
+  "pred_of_accepted_mean_across_resamples": {
+   "faster_pet": {
+    "mean": 0.6,
+    "sd": 0.05,
+    "p5": 0.52,
+    "p95": 0.683
+   },
+   "optimal": {
+    "mean": 0.742,
+    "sd": 0.035,
+    "p5": 0.688,
+    "p95": 0.802
+   }
+  }
+ },
+ "tolerance_1_SE": {
+  "tolerance": {
+   "share": 0.049,
+   "median": 1.924
+  },
+  "no_accepted_in_resamples": 3,
+  "median_accepted_sets": 164,
+  "pred_of_accepted_mean_across_resamples": {
+   "faster_pet": {
+    "mean": 0.594,
+    "sd": 0.046,
+    "p5": 0.525,
+    "p95": 0.671
+   },
+   "optimal": {
+    "mean": 0.738,
+    "sd": 0.034,
+    "p5": 0.683,
+    "p95": 0.793
+   }
+  }
+ },
+ "tolerance_2_SE": {
+  "tolerance": {
+   "share": 0.099,
+   "median": 3.848
+  },
+  "no_accepted_in_resamples": 0,
+  "median_accepted_sets": 404,
+  "pred_of_accepted_mean_across_resamples": {
+   "faster_pet": {
+    "mean": 0.588,
+    "sd": 0.043,
+    "p5": 0.52,
+    "p95": 0.659
+   },
+   "optimal": {
+    "mean": 0.736,
+    "sd": 0.03,
+    "p5": 0.691,
+    "p95": 0.784
+   }
+  }
+ },
+ "likelihood_weighted": {
+  "weight_mass_with_predictions": 1.0,
+  "effective_n": 310.7,
+  "faster_pet": {
+   "mean": 0.59,
+   "p5": 0.501,
+   "p50": 0.587,
+   "p95": 0.679
+  },
+  "optimal": {
+   "mean": 0.737,
+   "p5": 0.631,
+   "p50": 0.74,
+   "p95": 0.831
+  }
+ }
+}
