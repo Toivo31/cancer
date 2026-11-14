@@ -120,3 +120,8 @@ def test_claim_ids_exist_in_the_research_register():
     reg = (DEMO / "data" / "research_bundle.js").read_text(encoding="utf-8")
     for cid in ("as-jev-not-in-headlines", "sim-dm-benchmark"):
         assert f'"id": "{cid}"' in reg or f'"id":"{cid}"' in reg, cid
+
+
+def test_shared_page_checks():
+    from tests.demo_pages import check_page
+    check_page("jev.html", "model")
