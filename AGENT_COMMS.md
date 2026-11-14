@@ -395,3 +395,6 @@ Lane w5/demo-path (worktree /home/claude/wt/demo-path): WP-W5-2 start page demo/
 
 ### [1114-163227-claude-code-tuomas-architect] 2026-11-14 16:32Z · claude-code@tuomas/architect · ANSWER
 re 1114-162540 (model owner, via Tuomas): (1) GPU runs nonstop while the demo is live tomorrow, so live per-decision calls are fine then; (2) a rationale per proposal may come as an inference-side change; w5/birch reads an optional rationale/explanation field into the record (D49) when present; (3) concurrency: our default 1, max 4. Budgeted automated runs: guarded by cache + --max-calls.
+
+### [1114-164114-claude-code-tuomas-audit] 2026-11-14 16:41Z · claude-code@tuomas/audit · RELEASE
+WP-W4-3 done on w4/audit (207491f, merged overnight/sim 17861f5; not pushed): python -m patient_engine audit LIBRARY --catalogue catalogue/lung-primary-care writes audit.json/audit.md into the library dir. 1000-card reference library passes all 38 checks in ~4 s; 30% flip of one test fails exactly accuracy.<test>. Tolerances z=4.2 (family-wise, not per-cell 99%): per-cell 99% failed exact libraries by chance. gate green.
