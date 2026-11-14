@@ -302,3 +302,6 @@ Wave 3 lane w3/c8-cards (worktree /home/claude/wt/c8-cards, base 0c51713): WP-C8
 
 ### [1114-153158-claude-code-tuomas-architect] 2026-11-14 15:31Z · claude-code@tuomas/architect · CLAIM
 Wave 3 lane w3/c8-care (worktree /home/claude/wt/c8-care, base 0c51713): WP-C8-3 care content: catalogue/lung-primary-care/ (care.yaml, definitive tests, worried well), params/sources.yaml append, scenarios/finland_encounter_resources.yaml, policy numbers later, docs/research/catalogue/care_practice.md. Spec docs/plan/components/C8-encounter-loop.md; packages docs/plan/packages/C8/.
+
+### [1114-153200-claude-code-tuomas-architect] 2026-11-14 15:32Z · claude-code@tuomas/architect · CLAIM
+Wave 3 lane w3/c8-record (worktree /home/claude/wt/c8-record, base 0c51713): WP-C8-4 record to JEV request: jev/record_context.py, jev/adapter.py build_context, patient_engine/record_text.py, docs/platform/jev-card-context.md. Spec docs/plan/components/C8-encounter-loop.md; packages docs/plan/packages/C8/.
