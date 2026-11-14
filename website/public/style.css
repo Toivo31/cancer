@@ -13,4 +13,4 @@
 #jev .workspace{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;margin-top:16px}.presets{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}@media(max-width:900px){#jev .workspace{grid-template-columns:1fr}}
 footer{display:flex;justify-content:space-between;align-items:center;padding:14px 4.5%;gap:16px}
 .page.prose{height:auto;min-height:0;display:block}.page.prose[hidden]{display:none!important}#page-simulation.prose{max-width:1280px}#page-simulation.prose>p,#page-simulation.prose>h2{max-width:860px}
-.sim-embed{display:block;width:100%;height:min(74vh,640px);border:1px solid var(--line);border-radius:6px;background:#f4f0e4;margin:8px 0 28px}
+.sim-embed{display:block;width:min(1640px,98vw);position:relative;left:50%;transform:translateX(-50%);height:max(calc(100vh - 90px),760px);border:0;border-radius:0;background:transparent;margin:0 0 28px}

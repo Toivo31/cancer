@@ -2,3 +2,11 @@
 :root{--font-mono:Inter,Arial,sans-serif;--mono:Inter,Arial,sans-serif}
 .site-nav,.footer-strip,.sim-footer,.sim-scn,#flip-link,.sim-head a,.sim-quiet{display:none!important}
 .label,.caption,.stamp,.btn,.num{letter-spacing:.02em}
+.stamp,#flip-stamp,.sim-legend,#legend{display:none!important}
+@media (min-width:860px) and (max-width:1180px){
+  .sim{grid-template-columns:minmax(170px,210px) minmax(0,1fr) minmax(190px,230px);padding:var(--s4) var(--s3) 0}
+  .sim-left,.sim-right{position:sticky}
+  .sim-left{flex-direction:column;align-items:stretch}
+  .sim-graph.is-split{grid-template-columns:1fr 1fr}
+}
+.sim{padding-left:0;padding-right:0}
