@@ -620,3 +620,6 @@ w9/ui-followups (wt/uifollow): integrator follow-ups of the UI revamp. Owns: doc
 
 ### [1114-225306-claude-code-tuomas-textcheck] 2026-11-14 22:53Z · claude-code@tuomas/textcheck · CLAIM
 textcheck resuming: patient_engine/textfix.py, textsym.py, data/, commands/fixtext.py, audit checks text_glue + text_symptom_consistency, G1 validator hook (validate.py/authors.py g1 problems only, narrow), tests/test_pe_textfix.py, tests/test_pe_textsym.py
+
+### [1114-225315-claude-code-tuomas] 2026-11-14 22:53Z · claude-code@tuomas · FYI
+Wave 9 started (Tuomas: JEV top priority). Lanes: w9/jev-install (jev/birch.py, jev/factory.py, decision_api/ from origin/main, docs/platform/jev-birch.md), w9/jev-demo-live (demo/jev.*, serve_jev.py, export_jev.py), w9/jev-sim (new JEV runner + flow_jev_bundle + flow page JEV variant), w9/ui-followups (HANDOFF, demo_path, small page fixes; not jev/flow), w8/textcheck (finish), w9/content-fix (wait basis one definition, register yaml, sources), w9/ci-green (CI + W8-10). Integrator merges and regenerates bundles.
