@@ -1,0 +1,518 @@
+{
+ "stokstad_calibrated/optimal/method": {
+  "scenario": "scenarios/generated/stokstad_calibrated.yaml",
+  "flowchart": "optimal",
+  "node": "method",
+  "options": [
+   "bronch1",
+   "ttnb1"
+  ],
+  "target_days": 42.0,
+  "n_train_choices": 2334,
+  "train_seeds": [
+   1001
+  ],
+  "n_train_patients_per_seed": 3000,
+  "eval_seeds": [
+   1,
+   2,
+   3
+  ],
+  "n_eval_patients_per_seed": 1000,
+  "reward": "diagnostic - days_from_choice_to_last_sampling_result / 30",
+  "days_per_diagnosis": 30.0,
+  "epochs": 60,
+  "model_seed": 0,
+  "val_seed": 999,
+  "n_val_choices": 1161,
+  "feature_sets": [
+   "static"
+  ],
+  "model_selection_val_reward_mse": {
+   "dot-product": {
+    "0.0": 0.1982,
+    "0.1": 0.1953,
+    "0.3": 0.1947,
+    "1.0": 0.2118,
+    "chosen_weight_decay": 0.3
+   },
+   "correction (2 layers)": {
+    "0.0": 0.2012,
+    "0.1": 0.1965,
+    "0.3": 0.1953,
+    "1.0": 0.2615,
+    "chosen_weight_decay": 0.3
+   }
+  },
+  "val_reward_variance": 0.2381,
+  "attribute_vocab": [
+   [
+    "ct_inadequate",
+    "no"
+   ],
+   [
+    "ct_inadequate",
+    "yes"
+   ],
+   [
+    "further_workup_after_pet",
+    "no"
+   ],
+   [
+    "further_workup_after_pet",
+    "yes"
+   ],
+   [
+    "location",
+    "central"
+   ],
+   [
+    "location",
+    "peripheral"
+   ],
+   [
+    "needs_exercise_test",
+    "no"
+   ],
+   [
+    "needs_exercise_test",
+    "yes"
+   ],
+   [
+    "treatment",
+    "radiotherapy"
+   ],
+   [
+    "treatment",
+    "surgery"
+   ]
+  ],
+  "table": {
+   "rule (hand-written)": {
+    "n_patients": 3000,
+    "n_cancer": 3000,
+    "n_at_node": 2370,
+    "on_time": 0.8046666666666666,
+    "on_time_se": 0.007239489678907697,
+    "median_days_to_treatment": 31.136520725837272,
+    "sampling_per_patient_at_node": 1.0278481012658227,
+    "sampling_per_100_patients": 81.2,
+    "tissue_confirmed_cancers": 2133,
+    "tissue_confirmed_share_at_node": 0.9,
+    "diagnostic_share_at_node": 0.9,
+    "mean_days_choice_to_sampling_done": 12.807840500667563,
+    "agreement_with_rule": 1.0
+   },
+   "random": {
+    "n_patients": 3000,
+    "n_cancer": 3000,
+    "n_at_node": 2370,
+    "on_time": 0.7816666666666666,
+    "on_time_se": 0.007543668334456147,
+    "median_days_to_treatment": 31.338219646434084,
+    "sampling_per_patient_at_node": 1.128691983122363,
+    "sampling_per_100_patients": 89.16666666666667,
+    "tissue_confirmed_cancers": 1699,
+    "tissue_confirmed_share_at_node": 0.7168776371308017,
+    "diagnostic_share_at_node": 0.7168776371308017,
+    "mean_days_choice_to_sampling_done": 13.317296085125566,
+    "agreement_with_rule": 0.520253164556962,
+    "on_time_minus_rule": -0.023,
+    "on_time_minus_rule_se": 0.004364887127456337
+   },
+   "dot-product": {
+    "n_patients": 3000,
+    "n_cancer": 3000,
+    "n_at_node": 2370,
+    "on_time": 0.8046666666666666,
+    "on_time_se": 0.007239489678907697,
+    "median_days_to_treatment": 31.136520725837272,
+    "sampling_per_patient_at_node": 1.0278481012658227,
+    "sampling_per_100_patients": 81.2,
+    "tissue_confirmed_cancers": 2133,
+    "tissue_confirmed_share_at_node": 0.9,
+    "diagnostic_share_at_node": 0.9,
+    "mean_days_choice_to_sampling_done": 12.807840500667563,
+    "agreement_with_rule": 1.0,
+    "on_time_minus_rule": 0.0,
+    "on_time_minus_rule_se": 0.0
+   },
+   "correction (2 layers)": {
+    "n_patients": 3000,
+    "n_cancer": 3000,
+    "n_at_node": 2370,
+    "on_time": 0.8033333333333333,
+    "on_time_se": 0.007258134962739538,
+    "median_days_to_treatment": 31.138810748213643,
+    "sampling_per_patient_at_node": 1.0278481012658227,
+    "sampling_per_100_patients": 81.2,
+    "tissue_confirmed_cancers": 2131,
+    "tissue_confirmed_share_at_node": 0.89915611814346,
+    "diagnostic_share_at_node": 0.89915611814346,
+    "mean_days_choice_to_sampling_done": 12.846031228599225,
+    "agreement_with_rule": 0.9949367088607595,
+    "on_time_minus_rule": -0.0013333333333333333,
+    "on_time_minus_rule_se": 0.0006663331387545217
+   }
+  },
+  "confusion_attr": "location",
+  "confusion": {
+   "rule (hand-written)": {
+    "central->bronch1": 719,
+    "peripheral->ttnb1": 1651
+   },
+   "random": {
+    "central->bronch1": 373,
+    "central->ttnb1": 346,
+    "peripheral->bronch1": 791,
+    "peripheral->ttnb1": 860
+   },
+   "dot-product": {
+    "central->bronch1": 719,
+    "peripheral->ttnb1": 1651
+   },
+   "correction (2 layers)": {
+    "central->bronch1": 707,
+    "central->ttnb1": 12,
+    "peripheral->ttnb1": 1651
+   }
+  },
+  "exploration_signal": {
+   "central->bronch1": {
+    "n": 360,
+    "diagnostic": 0.828,
+    "days": 10.46,
+    "reward": 0.479,
+    "lead_days_at_choice": 0.0
+   },
+   "central->ttnb1": {
+    "n": 354,
+    "diagnostic": 0.568,
+    "days": 13.92,
+    "reward": 0.104,
+    "lead_days_at_choice": 0.0
+   },
+   "peripheral->bronch1": {
+    "n": 814,
+    "diagnostic": 0.451,
+    "days": 13.48,
+    "reward": 0.001,
+    "lead_days_at_choice": 0.0
+   },
+   "peripheral->ttnb1": {
+    "n": 806,
+    "diagnostic": 0.898,
+    "days": 14.03,
+    "reward": 0.431,
+    "lead_days_at_choice": 0.0
+   }
+  },
+  "learned_values": {
+   "dot-product": {
+    "central": {
+     "bronch1": 0.448,
+     "ttnb1": 0.127
+    },
+    "peripheral": {
+     "bronch1": 0.006,
+     "ttnb1": 0.422
+    }
+   },
+   "correction (2 layers)": {
+    "central": {
+     "bronch1": 0.414,
+     "ttnb1": 0.158
+    },
+    "peripheral": {
+     "bronch1": 0.024,
+     "ttnb1": 0.405
+    }
+   }
+  },
+  "runtime_s": 50.8,
+  "markdown": "### stokstad_calibrated.yaml / optimal / node `method` (held-out seeds [1, 2, 3] x 1000 patients; trained on 2334 exploration choices; target 42 d)\n\n| Policy at node | On-time | vs rule (paired) | Median days to treatment | Sampling procs / patient at node | Tissue-confirmed cancers | Diagnostic sample at node | Days choice->sampling done | Agreement with rule |\n|---|---|---|---|---|---|---|---|---|\n| rule (hand-written) | 80.5% (s.e. 0.7) | - | 31.1 | 1.03 | 2133 / 3000 | 90.0% | 12.8 | 100.0% |\n| random | 78.2% (s.e. 0.8) | -2.3 pp (s.e. 0.4) | 31.3 | 1.13 | 1699 / 3000 | 71.7% | 13.3 | 52.0% |\n| dot-product | 80.5% (s.e. 0.7) | +0.0 pp (s.e. 0.0) | 31.1 | 1.03 | 2133 / 3000 | 90.0% | 12.8 | 100.0% |\n| correction (2 layers) | 80.3% (s.e. 0.7) | -0.1 pp (s.e. 0.1) | 31.1 | 1.03 | 2131 / 3000 | 89.9% | 12.8 | 99.5% |\n\nChoices by revealed `location` (counts, held-out runs):\n\n| Policy | central->bronch1 | central->ttnb1 | peripheral->bronch1 | peripheral->ttnb1 |\n|---|---|---|---|---|\n| rule (hand-written) | 719 | 0 | 0 | 1651 |\n| random | 373 | 346 | 791 | 860 |\n| dot-product | 719 | 0 | 0 | 1651 |\n| correction (2 layers) | 707 | 12 | 0 | 1651 |\n\nExploration signal (random choice at the node; reward = diagnostic - days_from_choice_to_last_sampling_result / 30):\n\n| location -> option | n | diagnostic | days | mean reward |\n|---|---|---|---|---|\n| central->bronch1 | 360 | 0.83 | 10.5 | +0.479 |\n| central->ttnb1 | 354 | 0.57 | 13.9 | +0.104 |\n| peripheral->bronch1 | 814 | 0.45 | 13.5 | +0.001 |\n| peripheral->ttnb1 | 806 | 0.90 | 14.0 | +0.431 |\n\nLearned predicted reward per option (mean over held-out contexts at the node):\n\n| Model | location | bronch1 | ttnb1 |\n|---|---|---|---|\n| dot-product | central | +0.448 | +0.127 |\n| dot-product | peripheral | +0.006 | +0.422 |\n| correction (2 layers) | central | +0.414 | +0.158 |\n| correction (2 layers) | peripheral | +0.024 | +0.405 |"
+ },
+ "finland_lung/baseline/sample_choice": {
+  "scenario": "scenarios/finland_lung.yaml",
+  "flowchart": "baseline",
+  "node": "sample_choice",
+  "options": [
+   "bronch",
+   "ttnb"
+  ],
+  "target_days": 90.0,
+  "n_train_choices": 885,
+  "train_seeds": [
+   1001,
+   1002
+  ],
+  "n_train_patients_per_seed": 18800,
+  "eval_seeds": [
+   1,
+   2
+  ],
+  "n_eval_patients_per_seed": 18800,
+  "reward": "diagnostic - days_from_choice_to_last_sampling_result / 30",
+  "days_per_diagnosis": 30.0,
+  "epochs": 60,
+  "model_seed": 0,
+  "val_seed": 999,
+  "n_val_choices": 220,
+  "feature_sets": [
+   "static",
+   "queue"
+  ],
+  "model_selection_val_reward_mse": {
+   "dot-product": {
+    "0.0": 0.2017,
+    "0.1": 0.2008,
+    "0.3": 0.197,
+    "1.0": 0.1915,
+    "chosen_weight_decay": 1.0
+   },
+   "correction (2 layers)": {
+    "0.0": 0.2185,
+    "0.1": 0.2108,
+    "0.3": 0.2001,
+    "1.0": 0.194,
+    "chosen_weight_decay": 1.0
+   },
+   "dot-product + queue lead": {
+    "0.0": 0.1397,
+    "0.1": 0.139,
+    "0.3": 0.1388,
+    "1.0": 0.1424,
+    "chosen_weight_decay": 0.3
+   },
+   "correction (2 layers) + queue lead": {
+    "0.0": 0.1408,
+    "0.1": 0.1378,
+    "0.3": 0.1366,
+    "1.0": 0.1718,
+    "chosen_weight_decay": 0.3
+   }
+  },
+  "val_reward_variance": 0.1347,
+  "attribute_vocab": [
+   [
+    "location",
+    "central"
+   ],
+   [
+    "location",
+    "peripheral"
+   ]
+  ],
+  "table": {
+   "rule (hand-written)": {
+    "n_patients": 32313,
+    "n_cancer": 491,
+    "n_at_node": 740,
+    "on_time": 0.20977596741344195,
+    "on_time_se": 0.01839310046492015,
+    "median_days_to_treatment": 102.833431474288,
+    "sampling_per_patient_at_node": 1.1391891891891892,
+    "sampling_per_100_patients": 2.6088571163308885,
+    "tissue_confirmed_cancers": 416,
+    "tissue_confirmed_share_at_node": 0.9411764705882353,
+    "diagnostic_share_at_node": 0.9432432432432433,
+    "mean_days_choice_to_sampling_done": 15.533185009440752,
+    "agreement_with_rule": 1.0
+   },
+   "random": {
+    "n_patients": 32313,
+    "n_cancer": 491,
+    "n_at_node": 740,
+    "on_time": 0.14052953156822812,
+    "on_time_se": 0.01570005734588789,
+    "median_days_to_treatment": 105.98424790047505,
+    "sampling_per_patient_at_node": 1.1756756756756757,
+    "sampling_per_100_patients": 2.6924148175656857,
+    "tissue_confirmed_cancers": 392,
+    "tissue_confirmed_share_at_node": 0.8868778280542986,
+    "diagnostic_share_at_node": 0.8918918918918919,
+    "mean_days_choice_to_sampling_done": 18.037781393116227,
+    "agreement_with_rule": 0.5121621621621621,
+    "on_time_minus_rule": -0.06924643584521385,
+    "on_time_minus_rule_se": 0.014364869617197839
+   },
+   "dot-product": {
+    "n_patients": 32313,
+    "n_cancer": 491,
+    "n_at_node": 740,
+    "on_time": 0.014256619144602852,
+    "on_time_se": 0.005355403137547181,
+    "median_days_to_treatment": 142.59893569133894,
+    "sampling_per_patient_at_node": 1.2891891891891891,
+    "sampling_per_100_patients": 2.9523721102961655,
+    "tissue_confirmed_cancers": 420,
+    "tissue_confirmed_share_at_node": 0.9502262443438914,
+    "diagnostic_share_at_node": 0.9513513513513514,
+    "mean_days_choice_to_sampling_done": 63.27878000891527,
+    "agreement_with_rule": 0.6081081081081081,
+    "on_time_minus_rule": -0.1955193482688391,
+    "on_time_minus_rule_se": 0.018147066580117034
+   },
+   "correction (2 layers)": {
+    "n_patients": 32313,
+    "n_cancer": 491,
+    "n_at_node": 740,
+    "on_time": 0.032586558044806514,
+    "on_time_se": 0.008020976870579122,
+    "median_days_to_treatment": 131.87549300707315,
+    "sampling_per_patient_at_node": 1.2716216216216216,
+    "sampling_per_100_patients": 2.9121406245164483,
+    "tissue_confirmed_cancers": 418,
+    "tissue_confirmed_share_at_node": 0.9457013574660633,
+    "diagnostic_share_at_node": 0.9472972972972973,
+    "mean_days_choice_to_sampling_done": 52.01532379823245,
+    "agreement_with_rule": 0.6067567567567568,
+    "on_time_minus_rule": -0.17718940936863545,
+    "on_time_minus_rule_se": 0.01772464916249495
+   },
+   "dot-product + queue lead": {
+    "n_patients": 32313,
+    "n_cancer": 491,
+    "n_at_node": 740,
+    "on_time": 0.20162932790224034,
+    "on_time_se": 0.018125128685366185,
+    "median_days_to_treatment": 101.42787092770239,
+    "sampling_per_patient_at_node": 1.0675675675675675,
+    "sampling_per_100_patients": 2.444836443536657,
+    "tissue_confirmed_cancers": 415,
+    "tissue_confirmed_share_at_node": 0.9389140271493213,
+    "diagnostic_share_at_node": 0.9364864864864865,
+    "mean_days_choice_to_sampling_done": 14.549624593971336,
+    "agreement_with_rule": 0.7283783783783784,
+    "on_time_minus_rule": -0.008146639511201629,
+    "on_time_minus_rule_se": 0.009555439691960856
+   },
+   "correction (2 layers) + queue lead": {
+    "n_patients": 32313,
+    "n_cancer": 491,
+    "n_at_node": 740,
+    "on_time": 0.2240325865580448,
+    "on_time_se": 0.018835593028384653,
+    "median_days_to_treatment": 100.77342611038188,
+    "sampling_per_patient_at_node": 1.085135135135135,
+    "sampling_per_100_patients": 2.4850679293163744,
+    "tissue_confirmed_cancers": 415,
+    "tissue_confirmed_share_at_node": 0.9389140271493213,
+    "diagnostic_share_at_node": 0.9337837837837838,
+    "mean_days_choice_to_sampling_done": 14.12326352178729,
+    "agreement_with_rule": 0.7121621621621622,
+    "on_time_minus_rule": 0.014256619144602852,
+    "on_time_minus_rule_se": 0.009756204305411444
+   }
+  },
+  "confusion_attr": "location",
+  "confusion": {
+   "rule (hand-written)": {
+    "central->bronch": 241,
+    "peripheral->bronch": 186,
+    "peripheral->ttnb": 313
+   },
+   "random": {
+    "central->bronch": 120,
+    "central->ttnb": 121,
+    "peripheral->bronch": 254,
+    "peripheral->ttnb": 245
+   },
+   "dot-product": {
+    "central->bronch": 241,
+    "peripheral->bronch": 398,
+    "peripheral->ttnb": 101
+   },
+   "correction (2 layers)": {
+    "central->bronch": 241,
+    "peripheral->bronch": 375,
+    "peripheral->ttnb": 124
+   },
+   "dot-product + queue lead": {
+    "central->bronch": 241,
+    "peripheral->bronch": 57,
+    "peripheral->ttnb": 442
+   },
+   "correction (2 layers) + queue lead": {
+    "central->bronch": 240,
+    "central->ttnb": 1,
+    "peripheral->bronch": 86,
+    "peripheral->ttnb": 413
+   }
+  },
+  "exploration_signal": {
+   "central->bronch": {
+    "n": 161,
+    "diagnostic": 0.944,
+    "days": 13.86,
+    "reward": 0.482,
+    "lead_days_at_choice": 7.56
+   },
+   "central->ttnb": {
+    "n": 150,
+    "diagnostic": 0.68,
+    "days": 21.83,
+    "reward": -0.048,
+    "lead_days_at_choice": 16.52
+   },
+   "peripheral->bronch": {
+    "n": 265,
+    "diagnostic": 0.966,
+    "days": 22.35,
+    "reward": 0.221,
+    "lead_days_at_choice": 7.58
+   },
+   "peripheral->ttnb": {
+    "n": 309,
+    "diagnostic": 0.916,
+    "days": 21.15,
+    "reward": 0.211,
+    "lead_days_at_choice": 15.85
+   }
+  },
+  "learned_values": {
+   "dot-product": {
+    "central": {
+     "bronch": 0.44,
+     "ttnb": -0.033
+    },
+    "peripheral": {
+     "bronch": 0.223,
+     "ttnb": 0.189
+    }
+   },
+   "correction (2 layers)": {
+    "central": {
+     "bronch": 0.335,
+     "ttnb": 0.053
+    },
+    "peripheral": {
+     "bronch": 0.2,
+     "ttnb": 0.176
+    }
+   },
+   "dot-product + queue lead": {
+    "central": {
+     "bronch": 0.482,
+     "ttnb": 0.179
+    },
+    "peripheral": {
+     "bronch": 0.236,
+     "ttnb": 0.392
+    }
+   },
+   "correction (2 layers) + queue lead": {
+    "central": {
+     "bronch": 0.518,
+     "ttnb": 0.226
+    },
+    "peripheral": {
+     "bronch": 0.294,
+     "ttnb": 0.408
+    }
+   }
+  },
+  "runtime_s": 96.4,
+  "markdown": "### finland_lung.yaml / baseline / node `sample_choice` (held-out seeds [1, 2] x 18800 patients; trained on 885 exploration choices; target 90 d)\n\n| Policy at node | On-time | vs rule (paired) | Median days to treatment | Sampling procs / patient at node | Tissue-confirmed cancers | Diagnostic sample at node | Days choice->sampling done | Agreement with rule |\n|---|---|---|---|---|---|---|---|---|\n| rule (hand-written) | 21.0% (s.e. 1.8) | - | 102.8 | 1.14 | 416 / 491 | 94.3% | 15.5 | 100.0% |\n| random | 14.1% (s.e. 1.6) | -6.9 pp (s.e. 1.4) | 106.0 | 1.18 | 392 / 491 | 89.2% | 18.0 | 51.2% |\n| dot-product | 1.4% (s.e. 0.5) | -19.6 pp (s.e. 1.8) | 142.6 | 1.29 | 420 / 491 | 95.1% | 63.3 | 60.8% |\n| correction (2 layers) | 3.3% (s.e. 0.8) | -17.7 pp (s.e. 1.8) | 131.9 | 1.27 | 418 / 491 | 94.7% | 52.0 | 60.7% |\n| dot-product + queue lead | 20.2% (s.e. 1.8) | -0.8 pp (s.e. 1.0) | 101.4 | 1.07 | 415 / 491 | 93.6% | 14.5 | 72.8% |\n| correction (2 layers) + queue lead | 22.4% (s.e. 1.9) | +1.4 pp (s.e. 1.0) | 100.8 | 1.09 | 415 / 491 | 93.4% | 14.1 | 71.2% |\n\nChoices by revealed `location` (counts, held-out runs):\n\n| Policy | central->bronch | central->ttnb | peripheral->bronch | peripheral->ttnb |\n|---|---|---|---|---|\n| rule (hand-written) | 241 | 0 | 186 | 313 |\n| random | 120 | 121 | 254 | 245 |\n| dot-product | 241 | 0 | 398 | 101 |\n| correction (2 layers) | 241 | 0 | 375 | 124 |\n| dot-product + queue lead | 241 | 0 | 57 | 442 |\n| correction (2 layers) + queue lead | 240 | 1 | 86 | 413 |\n\nExploration signal (random choice at the node; reward = diagnostic - days_from_choice_to_last_sampling_result / 30):\n\n| location -> option | n | diagnostic | days | mean reward | next-slot lead at choice (d) |\n|---|---|---|---|---|---|\n| central->bronch | 161 | 0.94 | 13.9 | +0.482 | 7.6 |\n| central->ttnb | 150 | 0.68 | 21.8 | -0.048 | 16.5 |\n| peripheral->bronch | 265 | 0.97 | 22.4 | +0.221 | 7.6 |\n| peripheral->ttnb | 309 | 0.92 | 21.1 | +0.211 | 15.8 |\n\nLearned predicted reward per option (mean over held-out contexts at the node):\n\n| Model | location | bronch | ttnb |\n|---|---|---|---|\n| dot-product | central | +0.440 | -0.033 |\n| dot-product | peripheral | +0.223 | +0.189 |\n| correction (2 layers) | central | +0.335 | +0.053 |\n| correction (2 layers) | peripheral | +0.200 | +0.176 |\n| dot-product + queue lead | central | +0.482 | +0.179 |\n| dot-product + queue lead | peripheral | +0.236 | +0.392 |\n| correction (2 layers) + queue lead | central | +0.518 | +0.226 |\n| correction (2 layers) + queue lead | peripheral | +0.294 | +0.408 |"
+ }
+}

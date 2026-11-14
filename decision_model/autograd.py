@@ -136,6 +136,23 @@ def cross_entropy(logits: Tensor, mask: np.ndarray, target: np.ndarray) -> Tenso
     return _make(loss, (logits,), bw)
 
 
+def chosen_mse(logits: Tensor, idx: np.ndarray, target: np.ndarray) -> Tensor:
+    """Mean squared error between the logit of the option actually taken (idx) and its
+    observed outcome (target). Used to regress per-option value from logged choices
+    (contextual bandit, direct method); options not taken get no gradient."""
+    B = len(idx)
+    rows = np.arange(B)
+    err = logits.data[rows, idx] - target
+    loss = float((err ** 2).mean())
+
+    def bw(g):
+        d = np.zeros_like(logits.data)
+        d[rows, idx] = 2.0 * err / B
+        logits._acc(g * d)
+
+    return _make(loss, (logits,), bw)
+
+
 class Adam:
     def __init__(self, params: dict[str, Tensor], lr=3e-3, b1=0.9, b2=0.999, eps=1e-8):
         self.p, self.lr, self.b1, self.b2, self.eps, self.t = params, lr, b1, b2, eps, 0

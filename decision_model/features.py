@@ -3,8 +3,12 @@
 Context vector (revealed information only):
   [age/100, non_specific_group, days_elapsed/60, (pos, neg) for each test in CONTEXT_TESTS]
   A test that has not been done / is nondiagnostic has pos = neg = 0 ("unknown").
+  optionally followed by a one-hot block over revealed attributes (AttrVocab): one column per
+  (attribute, value) pair seen in training; an attribute that is not revealed, or a value never
+  seen in training, is all zero ("unknown"). Without a vocab the vector is unchanged (N_CONTEXT).
 Option vector (a candidate next test):
   [sensitivity, specificity, wait_days/30, invasive, cost_eur/1000]
+  (in-loop runs pass their own per-option vectors, see decision_model/in_loop.py)
 """
 from __future__ import annotations
 
@@ -28,8 +32,36 @@ DEFAULT_TEST_TABLE = {
 }
 
 
-def context_vector(age, non_specific, days_elapsed, status: dict[str, int | None]) -> np.ndarray:
-    """status: test id -> 1 (positive), 0 (negative), None/absent (unknown)."""
+class AttrVocab:
+    """One-hot layout for revealed attributes, built from training contexts only."""
+
+    def __init__(self, pairs=()):
+        self.pairs = sorted({(str(a), str(v)) for a, v in pairs})
+        self.index = {p: i for i, p in enumerate(self.pairs)}
+
+    @classmethod
+    def from_attributes(cls, attr_dicts) -> "AttrVocab":
+        return cls((a, v) for d in attr_dicts for a, v in (d or {}).items() if v is not None)
+
+    def __len__(self):
+        return len(self.pairs)
+
+    def vector(self, attrs: dict | None) -> np.ndarray:
+        v = np.zeros(len(self.pairs))
+        for a, val in (attrs or {}).items():
+            i = self.index.get((str(a), str(val)))
+            if i is not None:
+                v[i] = 1.0
+        return v
+
+    def to_list(self) -> list:
+        return [list(p) for p in self.pairs]
+
+
+def context_vector(age, non_specific, days_elapsed, status: dict[str, int | None],
+                   attributes: dict | None = None, attr_vocab: AttrVocab | None = None) -> np.ndarray:
+    """status: test id -> 1 (positive), 0 (negative), None/absent (unknown).
+    attributes / attr_vocab: revealed attributes, appended as a one-hot block when a vocab is given."""
     v = np.zeros(N_CONTEXT)
     v[0] = (DEFAULT_AGE if age is None else age) / 100.0
     v[1] = float(non_specific)
@@ -40,6 +72,8 @@ def context_vector(age, non_specific, days_elapsed, status: dict[str, int | None
             v[3 + 2 * k] = 1.0
         elif s is False or s == 0:
             v[4 + 2 * k] = 1.0
+    if attr_vocab is not None:
+        v = np.concatenate([v, attr_vocab.vector(attributes)])
     return v
 
 
