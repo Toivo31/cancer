@@ -11,6 +11,19 @@ Keys: `1`-`6` or the left/right arrows switch screens. The scenario switcher is 
 
 Screens: 1 what to change and what it gains (Norway: headline with the faster scanner plus the no-new-equipment number beside it), 2 where time is lost, 3 why these changes (step chart of held-out on-time share after 0, 1, 2 ... changes; per change what the records said, what the rerun confirmed, honesty box; optional sensitivity tornado), 4 capacity or order (same patients: more capacity vs the suggested reorder; one-slot probe table), 5 before/after pathway and Norwegian validation vs published 40/48/80, 6 who waits longest plus sources and assumptions.
 
+## Rerunning the exports
+
+One command rebuilds every bundle the pages read: `python demo/export_all.py` (or name some: `python demo/export_all.py encounter start`). Run it from the repo root, then reload the pages. Times on the shared 2-core machine, 14 Nov evening:
+
+| Command | Writes | Time |
+|---|---|---|
+| `python demo/export_cards.py` | `data/cards_bundle.js` (synthetic-patient card on the start page; counts every folder in `libraries/` that has a manifest) | under 1 s |
+| `python demo/export_start.py` | `data/start_bundle.js` (Norway ranges and decomposition, ledger, tuned encounter report) | about 11 s |
+| `python demo/export_encounter.py` | `data/encounter_bundle.js` (runs `scenarios/finland_encounter.yaml` now) | about 15 s |
+| `python demo/export_flow.py` | `data/flow_bundle.js` (held-out cohorts of both scenarios) | 37 to 63 s |
+
+Order does not matter between them. `data/demo_bundle.json` (dashboard) comes from `demo/export.py` and `python demo/embed_bundle.py` and is only needed when the optimiser results change; the flow export prints each share next to the dashboard's and flags a difference.
+
 ## Data
 
 The input is the demo bundle described in `docs/architecture.md` ("Demo bundle" and "Metrics JSON").
@@ -23,7 +36,7 @@ Optional fields the page tolerates when missing: `published`, `by_group`, `node_
 
 Extra fields the page reads beyond the contract (all optional): scenario `description`; flowchart node `label` (plain text shown in the drawing; falls back to the id), node `stage`, `kind: "exit"` (drawn as a rounded end step), `after`/`after_any`; assumption `url`. The suggested change is the variant that has `changes`.
 
-Tests: `pytest tests/test_demo_fixture.py`.
+Tests: `pytest tests/test_demo_fixture.py tests/test_demo_start.py tests/test_demo_cards.py`.
 
 ## Fields added in wave 2 (all optional for the page)
 
@@ -49,7 +62,7 @@ Per scenario, written by `export.py`:
 
 ## Flowchart simulation page (`flow.html`)
 
-The main screen of the product, offline: the pathway as a graph with simulated patients moving through it. Open `demo/flow.html` from disk (no server, no build). Data: `data/flow_bundle.js`, written by `python demo/export_flow.py` (about 40 s; same held-out cohorts and optimiser results as the dashboard, and the script prints each share next to the dashboard's). Layers: Flow (counts), Time (median wait per step), Queues (waiting over the simulated year), Decisions (shares chosen); Compare shows the change per step against the left pathway. Space plays and pauses, arrow keys step, `r` restarts; click a dot for that patient's trace. URL options: `?s=finland`, `?layer=time`, `?compare`, `?paused&day=60`, `?view=both|left|right`, `?left=observed&right=authors`. Data shape: `docs/platform/flow-format.md`; library: `pathway_sim/flow.py`.
+The main screen of the product, offline: the pathway as a graph with simulated patients moving through it. Open `demo/flow.html` from disk (no server, no build). Data: `data/flow_bundle.js` (and `data/start_bundle.js` for the Norway ranges in the side panel), written by `python demo/export_flow.py` (about 40 s; same held-out cohorts and optimiser results as the dashboard, and the script prints each share next to the dashboard's). Layers: Flow (counts), Time (median wait per step), Queues (waiting over the simulated year), Decisions (shares chosen); Compare shows the change per step against the left pathway. Space plays and pauses, arrow keys step, `r` restarts; click a dot for that patient's trace. URL options: `?s=finland`, `?layer=time`, `?compare`, `?paused&day=60`, `?view=both|left|right`, `?left=observed&right=authors`. Data shape: `docs/platform/flow-format.md`; library: `pathway_sim/flow.py`.
 
 ## Encounter loop page (`encounter.html`)
 

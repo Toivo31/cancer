@@ -41,3 +41,28 @@ code,.cmd{font:11px/1.4 var(--mono);color:var(--blue);background:#0E161F;border:
 .honest b{color:var(--text)}
 .honest .v{color:var(--mint)}
 @media (max-width:1100px){.row{grid-template-columns:1fr}}
+
+/* Norway detail */
+details.more{margin-top:2px}
+details.more summary{cursor:pointer;font:600 11.5px/1.35 var(--sans);color:var(--blue);padding:2px 0}
+details.more .cap{margin-top:3px}
+details.more .cap p{margin:0 0 5px}
+
+/* Synthetic patients card */
+.card-block{background:linear-gradient(#111A24,#16222F);border:1px solid var(--line);border-radius:4px;padding:10px 16px 12px;margin:0 0 8px}
+.card-block h2{margin:0 0 3px;font:700 15px/1.15 var(--sans)}
+.card-block .what{margin:0 0 8px;font-size:12px;line-height:1.4;color:var(--muted);max-width:1100px}
+.pcols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+.pcol{border:1px solid var(--line);border-radius:4px;padding:8px 11px;background:#0E161F;min-width:0}
+.pcol h3{margin:0 0 6px;font:700 10px/1.2 var(--mono);letter-spacing:.12em;text-transform:uppercase}
+.pcol.model h3{color:var(--mint)}
+.pcol.tmpl h3{color:var(--amber)}
+.pcol .lab{font:600 9.5px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin:7px 0 2px}
+.pcol .lab:first-of-type{margin-top:0}
+.pcol .txt{font:12px/1.4 var(--sans);color:var(--text)}
+.pbg{font:11px/1.4 var(--mono);color:var(--muted);margin:0 0 6px}
+details.hidden-side{margin-top:8px;border:1px dashed var(--red);border-radius:4px;padding:5px 10px;background:rgba(255,93,115,.05)}
+details.hidden-side summary{cursor:pointer;font:700 10px/1.4 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--red)}
+details.hidden-side .txt{font:12px/1.4 var(--sans);color:var(--text);margin-top:5px}
+.pcounts{margin-top:8px;font:11.5px/1.45 var(--sans);color:var(--muted)}
+.pcounts b{color:var(--text)}

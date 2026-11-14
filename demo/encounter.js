@@ -338,7 +338,7 @@ function renderResults() {
 }
 function renderNote() {
   const c = pats.filter(p => D.truth[p.id] && D.truth[p.id].cancer).length;
-  $('#note').innerHTML = `<b>All patients are simulated.</b> Counts on the graph, edge thickness and the tables use all ${fmt(D.n)} simulated patients; the moving dots are a sample of ${pats.length} (about ${Math.round(100 * c / pats.length)}% with cancer, far above the real ${pct(D.n_cancer / D.n, 1)}, so that some reach treatment). Time is days since each patient's own first contact. Decisions come from placeholder tables; the numbers show how the loop behaves, not Finnish measurements. Findings are simulated and are not clinical advice. Run ${esc(D.generated_at)}, seed ${D.seed}.`;
+  $('#note').innerHTML = `<b>All patients are simulated.</b> Counts on the graph, edge thickness and the tables use all ${fmt(D.n)} simulated patients; the moving dots are a sample of ${pats.length} (about ${Math.round(100 * c / pats.length)}% with cancer, far above the real ${pct(D.n_cancer / D.n, 1)}, so that some reach treatment). Time is days since each patient's own first contact. Decisions come from placeholder tables; the numbers show how the loop behaves, not Finnish measurements. Findings are simulated and are not clinical advice. Run ${esc(D.generated_at)}, seed ${D.seed}.` + multiSeedNote();
 }
 
 /* ------------------------------------------------------------------ playback */
@@ -357,3 +357,13 @@ function frame(now) {
 window.__enc = S;
 init();
 })();
+
+/* This page shows ONE illustration run (one seed, no warm-up). The multi-seed report is a different, longer run of the same loop. */
+function multiSeedNote() {
+  const R = window.START_DATA && window.START_DATA.encounter_results, c = R && R.consistency;
+  const pc = x => (100 * x).toFixed(0) + '%';
+  let h = ` <b>This is one illustration run.</b> The loop's queues fill up as a run gets longer, so a longer run gives different numbers.`;
+  if (c && c.within90 && c.within90.loop && c.ref_med && c.ref_med.loop)
+    h += ` The multi-seed report (docs/encounter_results.md: ${R.seeds.length} seeds of ${R.n} patients, ${Math.round(R.warmup_days)}-day warm-up) gives ${pc(c.within90.loop.mean)} of cancers treated within 90 days (range ${pc(c.within90.loop.lo)} to ${pc(c.within90.loop.hi)}) and a median of ${Math.round(c.ref_med.loop.mean)} days to referral. Quote that report for the number; use this page to see how the loop behaves.`;
+  return h;
+}

@@ -7,6 +7,8 @@ from disk as JSON:
   docs/validation_results.json                      Norway calibration (accepted grid points, published numbers)
   docs/review_checks/norway_leave_one_out.json      Norway robustness (optional, written by another lane)
   docs/review_checks/encounter_results.json         tuned encounter-loop report (optional, another lane)
+  docs/ranges_norway.json                           Norway: spread across the calibration sets that fit (optimiser vs authors' pathway)
+  runs/opt_stokstad_fastpet.json                    the optimiser's four Norwegian changes; re-simulated here with and without the fourth
   docs/ledger.json                                  how many inputs are sourced and how many are assumptions
   catalogue/lung-primary-care/*.yaml                every `source:` in the care catalogue, counted here
 
@@ -76,6 +78,57 @@ def pick(d, *keys):
     return d
 
 
+def spread(vals):
+    vals = [v for v in vals if isinstance(v, (int, float))]
+    return {"min": min(vals), "max": max(vals), "n": len(vals)} if vals else None
+
+
+def norway_ranges() -> dict | None:
+    """Optimiser and authors' pathway across the calibration sets that reproduce the observed pathway."""
+    r = read_json("docs/ranges_norway.json")
+    sets = pick(r, "accepted_calibration_sets", "per_set") if r else None
+    if not sets:
+        return None
+    out = {"source_file": "docs/ranges_norway.json", "n_sets": len(sets)}
+    for k in ("observed", "faster_pet", "authors", "optimiser_faster_scanner", "optimiser_no_new_equipment"):
+        out[k] = spread([s.get(k) for s in sets])
+    out["optimiser_above_authors_in"] = sum(1 for s in sets if s["optimiser_faster_scanner"] > s["authors"])
+    return out
+
+
+def norway_without_fourth() -> dict | None:
+    """Re-simulate the optimiser's faster-scanner pathway without its fourth change (tissue sampling planned at
+    referral triage), on the same three held-out cohorts the flow page uses (seeds 201-203, 1000 patients each)."""
+    try:
+        import sys
+        sys.path.insert(0, str(ROOT))
+        from optimiser.apply import apply_changes
+        from optimiser.search import cohorts
+        from pathway_sim import compute_metrics, load_scenario, simulate
+
+        sc = load_scenario(ROOT / "scenarios" / "generated" / "stokstad_calibrated.yaml")
+        run = read_json("runs/opt_stokstad_fastpet.json")
+        steps = run["steps"]
+        fourth = [i for i, st in enumerate(steps) if st["kind"] == "relax" and st["target"] == "sample_plan"]
+        if len(fourth) != 1:
+            return None
+        held = cohorts(sc, (201, 202, 203), 1000)
+
+        def share(fc):
+            ms = [compute_metrics(simulate(sc, fc, pts, seed=s), sc)["share_within_target"] for s, pts in held]
+            return sum(ms) / len(ms)
+
+        base = sc.flowcharts["faster_pet"]
+        keep = [i for i in range(len(steps)) if i != fourth[0]]
+        return {"source_file": "runs/opt_stokstad_fastpet.json", "n_changes": len(steps),
+                "faster_scanner_only": share(base),
+                "three_changes": share(apply_changes(sc, base, steps, accept=keep)),
+                "all_four": share(apply_changes(sc, base, steps))}
+    except Exception as e:  # the page then says "pending" for this line
+        print("  norway_without_fourth failed:", e)
+        return None
+
+
 def build() -> dict:
     val = read_json("docs/validation_results.json")
     loo = read_json("docs/review_checks/norway_leave_one_out.json")
@@ -86,6 +139,7 @@ def build() -> dict:
         "validation": None,
         "norway_robustness": None,
         "encounter_results": read_json("docs/review_checks/encounter_results.json"),
+        "norway": None,
         "ledger": None,
         "catalogue": catalogue_counts("catalogue/lung-primary-care"),
     }
@@ -103,6 +157,12 @@ def build() -> dict:
             "accepted": pick(loo, "both_targets", "accepted"),
             "pred": pick(loo, "both_targets", "pred"),
         }
+    out["norway"] = {
+        "ranges": norway_ranges(),
+        "without_fourth": norway_without_fourth(),
+        # the robustness band over every setting that fits the observed data (docs/validation.md, Robustness)
+        "all_settings": out["norway_robustness"],
+    } if val else None
     if led:
         out["ledger"] = {
             "source_file": "docs/ledger.json",

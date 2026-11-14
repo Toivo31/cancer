@@ -48,7 +48,7 @@ def parsed():
 
 def test_every_link_and_asset_exists():
     p = parsed()
-    assert len(p.links) >= 12
+    assert len(p.links) >= 10
     for ref in p.links + p.scripts:
         path = urlsplit(ref).path
         assert path and (DEMO / path).resolve().exists(), f"missing target: {ref}"
@@ -72,3 +72,18 @@ def test_start_bundle_parses():
     t = (DEMO / "data" / "start_bundle.js").read_text(encoding="utf-8")
     d = json.loads(re.match(r"window\.START_DATA = (.*);\s*$", t, re.S).group(1))
     assert d["format"] == "start-bundle/1"
+
+
+def test_norway_links_built_in_script_name_real_variants():
+    """The two Norway buttons are added by start.js; their left/right keys must be variants in the flow bundle."""
+    import json
+    js = (DEMO / "start.js").read_text(encoding="utf-8")
+    t = (DEMO / "data" / "flow_bundle.js").read_text(encoding="utf-8")
+    d = json.loads(t[t.index("=") + 1:].rstrip().rstrip(";"))
+    keys = {v["key"] for s in d["scenarios"] if s["id"] == "norway" for v in s["variants"]}
+    pairs = re.findall(r"flow\.html\?s=norway&compare&left=(\w+)&right=(\w+)", js)
+    assert len(pairs) == 2
+    for a, b in pairs:
+        assert a in keys and b in keys
+    nor = next(s for s in d["scenarios"] if s["id"] == "norway")
+    assert set(nor["default_pair"]) <= keys
