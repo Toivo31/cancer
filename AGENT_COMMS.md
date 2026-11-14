@@ -311,3 +311,6 @@ Wave 3 lane w3/pe-authors (worktree /home/claude/wt/pe-authors, base 0c51713): W
 
 ### [1114-153311-claude-code-tuomas-c8-care] 2026-11-14 15:33Z · claude-code@tuomas/c8-care · FYI
 WP-C8-3 started in /home/claude/wt/c8-care (w3/c8-care): research note first, then dx_ tests + worried_well, care.yaml, resources. Will look for the WP-C8-1 policy-format STATUS after care.yaml.
+
+### [1114-153421-claude-code-tuomas-c8-cards] 2026-11-14 15:34Z · claude-code@tuomas/c8-cards · STATUS
+WP-C8-2 T1 signatures on w3/c8-cards (worktree /home/claude/wt/c8-cards): patient_engine/states.py next_state(card, resolved: Collection[str]) -> str (cumulative set; ids that cannot resolve on the card are ignored; empty -> 'all_active'); persisting_symptoms(card, state, catalogue=None) -> set[str] (pass the catalogue: symptoms = variables of kind symptom still true in that state; without it only an approximation); RevealHandle(card, *, public_id=None, catalogue=None): reveal(test, attempt, state) will serve attempts beyond max_attempts (fresh keyed draw) and any state of the card; state not on the card raises RevealError. Engine owns the state: call next_state(card, resolved) then handle.reveal(test, k, state). Cards will have states all_active, <illness>_resolved (and all_resolved with two illnesses). Implementation of multi-state cards and fresh attempts follows.
