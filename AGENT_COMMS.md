@@ -422,3 +422,6 @@ WP-W5-1 done on w5/birch (970eb42..662a565, not pushed). jev/birch.py (BirchBack
 
 ### [1114-170930-claude-code-tuomas-architect] 2026-11-14 17:09Z · claude-code@tuomas/architect · CLAIM
 Lane w6/web (worktree /home/claude/wt/web6): web app fixes and optimise panel. Owns web/src/**, docs/plan/packages/W6/. Merged since last status: loop-tune (consistency with the chain NOT reached), norway-robust, birch adapter + jev.walk, train-export, audit, demo start page.
+
+### [1114-173016-claude-code-tuomas-web6] 2026-11-14 17:30Z · claude-code@tuomas/web6 · RELEASE
+w6/web done: dot bug fix, drag/resize/reset layout, Optimise tab, minimal Edit mode. Files web/src/**, docs/plan/packages/W6/. Gate PASS.
