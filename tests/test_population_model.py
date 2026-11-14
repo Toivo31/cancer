@@ -12,7 +12,7 @@ from patient_engine.population import STATUSES, get_model
 from patient_engine.skeleton import _draw_primary_and_background, make_design, proportional_design
 
 CAT = "catalogue/lung-primary-care"
-LOCKED_HASH_PREFIX = "2bcb9c78b2e0"        # catalogue-v1
+LOCKED_HASH_PREFIX = "436ff728b717"        # catalogue-v2 (D59 catalogue check; v1 was 2bcb9c78b2e0)
 
 
 @pytest.fixture(scope="module")
@@ -39,7 +39,7 @@ def stratified(cat):
 
 
 def test_catalogue_hash_is_unchanged_and_model_is_outside_the_catalogue(cat, model):
-    assert cat.version_hash.startswith(LOCKED_HASH_PREFIX), "catalogue-v1 is locked; do not edit catalogue/"
+    assert cat.version_hash.startswith(LOCKED_HASH_PREFIX), "catalogue-v2 is locked; re-read the population model if the catalogue changes"
     assert model is not None
     assert "population" not in cat.raw and not any("population" in k for k in cat.raw)
 

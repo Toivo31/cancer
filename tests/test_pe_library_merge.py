@@ -174,6 +174,9 @@ def test_simulator_accepts_a_merged_library(two):
     t, s = ROOT / "libraries" / "gemini_trial", ROOT / "libraries" / "gemini_s2_30"
     if not (t.exists() and s.exists()):
         pytest.skip("gemini libraries not present")
+    from patient_engine.catalogue import load_catalogue
+    if load_library(t).manifest.catalogue_hash != load_catalogue(ROOT / "catalogue" / "lung-primary-care").version_hash:
+        pytest.skip("the committed gemini libraries were made for an earlier catalogue (D59 changed the hash)")
     tmp = two[0]
     merge_libraries([t, s], tmp / "g")
     p = subprocess.run([sys.executable, "-m", "pathway_sim", "run", "scenarios/finland_encounter.yaml", "--flowchart",

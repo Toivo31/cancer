@@ -23,7 +23,7 @@ from patient_engine.validate import has_errors, validate_card
 
 LUNG = "catalogue/lung-primary-care"
 TINY = "catalogue/_examples/tiny"
-CATALOGUE_V1_HASH = "2bcb9c78b2e0"
+CATALOGUE_V1_HASH = "436ff728b717"   # catalogue-v2 after the D59 catalogue check (v1 was 2bcb9c78b2e0)
 
 
 @pytest.fixture(scope="module")
