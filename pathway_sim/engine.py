@@ -219,7 +219,7 @@ class Simulation:
 
     # ------------------------------------------------------------------ main loop
     def run(self) -> RunLog:
-        runs = {p.id: PatientRun(p) for p in self.patients}
+        runs = {p.id: self.new_run(p) for p in self.patients}
         for p in self.patients:
             self.push(p.arrival, "arrive", p.id)
         done = 0
@@ -229,13 +229,13 @@ class Simulation:
             if pr.outcome is not None:
                 continue
             if kind == "arrive":
-                for nid in self.fc.nodes:
-                    pr.status[nid] = "pending"
-                self.advance(pr, t)
+                self.on_arrive(pr, t)
             elif kind == "done":
                 self.on_done(pr, node, attempt, t)
             elif kind == "exit":
                 self.exit(pr, node, t)
+            else:
+                self.on_event(pr, kind, node, attempt, t)
             if self.progress is not None and pr.outcome is not None:   # this patient just finished
                 done += 1
                 if done % self.progress_every == 0:
@@ -254,6 +254,20 @@ class Simulation:
         for pr in log.patients:
             mark_critical(pr, self.fc)
         return log
+
+    # ------------------------------------------------------------------ hooks (subclasses: pathway_sim.encounter)
+    def new_run(self, p: Patient) -> PatientRun:
+        """The per-patient state object (a subclass may carry more)."""
+        return PatientRun(p)
+
+    def on_arrive(self, pr: PatientRun, t: float) -> None:
+        """A patient arrives: the flowchart starts."""
+        for nid in self.fc.nodes:
+            pr.status[nid] = "pending"
+        self.advance(pr, t)
+
+    def on_event(self, pr: PatientRun, kind: str, node: str, attempt: int, t: float) -> None:
+        """Event kinds the flowchart engine does not know (none are pushed by it); ignored here."""
 
     # ------------------------------------------------------------------ helpers
     def names(self, pr: PatientRun) -> _Names:
