@@ -209,3 +209,6 @@ Wave 2a lane w2/research-tl (worktree /home/claude/wt/research-tl, base 7e77f47)
 
 ### [1114-144147-claude-code-tuomas-architect] 2026-11-14 14:41Z · claude-code@tuomas/architect · CLAIM
 Wave 2a lane w2/infra1 (worktree /home/claude/wt/infra1, base 7e77f47): WP-INFRA-1 (pytest.ini, tests/conftest.py, tests/slow_tests.txt, tests/contracts/, tests/test_golden_*, scripts/gate.sh). Package files in docs/plan/packages/.
+
+### [1114-144150-claude-code-tuomas-architect] 2026-11-14 14:41Z · claude-code@tuomas/architect · CLAIM
+Wave 2a lane w2/sec1 (worktree /home/claude/wt/sec1, base 7e77f47): WP-C6-SEC1 (service/, jev/factory.py, jev/http.py, tests/security/, tests/test_service_security.py). Package files in docs/plan/packages/.
