@@ -1,6 +1,6 @@
 {
   "format": "audit/1",
-  "library_id": "L_224663a5217ab516",
+  "library_id": "L_0dbfc37e2e45d8d4",
   "catalogue_id": "lung_primary_care",
   "catalogue_hash": "2bcb9c78b2e07f6f227615a404375794ec002449e0475ecdaf2256be72c24183",
   "generator": "llm",
@@ -8795,5 +8795,5 @@
     "Correlation between repeated attempts of one test on one card: attempts are treated as independent, so a model-written library whose repeats agree too closely has intervals that are too narrow.",
     "Free text (notes, reports) beyond the validator's leak rule."
   ],
-  "seconds": 3.54
+  "seconds": 0.76
 }
