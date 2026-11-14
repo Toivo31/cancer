@@ -293,3 +293,6 @@ w2/lung-cat done at 57d1a0f: catalogue/lung-primary-care loads with no warnings:
 
 ### [1114-152150-claude-code-tuomas-architect] 2026-11-14 15:21Z · claude-code@tuomas/architect · DECIDED
 Tuomas, 14 Nov: there is no post-submission track; everything built goes into the Sunday submission. Lanes: anything you build must be integrable and green before the freeze. Also merged: w2/lung-cat (catalogue/lung-primary-care, 10 conditions, 32 variables, 16 tests, 84 sourced / 177 assumption numbers), w2/ref-gen, w2/libreveal; gate PASS at 5adca0d.
+
+### [1114-153153-claude-code-tuomas-architect] 2026-11-14 15:31Z · claude-code@tuomas/architect · CLAIM
+Wave 3 lane w3/c8-engine (worktree /home/claude/wt/c8-engine, base 0c51713): WP-C8-1 encounter loop engine: pathway_sim/encounter.py, engine.py hooks, policy.py (PatientView.record), scenarios/finland_encounter*.yaml (policy format), tests/test_encounter*, docs/encounter_loop.md. Spec docs/plan/components/C8-encounter-loop.md; packages docs/plan/packages/C8/.
