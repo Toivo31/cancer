@@ -129,6 +129,58 @@ def _stem(output_id: str) -> str:
     return " ".join(words) or output_id.replace("_", " ")
 
 
+#: Words besides a condition's label and id that name it (review w8 M1): synonyms and abbreviations, matched as whole
+#: words (an optional plural ``s``), case-insensitive. Only words that no test result needs to describe its own values:
+#: "malignant cells", "suspicious for malignancy", "metastases", "airflow obstruction", "consolidation" and the cell
+#: types ("adenocarcinoma", "small cell carcinoma"), "recurrent chest infection" stay allowed, so a report of the values
+#: alone is never flagged (``tests/test_review_w8_g2_blind.py`` checks every output and label of the catalogue).
+CONDITION_TERMS: dict[str, tuple[str, ...]] = {
+    "lung_cancer": ("cancer", "lung carcinoma", "bronchial carcinoma", "bronchogenic carcinoma", "tumour", "tumor",
+                    "neoplasm"),
+    # not "chest infection": the history output and symptom ``recurrent_chest_infection`` describe it
+    "pneumonia": ("lower respiratory tract infection", "lrti"),
+    "copd_exacerbation": ("copd", "emphysema", "chronic bronchitis", "chronic obstructive pulmonary disease",
+                          "chronic obstructive lung disease"),
+    "asthma": ("asthmatic",),
+    "heart_failure": ("cardiac failure", "congestive heart", "chf"),
+    "tuberculosis": ("tb", "tuberculous"),
+    "benign_nodule": ("granuloma", "hamartoma"),
+    "reflux_postinfectious_cough": ("reflux", "gord", "gerd", "post-infectious cough", "postinfectious cough",
+                                    "post-viral cough", "postviral cough"),
+    "viral_self_limiting": ("viral illness", "viral infection", "common cold", "influenza", "flu"),
+}
+
+
+def condition_terms(condition) -> set[str]:
+    """Lower-case words that name ``condition`` (a catalogue condition): its label, its id and ``CONDITION_TERMS``."""
+    return {condition.label.lower(), condition.id.replace("_", " "), *CONDITION_TERMS.get(condition.id, ())}
+
+
+def condition_pattern(condition) -> re.Pattern:
+    """A regex that finds any name of ``condition`` in lower-case text with ``_`` read as a space (rule 8)."""
+    names = sorted(condition_terms(condition), key=len, reverse=True)
+    return re.compile("|".join(r"(?<![a-z])" + re.escape(x) + r"s?(?![a-z])" for x in names))
+
+
+def report_contradictions(test, values: Mapping[str, Any], report: str) -> list[tuple[str, bool]]:
+    """Rule 9 for one report: ``(output id, value)`` of every binary output that ``report`` states the opposite of."""
+    text = report.lower()
+    out = []
+    for o in test.outputs:
+        v = values.get(o.id)
+        if o.type != "binary" or not isinstance(v, bool):
+            continue
+        stem = re.escape(_stem(o.id))
+        negated = re.search(rf"\b(no|without|absence of)\s+(\w+\s+)?(evidence of\s+|sign of\s+)?{stem}", text) \
+            or re.search(rf"\b{stem}\w*\s+(is |are |was |were )?(absent|not (seen|present|identified))", text)
+        if o.id.startswith("abnormal"):
+            negated = negated or _NORMAL_PHRASES.search(text)
+        shown = re.search(rf"(?<!no )(?<!without )\b{stem}\w*\s+(is |are |was |were )?(seen|present|noted|identified|demonstrated|evident)", text)
+        if (v and negated) or (not v and shown and not negated):
+            out.append((o.id, v))
+    return out
+
+
 def _var_range(var) -> tuple[float | None, float | None]:
     lo, hi = var.range
     if var.type == "size_mm" and lo is None:
@@ -471,19 +523,23 @@ class _Checker:
         prim = cat.conditions.get(self.primary) if self.primary else None
         if prim is None or prim.cls == "healthy":
             return
-        names = {prim.label.lower(), prim.id.replace("_", " ")}
-        rx = re.compile("|".join(r"(?<![a-z])" + re.escape(x) + r"(?![a-z])" for x in sorted(names, key=len, reverse=True)))
+        rx = condition_pattern(prim)
 
-        def check(text: Any, state: str, keys: Iterable[str], path: str) -> None:
-            if isinstance(text, str) and rx.search(text.lower().replace("_", " ")) and not any(self._reveals(state, k) for k in keys):
+        # The exemption (a mention that reveals the primary) is for clinicians' texts stating a result (GP notes,
+        # reports). The patient's own words (account, complaint) never name the diagnosis (review w8 M1).
+        def check(text: Any, state: str, keys: Iterable[str], path: str, exempt: bool = True) -> None:
+            if isinstance(text, str) and rx.search(text.lower().replace("_", " ")) \
+                    and not (exempt and any(self._reveals(state, k) for k in keys)):
                 self.add("card_reveals_condition", f"the text names the hidden primary condition ({prim.label})", path,
-                         "rephrase without the diagnosis, or add to `mentions` the finding or test result that reveals it")
+                         "rephrase without the diagnosis" + (", or add to `mentions` the finding or test result that "
+                                                             "reveals it" if exempt else ""))
 
         for i, n in enumerate(_list(self.d.get("notes"))):
             n = _dict(n)
-            check(n.get("text"), str(n.get("state")), _list(n.get("mentions")), f"notes[{i}].text")
+            check(n.get("text"), str(n.get("state")), _list(n.get("mentions")), f"notes[{i}].text",
+                  exempt=n.get("kind") != "patient_account")
         for state, p in _dict(self.d.get("presenting")).items():
-            check(_dict(p).get("text"), state, _list(_dict(p).get("reported")), f"presenting.{state}.text")
+            check(_dict(p).get("text"), state, _list(_dict(p).get("reported")), f"presenting.{state}.text", exempt=False)
         # A definitive test for the primary condition (an output measuring `dx_<primary>`, decision D46)
         # names what it tests for whether the result is positive or negative; that is not a leak.
         definitive = {t.id for t in cat.tests.values() if any(o.measures == f"dx_{self.primary}" for o in t.outputs)}
@@ -526,24 +582,12 @@ class _Checker:
                     if a.get("status") != "ok" or not isinstance(report, str) or not report.strip() \
                             or not isinstance(a.get("values"), dict):
                         continue
-                    text = report.lower()
-                    for o in test.outputs:
-                        v = a["values"].get(o.id)
-                        if o.type != "binary" or not isinstance(v, bool):
-                            continue
-                        stem = re.escape(_stem(o.id))
-                        negated = re.search(rf"\b(no|without|absence of)\s+(\w+\s+)?(evidence of\s+|sign of\s+)?{stem}", text) \
-                            or re.search(rf"\b{stem}\w*\s+(is |are |was |were )?(absent|not (seen|present|identified))", text)
-                        if o.id.startswith("abnormal"):
-                            negated = negated or _NORMAL_PHRASES.search(text)
-                        shown = re.search(rf"(?<!no )(?<!without )\b{stem}\w*\s+(is |are |was |were )?(seen|present|noted|identified|demonstrated|evident)", text)
+                    for oid, v in report_contradictions(test, a["values"], report):
                         p = f"observations.{state}.{tid}[{i}].report"
-                        if v and negated:
-                            self.add("card_report_contradiction", f"the report says {_stem(o.id)} is absent, but {tid}.{o.id} is true", p,
-                                     "make the report agree with the values")
-                        elif not v and shown and not negated:
-                            self.add("card_report_contradiction", f"the report says {_stem(o.id)} is present, but {tid}.{o.id} is false", p,
-                                     "make the report agree with the values")
+                        word = "absent" if v else "present"
+                        self.add("card_report_contradiction",
+                                 f"the report says {_stem(oid)} is {word}, but {tid}.{oid} is {'true' if v else 'false'}", p,
+                                 "make the report agree with the values")
 
 
 # ============================================================================ repair request

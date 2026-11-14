@@ -40,7 +40,7 @@ def design(lung):
 def requests(lung, design):
     """(skeleton, state, g1 answer, plan, request) for every state of 33 cards."""
     fake = reference_fake_client(lung, design, 7)
-    authors = Authors(lung)
+    authors = Authors(lung, "g2@2")
     out = []
     for i in range(design.n):
         sk = make_skeleton(lung, i, design, 7)
@@ -56,9 +56,11 @@ def test_catalogue_is_still_the_locked_v1(lung):
     assert lung.version_hash.startswith(CATALOGUE_V1_HASH)
 
 
-def test_g2v2_is_the_default_and_the_only_safe_version():
-    assert A.PROMPT_VERSIONS["results"] == "g2@2"
-    assert "g2@2" in SAFE_RESULTS_PROMPTS and "g2@1" not in SAFE_RESULTS_PROMPTS
+def test_g2v2_is_selectable_but_no_longer_safe():
+    """Review w8 B1: g2@2's prompt holds every result of the patient, so its text is not served (rebuilt from values);
+    g2@3 is the default and the only safe version."""
+    assert A.PROMPT_VERSIONS["results"] == "g2@3" and "g2@2" in A.RESULTS_VERSIONS
+    assert SAFE_RESULTS_PROMPTS == {"g2@3"}
     with pytest.raises(ValueError):
         Authors(load_catalogue(TINY), "g2@9")
 
@@ -163,7 +165,7 @@ def test_name_check_is_condition_blind(lung, requests):
 
 
 def test_g2v2_repair_text_names_no_condition_no_state_no_card(lung):
-    authors = Authors(lung)
+    authors = Authors(lung, "g2@2")
     probs = [Problem("card_reveals_condition", "the text names the hidden primary condition (Pneumonia (radiograph-confirmed))",
                      "observations.pneumonia_resolved.chest_xray[1].report", "rephrase"),
              Problem("card_plan_mismatch", "lesion_seen is planned miss", "observations.all_active.chest_ct[0].values"),
@@ -189,21 +191,21 @@ def test_a_named_diagnosis_is_repaired_without_telling_the_model_anything_hidden
         return ans
 
     fake = reference_fake_client(lung, design, 7, transform=leak)
-    out = generate_card(Authors(lung), sk, fake)
+    out = generate_card(Authors(lung, "g2@2"), sk, fake)
     assert out.status == "accepted" and out.repairs == 1
     repair = fake.calls[-1][1].split("Your previous answer")[1].split("}\n\n", 1)[1]
     assert "reports.chest_ct[0]" in repair and "lung cancer" not in repair.lower() and sk.id not in fake.calls[-1][1]
     assert out.card["provenance"]["prompts"]["results"] == "g2@2"
 
 
-def test_library_end_to_end_records_g2v2_and_reveal_serves_its_reports(lung, tmp_path):
+def test_library_end_to_end_records_g2v2_and_reveal_rebuilds_its_reports(lung, tmp_path):
     design = make_design(lung, {k: 2 for k in lung.conditions})
     manifest, rep = generate_library_with_report(lung, design, 3, reference_fake_client(lung, design, 3),
-                                                 out_dir=tmp_path / "L")
+                                                 out_dir=tmp_path / "L", results_prompt="g2@2")
     assert rep.accepted == design.n and manifest.prompts["results"] == "g2@2" and rep.prompts["results"] == "g2@2"
     lib = load_library(tmp_path / "L", lung)
     for c in lib.cards:
-        assert results_text_is_safe(c.provenance)
+        assert not results_text_is_safe(c.provenance)            # review w8 B1: rebuilt from values
         assert not has_errors(validate_card(card_to_json(c), lung))
         h = RevealHandle(c, catalogue=lung)
         assert h.reveal("chest_xray", 0).report == c.observations["all_active"]["chest_xray"][0].report
@@ -212,7 +214,8 @@ def test_library_end_to_end_records_g2v2_and_reveal_serves_its_reports(lung, tmp
 def test_estimate_is_smaller_than_g2v1(lung):
     from patient_engine.pipeline import estimate_cost
     design = make_design(lung, {k: 2 for k in lung.conditions})
-    new, old = estimate_cost(lung, design, 1, sample=4), estimate_cost(lung, design, 1, sample=4, results_prompt="g2@1")
+    new = estimate_cost(lung, design, 1, sample=4, results_prompt="g2@2")
+    old = estimate_cost(lung, design, 1, sample=4, results_prompt="g2@1")
     assert new["calls_per_card"] == old["calls_per_card"]
     assert new["input_tokens_per_card"] < old["input_tokens_per_card"]
 

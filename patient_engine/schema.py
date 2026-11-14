@@ -115,7 +115,9 @@ def card_schema(catalogue) -> dict:
     plan_props = {}
     for t in cat.tests.values():
         outs = {o.id: _value_schema(o.type, o.values, cat.variables[o.measures].range if o.type != "categorical" else (None, None),
-                                    nullable=o.only_if is not None)
+                                    # null when the output's own only_if is false, or when what it measures can
+                                    # be null and nothing is there (review w8 M2: a non-malignant sample's histology)
+                                    nullable=o.only_if is not None or cat.variables[o.measures].only_if is not None)
                 for o in t.outputs}
         ok = _obj({"status": {"const": "ok"}, "values": _obj(outs), "report": {"type": "string"}})
         if t.nondiagnostic is not None:

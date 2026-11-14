@@ -29,12 +29,19 @@ What each author returns (the shapes are JSON Schemas derived from ``card_schema
         g1@1: {"states": {state: {"findings": {variable id: {"value", "caused_by"}},
                             "presenting": {"reported": [variable id], "text": str},
                             "account": {"text": str, "mentions": [variable id]}}}}      one call, every state
-    G2  g2@2 (default): {"reports": {test id: [str per attempt]}, "gp_note": {"text", "mentions"}}; the values are
+    G2  g2@3 (default): {"variants": [str]} per result pattern (the report bank; see below)
+        g2@2: {"reports": {test id: [str per attempt]}, "gp_note": {"text", "mentions"}}; the values are
         the engine's (``g2_values``) and ``g2_merge`` joins them to the reports        one call per state
         g2@1: {"observations": {test id: [{"status", "values", "report"}]}, "gp_note": {...}}
 
 Information boundary of g2@2 (review w7 B1): the result author's prompt is ``results_user`` of public inputs only
-(age, sex, smoking, reported symptoms, every attempt's status and values), so its wording cannot carry the error plan.
+(age, sex, smoking, reported symptoms, every attempt's status and values). Review w8 B1: those values include the
+definitive and tissue tests and the other attempts, which predict whether a result is wrong, so g2@2 text is not served.
+
+g2@3 (default, D65): ``{"variants": [str x N_VARIANTS]}`` per (test, result pattern), asked through ``ReportBank`` with
+``report_user(test, pattern)``: the test and that one attempt's own values, numbers as placeholders. A report's prompt
+can carry nothing about whether that result is right beyond its own values. ``g2v3_part`` fills a state's reports from
+the bank (keyed pick, numbers filled in) and builds the GP note from them; there is no per-card G2 call.
 
 The skeleton fixes the background, the conditions and their attributes and the error plan; the
 authors never write those. Prompts are data files in ``patient_engine/prompts/`` (see its README).
@@ -49,14 +56,16 @@ second and so on: account then GP note.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 import string
+import threading
 from functools import lru_cache
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
-from pathway_sim.dists import sample
+from pathway_sim.dists import sample, uniform
 
 from .card import CARD_FORMAT, INITIAL_STATE, NOTE_KINDS, Finding
 from .catalogue import Catalogue, Leaf, Test, TestOutput, Variable
@@ -81,15 +90,28 @@ PROMPT_DIR = Path(__file__).with_name("prompts")
 #: (``Authors(cat, patient_prompt="g1@1")``): one call per patient cannot produce population frequencies, so its
 #: findings collapse to the most likely value (every asthma card wheezes, every lab sits at its median; audit
 #: ``findings.*`` fails on every Gemini g1@1 library).
-PROMPT_VERSIONS = {"patient": "g1@2", "results": "g2@2"}
-_STEMS = {"g1@1": "g1_patient.v1", "g1@2": "g1_patient.v2", "g2@1": "g2_results.v1", "g2@2": "g2_results.v2"}
-#: result-author versions this module can build
-RESULTS_VERSIONS = ("g2@1", "g2@2")
 #: patient-author versions this module can build
 PATIENT_VERSIONS = ("g1@1", "g1@2")
 #: g1@2: finding kinds the patient author sees (the patient's own experience and what an examination finds);
 #: labs, imaging, function and tissue truths stay with the engine
 G1_VISIBLE_KINDS = ("symptom", "sign")
+#: ``g2@3`` (review w8 B1): g2@2's one prompt per state held every test and attempt of the patient (definitive and
+#: tissue results among them), so the wording of one report could carry whether that result was right. g2@3 asks for
+#: the wording of one result at a time, with nothing in the prompt but that test and that attempt's own values
+#: (numbers as placeholders): a report bank keyed by test and value pattern, shared by every card.
+PROMPT_VERSIONS = {"patient": "g1@2", "results": "g2@3"}
+_STEMS = {"g1@1": "g1_patient.v1", "g1@2": "g1_patient.v2", "g2@1": "g2_results.v1", "g2@2": "g2_results.v2",
+          "g2@3": "g2_results.v3"}
+#: result-author versions this module can build
+RESULTS_VERSIONS = ("g2@1", "g2@2", "g2@3")
+#: g2@3: wordings the model writes per result pattern (the engine picks one per attempt with a keyed number)
+N_VARIANTS = 4
+#: g2@3: longest wording the bank schema accepts
+BANK_TEXT_MAX_CHARS = 400
+#: g2@3: categories of first-contact tests whose attempt-1 report the GP note repeats (history, examination, X-ray)
+GP_NOTE_CATEGORIES = ("history", "examination", "imaging")
+#: g2@3: output types written as a placeholder (``{size_mm}``) that the engine fills with the number and unit
+NUMERIC_TYPES = ("continuous", "size_mm")
 #: g2@2: tests whose attempt 1 the GP note summarises (primary-care resources), definitive tests excluded
 FIRST_CONTACT_RESOURCES = frozenset({"gp", "gp_appt", "lab", "poc_device", "xray"})
 #: g2@2: longest report and note the schema accepts (short outputs keep the JSON intact)
@@ -329,6 +351,58 @@ def _lower(s: str) -> str:
     return s[:1].lower() + s[1:]
 
 
+# ============================================================================ g2@3: one result at a time
+
+def report_pattern(test: Test, status: str, values: Mapping[str, Any]) -> tuple[tuple[str, str], ...]:
+    """The key of a result in the g2@3 report bank: the status and every output the attempt reported, binary and
+    categorical outputs as their shown value, numbers as a placeholder ``{output id}``. Outputs that are null are
+    left out, as in the card. Nothing about the patient, the other tests or the other attempts is in it."""
+    if status != "ok":
+        return (("status", "non_diagnostic"),)
+    out = [("status", "ok")]
+    for o in test.outputs:
+        v = values.get(o.id)
+        if v is None:
+            continue
+        out.append((o.id, "{" + o.id + "}" if o.type in NUMERIC_TYPES else show_value(v)))
+    return tuple(out)
+
+
+def _pattern_lines(test: Test, pattern: Sequence[tuple[str, str]]) -> str:
+    if dict(pattern).get("status") != "ok":
+        return "status: non-diagnostic (the attempt gave no usable result)"
+    lines = ["status: ok"]
+    shown = dict(pattern)
+    for o in test.outputs:
+        if o.id not in shown:
+            lines.append(f"- {o.id}: none")
+            continue
+        line = f"- {o.id}: {shown[o.id]}"
+        if o.type in NUMERIC_TYPES:
+            line += f" (a measurement{', unit ' + o.unit if o.unit else ''}; the number is filled in later)"
+        lines.append(line)
+    return "\n".join(lines)
+
+
+def report_user(test: Test, pattern: Sequence[tuple[str, str]]) -> str:
+    """The g2@3 user prompt for one result pattern: the test's id, name and category and the pattern. A function of
+    the test and the pattern only (I1, review w8 B1): it is not given the card, the patient, the other attempts or the
+    other tests, so two cards whose attempt reported the same pattern send the same prompt (one cached answer)."""
+    return fill(load_prompt("g2@3", "user"), test_id=test.id, test_label=test.label, category=test.category,
+                result=_pattern_lines(test, pattern), n_variants=str(N_VARIANTS))
+
+
+_PLACEHOLDER_RX = re.compile(r"\{([a-z0-9_]+)\}")
+
+
+def fill_report(template: str, test: Test, values: Mapping[str, Any]) -> str:
+    """A bank wording with each ``{output id}`` placeholder replaced by the attempt's number and unit."""
+    def sub(m: re.Match) -> str:
+        o = test.output(m.group(1))
+        return show_value(values[o.id], o.unit)
+    return _PLACEHOLDER_RX.sub(sub, template)
+
+
 # ============================================================================ the authors
 
 class Authors:
@@ -384,19 +458,29 @@ class Authors:
         }
         # g2@2 condition-blind name check: every non-healthy condition's label and id (the validator's rule 8
         # patterns for any primary), so a repair request never depends on which condition the patient has
-        self._names: dict[str, re.Pattern] = {}
-        for c in catalogue.conditions.values():
-            if c.cls == "healthy":
-                continue
-            names = {c.label.lower(), c.id.replace("_", " ")}
-            self._names[c.id] = re.compile("|".join(r"(?<![a-z])" + re.escape(x) + r"(?![a-z])"
-                                                    for x in sorted(names, key=len, reverse=True)))
+        # (review w8 M1: the label, the id and the synonyms of ``validate.CONDITION_TERMS``)
+        from .validate import condition_pattern
+        self._names: dict[str, re.Pattern] = {c.id: condition_pattern(c) for c in catalogue.conditions.values()
+                                              if c.cls != "healthy"}
         self._definitive = {t.id: {o.measures[3:] for o in t.outputs if o.measures.startswith("dx_")}
                             for t in catalogue.tests.values()}
+
+        # g2@3: the answer of one bank request
+        self.bank_schema: dict = {
+            "type": "object", "required": ["variants"], "additionalProperties": False,
+            "properties": {"variants": {"type": "array", "minItems": N_VARIANTS, "maxItems": N_VARIANTS,
+                                        "items": {"type": "string", "minLength": 10,
+                                                  "maxLength": BANK_TEXT_MAX_CHARS}}}}
+        self._banks: dict[tuple, ReportBank] = {}
+        self._banks_lock = threading.Lock()
 
     @property
     def v2(self) -> bool:
         return self.results_version == "g2@2"
+
+    @property
+    def v3(self) -> bool:
+        return self.results_version == "g2@3"
 
     @property
     def profiled(self) -> bool:
@@ -405,7 +489,98 @@ class Authors:
 
     @property
     def results_schema(self) -> dict:
-        return self.g2v2_schema if self.v2 else self.g2_schema
+        return self.bank_schema if self.v3 else self.g2v2_schema if self.v2 else self.g2_schema
+
+    # ------------------------------------------------------------------ g2@3: the report bank
+
+    def bank_request(self, test: Test, pattern: Sequence[tuple[str, str]]) -> dict:
+        """``dict(system, user, schema)`` asking for ``N_VARIANTS`` wordings of one result pattern (``report_pattern``).
+        Reads the catalogue's test and the pattern only."""
+        return {"system": fill(load_prompt("g2@3", "system"), n_variants=str(N_VARIANTS)),
+                "user": report_user(test, pattern), "schema": self.bank_schema}
+
+    def bank_problems(self, test: Test, pattern: Sequence[tuple[str, str]], answer: Any) -> list[Problem]:
+        """Problems of a bank answer: schema; per wording, the placeholders (each number of the pattern once, no
+        other), the condition-blind name check (any condition's name or synonym, except what a definitive test
+        tests for) and rule 9 (the wording says the opposite of a yes/no value). Reads only the answer, the test and
+        the pattern, so a repair request says nothing about any patient."""
+        probs = schema_problems(answer, self.bank_schema)
+        if probs:
+            return probs
+        from .validate import report_contradictions
+        shown = dict(pattern)
+        numbers = {o.id for o in test.outputs if o.id in shown and o.type in NUMERIC_TYPES}
+        sample_values = _sample_values(test, pattern)
+        allowed = self._definitive.get(test.id, set())
+        seen: dict[str, int] = {}
+        for i, text in enumerate(answer["variants"]):
+            path = f"variants[{i}]"
+            found = _PLACEHOLDER_RX.findall(text)
+            if sorted(found) != sorted(numbers) or re.sub(_PLACEHOLDER_RX, "", text).count("{") \
+                    or re.sub(_PLACEHOLDER_RX, "", text).count("}"):
+                want = ", ".join("{" + n + "}" for n in sorted(numbers)) or "none"
+                probs.append(Problem("card_schema", f"the placeholders are {found or 'none'}; write each of these "
+                                     f"exactly once and no other text in braces: {want}", path))
+                continue
+            doubled = [o.id for o in test.outputs if o.id in numbers and o.unit
+                       and re.search(r"\{" + o.id + r"\}\s*" + re.escape(o.unit), text)]
+            if doubled:
+                probs.append(Problem("card_schema", f"the unit follows the placeholder of {doubled[0]}; the placeholder "
+                                     "is replaced by the number with its unit, so leave the unit out", path))
+            low = text.lower().replace("_", " ")
+            if any(rx.search(low) for c, rx in self._names.items() if c not in allowed):
+                probs.append(Problem("card_reveals_condition", "the text names a diagnosis; describe the reported "
+                                     "values only, without naming a diagnosis or disease", path))
+            for oid, v in report_contradictions(test, sample_values, fill_report(text, test, sample_values)):
+                probs.append(Problem("card_report_contradiction", f"{oid} is {'yes' if v else 'no'}, but the text "
+                                     f"says the opposite", path))
+            key = " ".join(low.split())
+            if key in seen:
+                probs.append(Problem("card_schema", f"the same text as variants[{seen[key]}]; write a different "
+                                     "version", path))
+            seen.setdefault(key, i)
+        return probs
+
+    def bank_good(self, test: Test, pattern: Sequence[tuple[str, str]], answer: Any) -> tuple[str, ...]:
+        """The wordings of a bank answer that have no problem (``bank_problems``), in order."""
+        if schema_problems(answer, self.bank_schema):
+            return ()
+        bad = {p.path for p in self.bank_problems(test, pattern, answer)}
+        return tuple(t for i, t in enumerate(answer["variants"]) if f"variants[{i}]" not in bad)
+
+    @staticmethod
+    def bank_repair_user(original_user: str, previous: Mapping[str, Any], problems: Sequence[Problem]) -> str:
+        lines = list(dict.fromkeys(f"- {p.path or 'answer'}: {p.message}" for p in problems))
+        return (f"{original_user}\n\n---\nYour previous answer:\n{json.dumps(previous, sort_keys=True)}\n\n"
+                "Your answer failed validation. Fix every point below and return the whole JSON object again.\n"
+                + "\n".join(lines[:20]))
+
+    def report_bank(self, client, temperature: float | None = None, max_repairs: int = 2) -> "ReportBank":
+        """The bank of ``client`` (one per client, temperature and repair count; shared by the threads of a run)."""
+        key = (id(client), temperature, max_repairs)
+        with self._banks_lock:
+            if key not in self._banks:
+                self._banks[key] = ReportBank(self, client, temperature, max_repairs)
+            return self._banks[key]
+
+    def g2v3_part(self, sk: Skeleton, g1: Mapping[str, Any], plan: Mapping[str, Sequence], state: str,
+                  bank: "ReportBank") -> dict:
+        """g2@3: the result author's part of a card for one state, ``{"observations", "gp_note"}``. Values are the
+        engine's (``g2_values``); each attempt's report is a wording from the bank for that attempt's own pattern,
+        picked with a keyed number (seed, index, state, test, attempt) that depends on nothing hidden, with the
+        numbers filled in. The GP note joins the attempt-1 reports of the first-contact tests that gave a result."""
+        obs = self.g2_values(sk, g1, plan, state)
+        for tid, atts in obs.items():
+            test = self.cat.tests[tid]
+            for k, a in enumerate(atts):
+                texts = bank.texts(test, report_pattern(test, a["status"], a["values"]))
+                u = uniform(sk.seed, sk.index, "report_variant", state, tid, k)
+                a["report"] = fill_report(texts[min(int(u * len(texts)), len(texts) - 1)], test, a["values"])
+        gp = [t for t in self.gp_tests if obs[t] and obs[t][0]["status"] == "ok"
+              and self.cat.tests[t].category in GP_NOTE_CATEGORIES]
+        text = "First-contact results. " + " ".join(obs[t][0]["report"] for t in gp) if gp else \
+            "First-contact tests gave no usable result yet."
+        return {"observations": obs, "gp_note": {"text": text, "mentions": list(gp)}}
 
     def g1_schema_for(self, states: Sequence[str]) -> dict:
         """The G1 answer schema for a card with these states."""
@@ -549,7 +724,7 @@ class Authors:
         """The result author's part of a card for one state, ``{"observations", "gp_note"}``: g2@1's answer as is,
         g2@2's reports joined to the engine's values."""
         if not self.v2:
-            return dict(answer)
+            return dict(answer)                         # g2@1's answer, or g2@3's part (already merged)
         obs = self.g2_values(sk, g1, plan, state)
         for tid, atts in obs.items():
             for a, text in zip(atts, answer["reports"][tid]):
@@ -583,6 +758,8 @@ class Authors:
         """Schema problems of a G2 answer; for g2@2 also the condition-blind name check (no report or note names a
         condition, except a definitive test's report naming what it tests for). The check reads only the answer
         and the catalogue, so a repair it asks for says nothing about the patient."""
+        if self.v3:
+            return []                                   # g2@3: every wording was checked in the bank
         if not self.v2:
             return schema_problems(g2, self.g2_schema)
         probs = schema_problems(g2, self.g2v2_schema)
@@ -704,3 +881,76 @@ class Authors:
         return (f"{original_user}\n\n---\nYour previous answer:\n{json.dumps(previous, sort_keys=True)}\n\n"
                 f"The card assembled from your answer was checked. You write only {shape}, not a whole card; "
                 f"return those parts again, corrected. {mapping}\n{text}")
+
+
+# ============================================================================ g2@3: the bank
+
+def _sample_values(test: Test, pattern: Sequence[tuple[str, str]]) -> dict[str, Any]:
+    """Values that show as ``pattern`` (numbers 1.0), for checking a wording against rule 9."""
+    shown = dict(pattern)
+    out: dict[str, Any] = {}
+    for o in test.outputs:
+        if o.id not in shown:
+            continue
+        out[o.id] = 1.0 if o.type in NUMERIC_TYPES else parse_value(shown[o.id], o)
+    return out
+
+
+class ReportBank:
+    """g2@3 report wordings per (test, result pattern), asked of the model once per pattern and shared by every card
+    of a run (and, through the client's on-disk cache keyed by the prompt, by every later run). Thread-safe: one lock
+    per pattern, so two cards needing the same pattern at once make one call.
+
+    A pattern whose answer still has problems after ``max_repairs`` keeps its good wordings; if none is good, or the
+    model never gives valid JSON, its wording is the reference template (``reference.report_text`` with
+    placeholders), counted in ``fallbacks``. ``BudgetExceeded`` and endpoint errors propagate (the card stops)."""
+
+    def __init__(self, authors: Authors, client, temperature: float | None = None, max_repairs: int = 2):
+        self.authors, self.client, self.temperature, self.max_repairs = authors, client, temperature, max_repairs
+        self._memo: dict[tuple, tuple[str, ...]] = {}
+        self._locks: dict[tuple, threading.Lock] = {}
+        self._lock = threading.Lock()
+        self.fallbacks: list[tuple] = []
+        self.repaired = 0
+
+    def __len__(self) -> int:
+        return len(self._memo)
+
+    def texts(self, test: Test, pattern: tuple) -> tuple[str, ...]:
+        key = (test.id, pattern)
+        with self._lock:
+            if key in self._memo:
+                return self._memo[key]
+            lk = self._locks.setdefault(key, threading.Lock())
+        with lk:
+            if key not in self._memo:
+                self._memo[key] = self._ask(test, pattern)
+            return self._memo[key]
+
+    def _ask(self, test: Test, pattern: tuple) -> tuple[str, ...]:
+        from .llm import LLMOutputError
+        a = self.authors
+        req = a.bank_request(test, pattern)
+        tag = "bank:" + test.id + ":" + hashlib.blake2b(repr(pattern).encode(), digest_size=4).hexdigest()
+        good: tuple[str, ...] = ()
+        try:
+            ans = self.client.complete_json(**req, key=tag, temperature=self.temperature)
+            for rep in range(self.max_repairs + 1):
+                probs = a.bank_problems(test, pattern, ans)
+                if not probs or rep == self.max_repairs:
+                    break
+                self.repaired += 1
+                ans = self.client.complete_json(**{**req, "user": a.bank_repair_user(req["user"], ans, probs)},
+                                                key=f"{tag}:r{rep + 1}", temperature=self.temperature)
+            good = a.bank_good(test, pattern, ans)
+        except LLMOutputError:
+            good = ()
+        if not good:
+            from .reference import report_text
+            self.fallbacks.append((test.id, pattern))
+            shown = dict(pattern)
+            vals = {o.id: ("{" + o.id + "}" if o.type in NUMERIC_TYPES else parse_value(shown[o.id], o))
+                    for o in test.outputs if o.id in shown}
+            good = (report_text(test, "ok" if shown.get("status") == "ok" else "non_diagnostic", vals)
+                    .replace(" (synthetic report)", ""),)
+        return good

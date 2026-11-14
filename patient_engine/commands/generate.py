@@ -24,7 +24,7 @@ import os
 import sys
 from pathlib import Path
 
-from ..authors import PATIENT_VERSIONS
+from ..authors import PATIENT_VERSIONS, PROMPT_VERSIONS, RESULTS_VERSIONS
 from ..catalogue import CatalogueError, load_catalogue
 from ..llm import Budget, LLMClient, LLMError
 from ..pipeline import (GenerationConfig, GenerationError, estimate_cost, generate_library_with_report,
@@ -53,6 +53,11 @@ def register(subparsers) -> None:
     p.add_argument("--max-repairs", type=int, default=2)
     p.add_argument("--g1-temperature", type=float)
     p.add_argument("--g2-temperature", type=float)
+    p.add_argument("--results-prompt", choices=list(RESULTS_VERSIONS),
+                   help=f"result-author version (default {PROMPT_VERSIONS['results']})")
+    p.add_argument("--results-cache-dir",
+                   help="cache of the result author's calls (default the work dir's cache). g2@3's report bank does "
+                        "not depend on the card, so runs that share this directory ask each result pattern once")
     p.add_argument("--patient-prompt", choices=PATIENT_VERSIONS, default=None,
                    help="patient-author version: g1@2 (default) the engine draws the findings from the catalogue and the "
                         "model writes the complaint and account; g1@1 the model writes the findings too")
@@ -78,7 +83,8 @@ def run(args) -> int:
         print(f"generate: {e}", file=sys.stderr)
         return 2
     if args.estimate:
-        e = estimate_cost(cat, design, args.seed, patient_prompt=args.patient_prompt)
+        e = estimate_cost(cat, design, args.seed, results_prompt=args.results_prompt,
+                          patient_prompt=args.patient_prompt)
         print(json.dumps(e, indent=2))
         return 0
     out = Path(args.out)
@@ -94,6 +100,10 @@ def run(args) -> int:
             if os.environ.get("LLM_MODEL_G2"):
                 g2 = copy.copy(client)
                 g2.model = os.environ["LLM_MODEL_G2"]
+        if args.results_cache_dir:
+            g2 = copy.copy(g2 or client)
+            g2.cache_dir = Path(args.results_cache_dir)
+            g2.cache_dir.mkdir(parents=True, exist_ok=True)
         cfg = GenerationConfig(concurrency=args.concurrency, max_repairs=args.max_repairs,
                                g1_temperature=args.g1_temperature, g2_temperature=args.g2_temperature)
 
@@ -104,6 +114,7 @@ def run(args) -> int:
         manifest, rep = generate_library_with_report(cat, design, args.seed, client, budget=budget, out_dir=out,
                                                      results_client=g2, config=cfg, work_dir=work,
                                                      resume=args.resume, progress=progress,
+                                                     results_prompt=args.results_prompt,
                                                      patient_prompt=args.patient_prompt)
     except (LLMError, GenerationError) as e:
         print(f"generate: {type(e).__name__}: {e}", file=sys.stderr)

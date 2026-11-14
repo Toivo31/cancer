@@ -52,8 +52,8 @@ holds exactly as for stored attempts. Attempts below the stored count always com
 
 Report text (review w7 B1). A card's stored report is served only when the card says its results text was written
 without the hidden side: ``provenance.generator == "reference"`` (template text from the values) or a results prompt
-in ``SAFE_RESULTS_PROMPTS`` (``g2@2``: the model saw only public inputs). For any other card (``g2@1``, whose model
-was told the error plan and wrote it into its wording) the report is rebuilt from the attempt's values with
+in ``SAFE_RESULTS_PROMPTS`` (``g2@3``: the model saw one result's own values and nothing else). For any other card (``g2@1``, whose model
+was told the error plan and wrote it into its wording; ``g2@2``, whose prompt held the patient's other results) the report is rebuilt from the attempt's values with
 ``reference.report_text``, and its GP notes (written by the same model) are withheld. This is the single place the
 rule lives: every simulation path reaches a card's results through ``reveal``.
 
@@ -79,8 +79,11 @@ __all__ = ["RevealHandle", "RevealError", "LATER_STATE", "SAFE_RESULTS_PROMPTS",
 
 #: Result-author prompt versions whose report text and GP note may reach the revealed side (I1). A version is added
 #: here only when its prompt carries nothing from the hidden side (see ``patient_engine/prompts/README.md``) and the
-#: audit's ``report_wording`` check passes on a library made with it. ``g2@1`` is deliberately absent.
-SAFE_RESULTS_PROMPTS = frozenset({"g2@2"})
+#: audit's ``report_wording`` check passes on a library made with it. ``g2@1`` is deliberately absent. ``g2@2`` was
+#: removed after review w8 B1: its one prompt per state held every test and attempt, definitive and tissue results
+#: among them, which separate false alarms from true positives (AUC 1.00); its reports are rebuilt from values.
+#: ``g2@3`` writes each wording from one result's own values only (``authors.report_user``).
+SAFE_RESULTS_PROMPTS = frozenset({"g2@3"})
 
 
 def results_text_is_safe(provenance) -> bool:

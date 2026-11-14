@@ -532,7 +532,15 @@ def settle_attempt(catalogue: Catalogue, test: Test, k: int, skeleton: Skeleton,
                 fa = u >= c
                 outcomes[o.id], reported[o.id] = ("false_alarm", True) if fa else ("correct", False)
             continue
-        if truth is None:                                    # reported although nothing exists: invent one
+        if truth is None:
+            if not o.only_if:
+                # nothing exists and nothing the test itself reported says it does (review w8 M2: a non-cancer
+                # patient's histology is null, not an invented cell type)
+                reported[o.id] = None
+                outcomes[o.id] = "correct"
+                continue
+            # reported although nothing exists, because this attempt's own result says it does (a false-alarm lesion's
+            # size and location): invent one
             truth = _phantom_truth(catalogue, o.measures, skeleton, common, state, (test.id, k, o.id))
         if o.type == "categorical":
             a = _resolve_worst(o.accuracy, conds, common, 1.0, "min")

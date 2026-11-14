@@ -9,8 +9,10 @@
 #
 # Libraries are written to libraries/gemini_v2_*; logs to runs/gen_logs/. Synthetic data only.
 # Prompts: patient author g1@2 (D58: the engine draws the findings from the catalogue, the model writes the complaint
-# and the account) and result author g2@2. PATIENT_PROMPT=g1@1 gives the old patient author (the model writes the
+# and the account) and result author g2@3. PATIENT_PROMPT=g1@1 gives the old patient author (the model writes the
 # findings too; its libraries fail audit findings.*). The prompt versions are stored in every card and manifest.
+# Result author g2@3 (D65): report wordings per result pattern, cached in $BANK_CACHE (default runs/gen_cache/g2_bank)
+# and shared by the trial and all five runs; RESULTS_PROMPT=g2@2 selects the old author (its text is not served).
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -27,6 +29,11 @@ export SSL_CERT_FILE="${SSL_CERT_FILE:-$($PY -m certifi 2>/dev/null || true)}"
 export LLM_BASE_URL="${LLM_BASE_URL:-https://generativelanguage.googleapis.com/v1beta/openai}"
 export LLM_MODEL="${LLM_MODEL:-gemini-3.8-flash}"
 KEEP_AWAKE=""; command -v caffeinate >/dev/null 2>&1 && KEEP_AWAKE="caffeinate -i"
+# g2@3 (D58): report wordings are asked once per (test, result pattern) and shared by every card, so the five runs and
+# the trial share one result-author cache; each run's patient-author cache stays in its own work dir.
+BANK_CACHE="${BANK_CACHE:-runs/gen_cache/g2_bank}"
+GEN_ARGS=(--results-cache-dir "$BANK_CACHE" --patient-prompt "$PATIENT_PROMPT")
+[ -n "${RESULTS_PROMPT:-}" ] && GEN_ARGS+=(--results-prompt "$RESULTS_PROMPT")
 mkdir -p runs/gen_logs
 
 report_line() {   # one line from a generation report: DONE or PARTIAL, with accepted / discarded / failed counts
@@ -51,8 +58,7 @@ case "$MODE" in
     need_key
     OUT=libraries/gemini_v2_trial30
     if [ -e "$OUT" ]; then echo "$OUT already exists. Remove it (and $OUT.work) to rerun the trial." >&2; exit 1; fi
-    $PY -m patient_engine generate --catalogue $CAT --n 30 --seed 12 --out $OUT --concurrency 15 \
-      --patient-prompt "$PATIENT_PROMPT"
+    $PY -m patient_engine generate --catalogue $CAT --n 30 --seed 12 --out $OUT --concurrency 15 "${GEN_ARGS[@]}"
     echo
     echo "Audit (look at report_wording, background_realism, leak, presenting; 30 cards are too few for most findings cells):"
     $PY -m patient_engine audit $OUT --catalogue $CAT --out /tmp/audit_gemini_v2_trial30 | grep -v "SKIPPED" | tail -15
@@ -63,7 +69,7 @@ case "$MODE" in
       OUT=libraries/gemini_v2_s${s}_${N}
       if [ -e "$OUT" ]; then echo "skip seed $s: $OUT exists"; continue; fi
       nohup $KEEP_AWAKE $PY -m patient_engine generate --catalogue $CAT --n "$N" --seed "$s" \
-        --out "$OUT" --concurrency "$CONC" --patient-prompt "$PATIENT_PROMPT" > runs/gen_logs/v2_s$s.log 2>&1 &
+        --out "$OUT" --concurrency "$CONC" "${GEN_ARGS[@]}" > runs/gen_logs/v2_s$s.log 2>&1 &
       echo "started seed $s -> $OUT (log runs/gen_logs/v2_s$s.log)"
     done
     echo "Running in the background. Keep the computer awake and plugged in."
@@ -84,7 +90,7 @@ case "$MODE" in
       if pgrep -f "patient_engine generate.*--seed $s " >/dev/null 2>&1; then echo "seed $s: still running"; continue; fi
       RES=""; [ -e "$OUT" ] && RES="--resume"
       nohup $KEEP_AWAKE $PY -m patient_engine generate --catalogue $CAT --n "$N" --seed "$s" \
-        --out "$OUT" --concurrency "$CONC" --patient-prompt "$PATIENT_PROMPT" $RES > runs/gen_logs/v2_s${s}_resume.log 2>&1 &
+        --out "$OUT" --concurrency "$CONC" "${GEN_ARGS[@]}" $RES > runs/gen_logs/v2_s${s}_resume.log 2>&1 &
       echo "restarted seed $s"
     done
     ;;

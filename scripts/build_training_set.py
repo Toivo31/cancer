@@ -14,7 +14,7 @@ Writes (default folder runs/training/, git-ignored):
 With --mix balanced the files are train_balanced.jsonl.gz / test_balanced.jsonl.gz.
 
 Which libraries: ref500, and every `gemini_*` library for the world's catalogue. The held-out library is the
-`gemini_s<seed>_<n>` with the highest seed (ties: more cards). With only the small libraries present that is
+`gemini_s<seed>_<n>` or `gemini_v2_s<seed>_<n>` with the highest seed (ties: more cards). With only the small libraries present that is
 gemini_s2_30. `--holdout DIR` chooses another. New libraries (gemini_s3_500 ...) are picked up when they appear.
 
 Everything is rebuilt from the libraries and the scenario on every run (nothing is cached), so when the
@@ -48,7 +48,8 @@ from patient_engine.library import LibraryError, load_library  # noqa: E402
 
 PER_CARD = 20          # patients per card for a small library
 MIN_PATIENTS = 200
-GEMINI_NAME = re.compile(r"^gemini_s(\d+)_(\d+)$")
+# gemini_s<seed>_<n> (g2@1 runs) and gemini_v2_s<seed>_<n> (scripts/generate_gemini.sh, g2@2): review w8
+GEMINI_NAME = re.compile(r"^gemini_(?:v2_)?s(\d+)_(\d+)$")
 ROW_KEYS = {"request", "chosen", "policy", "behaviour_probs", "label", "outcome", "meta"}
 
 

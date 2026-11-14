@@ -187,7 +187,7 @@ def report_text(test: Test, status: str, values: Mapping[str, Value]) -> str:
             return name if v else f"no {name}"
         return f"{name} {_show(v, o.unit)}"
     parts = [part(o) for o in test.outputs if values.get(o.id) is not None]
-    return f"{test.label} (synthetic report): " + "; ".join(parts) + "."
+    return f"{test.label} (synthetic report): " + ("; ".join(parts) or "no reportable value") + "."
 
 
 def _presenting(catalogue: Catalogue, skeleton: Skeleton, findings: Mapping[str, Finding], state: str
