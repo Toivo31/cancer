@@ -60,3 +60,26 @@ def test_candidates_have_plain_language():
     sc = tiny()
     for c in candidates(sc, sc.flowcharts["serial"]):
         assert c.plain and "_" not in c.plain.split(":")[0]
+
+
+def test_equity_guardrail_flags_group_made_slower():
+    from optimiser.search import guardrails
+    base = {"missed_cancers": 0, "untreated_cancers": 0, "stuck": 0, "tests_per_patient": 1, "invasive_per_patient": 0,
+            "by_group": {"a": {"n_cancer": 50, "median_days_to_treatment": 40, "share_within_target": 0.5},
+                         "b": {"n_cancer": 50, "median_days_to_treatment": 50, "share_within_target": 0.3}}}
+    m = {**base, "by_group": {"a": {"n_cancer": 50, "median_days_to_treatment": 30, "share_within_target": 0.7},
+                              "b": {"n_cancer": 50, "median_days_to_treatment": 55, "share_within_target": 0.25}}}
+    bad = guardrails(m, base, Config())
+    assert "slower for b presenters" in bad and "fewer b presenters on time" in bad
+    assert not guardrails(m, base, Config(equity_guardrail=False))
+
+
+def test_p_positive_by_group():
+    from test_pathway_sim import tiny
+    sc = tiny()
+    sc.tests["ct"]["p_positive"] = {"cancer": {"by": "group", "specific": 0.99, "nonspecific": 0.01}, "default": 0.0}
+    from pathway_sim import generate_patients
+    pts = [p for p in generate_patients(sc, 3000, 1) if p.cancer]
+    spec = [p.results["ct"][0] for p in pts if p.group == "specific"]
+    non = [p.results["ct"][0] for p in pts if p.group == "nonspecific"]
+    assert sum(spec) / len(spec) > 0.9 and sum(non) / len(non) < 0.1

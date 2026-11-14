@@ -52,6 +52,7 @@ def _pick(weights: dict[str, float], u: float) -> str:
 
 
 def p_positive(test: dict, condition: str, attributes: dict) -> float:
+    """``p_positive: {cond: p}`` or ``{cond: {by: <attribute or 'group'>, value: p, ...}}``."""
     spec = test.get("p_positive")
     if spec is None:
         return 1.0
@@ -100,10 +101,10 @@ def generate_patients(sc: Scenario, n: int, seed: int) -> list[Patient]:
             arrival = _arrival(sc, i, n, seed)
         results = {}
         for tid, test in sc.tests.items():
-            p = p_positive(test, cond_id, attrs)
+            p = p_positive(test, cond_id, {**attrs, "group": group})
             nd = test.get("p_nondiagnostic", 0.0) or 0.0
             if isinstance(nd, dict):
-                nd = nd.get(attrs.get(nd["by"]), nd.get("default", 0.0))
+                nd = nd.get({**attrs, "group": group}.get(nd["by"]), nd.get("default", 0.0))
             pnd = float(nd)
             rs = []
             for k in range(MAX_ATTEMPTS):
