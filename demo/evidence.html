@@ -1,28 +1,125 @@
 <!doctype html>
-<!-- Stub from _skeleton.html (L0). Owned by lane L4 from its first merge. -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Does it hold up · Equal care pathways</title>
+<title>Does it hold up? · Equal Care Pathways</title>
 <link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="evidence.css">
 </head>
 <body>
 <nav class="site-nav" data-page="evidence"></nav>
 
 <main class="page">
-  <header class="page-top">
-    <h1 class="page-title">Does it hold up</h1>
-    <p class="lede">How the simulated pathway compares with a published Norwegian hospital study, and how much that comparison can be trusted.</p>
-    <p class="caption">This page is in preparation. Every patient on this site is synthetic.</p>
-    <p class="page-actions">
-      <a class="btn btn--primary" href="flow.html">Open the simulator</a>
-      <a href="start.html">Back to the overview</a>
-    </p>
+  <!-- Top: one sentence and one picture. Every number on this page is read from data/start_bundle.js at load time
+       (field `evidence`, written by demo/export_start.py from docs/review_checks/norway_*.json); none is typed here. -->
+  <header class="page-top ev-top">
+    <p class="label ev-eyebrow">Checked against a published Norwegian hospital study</p>
+    <h1 class="page-title">Does it hold up?</h1>
+    <p class="lede">Started from a Norwegian hospital's own pathway with no new equipment, our optimiser arrived at
+      the authors' three timing changes, plus a fourth that needs clinical review. Trust the direction and the ranking,
+      not the exact size.</p>
+
+    <figure class="figure ev-figure" id="ev-figure" data-dot-r="6" data-ring-r="8" data-track-h="34" data-tick-h="5" data-step="0.1" data-compact-scale="0.8" data-axis-h="20">
+      <div class="ev-head">
+        <div class="ev-headline" id="ev-headline" aria-live="polite">
+          <div class="ev-hl-cell">
+            <span class="label">Today, fitted</span>
+            <span class="num ev-hl-num" data-bind="today_best">…</span>
+          </div>
+          <span class="ev-hl-arrow" aria-hidden="true">→</span>
+          <div class="ev-hl-cell">
+            <span class="label">Reordered, no new equipment</span>
+            <span class="num ev-hl-num" data-bind="opt_best">…</span>
+          </div>
+          <p class="ev-hl-note">at our best fit; <span data-bind="opt_range">…</span> across the
+            <span data-bind="n_settings">…</span> settings that fit today's pathway</p>
+        </div>
+        <span class="stamp ev-stamp">Predicted, not fitted</span>
+      </div>
+
+      <div class="ev-chart" id="ev-chart" role="img" aria-label="Share treated within the target: published value, our model at its best fit, and the range over every setting that fits">
+        <p class="ev-pending">Loading the numbers from the data bundle…</p>
+      </div>
+      <p class="ev-key label" id="ev-key">
+        <span class="ev-key-item"><svg class="ev-key-svg" viewBox="-8 -8 16 16" aria-hidden="true"><circle class="ev-ring" r="5"/></svg>published</span>
+        <span class="ev-key-item"><svg class="ev-key-svg" viewBox="-8 -8 16 16" aria-hidden="true"><circle class="ev-dot" r="4"/></svg>our model, best fit</span>
+        <span class="ev-key-item"><svg class="ev-key-svg ev-key-svg--wide" viewBox="-14 -8 28 16" aria-hidden="true"><line class="ev-range" x1="-12" x2="12" y1="0" y2="0"/><line class="ev-range" x1="-12" x2="-12" y1="-4" y2="4"/><line class="ev-range" x1="12" x2="12" y1="-4" y2="4"/></svg>range over every setting that fits</span>
+        <span class="ev-key-rank" id="ev-rank"></span>
+      </p>
+      <figcaption class="caption" id="ev-caption">
+        Share starting treatment within <span data-bind="target_days">…</span> days of referral. Published: one
+        Norwegian hospital, <span data-bind="published_patients">…</span> patients; the scanner and reordering values are
+        the authors' own re-timing estimates. Ours: synthetic patients, only today's row fitted; the bars span the
+        <span data-bind="n_settings">…</span> settings of five unreported inputs that fit equally well.
+      </figcaption>
+    </figure>
+
+    <div class="page-actions">
+      <a class="btn btn--primary" href="../docs/norway_case_study.md">Read the case study</a>
+      <a class="btn btn--secondary" href="flow.html?s=norway&amp;compare&amp;left=observed&amp;right=suggested">See it in the simulator</a>
+      <span id="ev-research-link"></span>
+    </div>
   </header>
+
+  <section class="details" aria-labelledby="ev-details-rule">
+    <h2 class="details-rule" id="ev-details-rule">Details</h2>
+
+    <h3 class="finding">Robustness: each test, with what it found</h3>
+    <p class="ev-intro">Every test below reruns the Norway check under a different question: was the fit done
+      right, does it hold if a target or the grid changes, and why does the faster scanner miss? Each panel has its
+      finding as the heading; the numbers come from <code>docs/validation.md</code> and the files named under each.</p>
+
+    <div class="ev-multiples" id="ev-multiples">
+      <p class="ev-pending">Loading the robustness tests…</p>
+    </div>
+
+    <h3 class="finding">This is a plausibility check on one hospital, not a forecast for patients</h3>
+    <ul class="ev-limits" id="ev-limits">
+      <li>One hospital, <span data-bind="published_patients">…</span> patients with early-stage lung cancer, specialist
+        care only. It says nothing about primary care, where most Finnish waiting sits.</li>
+      <li>The paper's scanner and reordering figures are the authors' own re-timing of recorded waits, not results of a
+        redesign that was carried out. We compare with estimates, not outcomes.</li>
+      <li>Every patient in our model is synthetic. Five quantities the paper does not report were fitted, and
+        <span data-bind="n_settings">…</span> settings of them fit today's pathway equally well. The bars show that spread.</li>
+      <li>Our range and the paper's interval measure different things: theirs comes from a small cohort, ours from the
+        unknown inputs. Any single number from the simulator carries both.</li>
+      <li>The optimiser ran once, at the best fit, from today's pathway, with no new equipment; its pathway was then
+        evaluated unchanged in every setting. We report the faster scanner and the reordering separately, as the authors
+        did, and never combine them.</li>
+      <li>It did not improve on the authors' redesign, and it missed the part of it that reduces sampling procedures.
+        Its fourth change (tissue sampling planned at referral triage) is not in the paper and needs clinical review.</li>
+      <li>"Reordering beats buying the scanner" holds in <span data-bind="beats_scanner">…</span> of
+        <span data-bind="n_settings">…</span> settings, not in all of them.</li>
+      <li>We worked from summaries of the paper's text and figure captions; the figures themselves were not inspected.</li>
+      <li id="ev-ledger-line">Inputs of the Norwegian scenario: <span data-bind="ledger_blocks">…</span> blocks,
+        <span data-bind="ledger_sourced">…</span> cite the paper or another source and
+        <span data-bind="ledger_assumption">…</span> are our assumptions.</li>
+      <li>Nothing here has been reviewed by a clinician, and nothing is validated on real patients.</li>
+    </ul>
+
+    <h3 class="finding">Where the numbers come from</h3>
+    <ul class="ev-links">
+      <li><a href="../docs/norway_case_study.md">The case study</a>: the paper-style write-up of this check, with the full table.</li>
+      <li><a href="../docs/validation.md">docs/validation.md</a>: the calibration, the robustness tests and the optimiser's ablation and structure check.</li>
+      <li><a href="index.html">Full results report</a>: the dashboard, including the before-and-after view of the Norwegian pathway.</li>
+      <li id="ev-research-li">Research behind the numbers: every claim labelled published, our simulation or our assumption.</li>
+      <li><a href="../docs/pitch/filled/numbers_sheet.md">Numbers sheet</a>: the sentence each number may be used in.</li>
+    </ul>
+    <p class="ev-cmd-intro">Reproduce (cached results; <code>--recompute</code> reruns the grids, which takes about an hour on two cores):</p>
+<pre class="cmd">python scripts/norway_robustness.py
+python scripts/norway_correlated.py
+python scripts/norway_optimiser_robust.py
+python scripts/norway_optimiser_structure.py
+python demo/export_start.py          # writes demo/data/start_bundle.js (field "evidence")</pre>
+  </section>
 </main>
 
-<footer class="footer-strip"></footer>
+<footer class="footer-strip" id="ev-footer">Synthetic patients only · not clinically reviewed · numbers read from data/start_bundle.js</footer>
+
+<script src="data/start_bundle.js"></script>
+<script src="data/research_bundle.js"></script>
 <script src="site.js"></script>
+<script src="evidence.js"></script>
 </body>
 </html>
