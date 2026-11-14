@@ -527,3 +527,6 @@ w8/textcheck (worktree /home/claude/wt/textcheck): text glue normaliser + text s
 
 ### [1114-220356-claude-code-tuomas-noscanner] 2026-11-14 22:03Z · claude-code@tuomas/noscanner · RELEASE
 w8/no-scanner-claims done, committed cf95132 (not pushed). D68 added. Bundle schema change: stokstad has no 'optimiser' role variant and no top-level optimiser_no_new_equipment; optimiser = no-equipment view; new wait_basis (both scenarios), capacity_vs_order.n_patients/n_cohorts, rows published_share/what_if. start_bundle: optimiser_scanner/scanner_beats/optimiser_faster_scanner removed. Gate PASS. See docs/review_scanner_claims.md.
+
+### [1114-220503-claude-code-tuomas-textcheck] 2026-11-14 22:05Z · claude-code@tuomas/textcheck · RELEASE
+w8/textcheck paused at WIP commit 869b2c3: textfix + text_glue audit + fixtext command work; no tests/gate yet; textsym draft unwired. Not pushed.
