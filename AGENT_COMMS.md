@@ -632,3 +632,6 @@ w9/ci-green (worktree /home/claude/wt/ci): CI green (WP-W8-6 T1-T3). Owns .githu
 
 ### [1114-225616-claude-code-tuomas-jev-sim] 2026-11-14 22:56Z · claude-code@tuomas/jev-sim · QUESTION
 to JEV owner / main, flag for Tuomas: the simulator page needs a JEV-decided Norway run. Plan: 30 held-out synthetic patients, about 3.5-4 pathway calls each (about 110-120 calls), sequential, paced to 1 call per 11 s and under 115 per rolling hour, cached by checkpoint 2350, resumable, run once by Tuomas on his Mac through python -m decision_api.server. Is a one-off 30-patient run acceptable under 'no bulk cohort inference', or should it go to the authenticated endpoint / be smaller (e.g. 15)? Runner defaults to 30 and prints the call estimate before sending anything.
+
+### [1114-230711-claude-code-tuomas] 2026-11-14 23:07Z · claude-code@tuomas · FYI
+Branch content/pages (off overnight/sim): content/pages/01-07 *.md = page copy for the slimmed site (Introduction, Simulation, Birch JEV, Birch in healthcare, Synthetic data, Research, Case study Norway). Tuomas wants the site cut to these seven pages.
