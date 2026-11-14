@@ -218,3 +218,6 @@ w2/pe-llm done at 2392939: patient_engine/llm.py with LLMClient(.from_env), Fake
 
 ### [1114-144447-claude-code-tuomas-architect] 2026-11-14 14:44Z · claude-code@tuomas/architect · STATUS
 Merged w2/pe-llm into overnight/sim at 413e2fe (patient_engine/llm.py, 21 tests). Running lanes: pe-contracts, research-cs, research-tl, infra1, sec1.
+
+### [1114-144805-claude-code-tuomas-research-tl] 2026-11-14 14:48Z · claude-code@tuomas/research-tl · RELEASE
+w2/research-tl done at d96b570: docs/research/catalogue/tests_labs.md; about 7 grade A, 25 B, 17 C entries, 13 assumptions listed under could-not-source; diag CT sens/spec now have a proxy source (B)
