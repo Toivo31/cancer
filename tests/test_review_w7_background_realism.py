@@ -2,7 +2,8 @@
 
 ``patient_engine/skeleton.py::_draw_background``: age is a normal centred in 18..100 for every condition,
 smoking status is uniform over three levels, sex ignores the condition, and pack-years (since the fix) depends
-on smoking status but not on age. Expected to FAIL on ``libraries/ref500``. The thresholds are generous
+on smoking status but not on age. Fixed by the population model (populations/lung_primary_care.yaml,
+patient_engine/population.py); these tests guard ``libraries/ref500``. The thresholds are generous
 (Finnish lung cancer: median age at diagnosis about 70, under-50s a few percent, never-smokers 10 to 15%).
 """
 
@@ -13,10 +14,6 @@ import json
 from pathlib import Path
 
 import pytest
-
-#: Each test shows an open finding, so it fails today. strict: once the finding is fixed the test passes,
-#: the run reports XPASS as a failure, and the marker must be removed (the test then guards the fix).
-pytestmark = pytest.mark.xfail(strict=True, reason="review w7 M4: open finding; remove this marker when fixed")
 
 LIB = Path(__file__).resolve().parents[1] / "libraries" / "ref500" / "cards.jsonl.gz"
 
