@@ -9,3 +9,6 @@ __pycache__/
 # IDE
 .idea/
 .DS_Store
+
+# Service data (SQLite and result blobs)
+data/
