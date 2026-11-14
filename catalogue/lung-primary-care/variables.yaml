@@ -52,6 +52,7 @@
       source: assumption
       grade: assumption
       note: "Research note section 9 suggestion; GRACE symptom tables not extracted."
+    worried_well: {p: 0.3, source: assumption, grade: assumption, note: "D47: each symptom drawn independently with a moderate rate, so the set is incoherent; alarm symptoms (haemoptysis, weight loss) are rare. Not sourced."}
     default:
       p: 0.295
       source: ADES2014
@@ -77,6 +78,7 @@
         cohort (WALTER2015): 21.6%. HAMILTON2005 also 20%. By stage I 29%, II 29%, III 13%, IV 19%
         (noisy). Read through a summarising tool; re-check against the page.
     tuberculosis: {p: 0.2, source: assumption, grade: assumption, note: "Research note section 9 suggestion; not sourced."}
+    worried_well: {p: 0.02, source: assumption, grade: assumption, note: "D47: each symptom drawn independently with a moderate rate, so the set is incoherent; alarm symptoms (haemoptysis, weight loss) are rare. Not sourced."}
     default:
       p: 0.015
       source: ADES2014
@@ -124,6 +126,7 @@
         Sensitivity of dyspnoea for heart failure (specificity 51%) in a systematic review with
         individual patient data from nine primary-care studies of patients with symptoms suggestive of
         heart failure. Read through a summarising tool; re-check against the page.
+    worried_well: {p: 0.3, source: assumption, grade: assumption, note: "D47: each symptom drawn independently with a moderate rate, so the set is incoherent; alarm symptoms (haemoptysis, weight loss) are rare. Not sourced."}
     default:
       p: 0.155
       source: ADES2014
@@ -148,6 +151,7 @@
         1998-2002, 247 cases; stage IV includes missing stage). Controls 12.1%. Referred-to-hospital
         cohort (WALTER2015): 35.3% (chest or shoulder pain). Read through a summarising tool; re-check
         against the page.
+    worried_well: {p: 0.35, source: assumption, grade: assumption, note: "D47: each symptom drawn independently with a moderate rate, so the set is incoherent; alarm symptoms (haemoptysis, weight loss) are rare. Not sourced."}
     default:
       p: 0.121
       source: ADES2014
@@ -173,6 +177,7 @@
         cohort (WALTER2015): 15.0%. Stage II 41% and IV 29%, I 13% (noisy). Read through a summarising
         tool; re-check against the page.
     tuberculosis: {p: 0.5, source: assumption, grade: assumption, note: "Research note section 9 suggestion; not sourced."}
+    worried_well: {p: 0.08, source: assumption, grade: assumption, note: "D47: each symptom drawn independently with a moderate rate, so the set is incoherent; alarm symptoms (haemoptysis, weight loss) are rare. Not sourced."}
     default:
       p: 0.044
       source: ADES2014
@@ -196,6 +201,7 @@
         Symptom recorded in GP records at any time in the 2 years before diagnosis (CAPER, Exeter
         1998-2002, 247 cases; stage IV includes missing stage). Controls 15.1%. Referred-to-hospital
         cohort (WALTER2015): 45.1%. Read through a summarising tool; re-check against the page.
+    worried_well: {p: 0.4, source: assumption, grade: assumption, note: "D47: each symptom drawn independently with a moderate rate, so the set is incoherent; alarm symptoms (haemoptysis, weight loss) are rare. Not sourced."}
     default:
       p: 0.151
       source: ADES2014
@@ -219,6 +225,7 @@
         Symptom recorded in GP records at any time in the 2 years before diagnosis (CAPER, Exeter
         1998-2002, 247 cases; stage IV includes missing stage). Controls 4.0%. Referred-to-hospital
         cohort (WALTER2015): 22.2%. Read through a summarising tool; re-check against the page.
+    worried_well: {p: 0.15, source: assumption, grade: assumption, note: "D47: each symptom drawn independently with a moderate rate, so the set is incoherent; alarm symptoms (haemoptysis, weight loss) are rare. Not sourced."}
     default:
       p: 0.04
       source: ADES2014
@@ -256,6 +263,7 @@
       source: assumption
       grade: assumption
       note: "Research note section 9 suggestion; not sourced."
+    worried_well: {p: 0.08, source: assumption, grade: assumption, note: "D47: each symptom drawn independently with a moderate rate, so the set is incoherent; alarm symptoms (haemoptysis, weight loss) are rare. Not sourced."}
     default:
       p: 0.03
       source: assumption
@@ -277,6 +285,7 @@
         Reported by 19 of 153 lung cancers (referred cohort); first symptom in 6.5%. HAMILTON2005
         found it not independently associated with cancer. Read through a summarising tool; re-check
         against the page.
+    worried_well: {p: 0.1, source: assumption, grade: assumption, note: "D47: each symptom drawn independently with a moderate rate, so the set is incoherent; alarm symptoms (haemoptysis, weight loss) are rare. Not sourced."}
     default:
       p: 0.03
       source: assumption
@@ -303,6 +312,7 @@
       source: assumption
       grade: assumption
       note: "Repeated infections are common in COPD; not sourced."
+    worried_well: {p: 0.05, source: assumption, grade: assumption, note: "D47: each symptom drawn independently with a moderate rate, so the set is incoherent; alarm symptoms (haemoptysis, weight loss) are rare. Not sourced."}
     default: {p: 0.04, source: assumption, grade: assumption, note: "No control rate found; placeholder."}
 
 - id: wheeze
@@ -312,6 +322,7 @@
   given:
     asthma: {p: 0.7, source: assumption, grade: assumption, note: "Research note section 9 suggestion; clinical knowledge."}
     copd_exacerbation: {p: 0.6, source: assumption, grade: assumption, note: "Not sourced; clinical knowledge."}
+    worried_well: {p: 0.1, source: assumption, grade: assumption, note: "D47: each symptom drawn independently with a moderate rate, so the set is incoherent; alarm symptoms (haemoptysis, weight loss) are rare. Not sourced."}
     default: {p: 0.05, source: assumption, grade: assumption, note: "No control rate found; placeholder."}
 
 - id: finger_clubbing
@@ -482,6 +493,20 @@
       note: >-
         No CRP distribution for lung cancer was found. As non-pneumonia with a heavier tail (research
         note section 9).
+    tuberculosis:
+      dist: lognormal
+      median: 30
+      p90: 100
+      source: assumption
+      grade: assumption
+      note: "Group marker (D50): CRP is raised in TB, moderately; not sourced."
+    copd_exacerbation:
+      dist: lognormal
+      median: 25
+      p90: 90
+      source: assumption
+      grade: assumption
+      note: "Group marker (D50): a bacterial or viral exacerbation raises CRP; not sourced."
     default:
       dist: lognormal
       median: 8
@@ -907,3 +932,88 @@
       source: assumption
       grade: assumption
       note: "Never used: the variable exists only when the tissue is malignant."
+
+# ---- Group marker (D50): one hidden variable several conditions cause, read by a cheap test (NT-proBNP).
+- id: cardiac_strain
+  label: "Raised natriuretic peptide (cardiac wall strain)"
+  kind: lab_true
+  type: binary
+  given:
+    heart_failure: {p: 0.95, source: assumption, grade: assumption, note: "High sensitivity is why the test is used to rule heart failure out; not sourced (MANT2009 abstract has no natriuretic peptide figure)."}
+    copd_exacerbation: {p: 0.2, source: assumption, grade: assumption, note: "Right heart strain and age raise it in some; not sourced."}
+    pneumonia: {p: 0.15, source: assumption, grade: assumption, note: "Raised in some older patients with acute infection; not sourced."}
+    default: {p: 0.08, source: assumption, grade: assumption, note: "Raised with age and kidney disease in people without heart failure; not sourced."}
+
+# ---- Definitive markers (D46): one binary hidden fact per condition, measured only by that condition's definitive test.
+
+- id: dx_lung_cancer
+  label: "Lung cancer is the truth (definitive-test marker)"
+  kind: tissue_true
+  type: binary
+  given:
+    lung_cancer: {p: 1, source: assumption, grade: assumption, note: "True exactly when the condition is active (D46); a definition, not a measurement."}
+    default: {p: 0, source: assumption, grade: assumption, note: "False when the condition is not active."}
+
+- id: dx_pneumonia
+  label: "Pneumonia is the truth (definitive-test marker)"
+  kind: imaging_true
+  type: binary
+  given:
+    pneumonia: {p: 1, source: assumption, grade: assumption, note: "True exactly when the condition is active (D46); a definition, not a measurement."}
+    default: {p: 0, source: assumption, grade: assumption, note: "False when the condition is not active."}
+
+- id: dx_copd_exacerbation
+  label: "Copd exacerbation is the truth (definitive-test marker)"
+  kind: function_true
+  type: binary
+  given:
+    copd_exacerbation: {p: 1, source: assumption, grade: assumption, note: "True exactly when the condition is active (D46); a definition, not a measurement."}
+    default: {p: 0, source: assumption, grade: assumption, note: "False when the condition is not active."}
+
+- id: dx_asthma
+  label: "Asthma is the truth (definitive-test marker)"
+  kind: function_true
+  type: binary
+  given:
+    asthma: {p: 1, source: assumption, grade: assumption, note: "True exactly when the condition is active (D46); a definition, not a measurement."}
+    default: {p: 0, source: assumption, grade: assumption, note: "False when the condition is not active."}
+
+- id: dx_heart_failure
+  label: "Heart failure is the truth (definitive-test marker)"
+  kind: imaging_true
+  type: binary
+  given:
+    heart_failure: {p: 1, source: assumption, grade: assumption, note: "True exactly when the condition is active (D46); a definition, not a measurement."}
+    default: {p: 0, source: assumption, grade: assumption, note: "False when the condition is not active."}
+
+- id: dx_tuberculosis
+  label: "Tuberculosis is the truth (definitive-test marker)"
+  kind: lab_true
+  type: binary
+  given:
+    tuberculosis: {p: 1, source: assumption, grade: assumption, note: "True exactly when the condition is active (D46); a definition, not a measurement."}
+    default: {p: 0, source: assumption, grade: assumption, note: "False when the condition is not active."}
+
+- id: dx_benign_nodule
+  label: "Benign nodule is the truth (definitive-test marker)"
+  kind: imaging_true
+  type: binary
+  given:
+    benign_nodule: {p: 1, source: assumption, grade: assumption, note: "True exactly when the condition is active (D46); a definition, not a measurement."}
+    default: {p: 0, source: assumption, grade: assumption, note: "False when the condition is not active."}
+
+- id: dx_reflux_postinfectious_cough
+  label: "Reflux postinfectious cough is the truth (definitive-test marker)"
+  kind: function_true
+  type: binary
+  given:
+    reflux_postinfectious_cough: {p: 1, source: assumption, grade: assumption, note: "True exactly when the condition is active (D46); a definition, not a measurement."}
+    default: {p: 0, source: assumption, grade: assumption, note: "False when the condition is not active."}
+
+- id: dx_viral_self_limiting
+  label: "Viral self limiting is the truth (definitive-test marker)"
+  kind: lab_true
+  type: binary
+  given:
+    viral_self_limiting: {p: 1, source: assumption, grade: assumption, note: "True exactly when the condition is active (D46); a definition, not a measurement."}
+    default: {p: 0, source: assumption, grade: assumption, note: "False when the condition is not active."}

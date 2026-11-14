@@ -528,3 +528,94 @@
   supports: ["N0M0 share and N1/N2 share by size, Shanghai"]
   accessed: 2026-11-14
   access: full_text
+- id: SOITE2024
+  citation: "Soite (Keski-Pohjanmaan hyvinvointialue). Suoriteperusteisen laskutuksen hinnasto 19.3.2024 (Swedish version). Radiology pp. 100-117, pathology pp. 118-121, clinics pp. 8-26. Euro prices per procedure."
+  url: https://soite.fi/wp-content/uploads/2024/03/Suoriteperusteisen-laskutuksen-hinnasto-19.3.2024-sve.pdf
+  year: 2024
+  supports: [euro price of chest X-ray, CT thorax, MRI brain, CT-guided lung biopsy, bronchoscopy, spirometry, echocardiography, oesophageal pH, pathology items]
+  accessed: 2026-11-14
+  access: full_text   # read through a summarising tool in two parts (offset 0 and 100000); re-check line items against the page
+- id: EPHVA2026
+  citation: "Etelä-Pohjanmaan hyvinvointialue (Ephva). Palveluhinnasto 2026 (muutettu 3/2026). GP visit and nurse visit prices; specialist visit bundles."
+  url: https://www.hyvaep.fi/uploads/2026/03/ephva_palveluhinnasto_2026_muutettu.pdf
+  year: 2026
+  supports: [GP visit 232 EUR, nurse visit 92 EUR, PET-CT bundle prices, lung clinic bronchoscopy bundle 1265 EUR]
+  accessed: 2026-11-14
+  access: full_text   # first 100,000 of 111,430 characters, via a summarising tool; imaging and laboratory have no standalone lines
+- id: KELA_VVK2026
+  citation: "Kela. Valinnanvapauskokeilu 2026: tutkimukset ja hinta jonka potilas maksaa (price list of examinations in the free-choice pilot, from 1 July). Patient price, not provider cost."
+  url: https://www.kela.fi/documents/d/guest/valinnanvapauskokeilu-2026_a4-verkko_tutkimukset-1-7-alkaen
+  year: 2026
+  supports: [CRP 3 EUR, blood count 3-6 EUR, bacterial culture 6 EUR, pro-BNP 12 EUR, chest X-ray 48.50 EUR (patient prices)]
+  accessed: 2026-11-14
+  access: full_text   # via a summarising tool; the page gives no year or setter of the prices
+- id: HUS_YEAR2024
+  citation: "HUS. HUS year 2024: laboratories and imaging (annual report page). Volumes of examinations 2024."
+  url: https://www.hus.fi/en/about-us/annual-reports/hus-year-2024/patient-care/hus-year-2024-laboratories-and-imaging
+  year: 2024
+  supports: [HUS radiology 1,178,368 examinations, pathology 529,985, microbiology 1,685,705, chemistry and haematology 18,885,969 in 2024; local imaging backlogs]
+  accessed: 2026-11-14
+  access: full_text
+- id: PIRHA_ANTIB
+  citation: "Pirkanmaan hyvinvointialue (Pirha). Milloin immuniteetiltaan terveille aikuisille ei määrätä antibioottia (guidance page, cites Käypä hoito)."
+  url: https://pirha.fi/documents/d/guest/milloin-immuniteetiltaan-terveille-aikuisille-ei-maarata-antibioottia
+  year: 2025
+  supports: [acute bronchitis is not treated with antibiotics in immunocompetent adults]
+  accessed: 2026-11-14
+  access: full_text
+- id: KEUSOTE_LAMA
+  citation: "Keusote / Theseus thesis: Sairaanhoitajan rajattu lääkkeenmäärääminen tiimityössä. Limited nurse prescribing since 2011; model scope in outpatient care."
+  url: https://keusote.fi/sairaanhoitajan-rajattu-laakkeenmaaraaminen-tiimityossa
+  year: 2023
+  supports: [nurse limited prescribing needs training and a written doctor order; sore throat and allergic rhinitis in scope; sinus, ear and prolonged respiratory infections go to a doctor]
+  accessed: 2026-11-14
+  access: full_text   # first 100,000 of 163,423 characters, via a summarising tool; year of the thesis not captured
+- id: INNOKYLA_HTA
+  citation: "Innokylä. Hoidon tarpeen arvioinnin ohjeet ammattilaiselle (December 2025)."
+  url: https://www.innokyla.fi/sites/default/files/2025-12/Hoidon%20tarpeen%20arvioinnin%20ohjeet%20ammattilaiselle%20Innokyl%C3%A4.pdf
+  year: 2025
+  supports: [needs assessment done the same working day as contact; nurse prepares referrals and requests, orders are the doctor's]
+  accessed: 2026-11-14
+  access: full_text   # via a summarising tool
+- id: MTV_THL2022
+  citation: "MTV Uutiset, article on THL statistical report on access to primary care (data October 2022): just under 60 percent got a non-urgent doctor visit within 7 days, about 90 percent a nurse visit."
+  url: https://www.mtvuutiset.fi/artikkeli/terveyskeskukseen-sai-kiireettoman-laakariajan-alle-viikossa-vain-hieman-yli-joka-toinen-tana-syksyna-yli-kolme-kuukautta-laakaria-odottaneita-enemman-kuin-aikoihin/8595548
+  year: 2022
+  supports: [share seen within 7 days, doctor and nurse, October 2022]
+  accessed: 2026-11-14
+  access: secondary   # journalist summary of a THL report; the report itself was not opened
+- id: CDC_TB
+  citation: "CDC. Clinical and Laboratory Diagnosis for Tuberculosis (healthcare providers page)."
+  url: https://www.cdc.gov/tb/hcp/testing-diagnosis/clinical-and-laboratory-diagnosis.html
+  year: 2025
+  supports: [culture is the gold standard for TB, takes a week or more against hours for NAAT, a negative culture does not rule out TB]
+  accessed: 2026-11-14
+  access: full_text
+- id: MUS_BMJO2022
+  citation: "Review of persistent physical symptoms / medically unexplained symptoms in primary care, eprints.whiterose.ac.uk/192766 (BMJ Open e059971; title and authors not read). Cites MUS as about 45% of general practice consultations and 20% of new consultations in primary care."
+  url: https://eprints.whiterose.ac.uk/id/eprint/192766/6/e059971.full.pdf
+  year: 2022
+  supports: [medically unexplained symptoms are a large share of primary care consultations; prevalence range 1.7% to 76% in high users]
+  accessed: 2026-11-14
+  access: full_text   # via a summarising tool; the 45% and 20% are the review's citations of other studies
+- id: STM_HOITOTAKUU2025
+  citation: "STM. Perusterveydenhuollon kiireettömään hoitoon pääsyn enimmäisajat pitenevät vuoden 2025 alusta lukien."
+  url: https://stm.fi/-/perusterveydenhuollon-kiireettomaan-hoitoon-paasyn-enimmaisajat-pitenevat-vuoden-2025-alusta-lukien
+  year: 2024
+  supports: [care guarantee for primary outpatient care is 3 months from 2025 (not applying under 23)]
+  accessed: 2026-11-14
+  access: full_text
+- id: KELA_LAB
+  citation: "Kela. Sairaanhoitokorvaus laboratoriotutkimuksista (page for healthcare partners): point-of-care tests such as blood glucose, haemoglobin and CRP use the code of the equivalent laboratory test."
+  url: https://www.kela.fi/yhteistyokumppanit-terveydenhuolto-sairaanhoitokorvaukset-tutkimus-ja-hoito-laboratoriotutkimukset
+  year: 2026
+  supports: [CRP is a point-of-care test in Finnish practice; pathology belongs to laboratory examinations]
+  accessed: 2026-11-14
+  access: full_text   # via a summarising tool; no euro amounts on the page
+- id: HUS_DIAG2023
+  citation: "HUS Diagnostiikkakeskus palvelukuvaus 2023 (annex 1 to the Itä-Uusimaa wellbeing county contract). Lists CRP as a point-of-care test; urgent chemistry and haematology tests aim for a result within one hour of sample arrival; pathology laboratories work on weekdays 7:00 to 15:30; no prices or turnaround for histology or cultures."
+  url: https://itauusimaa.fi/wp-content/uploads/2023/09/LIITE-1-HUS-Diagnostiikkakeskuksen-palvelukuvaus-2023_Ita-Uudenmaan-hva-002.pdf
+  year: 2023
+  supports: [CRP point-of-care, one-hour target for urgent laboratory tests, plain X-rays usually without appointment]
+  accessed: 2026-11-14
+  access: full_text   # via a summarising tool

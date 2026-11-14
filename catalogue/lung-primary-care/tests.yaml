@@ -19,6 +19,7 @@
     - {id: wheeze, type: binary, measures: wheeze, sensitivity: {value: 0.85, source: assumption, grade: assumption, note: "As for the first symptom (assumption, research note section 9)."}, specificity: {value: 0.97, source: assumption, grade: assumption, note: "As for the first symptom (assumption)."}}
   positive_when: "haemoptysis or hoarseness or (cough and dyspnoea) or weight_loss"
   timing:
+    report_days: {dist: fixed, value: 0, source: assumption, grade: assumption, note: "Instant: the result is available during the visit; the visit slot is the resource."}
     service_days:
       value: 0.04
       source: assumption
@@ -42,6 +43,7 @@
     - {id: ankle_oedema, type: binary, measures: ankle_oedema, sensitivity: {value: 0.6, source: assumption, grade: assumption, note: "As for the first sign (assumption)."}, specificity: {value: 0.95, source: assumption, grade: assumption, note: "Assumed; not sourced."}}
   positive_when: "finger_clubbing or neck_nodes or abnormal_chest_sounds"
   timing:
+    report_days: {dist: fixed, value: 0, source: assumption, grade: assumption, note: "Instant: the result is available during the visit; the visit slot is the resource."}
     service_days: {value: 0.04, source: assumption, grade: assumption, note: "Scenario value for a visit (assumption)."}
   resource_kind: gp_appt
   invasive: false
@@ -57,6 +59,7 @@
     - {id: platelets, type: continuous, measures: platelets_true, unit: "10^9/L"}
   positive_when: "platelets > 400 or hb < 110"
   timing:
+    service_days: {value: 0.01, source: assumption, grade: assumption, note: "blood draw at a sampling point; minutes to an hour of staff time, not sourced."}
     report_days:
       dist: lognormal
       median: 0.5
@@ -65,6 +68,7 @@
       grade: assumption
       note: "Same-day or next-day result for primary care blood tests; not sourced."
   resource_kind: lab
+  cost_eur: {value: 6, source: KELA_VVK2026, grade: C, low: 3, high: 6, note: "Kela free-choice pilot patient price list: complete blood count 6 EUR, basic count plus platelets 3 EUR. A patient price in a pilot, not a county unit cost; read through a summarising tool. re-check against the page."}
   invasive: false
   note: >-
     Analytical error is not modelled (no error_sd): the result equals the true value. positive_when:
@@ -72,12 +76,13 @@
     CHEN2021 anaemia thresholds, 110 women / 120 men; sex-specific reading is not expressible).
 
 - id: crp
-  label: "C-reactive protein"
+  label: "C-reactive protein (laboratory)"
   category: bloodwork
   outputs:
     - {id: crp, type: continuous, measures: crp_true, unit: "mg/L"}
   positive_when: "crp >= 50"
   timing:
+    service_days: {value: 0.01, source: assumption, grade: assumption, note: "blood draw at a sampling point; minutes to an hour of staff time, not sourced."}
     report_days:
       dist: lognormal
       median: 0.5
@@ -86,6 +91,7 @@
       grade: assumption
       note: "Same-day or next-day result for primary care blood tests; not sourced."
   resource_kind: lab
+  cost_eur: {value: 3, source: KELA_VVK2026, grade: C, note: "Kela pilot patient price list: S-CRP 3 EUR (patient price, not a unit cost; summarising tool). re-check against the page."}
   invasive: false
   note: >-
     Analytical error not modelled. Pneumonia prediction by CRP: PPV 0.47, NPV 0.84, AUC 0.69
@@ -102,6 +108,7 @@
     - {id: ldh, type: continuous, measures: ldh_true, unit: "U/L"}
   positive_when: "calcium > 2.62 or alp > 125"
   timing:
+    service_days: {value: 0.01, source: assumption, grade: assumption, note: "blood draw at a sampling point; minutes to an hour of staff time, not sourced."}
     report_days:
       dist: lognormal
       median: 0.5
@@ -110,6 +117,7 @@
       grade: assumption
       note: "Same-day or next-day result for primary care blood tests; not sourced."
   resource_kind: lab
+  cost_eur: {value: 10, source: assumption, grade: assumption, note: "Three analytes; no price found. KELA_VVK2026 has CRP 3 and pro-BNP 12 EUR, so a few euros each."}
   invasive: false
   note: >-
     Analytical error not modelled. positive_when: corrected calcium above 2.62 mmol/L (CHAN2020
@@ -134,7 +142,7 @@
       grade: assumption
       note: "Scenario value (scenarios/finland_lung.yaml): median 1.5, p90 4 days."
   resource_kind: xray
-  cost_eur: {value: 40, source: assumption, grade: assumption, note: "Scenario placeholder; no Finnish price list was found."}
+  cost_eur: {value: 40, source: SOITE2024, grade: C, high: 45, note: "Soite 2024 radiology list: Thorax PA 40 EUR, Thorax 45 EUR. One wellbeing county, 2024; Kela pilot patient price 48.50 EUR. re-check against the page."}
   invasive: false
   note: >-
     True in positive_when means abnormal or suspicious for malignancy, as in the scenario. Within the
@@ -163,11 +171,7 @@
         Pirkanmaa: lung and upper abdomen CT usually reported within a week of referral processing
         (params/finland.yaml, p90 7); median 3 is the scenario's assumption.
   resource_kind: ct_scanner
-  cost_eur:
-    value: 250
-    source: assumption
-    grade: assumption
-    note: "Scenario placeholder; no Finnish price list was found."
+  cost_eur: {value: 336, source: SOITE2024, grade: C, note: "Soite 2024 radiology list: CT thorax or mediastinum 336 EUR (high-resolution lung CT 271). re-check against the page."}
   invasive: false
   note: >-
     Scenario p_positive for non-cancer conditions on CT (pneumonia 0.15, benign nodule 0.65, others
@@ -190,6 +194,7 @@
       grade: assumption
       note: "Same as the chest CT report (assumption)."
   resource_kind: ct_scanner
+  cost_eur: {value: 271, source: SOITE2024, grade: C, note: "No low-dose line was found; the nearest is Soite 2024 high-resolution CT of the lungs, 271 EUR. re-check against the page."}
   invasive: false
   note: >-
     A screening test, not part of the Finnish symptomatic pathway; values carried only. Accuracy
@@ -215,11 +220,7 @@
         Referral to report took 20.5 days (range 7-49) there, but that includes waiting, which belongs
         to the world, not the test.
   resource_kind: pet_scanner
-  cost_eur:
-    value: 1500
-    source: assumption
-    grade: assumption
-    note: "Scenario placeholder; no Finnish price list was found."
+  cost_eur: {value: 3718, source: EPHVA2026, grade: C, high: 3951, note: "Ephva 2026 price list: PET-CT lines 3,718 (urology) and 3,951 (whole body, with visit and procedures); bundled prices, one county; summarising tool. re-check against the page."}
   invasive: false
   note: >-
     In the Norwegian stage I-II cohort PET-CT changed the treatment plan in 2% (0.02) and triggered
@@ -236,6 +237,7 @@
     service_days: {value: 0.06, source: assumption, grade: assumption, note: "As for PET-CT (assumption)."}
     report_days: {dist: lognormal, median: 3, p90: 7, source: assumption, grade: assumption, note: "As for CT (assumption)."}
   resource_kind: mri
+  cost_eur: {value: 457, source: SOITE2024, grade: C, note: "Soite 2024: MRI of the head 457 EUR (range 411 to 822 by extent). re-check against the page."}
   invasive: false
   requires: [chest_ct]
 
@@ -247,8 +249,10 @@
     - {id: fev1_pct, type: continuous, measures: fev1_pct_predicted, unit: "% predicted"}
   positive_when: airflow_obstruction
   timing:
+    report_days: {dist: fixed, value: 0, source: assumption, grade: assumption, note: "Instant: the result is available during the visit; the visit slot is the resource."}
     service_days: {value: 0.04, source: assumption, grade: assumption, note: "Assumed the length of a visit; not sourced."}
   resource_kind: gp_appt
+  cost_eur: {value: 94, source: SOITE2024, grade: C, note: "Soite 2024: spirometry alone 94 EUR; with bronchodilator 128 EUR. re-check against the page."}
   invasive: false
   note: >-
     Proxy accuracy for a handheld device only: pre-bronchodilator microspirometry FEV1/FEV6 below 0.73
@@ -274,11 +278,7 @@
         the scenario's. As in the scenario this includes the pathology reading, so ordering
         histology_report as well would count it twice.
   resource_kind: bronchoscopy
-  cost_eur:
-    value: 1200
-    source: assumption
-    grade: assumption
-    note: "Scenario placeholder; no Finnish price list was found."
+  cost_eur: {value: 858, source: SOITE2024, grade: C, low: 666, high: 1457, note: "Derived: Soite 2024 bronchoscopy with basic samples 666 EUR plus a core-biopsy pathology report 192 EUR (the report time below includes pathology). Ephva 2026 lung-clinic bundle with bronchoscopy 1,265 EUR. re-check against the page."}
   invasive: true
   harm:
     pneumothorax:
@@ -318,6 +318,7 @@
       grade: assumption
       note: "As bronchoscopy (assumption); no EBUS-specific time sourced."
   resource_kind: bronchoscopy
+  cost_eur: {value: 1050, source: assumption, grade: assumption, note: "No EBUS price found: bronchoscopy with pathology (858 derived, SOITE2024) plus about 200 EUR for the ultrasound scope and nodal cytology (Soite S5 lymph node needle sample 229)."}
   invasive: true
   harm:
     infectious_complication:
@@ -369,11 +370,7 @@
         Median 4.5 days from tissue sampling to pathology report, range 0-14 (Norway, stage I-II); p90
         9 is the scenario's. As in the scenario this includes the pathology reading.
   resource_kind: ttnb_slot
-  cost_eur:
-    value: 900
-    source: assumption
-    grade: assumption
-    note: "Scenario placeholder; no Finnish price list was found."
+  cost_eur: {value: 682, source: SOITE2024, grade: C, low: 490, high: 814, note: "Derived: Soite 2024 CT-guided lung tissue sample 490 EUR plus a core-biopsy pathology report 192 EUR (the report time includes pathology). re-check against the page."}
   invasive: true
   harm:
     pneumothorax:
@@ -414,6 +411,7 @@
       grade: assumption
       note: "Borrowed from histology (STOKSTAD2019 median 4.5 days); not sourced for cytology."
   resource_kind: lab
+  cost_eur: {value: 60, source: SOITE2024, grade: C, note: "Soite 2024 pathology: exfoliative cytology, moderate cell count 60 EUR (rich 72). re-check against the page."}
   invasive: false
 
 - id: histology_report
@@ -423,6 +421,7 @@
     - {id: histology, type: categorical, measures: histology_group, accuracy: {value: 0.95, source: assumption, grade: assumption, note: "Subtyping on a small biopsy is occasionally wrong or reported as not otherwise specified; no figure sourced."}}
   positive_when: "histology is not None"
   timing:
+    service_days: {value: 0.01, source: assumption, grade: assumption, note: "sample handling and slide preparation in the pathology unit; minutes to an hour of staff time, not sourced."}
     report_days:
       dist: lognormal
       median: 4.5
@@ -433,6 +432,7 @@
         Median 4.5 days from tissue sampling to pathology report, range 0-14 (Norway, stage I-II,
         carried); p90 9 is the scenario's.
   resource_kind: pathology
+  cost_eur: {value: 192, source: SOITE2024, grade: C, low: 132, high: 324, note: "Soite 2024 pathology: core needle biopsy report P2 192 EUR (P1 132, P3 324); immunohistochemistry adds 120, molecular pathology 693 (not modelled). Counted again if the sampling test already includes pathology. re-check against the page."}
   invasive: false
   note: >-
     Reads a sample obtained by bronchoscopy, EBUS or needle biopsy; whether the sample caught the
@@ -440,3 +440,168 @@
     so positive_when means a cancer was typed. Molecular panels (turnaround 4 working days in-house in
     Copenhagen, PATHOLOGIST2024; 45% actionable alterations in advanced NSCLC, Tampere,
     HORMALAINEN2025) are not modelled: the pathway does not use marker status.
+
+
+# ======================================================================================================
+# Group test (D50): says "at least one of several conditions is present" (or, when negative, "probably none")
+# without naming which. Cheap, fast, plentiful. NT-proBNP reads cardiac_strain (heart failure, some COPD, pneumonia).
+# The other group tests already exist: chest_xray.abnormal and chest_ct.lesion_seen read lung_lesion (lung cancer,
+# benign nodule, tuberculosis); crp reads crp_true (pneumonia, TB, COPD exacerbation high, others low);
+# spirometry reads airflow_obstruction (COPD, asthma, also lung cancer).
+- id: nt_probnp
+  label: "NT-proBNP (natriuretic peptide)"
+  category: bloodwork
+  outputs:
+    - id: bnp_high
+      type: binary
+      measures: cardiac_strain
+      sensitivity: {value: 0.95, source: assumption, grade: assumption, note: "Rule-out test: high sensitivity is the point of using it for suspected heart failure (D50). Not sourced; no figure was opened."}
+      specificity: {value: 0.65, source: assumption, grade: assumption, note: "Lower specificity: raised with age and kidney disease. Not sourced."}
+  positive_when: bnp_high
+  timing:
+    service_days: {value: 0.01, source: assumption, grade: assumption, note: "blood draw at a sampling point; minutes to an hour of staff time, not sourced."}
+    report_days: {dist: lognormal, median: 0.5, p90: 1.5, source: assumption, grade: assumption, note: "Same-day or next-day blood test; not sourced."}
+  resource_kind: lab
+  cost_eur: {value: 12, source: KELA_VVK2026, grade: C, note: "Kela pilot patient price list: P-proBNP 12 EUR (patient price; summarising tool). re-check against the page."}
+  invasive: false
+  note: "Group test (D50): a negative result makes heart failure unlikely; a positive does not name the cause."
+
+# ======================================================================================================
+# Definitive tests (D46): exactly one per condition, each measuring that condition's own marker dx_<condition>.
+# They are slow, scarce and (mostly) expensive; prices from Finnish county lists (SOITE2024, EPHVA2026) or marked assumption.
+# healthy conditions (no_disease_found, worried_well) have none: absence of disease is a diagnosis of exclusion.
+- id: dx_lung_cancer_histology
+  label: "Tissue sampling with histology report (definitive for lung cancer)"
+  category: tissue
+  outputs:
+    - {id: lung_cancer_confirmed, type: binary, measures: dx_lung_cancer, sensitivity: {value: 0.88, source: RIVERA2013, grade: B, note: "Pooled sensitivity of flexible bronchoscopy for central lesions (ACCP 2013 abstract); peripheral lesions are lower (0.34 to 0.63) and CT-guided sampling about 0.90, so this is a mixed-route average and optimistic for small peripheral tumours."}, specificity: {value: 1.0, source: assumption, grade: assumption, note: "A malignant histology is not reported for non-cancer (RIVERA2013 and UZUN2017 give 1.0 for sampling)."}}
+  positive_when: lung_cancer_confirmed
+  timing:
+    service_days: {value: 0.06, source: assumption, grade: assumption, note: "A procedure slot, not a visit."}
+    report_days: {dist: lognormal, median: 7, p90: 14, source: STOKSTAD2019, grade: C, note: "Median 4.5 days from sampling to pathology report (Norway) plus immunohistochemistry and marker work-up; 7 and 14 are our estimates. Booking waits are on the resource."}
+  resource_kind: ttnb_slot
+  cost_eur: {value: 802, source: SOITE2024, grade: C, low: 616, high: 934, note: "Derived: CT-guided lung tissue sample 490 + core-biopsy report 192 + immunohistochemistry 120 (Soite 2024). Molecular pathology 693 is not included. re-check against the page."}
+  invasive: true
+  harm: {pneumothorax: {value: 0.01, source: assumption, grade: assumption, note: "As ct_guided_biopsy (assumption; HUO2020 gives larger rates for CT-guided lung biopsy)."}}
+  requires: [chest_ct]
+  note: "D46 definitive test for lung_cancer. Reaching it needs a referral and a booked procedure; primary care does not order it directly in Finnish practice."
+
+- id: dx_pneumonia_chest_xray
+  label: "Chest X-ray with radiologist report, read with the clinical picture (definitive for pneumonia)"
+  category: imaging
+  outputs:
+    - {id: pneumonia_confirmed, type: binary, measures: dx_pneumonia, sensitivity: {value: 0.85, source: assumption, grade: assumption, note: "GRACE (VANVUGT2012) defined pneumonia by the radiograph, so it is the reference; some clinical pneumonia has no radiographic change. Not sourced."}, specificity: {value: 0.95, source: assumption, grade: assumption, note: "Not sourced."}}
+  positive_when: pneumonia_confirmed
+  timing:
+    service_days: {value: 0.04, source: assumption, grade: assumption, note: "As chest_xray."}
+    report_days: {dist: lognormal, median: 1.5, p90: 4, source: assumption, grade: assumption, note: "As chest_xray (scenario value)."}
+  resource_kind: xray
+  cost_eur: {value: 40, source: SOITE2024, grade: C, high: 45, note: "Soite 2024: Thorax PA 40 EUR. The cheapest and fastest definitive test: for pneumonia the definitive test is an ordinary film. re-check against the page."}
+  invasive: false
+  note: "D46 definitive test for pneumonia (WP-C8-3 package choice). Not slow or scarce in real practice; the world's cost_scale and the xray resource still apply."
+
+- id: spirometry_reversibility
+  label: "Spirometry with bronchodilator reversibility (definitive for COPD and asthma)"
+  category: function
+  outputs:
+    - {id: copd_confirmed, type: binary, measures: dx_copd_exacerbation, sensitivity: {value: 0.9, source: assumption, grade: assumption, note: "Post-bronchodilator FEV1/FVC below 0.70 is the criterion (Kaypa hoito COPD page (kaypahoito.fi/nix02759) says the fixed 0.7 threshold is sensitive for clinician-confirmed COPD but over-diagnoses in the elderly and under-diagnoses under 45); a figure was not sourced."}, specificity: {value: 0.9, source: assumption, grade: assumption, note: "Fixed-ratio over-diagnosis in older people lowers specificity; not sourced."}}
+    - {id: asthma_confirmed, type: binary, measures: dx_asthma, sensitivity: {value: 0.8, source: assumption, grade: assumption, note: "Reversibility is positive in only part of asthma patients at any one visit; not sourced."}, specificity: {value: 0.9, source: assumption, grade: assumption, note: "Not sourced."}}
+  positive_when: "copd_confirmed or asthma_confirmed"
+  timing:
+    service_days: {value: 0.04, source: assumption, grade: assumption, note: "A visit to a lung function unit."}
+    report_days: {dist: lognormal, median: 0.1, p90: 1, source: assumption, grade: assumption, note: "Result at the visit; the clinician reads the trace."}
+  resource_kind: lung_function
+  cost_eur: {value: 128, source: SOITE2024, grade: C, note: "Soite 2024: spirometry with bronchodilator alone 128 EUR (spirometry alone 94). re-check against the page."}
+  invasive: false
+  note: "D46 definitive test for copd_exacerbation (the underlying COPD) and asthma: one procedure, two markers. The waiting time is the lung function unit's slot."
+
+- id: echocardiography
+  label: "Echocardiography (definitive for heart failure)"
+  category: imaging
+  outputs:
+    - {id: heart_failure_confirmed, type: binary, measures: dx_heart_failure, sensitivity: {value: 0.9, source: assumption, grade: assumption, note: "Echocardiography is the reference for structural heart failure; not sourced."}, specificity: {value: 0.9, source: assumption, grade: assumption, note: "Not sourced."}}
+  positive_when: heart_failure_confirmed
+  timing:
+    service_days: {value: 0.06, source: assumption, grade: assumption, note: "A cardiology unit appointment."}
+    report_days: {dist: lognormal, median: 1, p90: 5, source: assumption, grade: assumption, note: "Report at or shortly after the study; not sourced."}
+  resource_kind: echo
+  cost_eur: {value: 347, source: SOITE2024, grade: C, high: 386, note: "Soite 2024: ultrasound of the heart 347 EUR (heart clinic); Ephva 2026 first internal-medicine visit with echo 386. re-check against the page."}
+  invasive: false
+  note: "D46 definitive test for heart_failure."
+
+- id: mycobacterial_culture
+  label: "Sputum mycobacterial culture (definitive for tuberculosis)"
+  category: tissue
+  outputs:
+    - {id: tuberculosis_confirmed, type: binary, measures: dx_tuberculosis, sensitivity: {value: 0.85, source: assumption, grade: assumption, note: "CDC_TB: culture is the gold standard but a negative culture does not rule out TB; the figure is not sourced."}, specificity: {value: 0.99, source: CDC_TB, grade: C, note: "Culture is the reference for laboratory confirmation (CDC_TB); 0.99 allows for contamination (assumption). re-check against the page."}}
+  positive_when: tuberculosis_confirmed
+  nondiagnostic: {value: 0.05, source: assumption, grade: assumption, note: "Unusable or overgrown samples; not sourced."}
+  timing:
+    service_days: {value: 0.01, source: assumption, grade: assumption, note: "A sample, not a visit."}
+    report_days: {dist: lognormal, median: 35, p90: 56, source: assumption, grade: assumption, note: "CDC_TB says culture takes a week or more against hours for a nucleic-acid test; solid culture is usually reported after 6 to 8 weeks (not opened on a page; assumption). Positive cultures are reported earlier than negatives."}
+  resource_kind: mycobacteriology
+  cost_eur: {value: 60, source: assumption, grade: assumption, high: 756, note: "No standalone price found. Kela pilot routine bacterial culture is 6 EUR (KELA_VVK2026); mycobacterial culture with typing is far dearer. Ephva 2026 lung-clinic bundle with mycobacterial typing is 756 (bundle with a visit)."}
+  invasive: false
+  note: "D46 definitive test for tuberculosis. Very slow by nature. A rapid PCR exists in practice and is not modelled."
+
+- id: ct_nodule_followup
+  label: "CT follow-up of the nodule for stability (definitive for a benign nodule)"
+  category: imaging
+  outputs:
+    - {id: benign_nodule_confirmed, type: binary, measures: dx_benign_nodule, sensitivity: {value: 0.9, source: assumption, grade: assumption, note: "Stability over the follow-up interval establishes benignity; a slow-growing cancer can be mistaken for stable. Not sourced."}, specificity: {value: 0.97, source: assumption, grade: assumption, note: "Not sourced."}}
+  positive_when: benign_nodule_confirmed
+  timing:
+    service_days: {value: 0.04, source: assumption, grade: assumption, note: "As a chest CT."}
+    report_days: {dist: lognormal, median: 95, p90: 190, source: assumption, grade: assumption, note: "The repeat scan is taken about 3 months after the first (and stability is only fully shown over longer), then reported in about 3 days (chest_ct). The interval is our assumption."}
+  resource_kind: ct_scanner
+  cost_eur: {value: 336, source: SOITE2024, grade: C, note: "A repeat chest CT, Soite 2024 336 EUR. re-check against the page."}
+  invasive: false
+  requires: [chest_ct]
+  note: "D46 definitive test for benign_nodule. The long report time stands for the follow-up interval."
+
+- id: ph_monitoring
+  label: "Oesophageal pH monitoring (definitive for reflux cough)"
+  category: function
+  outputs:
+    - {id: reflux_confirmed, type: binary, measures: dx_reflux_postinfectious_cough, sensitivity: {value: 0.8, source: assumption, grade: assumption, note: "Not sourced; a trial of acid suppression is the common alternative and is a treatment action, not this test."}, specificity: {value: 0.85, source: assumption, grade: assumption, note: "Not sourced."}}
+  positive_when: reflux_confirmed
+  timing:
+    service_days: {value: 1, source: assumption, grade: assumption, note: "A catheter or capsule worn for a day."}
+    report_days: {dist: lognormal, median: 10, p90: 28, source: assumption, grade: assumption, note: "Not sourced."}
+  resource_kind: gi_function
+  cost_eur: {value: 293, source: SOITE2024, grade: C, note: "Soite 2024: oesophageal pH registration 293 EUR. re-check against the page."}
+  invasive: true
+  harm: {discomfort_only: {value: 0, source: assumption, grade: assumption, note: "Minor discomfort; not modelled."}}
+  note: "D46 definitive test for reflux_postinfectious_cough (the reflux or post-infectious cough group is confirmed by pH monitoring or by response to treatment)."
+
+- id: respiratory_virus_pcr
+  label: "Respiratory virus PCR panel (definitive for a viral illness)"
+  category: bloodwork
+  outputs:
+    - {id: virus_confirmed, type: binary, measures: dx_viral_self_limiting, sensitivity: {value: 0.9, source: assumption, grade: assumption, note: "Not sourced."}, specificity: {value: 0.98, source: assumption, grade: assumption, note: "Not sourced."}}
+  positive_when: virus_confirmed
+  timing:
+    service_days: {value: 0.01, source: assumption, grade: assumption, note: "A swab."}
+    report_days: {dist: lognormal, median: 1, p90: 3, source: assumption, grade: assumption, note: "Not sourced."}
+  resource_kind: lab
+  cost_eur: {value: 40, source: assumption, grade: assumption, note: "No price found; a multiplex PCR panel is dearer than a routine culture (6 EUR, KELA_VVK2026)."}
+  invasive: false
+  note: "D46 definitive test for viral_self_limiting. Rarely worth ordering; it exists so every illness has one definitive test."
+
+
+- id: crp_poc
+  label: "C-reactive protein, point of care (finger-prick, in the visit)"
+  category: bloodwork
+  outputs:
+    - {id: crp, type: continuous, measures: crp_true, unit: "mg/L"}
+  positive_when: "crp >= 50"
+  timing:
+    service_days: {value: 0.005, source: assumption, grade: assumption, note: "A finger-prick taken by the nurse or GP during the visit (minutes)."}
+    report_days: {dist: fixed, value: 0.005, source: KELA_LAB, grade: C, note: "Kela lists CRP among point-of-care tests (examples: blood glucose, haemoglobin, CRP), used in the visit; HUS_DIAG2023 also lists CRP as a point-of-care test. The result time of minutes is our reading, not a quoted figure. re-check against the page."}
+  resource_kind: poc_device
+  cost_eur: {value: 3, source: KELA_VVK2026, grade: C, note: "Point-of-care tests use the code of the equivalent laboratory test (KELA_LAB), whose patient price is 3 EUR (KELA_VVK2026); the device and test strip cost to a health centre was not found. re-check against the page."}
+  invasive: false
+  note: >-
+    Which CRP the encounter uses: this one is what a health-centre GP or nurse orders in the visit (care.yaml
+    action order_crp); the laboratory test `crp` (hours to a day, action order_crp_lab) is the alternative when a
+    venous sample is sent. Both measure the same hidden crp_true. Analytical error is not modelled.

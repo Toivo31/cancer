@@ -1,0 +1,34 @@
+# Resources of the encounter-loop world (WP-C8-3): capacity per day and booking leads for every resource_kind that
+# catalogue/lung-primary-care tests and care.yaml roles use. Merged over `resources` of finland_encounter.yaml
+# (the world file names this file as `resources_file`). SYNTHETIC. Capacities are SLICES of the real county capacity
+# available to this stream of chest-symptom presenters (44 a day), as in finland_lung.yaml, not whole-county capacity.
+#
+# Sourcing: no Finnish per-county scanner, endoscopy, lab or clinic capacity was found. What was found (docs/research/catalogue/care_practice.md):
+#   HUS 2024 volumes (HUS_YEAR2024): radiology 1,178,368 examinations, pathology 529,985, microbiology 1,685,705 a year,
+#   with local imaging backlogs; Finland has the fewest CT scanners per capita in the Nordics (IHE2026, also params/finland.yaml);
+#   about 60% of non-urgent GP visits within 7 days and 90% of nurse visits (MTV_THL2022, October 2022, secondary);
+#   same-day needs assessment by the nurse (INNOKYLA_HTA). The slice sizes below are assumptions fitted to those facts and
+#   to finland_lung.yaml, so they are marked assumption. Tests that happen inside a visit (history, examination) use the
+#   visit slot itself (gp_appt) and have no resource of their own; point-of-care CRP uses poc_device (no queue).
+format: encounter_resources/1
+resources:
+  nurse_appt:   {type: server, capacity_per_day: 60, weekdays_only: true, min_lead_days: 2, urgent_lead_days: 0, source: assumption, note: "Needs assessment is made the same working day (INNOKYLA_HTA) and about 90% of non-urgent nurse visits are within a week (MTV_THL2022, secondary); the capacity slice is not sourced."}
+  gp_appt:      {type: server, capacity_per_day: 160, weekdays_only: true, min_lead_days: 12, urgent_lead_days: 1, urgent_reserved_share: 0.15, source: KHALIFE2025, note: "Lead set so that the first GP visit takes about 14 days (KHALIFE2025; just under 60% within 7 days in October 2022, MTV_THL2022). Capacity is the loop's own assumption: reviews and returns add visits."}
+  poc_device:   {type: server, capacity_per_day: 2000, weekdays_only: true, min_lead_days: 0, source: assumption, note: "Point-of-care CRP is a finger-prick in the visit (KELA_LAB, HUS_DIAG2023): no queue of its own, so the capacity is set well above demand."}
+  lab:          {type: server, capacity_per_day: 300, weekdays_only: true, min_lead_days: 0, source: assumption, note: "Health-centre and county laboratory sampling, same or next day. HUS runs 18.9 million chemistry and haematology tests a year (HUS_YEAR2024); this stream's slice is a few hundred samples a day. Not sourced."}
+  xray:         {type: server, capacity_per_day: 40, weekdays_only: true, min_lead_days: 1, urgent_lead_days: 0, source: assumption, note: "Plain X-rays are usually done without an appointment (HUS_DIAG2023); finland_lung has 24 a day for one film per patient, the loop orders more. Not sourced."}
+  ct_scanner:   {type: server, capacity_per_day: 4, weekdays_only: true, min_lead_days: 4, urgent_lead_days: 1, source: IHE2026, note: "Finland has 34% fewer CT scanners per 100,000 than the EU average and 60% fewer CT examinations (IHE2026); finland_lung gives 3 a day to lung work-up; the nodule follow-up adds demand. The slice is an assumption."}
+  pet_scanner:  {type: server, capacity_per_day: 1, weekdays_only: true, min_lead_days: 4, urgent_lead_days: 1, source: assumption, note: "As finland_lung (no Finnish PET-CT wait was found)."}
+  mri:          {type: server, capacity_per_day: 2, weekdays_only: true, min_lead_days: 7, urgent_lead_days: 2, source: assumption, note: "Brain MRI for staging; as the world file's placeholder."}
+  bronchoscopy: {type: server, capacity_per_day: 1, weekdays_only: true, min_lead_days: 6, urgent_lead_days: 2, source: assumption, note: "As finland_lung."}
+  ttnb_slot:    {type: server, capacity_per_day: 1, weekdays_only: true, min_lead_days: 6, urgent_lead_days: 2, source: assumption, note: "CT-guided biopsy, the definitive lung cancer sampling (D46); as finland_lung."}
+  pathology:    {type: server, capacity_per_day: 20, weekdays_only: true, min_lead_days: 1, source: assumption, note: "Pathology units work weekdays 7:00 to 15:30 (HUS_DIAG2023); HUS handles 530,000 pathology samples a year (HUS_YEAR2024). Slice not sourced."}
+  lung_function: {type: server, capacity_per_day: 6, weekdays_only: true, min_lead_days: 14, urgent_lead_days: 5, source: assumption, note: "Definitive spirometry with reversibility in a lung function unit (D46): a slot a couple of weeks ahead. Not sourced."}
+  echo:         {type: server, capacity_per_day: 5, weekdays_only: true, min_lead_days: 21, urgent_lead_days: 7, source: assumption, note: "Definitive echocardiography (D46): scarce, booked weeks ahead. Not sourced."}
+  mycobacteriology: {type: server, capacity_per_day: 10, weekdays_only: true, min_lead_days: 1, source: assumption, note: "Sputum culture (D46): samples are taken at once; the slowness is the report time, not the queue. Not sourced."}
+  gi_function:  {type: server, capacity_per_day: 1, weekdays_only: true, min_lead_days: 28, urgent_lead_days: 14, source: assumption, note: "Oesophageal pH monitoring (D46): a rare, slow study. Not sourced."}
+encounters:
+  cost_scale: {value: 1.0, source: assumption, note: "D46: visible multiplier on every test cost. Prices are 2024 to 2026 Finnish county price lists, so 1.0 is the honest base; use 1.2 to 1.5 to stress the cost side of the result (Tuomas allowed a lean 1.0 to 1.5)."}
+  visit_cost_eur:
+    nurse: {value: 92, source: EPHVA2026, grade: C, note: "Ephva 2026 price list: nurse visit (Käynti hoitajalla) 92 EUR; one county; summarising tool."}
+    gp: {value: 232, source: EPHVA2026, grade: C, note: "Ephva 2026 price list: GP visit (Käynti lääkärillä) 232 EUR; one county; summarising tool."}
