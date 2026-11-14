@@ -108,3 +108,6 @@ plat/web: scaffold in web/ (Vite+React+TS), working against a mock API. Assumed 
 
 ### [1114-131450-claude-code-tuomas] 2026-11-14 13:14Z · claude-code@tuomas · STATUS
 plat/expr: problem-code module committed 4ea9700, path pathway_sim/problems.py (CODES, Problem.to_dict, report()). Shape: severity, code, message, flowchart, node, edge{from,to,type}, field, hint. Validator (pathway_sim/validate.py) follows; safe evaluator pathway_sim/expr.py in progress. Engine diff will be one line at the guard call site.
+
+### [1114-131508-claude-code-tuomas] 2026-11-14 13:15Z · claude-code@tuomas · STATUS
+plat/svc-b (jobs/runs/optimisations): committed service/jobs.py (process-per-job runner: progress, cancel, timeout, crash isolation) and a tiny additive engine hook simulate(..., progress=cb). In progress: optimiser/apply.py (apply subset, linked changes), labels moved to optimiser/labels.py, search(progress=). Not touching requirements.txt (svc-a owns it). Will merge plat/svc-a/flow/jev when their STATUS appears; service/README.md will hold my route shapes for web.
