@@ -1,55 +1,79 @@
 # Validation scenario: Stokstad et al. 2019, BMC Health Serv Res 19:679 (St Olavs, Trondheim).
-# 100 stage I-II lung cancer patients receiving curative treatment. All patients have cancer,
-# so this checks specialist-care ordering, not primary-care filtering.
+# 100 stage I-II lung cancer patients receiving curative treatment, diagnosed 2011-2013. All have
+# cancer, so this checks specialist-care ordering, not primary-care filtering.
 #
-# Clock: referral letter received -> start of treatment. Target 42 days.
-# Published: observed 40% within 42 d (median 46.5 d); PET <= 7 d only: 48% (n.s.);
-# optimal pathway: 80%.
+# Clock: referral letter received -> start of treatment. Target 42 days (the Norwegian target).
+# Published: observed 40% within 42 d (median 46.5 d); PET-CT <= 7 d only: 48% (n.s.);
+# authors' optimal pathway: 80% (a model estimate in the paper, not an observed result).
 #
-# Method (as in the paper): waits are drawn from distributions ("delay" resources), not from
-# capacity queues. Only the observed flowchart is calibrated; the faster-PET and optimal
-# flowcharts are predictions of the same model and are compared with the published 48% / 80%.
+# Method: as in the paper, steps take waits drawn from distributions ("delay" resources), not
+# capacity queues. ONLY the observed flowchart is calibrated (pathway_sim.calibrate over the
+# `assumption` parameters in the grid below). The faster-PET and optimal flowcharts are then
+# out-of-sample predictions compared with the published 48% and 80%.
 #
-# `source: assumption` marks values set by calibration or judgement because the full text
-# (per-step tables) was not reachable from the build environment (BLOCKERS.md B1).
+# Every number cites params/stokstad.yaml / params/sources.yaml (source id) or is `assumption`.
+# Key fact from the paper: 54/100 were treated without a definitive tissue diagnosis, so tissue
+# sampling is not a hard gate before treatment; MDT decides on imaging + whatever sampling gave.
 
 id: stokstad
 description: Norwegian stage I-II lung cancer pathway (Stokstad et al. 2019), re-timed with published waits
 clock_start: referral_received
 target_days: 42
 default_n: 100
-arrivals: {spread_days: 1095}          # study period roughly three years; only matters for weekday of tumour board
+arrivals: {spread_days: 1095}          # 2011-2013; only matters for the weekday of the tumour board
 published:
   source: STOKSTAD2019
-  observed: {share_within_target: 0.40, median_days_to_treatment: 46.5}
-  faster_pet: {share_within_target: 0.48}
-  optimal: {share_within_target: 0.80}
+  observed: {share_within_target: 0.40, median_days_to_treatment: 46.5, ci95: [0.31, 0.50]}
+  faster_pet: {share_within_target: 0.48, ci95: [0.39, 0.58]}
+  optimal: {share_within_target: 0.80, ci95: [0.72, 0.87]}
   sampling_procedures: {observed: 112, optimal: 92}
+
+calibration:
+  flowchart: observed
+  targets:                               # [target, tolerance]
+    share_within_target: [0.40, 0.04]
+    median_days_to_treatment: [46.5, 2.5]
+  predict: [faster_pet, optimal]
+  grid:                                  # only parameters NOT reported in the paper
+    tests.bronchoscopy.wait.median: [3, 6, 10]
+    treatment_wait_after_board:                        # joint: fraction of the published referral->treatment interval after the board
+      - {tests.surgery_booking.wait.median: 13, tests.radiotherapy_booking.wait.median: 22.5}
+      - {tests.surgery_booking.wait.median: 10, tests.radiotherapy_booking.wait.median: 17}
+      - {tests.surgery_booking.wait.median: 8, tests.radiotherapy_booking.wait.median: 14}
+      - {tests.surgery_booking.wait.median: 6, tests.radiotherapy_booking.wait.median: 10.5}
+    resources.tumour_board.cutoff_days: [0, 2]
+    tests.first_visit.extra_wait.median: [0.01, 2]    # report not ready at the first visit (39 patients, median +2 d)
+    pet_triage_share:                                  # joint setting: share of on-time PET ordered at triage
+      - {flowcharts.observed.policy.pet_on_time.mix.pet_triage: 0.0, flowcharts.observed.policy.pet_on_time.mix.pet_early_route: 1.0}
+      - {flowcharts.observed.policy.pet_on_time.mix.pet_triage: 0.5, flowcharts.observed.policy.pet_on_time.mix.pet_early_route: 0.5}
+      - {flowcharts.observed.policy.pet_on_time.mix.pet_triage: 0.8, flowcharts.observed.policy.pet_on_time.mix.pet_early_route: 0.2}
+      - {flowcharts.observed.policy.pet_on_time.mix.pet_triage: 1.0, flowcharts.observed.policy.pet_on_time.mix.pet_early_route: 0.0}
 
 conditions:
   - {id: lung_cancer_stage_i_ii, cancer: true, prevalence: 1.0, source: STOKSTAD2019}
 
 attributes:
-  location:                             # tumour location, revealed by the baseline CT
-    values: {central: 0.35, peripheral: 0.65}
+  location:                              # tumour location, known from the baseline CT
+    values: {central: 0.3, peripheral: 0.7}
     source: assumption
-    note: peripheral tumours dominate in stage I-II; bronchoscopy yield is lower for them
-  treatment:
-    values: {surgery: 0.7, sbrt: 0.3}
-    source: assumption
+  treatment:                             # decided at the tumour board
+    values: {surgery: 0.76, radiotherapy: 0.24}
+    source: STOKSTAD2019                 # surgery 76%, curative RT 8%, SBRT 16%
+  ct_inadequate:                         # CT too old / poor / missing upper abdomen; found at first visit
+    values: {"yes": 0.08, "no": 0.92}
+    source: STOKSTAD2019
+  further_workup_after_pet:              # PET finding needs more investigation (e.g. EBUS)
+    values: {"yes": 0.12, "no": 0.88}
+    source: STOKSTAD2019                 # 11-12 patients
+  needs_exercise_test:                   # impaired lung function; known at the first visit
+    values: {"yes": 0.21, "no": 0.79}
+    source: STOKSTAD2019                 # 21 patients had an exercise test
 
-age: {dist: uniform, low: 55, high: 85}
+age: {dist: uniform, low: 54, high: 84}  # median 70, range 54-84 (STOKSTAD2019)
 
 resources:
-  first_visit_wait: {type: delay, wait: {dist: lognormal, median: 6, p90: 13}, source: assumption}
-  bronch_wait:      {type: delay, wait: {dist: lognormal, median: 5, p90: 12}, source: assumption}
-  ttnb_wait:        {type: delay, wait: {dist: lognormal, median: 7, p90: 15}, source: assumption}
-  pet_ct:           {type: delay, wait: {dist: lognormal, median: 17.5, p90: 30}, source: STOKSTAD2019,
-                     note: "median referral->report 20.5 d = wait + ~3 d scan-to-report"}
-  exercise_test:    {type: delay, wait: {dist: lognormal, median: 7, p90: 16}, source: assumption}
-  tumour_board:     {type: batch, weekdays: [2], cutoff_days: 1, source: assumption, note: weekly MDT}
-  treatment_wait:   {type: delay, wait: {dist: lognormal, median: 11, p90: 22}, source: assumption,
-                     note: decision/referral to surgery or SBRT start}
+  waits:        {type: delay, note: per-test waits below}
+  tumour_board: {type: batch, weekdays: [2], cutoff_days: 2, source: STOKSTAD2019, note: "weekly (STOKSTAD2019); weekday and cutoff are assumptions"}
 
 tests:
   baseline_ct:
@@ -58,120 +82,227 @@ tests:
     stage: detection
     reveals: [location]
     source: STOKSTAD2019
-    note: baseline CT done before referral (inclusion criterion stage I-II on baseline CT)
   first_visit:
     kind: visit
-    resource: first_visit_wait
+    resource: waits
     stage: referral
-    service_days: {dist: fixed, value: 0.1}
+    reveals: [needs_exercise_test, ct_inadequate]
+    wait: {dist: lognormal, median: 7, p90: 18.5}
+    extra_wait: {dist: lognormal, median: 2, p90: 8}
+    service_days: 0.1
+    source: STOKSTAD2019
+    note: "50/100 waited >7 d, 18 >= 14 d -> lognormal median 7, p90 18.5 (derived). extra_wait = CT/report not ready (assumption, calibrated)"
   bronchoscopy:
-    resource: bronch_wait
+    resource: waits
     stage: diagnosis
     invasive: true
     cost_eur: 1200
-    service_days: {dist: fixed, value: 0.1}
-    report_days: {dist: lognormal, median: 4.5, p90: 8}
+    wait: {dist: lognormal, median: 5, p90: 10}
+    service_days: 0.1
+    report_days: {dist: lognormal, median: 4.5, p90: 9}
     p_positive: {lung_cancer_stage_i_ii: 1.0}
-    p_nondiagnostic: {by: location, central: 0.08, peripheral: 0.30}
+    p_nondiagnostic: {by: location, central: 0.20, peripheral: 0.75}
     source: STOKSTAD2019
-    note: "4.5 d sampling->pathology report (published); nondiagnostic rates are assumptions chosen so ~15/100 need repeat sampling (published n=15)"
+    note: "report 4.5 d (0-14) published; wait not reported (assumption, calibrated). Non-diagnostic rates chosen so ~1/3 of first bronchoscopies diagnose, as in the paper (27 diagnostic of ~74); central/peripheral split follows RIVERA2013 (88% central vs 34-63% peripheral sensitivity)"
+  bronchoscopy_repeat:
+    resource: waits
+    stage: diagnosis
+    invasive: true
+    cost_eur: 1200
+    wait: {dist: lognormal, median: 8, p90: 13}
+    service_days: 0.1
+    report_days: {dist: lognormal, median: 4.5, p90: 9}
+    p_positive: {lung_cancer_stage_i_ii: 1.0}
+    p_nondiagnostic: {by: location, central: 0.20, peripheral: 0.75}
+    source: STOKSTAD2019
+    note: repeat sampling wait median 8 d (1-14)
   ttnb:
-    resource: ttnb_wait
+    resource: waits
     stage: diagnosis
     invasive: true
     cost_eur: 900
-    service_days: {dist: fixed, value: 0.1}
-    report_days: {dist: lognormal, median: 4.5, p90: 8}
+    wait: {dist: lognormal, median: 8, p90: 13}
+    service_days: 0.1
+    report_days: {dist: lognormal, median: 4.5, p90: 9}
     p_positive: {lung_cancer_stage_i_ii: 1.0}
-    p_nondiagnostic: {by: location, central: 0.30, peripheral: 0.08}
+    p_nondiagnostic: {by: location, central: 0.40, peripheral: 0.10}
+    source: STOKSTAD2019
+    note: "wait = repeat-sampling wait (8 d); 19 TTNBs diagnostic in the paper -> high yield for peripheral (assumption)"
+  ct_redo:
+    resource: waits
+    stage: diagnosis
+    wait: {dist: lognormal, median: 15.5, p90: 40}
+    service_days: 0.1
+    source: STOKSTAD2019
+    note: "inadequate CT: median extra delay 15.5 d (2-98) in 8 patients; p90 assumption"
+  further_workup:
+    resource: waits
+    stage: diagnosis
+    invasive: true
+    cost_eur: 1200
+    wait: {dist: lognormal, median: 7, p90: 14}
+    service_days: 0.1
+    report_days: {dist: lognormal, median: 4.5, p90: 9}
     source: assumption
+    note: "11-12 patients needed further investigation after PET (STOKSTAD2019); its duration is not reported, assumed like a sampling procedure"
   pet_ct:
-    resource: pet_ct
+    reveals: [further_workup_after_pet]
+    resource: waits
     stage: diagnosis
     cost_eur: 1500
-    service_days: {dist: fixed, value: 0.1}
-    report_days: {dist: lognormal, median: 3, p90: 5}
+    wait: {dist: lognormal, median: 18, p90: 32}
+    service_days: 0.1
+    report_days: {dist: lognormal, median: 2.5, p90: 4}
     source: STOKSTAD2019
+    note: "referral->report median 20.5 d (7-49) = wait + report"
+  pet_ct_late:
+    reveals: [further_workup_after_pet]
+    resource: waits
+    stage: diagnosis
+    cost_eur: 1500
+    extra_wait: {dist: lognormal, median: 8, p90: 25}
+    wait: {dist: lognormal, median: 18, p90: 32}
+    service_days: 0.1
+    report_days: {dist: lognormal, median: 2.5, p90: 4}
+    source: STOKSTAD2019
+    note: "late PET referral costs median 8 d (1-36), 27 patients"
   exercise_test:
-    resource: exercise_test
+    resource: waits
     stage: diagnosis
     cost_eur: 300
-    service_days: {dist: fixed, value: 0.1}
-    report_days: {dist: fixed, value: 1}
-    source: assumption
+    wait: {dist: lognormal, median: 11, p90: 18}
+    service_days: 0.1
+    report_days: 1
+    source: STOKSTAD2019
+    note: "wait median 11 d (1-19)"
+  exercise_test_late:
+    resource: waits
+    stage: diagnosis
+    cost_eur: 300
+    extra_wait: {dist: lognormal, median: 10, p90: 22}
+    wait: {dist: lognormal, median: 11, p90: 18}
+    service_days: 0.1
+    report_days: 1
+    source: STOKSTAD2019
+    note: "late exercise-test referral costs median 10 d (2-28), 16 of 21 patients"
   tumour_board:
     kind: admin
     resource: tumour_board
     stage: treatment_start
-    service_days: {dist: fixed, value: 0}
-    report_days: {dist: fixed, value: 0.5}
-  treatment_booking:
+    reveals: [treatment]
+    service_days: 0
+    report_days: 0.5
+  surgery_booking:
     kind: admin
-    resource: treatment_wait
+    resource: waits
     stage: treatment_start
-    service_days: {dist: fixed, value: 0}
+    wait: {dist: lognormal, median: 13, p90: 26}
+    source: STOKSTAD2019
+    note: "treatment referral -> surgery median 13 d (4-48); interpretation of start point in params/stokstad.yaml"
+  radiotherapy_booking:
+    kind: admin
+    resource: waits
+    stage: treatment_start
+    wait: {dist: lognormal, median: 22.5, p90: 33}
+    source: STOKSTAD2019
+    note: "treatment referral -> radiotherapy median 22.5 d (6-37)"
   treatment:
     kind: treatment
     resource: none
     stage: treatment_start
 
 flowcharts:
-  # Observed practice: sampling first by bronchoscopy for everyone; PET-CT and the exercise
-  # test are usually ordered at the first visit, but late for a share of patients
-  # (published: late PET referral n=27, late exercise test n=16). Treatment is booked only
-  # after the tumour board, which waits for every result.
+  # Observed practice. Sampling first: 22% never sampled, the rest bronchoscopy; after a failed
+  # bronchoscopy, TTNB (15), repeat bronchoscopy (~8) or proceed without tissue (27). PET-CT is
+  # usually ordered at the first visit but late for 27 patients; the exercise test (21 patients)
+  # late for 16. The tumour board waits for all results; treatment is booked after it.
   observed:
     description: Observed pathway (calibrated)
-    policy:
-      pet_timing: {mix: {pet_early: 0.73, pet_late: 0.27}, source: STOKSTAD2019}
-      ex_timing: {mix: {ex_early: 0.84, ex_late: 0.16}, source: STOKSTAD2019}
+    policy: &observed_policy
+      sample_plan: {mix: {bronch1: 0.78, no_sampling: 0.22}, source: STOKSTAD2019}
+      after_bronch: {mix: {ttnb: 0.30, bronch2: 0.16, no_more: 0.54}, source: STOKSTAD2019}
+      pet_timing: {mix: {pet_on_time: 0.73, pet_late: 0.27}, source: STOKSTAD2019}
+      pet_on_time: &pet_triage_mix {mix: {pet_triage: 0.5, pet_early_route: 0.5}, source: assumption, note: "share of on-time PET referrals made when the referral letter is triaged (before the first visit); calibrated"}
+      ex_timing: {mix: {ex_early: 0.24, ex_late: 0.76}, source: STOKSTAD2019}
     nodes: &observed_nodes
-      - {id: ct, test: baseline_ct, label: CT scan (before referral)}
+      - {id: ct, test: baseline_ct, label: CT scan}
       - {id: visit, test: first_visit, after: [ct], label: First hospital visit}
-      - {id: bronch, test: bronchoscopy, after: [visit], retry: {max: 0, on: nondiagnostic, fallback: ttnb}, label: Bronchoscopy}
-      - {id: ttnb, test: ttnb, kind: step, after: [visit], when: "False", retry: {max: 2, on: nondiagnostic}, label: Needle biopsy}
-      - {id: diagnosis, kind: milestone, milestone: diagnosis, after_any: [bronch, ttnb], label: Tissue diagnosis}
-      - {id: pet_timing, kind: choice, after: [visit], options: [pet_early, pet_late], label: When PET-CT is ordered}
-      - {id: pet_early, test: pet_ct, label: PET-CT}
-      - {id: pet_late, test: pet_ct, after: [diagnosis], label: PET-CT (ordered late)}
-      - {id: pet, kind: step, after_any: [pet_early, pet_late], label: PET-CT done}
-      - {id: ex_timing, kind: choice, after: [visit], options: [ex_early, ex_late], label: When exercise test is ordered}
+      - {id: sample_plan, kind: choice, after: [visit], options: [bronch1, no_sampling], label: "Tissue sampling planned?"}
+      - {id: no_sampling, label: No tissue sample}
+      - {id: bronch1, test: bronchoscopy, label: Bronchoscopy}
+      - {id: after_bronch, kind: choice, after: [bronch1], when: "not bronch1", options: [ttnb, bronch2, no_more], label: After an inconclusive bronchoscopy}
+      - {id: ttnb, test: ttnb, label: Needle biopsy}
+      - {id: bronch2, test: bronchoscopy_repeat, label: Repeat bronchoscopy}
+      - {id: no_more, label: Proceed without tissue}
+      - {id: sampling_done, after_optional: [sample_plan, no_sampling, bronch1, after_bronch, ttnb, bronch2, no_more], label: Sampling finished}
+      - {id: ct_redo, test: ct_redo, after: [visit], when: "ct_inadequate == 'yes'", label: New CT (first one inadequate)}
+      - {id: pet_timing, kind: choice, after: [ct], options: [pet_on_time, pet_late], label: When PET-CT is ordered}
+      - {id: pet_on_time, kind: choice, options: [pet_triage, pet_early_route], label: PET-CT ordered at triage or at the first visit}
+      - {id: pet_triage, test: pet_ct, label: PET-CT (ordered at referral triage)}
+      - {id: pet_early_route, after: [visit], label: PET-CT ordered at first visit}
+      - {id: pet_early, test: pet_ct, after: [pet_early_route], after_optional: [ct_redo], label: PET-CT}
+      - {id: pet_late, test: pet_ct_late, after: [visit], after_optional: [ct_redo], label: PET-CT (ordered late)}
+      - {id: pet_scan, after_any: [pet_triage, pet_early, pet_late], label: PET-CT result}
+      - {id: workup, test: further_workup, after: [pet_scan], when: "further_workup_after_pet == 'yes'", label: Further tests after PET-CT}
+      - {id: pet, after: [pet_scan], after_optional: [workup], label: PET-CT done}
+      - {id: ex_timing, kind: choice, after: [visit], when: "needs_exercise_test == 'yes'", options: [ex_early, ex_late], label: When the exercise test is ordered}
       - {id: ex_early, test: exercise_test, label: Exercise test}
-      - {id: ex_late, test: exercise_test, after: [pet], label: Exercise test (ordered late)}
-      - {id: exercise, kind: step, after_any: [ex_early, ex_late], label: Exercise test done}
-      - {id: mdt, test: tumour_board, after: [diagnosis, pet, exercise], label: Tumour board}
-      - {id: booking, test: treatment_booking, after: [mdt], label: Waiting for surgery or radiotherapy}
-      - {id: treat, kind: exit, outcome: treatment, test: treatment, after: [booking], label: Treatment starts}
+      - {id: ex_late, test: exercise_test_late, label: Exercise test (ordered late)}
+      - {id: exercise, after: [visit], after_optional: [ex_timing, ex_early, ex_late], label: Exercise test done}
+      - {id: diagnosis, kind: milestone, milestone: diagnosis, after: [sampling_done, pet], label: Diagnostic workup complete}
+      - {id: mdt, test: tumour_board, after: [diagnosis, exercise], label: Tumour board}
+      - {id: book_surgery, test: surgery_booking, after: [mdt], when: "treatment == 'surgery'", label: Waiting for surgery}
+      - {id: book_rt, test: radiotherapy_booking, after: [mdt], when: "treatment == 'radiotherapy'", label: Waiting for radiotherapy}
+      - {id: treat, kind: exit, outcome: treatment, test: treatment, after: [mdt], after_optional: [book_surgery, book_rt], label: Treatment starts}
 
-  # Same as observed, with the PET-CT wait shortened to the post-study <= 7 days.
+  # Same order, PET-CT referral->report <= 7 days (after the in-house scanner, Oct 2013).
   faster_pet:
     description: Observed order, PET-CT within 7 days
-    policy:
-      pet_timing: {mix: {pet_early: 0.73, pet_late: 0.27}}
-      ex_timing: {mix: {ex_early: 0.84, ex_late: 0.16}}
-    resource_overrides:
-      pet_ct: {type: delay, wait: {dist: lognormal, median: 4, p90: 6}, source: STOKSTAD2019,
-               note: "<= 7 d referral->report after the new scanner"}
+    policy: *observed_policy
+    test_overrides:
+      pet_ct: {wait: {dist: uniform, low: 2, high: 4.5}}
+      pet_ct_late: {wait: {dist: uniform, low: 2, high: 4.5}}
     nodes: *observed_nodes
 
-  # Authors' optimal pathway: PET-CT and exercise test ordered immediately after CT + visit;
-  # tumour board decides diagnostic strategy and treatment; referral to treatment; tissue
-  # sampling while waiting to start treatment. PET-CT within 7 days.
+  # Authors' optimal pathway: PET-CT and exercise test referred straight after CT + first visit;
+  # tumour board decides diagnostic strategy and treatment; referral to surgery/RT; tissue
+  # sampling while waiting to start treatment. Treatment starts when the slot comes AND
+  # sampling is finished. Sampling method chosen by tumour location (bronchoscopy for central,
+  # needle biopsy for peripheral) - our reading of "decide diagnostic strategy".
   optimal:
     description: Authors' optimal pathway (Stokstad et al. 2019)
     policy:
-      sample: {rules: [{when: "location == 'central'", choose: bronch}], default: ttnb}
-    resource_overrides:
-      pet_ct: {type: delay, wait: {dist: lognormal, median: 4, p90: 6}, source: STOKSTAD2019}
+      sample_plan: {mix: {method: 0.78, no_sampling: 0.22}}
+      method: {rules: [{when: "location == 'central'", choose: bronch1}], default: ttnb1}
+      after_bronch: {mix: {ttnb: 0.30, bronch2: 0.16, no_more: 0.54}}
+      pet_on_time: *pet_triage_mix
+    test_overrides:
+      pet_ct: {wait: {dist: uniform, low: 2, high: 4.5}}
     nodes:
-      - {id: ct, test: baseline_ct, label: CT scan (before referral)}
+      - {id: ct, test: baseline_ct, label: CT scan}
       - {id: visit, test: first_visit, after: [ct], label: First hospital visit}
-      - {id: pet, test: pet_ct, after: [visit], label: PET-CT}
-      - {id: exercise, test: exercise_test, after: [visit], label: Exercise test}
+      - {id: ct_redo, test: ct_redo, after: [visit], when: "ct_inadequate == 'yes'", label: New CT (first one inadequate)}
+      - {id: pet_on_time, kind: choice, after: [ct], options: [pet_triage, pet_early_route], label: PET-CT ordered at triage or at the first visit}
+      - {id: pet_triage, test: pet_ct, label: PET-CT (ordered at referral triage)}
+      - {id: pet_early_route, after: [visit], label: PET-CT ordered at first visit}
+      - {id: pet_early, test: pet_ct, after: [pet_early_route], after_optional: [ct_redo], label: PET-CT}
+      - {id: pet_scan, after_any: [pet_triage, pet_early], label: PET-CT result}
+      - {id: workup, test: further_workup, after: [pet_scan], when: "further_workup_after_pet == 'yes'", label: Further tests after PET-CT}
+      - {id: pet, after: [pet_scan], after_optional: [workup], label: PET-CT done}
+      - {id: ex_test, test: exercise_test, after: [visit], when: "needs_exercise_test == 'yes'", label: Exercise test}
+      - {id: exercise, after: [visit], after_optional: [ex_test], label: Exercise test done}
       - {id: mdt, test: tumour_board, after: [pet, exercise], label: Tumour board}
-      - {id: booking, test: treatment_booking, after: [mdt], label: Waiting for surgery or radiotherapy}
-      - {id: sample, kind: choice, after: [mdt], options: [bronch, ttnb], label: Choose sampling method}
-      - {id: bronch, test: bronchoscopy, retry: {max: 0, on: nondiagnostic, fallback: ttnb}, label: Bronchoscopy}
-      - {id: ttnb, test: ttnb, retry: {max: 2, on: nondiagnostic}, label: Needle biopsy}
-      - {id: diagnosis, kind: milestone, milestone: diagnosis, after_any: [bronch, ttnb], label: Tissue diagnosis}
-      - {id: treat, kind: exit, outcome: treatment, test: treatment, after: [booking, diagnosis], label: Treatment starts}
+      - {id: book_surgery, test: surgery_booking, after: [mdt], when: "treatment == 'surgery'", label: Waiting for surgery}
+      - {id: book_rt, test: radiotherapy_booking, after: [mdt], when: "treatment == 'radiotherapy'", label: Waiting for radiotherapy}
+      - {id: sample_plan, kind: choice, after: [mdt], options: [method, no_sampling], label: "Tissue sampling planned?"}
+      - {id: no_sampling, label: No tissue sample}
+      - {id: method, kind: choice, options: [bronch1, ttnb1], label: Choose sampling method}
+      - {id: bronch1, test: bronchoscopy, label: Bronchoscopy}
+      - {id: ttnb1, test: ttnb, label: Needle biopsy}
+      - {id: after_bronch, kind: choice, after: [bronch1], when: "not bronch1", options: [ttnb, bronch2, no_more], label: After an inconclusive bronchoscopy}
+      - {id: ttnb, test: ttnb, label: Needle biopsy}
+      - {id: bronch2, test: bronchoscopy_repeat, label: Repeat bronchoscopy}
+      - {id: no_more, label: Proceed without tissue}
+      - {id: sampling_done, after_optional: [sample_plan, no_sampling, method, bronch1, ttnb1, after_bronch, ttnb, bronch2, no_more], label: Sampling finished}
+      - {id: diagnosis, kind: milestone, milestone: diagnosis, after: [sampling_done], label: Diagnostic workup complete}
+      - {id: treat, kind: exit, outcome: treatment, test: treatment, after: [mdt, sampling_done], after_optional: [book_surgery, book_rt], label: Treatment starts}

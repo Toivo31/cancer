@@ -50,16 +50,20 @@ def set_path(raw: dict, path: str, value) -> None:
     d[keys[-1]] = value
 
 
-def apply_to_flowchart_overrides(raw: dict, path: str, value) -> None:
-    """Grid values for a resource also apply inside flowchart resource_overrides that redefine it
-    only if the override does not set that field itself."""
-    return None
+def apply_param(raw: dict, key: str, value) -> None:
+    """A grid value is either a scalar for dotted path ``key`` or a dict of path -> value
+    (a joint setting, e.g. two mix weights that must move together)."""
+    if isinstance(value, dict):
+        for p, v in value.items():
+            set_path(raw, p, v)
+    else:
+        set_path(raw, key, value)
 
 
 def evaluate(raw: dict, params: dict, flowcharts: list[str], n: int, seeds: list[int]) -> dict:
     r = copy.deepcopy(raw)
     for k, v in params.items():
-        set_path(r, k, v)
+        apply_param(r, k, v)
     sc = scenario_from_dict(r)
     out = {}
     for fid in flowcharts:
@@ -71,7 +75,7 @@ def evaluate(raw: dict, params: dict, flowcharts: list[str], n: int, seeds: list
             "share_within_target": round(sum(m["share_within_target"] for m in ms) / len(ms), 4),
             "median_days_to_treatment": round(sum(m["median_days_to_treatment"] for m in ms) / len(ms), 2),
             "sampling_per_patient": round(sum(sum(v["n"] for k, v in m["node_breakdown_all"].items()
-                                                  if v["test"] in ("bronchoscopy", "ttnb")) for m in ms)
+                                                  if v["test"] in ("bronchoscopy", "bronchoscopy_repeat", "ttnb")) for m in ms)
                                           / sum(m["n"] for m in ms), 3),
         }
     return out
@@ -121,7 +125,7 @@ def write_best(path: str, result: dict, out_path: str) -> None:
     raw = yaml.safe_load(Path(path).read_text())
     params = (result["best"] or result["closest_if_none_accepted"])["params"]
     for k, v in params.items():
-        set_path(raw, k, v)
+        apply_param(raw, k, v)
     raw["calibrated_from"] = {"file": str(path), "params": params}
     Path(out_path).write_text(yaml.safe_dump(raw, sort_keys=False))
 

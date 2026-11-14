@@ -161,6 +161,9 @@ class Simulation:
         self.resources = {k: dict(v) for k, v in sc.resources.items()}
         for rid, ov in fc.resource_overrides.items():
             self.resources[rid] = {**self.resources[rid], **ov}
+        self.tests = {k: dict(v) for k, v in sc.tests.items()}
+        for tid, ov in fc.test_overrides.items():
+            self.tests[tid] = {**self.tests[tid], **ov}
         self.order = self._topo()
         self.option_of = {o: n.id for n in fc.nodes.values() if n.kind == "choice" for o in n.options}
         self.servers: dict[str, _Server] = {}
@@ -176,7 +179,7 @@ class Simulation:
 
     def _topo(self) -> list[str]:
         fc = self.fc
-        deps = {n.id: set(n.after) | set(n.after_any) for n in fc.nodes.values()}
+        deps = {n.id: set(n.after) | set(n.after_any) | set(n.after_optional) for n in fc.nodes.values()}
         for n in fc.nodes.values():
             if n.kind == "choice":
                 for o in n.options:
@@ -260,6 +263,9 @@ class Simulation:
         if any(st[a] != "done" for a in n.after):
             return False, False, None
         cands += [(pr.t_done[a], a) for a in n.after]
+        if any(st[a] not in ("done", "skipped", "failed") for a in n.after_optional):
+            return False, False, None
+        cands += [(pr.t_done[a], a) for a in n.after_optional]
         if n.after_any:
             done_any = [(pr.t_done[a], a) for a in n.after_any if st[a] == "done"]
             if not done_any:
@@ -268,6 +274,16 @@ class Simulation:
                 return False, False, None
             cands.append(min(done_any))
         return True, False, (max(cands)[1] if cands else None)
+
+    def skip(self, pr: PatientRun, nid: str, t: float, cause: str | None = None) -> None:
+        pr.status[nid], pr.t_done[nid] = "skipped", t
+        if cause is not None:
+            pr.cause[nid] = cause
+        n = self.fc.nodes[nid]
+        if n.kind == "choice":
+            for o in n.options:
+                if pr.status[o] in ("pending", "enabled"):
+                    self.skip(pr, o, t, nid)
 
     def advance(self, pr: PatientRun, t: float) -> None:
         changed = True
@@ -280,7 +296,7 @@ class Simulation:
                 n = self.fc.nodes[nid]
                 ready, dead, cause = self.ready_cause(pr, n)
                 if dead:
-                    pr.status[nid], pr.t_done[nid], pr.cause[nid] = "skipped", t, cause
+                    self.skip(pr, nid, t, cause)
                     changed = True
                     continue
                 if not ready:
@@ -288,7 +304,7 @@ class Simulation:
                 pr.cause[nid] = cause
                 changed = True
                 if st != "forced" and n.code is not None and not eval(n.code, {"__builtins__": {}}, self.names(pr)):
-                    pr.status[nid], pr.t_done[nid] = "skipped", t
+                    self.skip(pr, nid, t)
                     continue
                 if n.kind == "choice":
                     probs = self.policy.choose(self.view(pr, nid, t), list(n.options))
@@ -299,7 +315,7 @@ class Simulation:
                         if o == pick:
                             pr.status[o] = "enabled"
                         else:
-                            pr.status[o], pr.t_done[o], pr.cause[o] = "skipped", t, nid
+                            self.skip(pr, o, t, nid)
                     pr.status[nid], pr.t_done[nid] = "done", t
                 elif n.test:
                     self.start(pr, n, 0, t)
@@ -307,6 +323,7 @@ class Simulation:
                         return
                 else:
                     pr.status[nid], pr.t_done[nid] = "done", t
+                    pr.result.setdefault(nid, True)
                     if n.kind == "milestone" and n.milestone == "diagnosis" and pr.t_diagnosis is None:
                         pr.t_diagnosis = t
                     if n.kind == "exit":
@@ -319,11 +336,14 @@ class Simulation:
             pr.outcome, pr.t_exit = "stuck", t
 
     def start(self, pr: PatientRun, n: Node, attempt: int, t_ready: float) -> None:
-        test = self.sc.tests[n.test]
+        test = self.tests[n.test]
         rid = test.get("resource", "none")
         spec = self.resources.get(rid, {"type": "none"})
         typ = spec.get("type", "server")
         pid, seed = pr.patient.id, self.seed
+        t_ready0 = t_ready
+        if test.get("extra_wait") is not None:   # e.g. a late referral before the queue
+            t_ready = t_ready + sample(test["extra_wait"], uniform(seed, pid, "extra", n.test, attempt))
         if typ == "server":
             t_start = self.servers[rid].book(t_ready, pr.priority)
         elif typ == "delay":
@@ -334,21 +354,21 @@ class Simulation:
         else:
             t_start = t_ready + sample(test.get("wait"), uniform(seed, pid, "wait", n.test, attempt))
         if n.kind == "exit":
-            ev = Event(n.id, n.test, rid, self.sc.stage_of(n), t_ready, t_start, t_start, t_start, None, attempt)
+            ev = Event(n.id, n.test, rid, self.sc.stage_of(n), t_ready0, t_start, t_start, t_start, None, attempt)
             pr.events.append(ev)
             pr.status[n.id] = "active"
             self.push(t_start, "exit", pid, n.id, attempt)
             return
         t_end = t_start + sample(test.get("service_days"), uniform(seed, pid, "svc", n.test, attempt))
         t_result = t_end + sample(test.get("report_days"), uniform(seed, pid, "rep", n.test, attempt))
-        ev = Event(n.id, n.test, rid, self.sc.stage_of(n), t_ready, t_start, t_end, t_result, None, attempt)
+        ev = Event(n.id, n.test, rid, self.sc.stage_of(n), t_ready0, t_start, t_end, t_result, None, attempt)
         pr.events.append(ev)
         pr.status[n.id] = "active"
         self.push(t_result, "done", pid, n.id, attempt)
 
     def on_done(self, pr: PatientRun, nid: str, attempt: int, t: float) -> None:
         n = self.fc.nodes[nid]
-        test = self.sc.tests[n.test]
+        test = self.tests[n.test]
         res_list = pr.patient.results.get(n.test) or [True]
         r = res_list[min(attempt, len(res_list) - 1)]
         for e in reversed(pr.events):

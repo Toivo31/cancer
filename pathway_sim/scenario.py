@@ -23,6 +23,7 @@ class Node:
     test: str | None = None
     after: list[str] = field(default_factory=list)
     after_any: list[str] = field(default_factory=list)
+    after_optional: list[str] = field(default_factory=list)   # wait for these only if they run
     when: str | None = None
     options: list[str] = field(default_factory=list)
     outcome: str | None = None
@@ -39,7 +40,7 @@ class Node:
             v = getattr(self, k)
             if v:
                 d[k] = v
-        for k in ("after", "after_any", "options"):
+        for k in ("after", "after_any", "after_optional", "options"):
             v = getattr(self, k)
             if v:
                 d[k] = list(v)
@@ -55,6 +56,7 @@ class Flowchart:
     policy: dict = field(default_factory=dict)
     description: str = ""
     resource_overrides: dict = field(default_factory=dict)   # per-flowchart capacity / wait changes
+    test_overrides: dict = field(default_factory=dict)       # per-flowchart test changes (e.g. faster PET)
 
     def to_dict(self) -> dict:
         d = {"id": self.id, "nodes": [n.to_dict() for n in self.nodes.values()]}
@@ -62,6 +64,8 @@ class Flowchart:
             d["policy"] = copy.deepcopy(self.policy)
         if self.resource_overrides:
             d["resource_overrides"] = copy.deepcopy(self.resource_overrides)
+        if self.test_overrides:
+            d["test_overrides"] = copy.deepcopy(self.test_overrides)
         if self.description:
             d["description"] = self.description
         return d
@@ -109,7 +113,8 @@ def parse_flowchart(fid: str, d: dict) -> Flowchart:
         nodes[n.id] = n
     return Flowchart(id=fid, nodes=nodes, policy=copy.deepcopy(d.get("policy") or {}),
                      description=d.get("description", ""),
-                     resource_overrides=copy.deepcopy(d.get("resource_overrides") or {}))
+                     resource_overrides=copy.deepcopy(d.get("resource_overrides") or {}),
+                     test_overrides=copy.deepcopy(d.get("test_overrides") or {}))
 
 
 def compile_guard(expr: str, where: str):
@@ -128,7 +133,7 @@ def validate_flowchart(sc: Scenario, fc: Flowchart) -> None:
             raise ValueError(f"{where}: unknown kind {n.kind!r}")
         if n.test and n.test not in sc.tests:
             raise ValueError(f"{where}: unknown test {n.test!r}")
-        for ref in n.after + n.after_any + n.options:
+        for ref in n.after + n.after_any + n.after_optional + n.options:
             if ref not in ids:
                 raise ValueError(f"{where}: unknown node reference {ref!r}")
         if n.kind == "choice":
@@ -147,13 +152,27 @@ def validate_flowchart(sc: Scenario, fc: Flowchart) -> None:
             if fb and fb not in ids:
                 raise ValueError(f"{where}: unknown retry fallback {fb!r}")
         n.code = compile_guard(n.when, where) if n.when else None
+    for cid, cfg in (fc.policy or {}).items():
+        if cid not in fc.nodes or fc.nodes[cid].kind != "choice":
+            raise ValueError(f"{sc.id}/{fc.id}: policy for {cid!r}, which is not a choice node")
+        opts = set(fc.nodes[cid].options)
+        named = set((cfg.get("mix") or {}).keys()) | set(cfg.get("prefer") or [])
+        named |= {r["choose"] for r in cfg.get("rules") or []}
+        if cfg.get("default"):
+            named.add(cfg["default"])
+        bad = named - opts
+        if bad:
+            raise ValueError(f"{sc.id}/{fc.id}: policy for {cid!r} names unknown options {sorted(bad)}")
+    for tid in fc.test_overrides:
+        if tid not in sc.tests:
+            raise ValueError(f"{sc.id}/{fc.id}: test override for unknown test {tid!r}")
     for rid in fc.resource_overrides:
         if rid not in sc.resources:
             raise ValueError(f"{sc.id}/{fc.id}: resource override for unknown resource {rid!r}")
     if not any(n.kind == "exit" for n in fc.nodes.values()):
         raise ValueError(f"{sc.id}/{fc.id}: no exit node")
     # acyclic over after / after_any / options
-    deps = {n.id: set(n.after) | set(n.after_any) for n in fc.nodes.values()}
+    deps = {n.id: set(n.after) | set(n.after_any) | set(n.after_optional) for n in fc.nodes.values()}
     for o, c in option_of.items():
         deps[o].add(c)
     state: dict[str, int] = {}
@@ -191,7 +210,7 @@ def validate_scenario(sc: Scenario) -> None:
             raise ValueError(f"{sc.id}: test {tid} uses unknown resource {t.get('resource')!r}")
         if t.get("stage", "diagnosis") not in STAGES:
             raise ValueError(f"{sc.id}: test {tid} has unknown stage {t.get('stage')!r}")
-        for k in ("service_days", "report_days"):
+        for k in ("service_days", "report_days", "extra_wait", "wait"):
             dists.validate(t.get(k))
     for fc in sc.flowcharts.values():
         validate_flowchart(sc, fc)
