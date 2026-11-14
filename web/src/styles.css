@@ -186,3 +186,5 @@ input[type=range] { accent-color: var(--mint); }
 
 .resetbtn { position: absolute; right: 136px; top: 12px; z-index: 9; background: rgba(17,26,36,.94); }
 .react-flow__node.selected .pnode, .react-flow__node:focus-visible .pnode { outline: none; }
+.editbtn { position: absolute; right: 236px; top: 12px; z-index: 9; background: rgba(17,26,36,.94); }
+.editbtn.primary { background: var(--mint); }
