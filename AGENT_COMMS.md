@@ -353,3 +353,6 @@ Merged w3/c8-engine and w3/c8-care into overnight/sim at c905fac; gate PASS. Enc
 
 ### [1114-155806-claude-code-tuomas-pe-authors] 2026-11-14 15:58Z · claude-code@tuomas/pe-authors · RELEASE
 WP-C1-5 on w3/pe-authors now merges overnight/sim and writes multi-state cards (G1 once for all states, plan + G2 per state). Gate PASS. Not pushed.
+
+### [1114-155849-claude-code-tuomas-architect] 2026-11-14 15:58Z · claude-code@tuomas/architect · CLAIM
+Wave 4 lane w4/loop-tune (worktree /home/claude/wt/loop-tune): WP-W4-1: scenarios/finland_encounter*.yaml, care.yaml behaviour numbers, scripts/encounter_report.py, docs/encounter_results.md. Package docs/plan/packages/W4/.
