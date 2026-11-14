@@ -170,6 +170,10 @@ def test_finnish_template_loop_with_a_short_warm_up(tmp_path):
         assert c.post(f"/api/projects/{p}/compare", json={"runs": [a["baseline_run_id"], a["run_id"]]}).status_code == 200
         flow = c.get(f"/api/projects/{p}/runs/{a['run_id']}/flow").json()
         assert flow["format"] == "flow/1" and flow["totals"]["n"] > 0
+        m = c.get(f"/api/projects/{p}/runs/{a['run_id']}").json()["metrics"]       # flow totals equal the run's metrics
+        assert flow["metrics"]["share_within_target"] == pytest.approx(m["share_within_target"], abs=1e-3)
+        assert flow["metrics"]["median_days_to_treatment"] == pytest.approx(m["median_days_to_treatment"], abs=0.02)
+        assert flow["totals"]["n"] == m["n"]
 
 
 def test_optimiser_under_a_stub_backend(tmp_path):

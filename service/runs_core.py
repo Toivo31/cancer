@@ -75,7 +75,8 @@ def mean_deep(ms: list[dict]) -> dict:
             keys = list(dict.fromkeys(k for v in vals for k in v))
             return {k: merge([v.get(k) for v in vals]) for k in keys}
         if all(isinstance(v, (int, float)) and not isinstance(v, bool) for v in vals):
-            return round(sum(vals) / len(vals), 4)
+            mean = round(sum(vals) / len(vals), 4)
+            return int(mean) if all(isinstance(v, int) for v in vals) and mean == int(mean) else mean
         return vals[0]
     out = merge(ms)
     # keys whose value is None in every seed vanish above: restore them for a stable shape
@@ -329,6 +330,7 @@ def execute_optimisation(ctx, data_dir: str, project_id: str, opt_id: str) -> di
                 summary_json=json.dumps({"n_changes": len(report["changes"]), "n_blocked": len(report["blocked"]),
                                          "heldout_before": report["heldout"]["before"]["share_within_target"],
                                          "heldout_after": report["heldout"]["after"]["share_within_target"]}))
+    ctx.progress(1, 1, "done", force=True)
     return {"optimisation_id": opt_id, "n_changes": len(report["changes"])}
 
 

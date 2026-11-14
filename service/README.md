@@ -62,3 +62,99 @@ Duplicate project names get " (2)" appended (the response has the kept name).
 
 Documents: `docs/platform/specs/01-flowchart-model.md` (nodes `{id, kind, label, test?, when?, ui?}`, edges
 `{from, to, type, index?}`, `decision_policy`). Unknown keys are kept as sent.
+
+## Runs, jobs and optimisations (svc-b)
+
+Run the service as **one process** (`uvicorn service.app:app`, no `--workers`): jobs are child processes of it and the
+queue is in memory. Whole loop with `curl`, copy-paste ready: `bash service/walkthrough.sh http://localhost:8000`
+(needs `curl` and `jq`; creates a project, runs, optimises, applies, reruns and compares; about 15 seconds).
+
+Test it: `python -m pytest -q tests/test_service_jobs.py tests/test_service_runs.py tests/test_service_loop.py`.
+
+### How it works
+
+* A **job** is one OS process (`service/jobs.py`). At most `PATHWAY_MAX_JOBS` run at once, the rest wait (`429 queue_full`
+  past 100 waiting). A job that raises, is killed, runs out of memory or exceeds `PATHWAY_JOB_SECONDS` fails alone
+  (`error.code`: the exception class, `worker_died`, `timeout`); the service and other jobs go on. Cancel stops the process.
+* A job reaches a final state in `GET /jobs/{j}` only after the run or optimisation row says the same, so polling the
+  job and then reading the run is safe.
+* A **run** is identified by (world, flowchart version, decision policy, n, seeds, engine version). Asking for the same
+  again returns the existing run, also while it is still running (`cached: true`, HTTP 200 instead of 202), so two users
+  starting the same run share one. Failed and cancelled runs are not reused.
+* "Same patients" = same world, n and seeds (`patients_key`). `POST /compare` refuses anything else with `409 different_patients`.
+* A run keeps a snapshot of its world and flowchart, so later edits cannot change it. Results live under the data directory:
+  metrics and bundle (gzip JSON), patient log and decision rows (gzip JSON lines per seed), the flow document.
+* Memory: one seed at a time, about 160 MB for a Finnish seed (18,800 patients, about 10 s). Logs are streamed to disk.
+* On start-up, anything still `queued` or `running` from a previous process is marked failed (`service_restarted`).
+* Patients: the Finnish template has a 60-day warm-up at 44 arrivals a day, so it needs at least 2,690 patients per
+  seed (`422 n_too_small` says the number); the Norway check needs no warm-up.
+
+### Shapes (stable; `/docs` has the full types)
+
+Start a run `POST /api/projects/{p}/runs`:
+```json
+{"flowchart": {"id": "observed", "version": 1}, "n": 300, "seeds": [301, 302], "label": "today", "decision_policy": null}
+```
+`version` omitted = latest; `n` omitted = the world's `default_n`; `seeds` omitted = `[1]`; `decision_policy` overrides the
+flowchart's own for this run (for example `{"backend": "stub", "mode": "sample", "points": {...}}`; a table that does not
+fit the flowchart is `422 invalid_decision_policy`). Limits: `n` up to `PATHWAY_MAX_PATIENTS` (50,000), up to
+`PATHWAY_MAX_SEEDS` (5) distinct seeds, else `429 limit_exceeded`. A flowchart with problems is `422 invalid_document`.
+Answer `202` (or `200` when cached) is the **run object**:
+```json
+{"id": "r_8f2c1a90", "run_id": "r_8f2c1a90", "project_id": "p_…", "label": "today",
+ "flowchart": {"id": "observed", "version": 1}, "n": 300, "seeds": [301, 302], "decision_policy": null,
+ "status": "queued|running|succeeded|failed|cancelled", "job_id": "j_41", "progress": 0.0, "message": "",
+ "created_at": "…", "started_at": null, "finished_at": null, "error": null,
+ "headline": null, "per_seed": null, "engine_version": "…", "world_rev": 1, "patients_key": "…",
+ "source": null, "cached": false}
+```
+`GET /runs/{r}` adds `metrics` (mean over seeds: the metrics JSON of `docs/architecture.md`, with `node_breakdown`,
+`stage_breakdown`, `by_group`, `utilisation`) and `resources`; `headline` is `{on_time, median_days, missed_cancers,
+tests_per_patient, n, n_cancer, stuck}`; `per_seed` is the same per seed. `GET /runs?flowchart=id&brief=true` lists newest
+first (`brief` drops `metrics`). `source` is `{"optimisation": "o_…", "role": "baseline|rerun"}` for runs made by `apply`.
+
+| Request | Answer |
+|---|---|
+| `POST /projects/{p}/runs/{r}/cancel` | the run object (status `cancelled`) |
+| `GET /projects/{p}/runs/{r}/bundle[?compare_to=r2]` | dashboard bundle (`demo/README.md`) of one scenario; with `compare_to` that run is the "before" and this run the variant. `409 run_not_finished` until succeeded |
+| `GET /projects/{p}/runs/{r}/decisions[?seed=&point=&measured_only=true]` | JSON lines, one decision each: `{decision_point, patient_id, t_days, context: {group, age, t_days, fast_track, attributes, history: [{step, test, result, t_days}]}, offered, chosen, probs, measured}` (spec 06 rows) |
+| `GET /projects/{p}/runs/{r}/patients?offset=0&limit=100[&seed=]` | `{seed, offset, limit, total, patients: [{id, group, age, arrival, outcome, t_exit, events: [...], choices: [...], seed}]}`; times in events are absolute days, `t_exit` and `choices[].t` relative to arrival |
+| `GET /projects/{p}/runs/{r}/flow[?sample=300&sample_seed=0&seeds=…]` | `flow/1` document (`docs/platform/flow-format.md`) pooled over the run's seeds, `meta.pooled_seeds` says which. The stored one (sample 300, seed 0) is instant; other parameters re-simulate (same patients, seconds) |
+| `POST /projects/{p}/compare {"runs": [a, b]}` | `{same_patients, n, seeds, a: {id, label, flowchart, headline}, b: {...}, headline: {metric: {a, b, delta}}, by_group: {group: {metric: {a, b, delta}}}, stages: {stage: {wait, service}}, nodes: {node: {wait, service}}, utilisation: {resource: {a, b, delta}}}`; delta is b minus a |
+| `GET /jobs/{j}` | `{id, kind: "run"|"optimisation", status, state, progress 0..1, message, error: {code, message}|null, log_tail: [...], result, owner: {project, kind, id}, created, started, finished}`. Poll about once a second |
+| `POST /jobs/{j}/cancel`, `GET /jobs[?status=]` | the job; `{counts, jobs}` |
+
+Optimise `POST /api/projects/{p}/optimisations` (202, the optimisation object below without results):
+```json
+{"flowchart": {"id": "observed", "version": 1}, "n": 300, "train_seeds": [101, 102], "heldout_seeds": [301, 302],
+ "max_changes": 6, "allow": ["detach", "relax", "standardise"], "safety": {"tests_tolerance": 0.02, "equity": true}}
+```
+Defaults: `n` the world's `default_n`, seeds 101, 102 and 301, 302, `max_changes` 6, `allow` detach, relax, standardise (only
+detach and relax when the flowchart's decision backend is not `rule`: `standardise` would compete with the decision model, F7;
+`allow_standardise_under_jev: true` overrides). Training and held-out seeds must differ (`422`). Optimising the Finnish
+template at its default n takes minutes; the job time limit is 15 minutes, so lower `n` if it times out.
+`GET .../optimisations/{o}` (also `GET .../optimisations`, light, and `POST .../{o}/cancel`):
+```json
+{"id": "o_17", "status": "succeeded", "job_id": "j_52", "progress": 1.0, "flowchart": {"id": "observed", "version": 1},
+ "settings": {...}, "error": null, "applied": [{"accepted": [0], "flowchart": {...}, "run_id": "r_…"}],
+ "changes": [{"index": 0, "kind": "relax", "target": "…", "other": "…", "label": "Plain wording for a clinician",
+              "raw": "optimiser text", "records_reading": "In the records, …", "predicted_days_saved": 4.5,
+              "linked_with": [], "train": {"on_time_before": 0.41, "on_time_after": 0.51, "median_before": 46.5, "median_after": 42.0},
+              "heldout_after_this_change": {"on_time": 0.57, "median_days": 39.7, "missed_cancers": 0, "tests_per_patient": 2.3}}],
+ "blocked": [{"label": "…", "raw": "…", "gain_pp": 2.6, "blocked_by": ["more missed cancers"]}],
+ "heldout": {"before": {...metrics...}, "after": {...metrics...}}, "train": {"before": {...}, "after": {...}},
+ "selection_optimism_pp": 0.4, "guardrails_heldout": [], "candidates_evaluated": 120,
+ "n_train": 300, "n_heldout": 300, "train_seeds": [101, 102], "heldout_seeds": [301, 302],
+ "honesty": "Suggestions come from what a clinic's records would show. …",
+ "proposed_flowchart": {...flowchart document, all changes applied...}}
+```
+`linked_with` lists changes the search only accepted together. `POST .../{o}/apply {"accept": [0, 2], "rerun": true, "label": "…"}`
+(`accept` omitted = all) saves a new version of the same flowchart (`edits_from_parent` lists the accepted changes; node
+positions are kept) and, with `rerun`, runs the new version and its parent on the held-out seeds (the parent's run is reused
+if it exists):
+```json
+{"flowchart": {"id": "observed", "version": 2}, "based_on": {"id": "observed", "version": 1}, "accepted": [0, 2],
+ "edits_from_parent": [...], "run_id": "r_a", "baseline_run_id": "r_b", "run": {...run object}, "baseline_run": {...}}
+```
+Then `POST /compare {"runs": [baseline_run_id, run_id]}`. Errors: `409 linked_change` (`problems[0].needs` = the partner
+changes to accept too), `409 not_applicable`, `409 unknown_change`, `409 optimisation_not_finished`.
