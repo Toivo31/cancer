@@ -83,8 +83,11 @@ Finland: `python -m decision_model.in_loop --scenario scenarios/finland_lung.yam
 
 Context features = the old 15 + a one-hot block over the (attribute, value) pairs seen in training; an unrevealed attribute
 or an unseen value is all zero. Option features = identity one-hot + public test metadata (invasive, cost, median wait).
-The "+ queue lead" variants add, per option, the days to the next free slot in that option's booking system at the moment
-of the decision (what a clinic sees in its appointment book; read-only probe of the engine's booking state).
+The "+ queue lead" variants add, per option, the days to the earliest appointment in that option's booking system at the moment
+of the decision (`PatientView.option_leads`, computed by the engine's own booking logic; what a clinic sees in its appointment book),
+plus a has-queue flag. The "+ set summary" ablation (dot-product only) appends to the CONTEXT a fixed-size summary of the whole
+offer: per option of the node, offered flag and lead. It is a hand-made set feature, so a per-option scorer can see the other options.
+"Mean reward at node" is the training objective measured in the loop (realised outcome of the decision actually taken).
 
 **Evaluation**: held-out patients (other seeds), the same patients and random numbers for every policy. Only the target node changes;
 every other node uses the rule. "vs rule (paired)" is the mean per-patient difference in on-time on the same cancers.
@@ -114,8 +117,12 @@ outcomes alone and matched it; they did not beat it.** That is expected: in this
 | random | 14.1% | -6.9 pp (s.e. 1.4) | 106.0 | 1.18 | 392 / 491 | 89.2% | 18.0 | 51% |
 | dot-product | 1.4% | -19.6 pp (s.e. 1.8) | 142.6 | 1.29 | 420 / 491 | 95.1% | 63.3 | 61% |
 | correction (2 layers) | 3.3% | -17.7 pp (s.e. 1.8) | 131.9 | 1.27 | 418 / 491 | 94.7% | 52.0 | 61% |
-| dot-product + queue lead | 20.2% | -0.8 pp (s.e. 1.0) | 101.4 | 1.07 | 415 / 491 | 93.6% | 14.5 | 73% |
-| correction (2 layers) + queue lead | 22.4% | +1.4 pp (s.e. 1.0) | 100.8 | 1.09 | 415 / 491 | 93.4% | 14.1 | 71% |
+| dot-product + queue lead | 20.4% | -0.6 pp (s.e. 1.0) | 101.3 | 1.06 | 414 / 491 | 93.1% | 14.8 | 72% |
+| correction (2 layers) + queue lead | 12.4% | -8.6 pp (s.e. 1.6) | 112.6 | 1.19 | 405 / 491 | 90.8% | 29.5 | 59% |
+| dot-product + queue lead + set summary | 17.3% | -3.7 pp (s.e. 1.1) | 102.8 | 1.12 | 416 / 491 | 93.6% | 14.8 | 68% |
+
+(Current code: leads from `PatientView.option_leads` as [lead/30, has-queue]. An earlier run with a read-only probe of the booking state
+and a single lead column gave the queue-lead rows 20.2 % / 22.4 % (paired -0.8 / +1.4 pp), and with model seed 1, 20.0 % / 20.8 %.)
 
 What happened:
 - **Without queue information the learned policy breaks the pathway.** Under random exploration, peripheral bronchoscopy
@@ -125,37 +132,132 @@ What happened:
   the queue for everyone else, and the exploration log was collected under a different load than the learned policy creates.
   Unstable as well: with model seed 1 the correction model got 10.8 % (dot-product 1.2 %). The peripheral values are a near-tie,
   so small estimation differences reroute the whole group, and the queue amplifies the effect.
-- **With the next-free-slot lead as an option feature, both models load-balance by queue state.** Central lesions go to
+- **With the queue lead as an option feature, the dot-product model load-balances by queue state.** Central lesions go to
   bronchoscopy. Peripheral lesions go mostly to needle biopsy, switching to bronchoscopy when its book is shorter.
-  They match the rule on on-time (paired -0.8 / +1.4 pp, s.e. 1.0; model seed 1: -1.0 / -0.2 pp), use about 5 % fewer sampling procedures
-  (1.07-1.09 vs 1.14 per patient) and confirm about the same number of cancers (415 vs 416). This is not a significant improvement over the rule;
-  it is a learned policy that is as good as the rule and was trained only on information the clinic has.
-- Dot-product vs correction: no reliable difference in either scenario (the order flips with the model seed).
+  It matches the rule on on-time (paired -0.6 pp, s.e. 1.0, and -0.8 / -1.0 pp in two earlier runs) and uses about 7 % fewer sampling procedures
+  (1.06 vs 1.14 per patient). It confirms about the same number of cancers (414 vs 416). This is not a significant improvement over the rule.
+  It is a learned policy as good as the rule, trained only on information the clinic has.
+- **The correction model is unstable here.** With 885 training choices, its queue-lead variant gave +1.4 and -0.2 pp in two earlier runs.
+  It gave -8.6 pp in the current run, where it fits the validation log worse (reward MSE 0.169 vs 0.138 for the dot-product) and sends some central lesions to needle biopsy.
+  With little data the extra attention layers hurt, consistent with the data-size result in the next section.
 
-### Is this the comparison-dependent case (open question 12)? Not yet, honestly
-In this set-up the value of an option depends on the context and on that option's own features (location, its own queue lead),
-not on which other options are offered. The best choice is then the argmax of per-option values, which a dot-product model can
-represent, so the correction model has nothing extra to exploit. These results are therefore an "in the loop, revealed-only, honest" proof, not
-evidence for the correction architecture; that evidence is still only the synthetic set-relative task above. A comparison-dependent in-loop case
-needs option sets that vary (an option unavailable on some days, or a fallback that only exists if another option is offered) at a node with 3+ options.
-The engine cannot express that today (see requests below). We did not attempt step 4.
+## Open question 12: does comparing options matter in the loop? (`python -m decision_model.comparison_experiment`, ~6 min)
+
+**Why availability alone is not enough.** Suppose each option's expected outcome is the same whatever else is offered.
+Then "pick the best available" is the argmax of per-option values, and a dot-product scorer represents it exactly: it
+just scores the options on offer. Comparison only matters when an option's value depends on the other options, or on their features.
+We tested both cases in `scenarios/experiments/stokstad_method_availability.yaml`, an experiment built from the calibrated Stokstad scenario
+by `decision_model/make_experiment_scenario.py`. The yields, capacities and the other-referral load are assumptions, not calibrated.
+- Node `method` (after the tumour board) offers bronchoscopy, radial EBUS and needle biopsy.
+- A non-diagnostic bronchoscopy falls back to a needle biopsy.
+- Bronchoscopy suits central lesions, needle biopsy suits peripheral ones, and EBUS is a middle option.
+- Lesions are 50 % central and 50 % peripheral.
+- Each option has a chance of not being on offer (engine `availability`).
+
+Reference policy, **expected-value rule**: for each offered option, `P(diagnostic) - E[days]/30` from the scenario's published-style parameters
+(non-diagnostic rates by revealed location, wait and report distributions) and the queue leads in the view. It knows what a clinic could read in the
+literature, never a patient's hidden truth. It is a hand-built upper reference, not a learned model. The hand-written rule is
+"central -> bronchoscopy, peripheral -> needle biopsy, otherwise EBUS", and it ignores queues.
+
+### Flowchart `availability`: the best available option depends on the offer; values do not (3 x 3000 held-out patients, 3909 training choices)
+
+| Policy at node | Mean reward at node | vs rule (paired) | On-time | vs rule (paired) | Tissue-confirmed | Agreement with EV rule |
+|---|---|---|---|---|---|---|
+| rule (hand-written) | +0.347 | - | 73.8% | - | 7021 / 8496 | 92% |
+| random | +0.284 | -0.063 (s.e. 0.004) | 73.0% | -0.8 pp (s.e. 0.3) | 6664 | 58% |
+| expected-value rule | +0.352 | +0.004 (s.e. 0.002) | 72.5% | -1.3 pp (s.e. 0.1) | 7190 | 100% |
+| dot-product | +0.349 | +0.001 (s.e. 0.002) | 72.7% | -1.2 pp (s.e. 0.2) | 7161 | 95% |
+| correction (2 layers) | +0.347 | -0.000 (s.e. 0.003) | 72.7% | -1.2 pp (s.e. 0.2) | 7149 | 92% |
+| dot-product + set summary | +0.352 | +0.004 (s.e. 0.002) | 72.8% | -1.0 pp (s.e. 0.2) | 7179 | 95% |
+
+The learned models picked the best available option (most common pick per location x offered set, in `runs/model_in_loop.json`).
+They also found one improvement on the hand-written rule: for a peripheral lesion with bronchoscopy and EBUS on offer but no needle biopsy, they choose bronchoscopy, whose needle-biopsy rescue makes it better than EBUS (the rule picks EBUS).
+That gains diagnoses (7161 vs 7021 tissue-confirmed) at slightly lower on-time (-1.2 pp), because the reward values a diagnosis at 30 days.
+**Correction vs dot-product: -0.002 reward (s.e. 0.002), 0.0 pp on-time. No difference, as predicted.**
+
+### Flowchart `rescue_queue`: bronchoscopy's value depends on ANOTHER option's queue (the comparison-dependent case)
+Needle biopsy is booked on a capacity-limited list (2/day) shared with other biopsy referrals, each of which books 20 sessions at once.
+That bursty load is independent of the policy, so the needle-biopsy lead varies (median about 8 days, 90th percentile about 35).
+The needle-biopsy list is also bronchoscopy's rescue, so bronchoscopy's value falls as the needle-biopsy lead grows. For a central lesion with
+bronchoscopy and EBUS both on offer, the expected-value rule switches from bronchoscopy (short needle-biopsy lead) to EBUS (long lead).
+A dot-product model sees each option's own lead, but bronchoscopy has no queue of its own, so it cannot use the needle-biopsy lead when scoring bronchoscopy.
+The correction model can, because it attends over the offered options.
+
+3 x 3000 held-out patients. Rows marked 12k were trained on 11683 exploration choices (12000 patients); the others on 3909 (4000 patients).
+
+| Policy at node | Mean reward at node | vs rule (paired) | On-time | vs rule (paired) | Tissue-confirmed | Days choice to sampling done |
+|---|---|---|---|---|---|---|
+| rule (hand-written, queue-blind) | +0.151 | - | 59.1% | - | 7223 / 8496 | 21.0 |
+| random | +0.126 | -0.025 (s.e. 0.007) | 62.6% | +3.5 pp (s.e. 0.4) | 6621 | 19.6 |
+| expected-value rule | +0.370 | +0.219 (s.e. 0.006) | 74.8% | +15.7 pp (s.e. 0.4) | 7035 | 13.7 |
+| dot-product (no leads) | +0.279 | +0.128 (s.e. 0.006) | 69.1% | +10.0 pp (s.e. 0.4) | 6999 | 16.3 |
+| correction (no leads) | +0.270 | +0.119 (s.e. 0.005) | 67.9% | +8.8 pp (s.e. 0.4) | 7063 | 16.8 |
+| dot-product + queue lead | +0.351 | +0.200 (s.e. 0.006) | 74.3% | +15.2 pp (s.e. 0.4) | 6942 | 14.0 |
+| correction + queue lead | +0.364 | +0.213 (s.e. 0.006) | 74.8% | +15.7 pp (s.e. 0.4) | 6984 | 13.7 |
+| dot-product + queue lead + set summary | +0.369 | +0.217 (s.e. 0.006) | 74.7% | +15.6 pp (s.e. 0.4) | 7031 | 13.8 |
+| dot-product + queue lead, 12k | +0.353 | +0.202 (s.e. 0.007) | 76.1% | +17.0 pp (s.e. 0.5) | 6804 | 13.4 |
+| correction + queue lead, 12k | +0.373 | +0.222 (s.e. 0.006) | 75.2% | +16.1 pp (s.e. 0.4) | 7026 | 13.6 |
+| dot-product + queue lead + set summary, 12k | +0.367 | +0.216 (s.e. 0.006) | 74.6% | +15.5 pp (s.e. 0.4) | 7028 | 13.8 |
+
+The set-dependent cell (central lesion, bronchoscopy and EBUS both on offer, 2052 decisions): share choosing bronchoscopy by needle-biopsy lead,
+and agreement with the expected-value rule in the cell.
+
+| Policy | lead 0-7 d | lead 7-20 d | lead > 20 d | Agreement with EV rule in cell |
+|---|---|---|---|---|
+| expected-value rule | 100% | 50% | 0% | 100% |
+| dot-product + queue lead | 18% | 24% | 20% | 37% |
+| correction + queue lead | 73% | 27% | 4% | 71% |
+| dot-product + queue lead + set summary | 95% | 6% | 0% | 83% |
+| dot-product + queue lead, 12k | 0% | 0% | 0% | 30% |
+| correction + queue lead, 12k | 100% | 35% | 0% | 92% |
+| dot-product + queue lead + set summary, 12k | 99% | 24% | 0% | 90% |
+
+Paired, same patients:
+
+| Comparison | Reward at node | On-time |
+|---|---|---|
+| correction + lead vs dot-product + lead (4k) | +0.013 (s.e. 0.003) | +0.5 pp (s.e. 0.2) |
+| same, model seed 1 (4k) | +0.006 (s.e. 0.002) | -0.2 pp (s.e. 0.1) |
+| correction + lead vs dot-product + lead (12k) | +0.020 (s.e. 0.004) | -0.9 pp (s.e. 0.2) |
+| correction + lead vs dot-product + lead + set summary (12k) | +0.006 (s.e. 0.001) | +0.6 pp (s.e. 0.1) |
+
+Offline check of data needs (held-out exploration log, 923 cell decisions, agreement with the EV rule in the cell):
+- **Dot-product + lead:** 0.37 (4k) and 0.31 (12k).
+- **Dot-product + set summary:** 0.88 (4k) and 0.86 (12k).
+- **Correction + lead:** 0.73 and 0.49 (4k, model seeds 0 and 1); 0.93 and 0.89 (12k).
+
+**What this shows.**
+1. **The comparison-dependent case exists in the simulator, and the correction model learns it, given enough data.** A per-option dot-product
+   model cannot: its bronchoscopy choice does not respond to the needle-biopsy queue at any data size. With 12k training choices the
+   correction model tracks the expected-value rule in that cell (92 %) and matches its reward (+0.373 vs +0.370).
+   It beats the dot-product model with leads by +0.020 reward per decision (s.e. 0.004).
+2. **The gain is small in headline terms.** Only about 16 % of decisions fall in the set-dependent cell. Even the expected-value rule is only
+   +0.02 reward above dot-product + lead. On-time does not improve: the dot-product model sends those central lesions to EBUS, which is faster
+   and gives fewer diagnoses, so it has +0.9 pp on-time and 222 fewer tissue-confirmed cancers out of 8496.
+   The reward values a diagnosis at 30 days; on-time ignores diagnoses.
+3. **A hand-made set summary in a dot-product's context does as well, and with less data.** When the option list is small and fixed, that summary is easy to write.
+   The correction model's case is that it needs no such hand-written feature: the same model works for any option set and any option features.
+   It did not beat the set-summary baseline on decisions here (+0.006 reward at 12k, about equal agreement).
+4. **With less data the correction model is less reliable.** At 4k the model-seed spread is large (cell agreement 0.49-0.73). In Finland, with 885 choices, the correction model was unstable (see above).
+5. Both learned policies beat the queue-blind hand-written rule by about 15 pp on-time here. That reflects how bad a queue-blind rule is on a congested list,
+   not the architecture.
 
 ### Limitations (in-loop)
 - One reward exchange rate (30 days per diagnostic sample), one training run per model per seed, and 2-3 held-out seeds.
   Stokstad patients do not interact (delay resources), so its seeds are independent. Finland patients share queues.
 - Off-policy shift: the exploration log comes from a uniform-random policy. Under a different load (Finland) the learned values
   are biased; the queue-lead feature fixes this here, but a production version would retrain on-policy with epsilon exploration.
-- The queue probe reads `Simulation.servers` and mirrors `_Server.book` (`_next_slot_days`; a test checks it equals a real booking).
-  If the engine's booking logic changes, the mirror must change too. Fast-track priority is not visible to the policy, so the probe uses the normal lead.
+- Queue leads come from `PatientView.option_leads` (engine booking logic, the patient's priority). A lead is the state at decision time;
+  the bronchoscopy rescue is booked days later, so the expected-value rule's use of the current lead is an approximation.
+- The open-question-12 experiment is a constructed scenario: the effect exists because we built a rescue that shares a queue with another option.
+  Whether real sampling decisions have comparison effects of this size is not shown.
 - The model optimises the stated reward at one node, not the four headline metrics; on-time is a downstream check.
 - Finland on-time uses the provisional 90-day target (decisions D20).
 
-### Engine requests (not done; pathway_sim is out of scope for this track)
-1. `PatientView.resources`: per resource, the next free slot / queue length at decision time, so policies do not reach into `Simulation`.
-2. `PatientView.priority` (fast-track flag) and `PatientView.clock_start`, so a policy can compute leads the way the engine books them.
-3. Option availability: per-option `available_when` (weekday, resource closed, capacity left), passed to `Policy.choose` as a smaller option set.
-   That is what a comparison-dependent experiment needs.
-4. A `simulate(..., on_start=callback)` hook (or returning the `Simulation`) so wrappers can attach to it without constructing `Simulation` directly.
+### Engine features used (added by the coordinator after the first in-loop run)
+`PatientView.option_leads`, `PatientView.priority`, `PatientView.offered`, and choice-node `availability` (per option `p_available` / `weekdays`).
+Still missing: availability that persists across nodes (e.g. "no needle-biopsy service this week" applying to the rescue too). The engine draws availability
+independently per node and option, and a forced fallback ignores availability.
 
 ## Limitations (synthetic task and adapter)
 
@@ -172,7 +274,10 @@ The engine cannot express that today (see requests below). We did not attempt st
 
 ```
 python -m decision_model.benchmark          # full table (~90 s); --quick for a few seconds
-python -m pytest -q tests/test_decision_model.py tests/test_decision_model_loop.py
+python -m pytest -q tests/test_decision_model.py tests/test_decision_model_loop.py tests/test_decision_model_comparison.py
 python -m decision_model.in_loop             # model in the simulator loop, Stokstad optimal / method (~1 min)
+python -m decision_model.comparison_experiment                 # open question 12, both flowcharts (~6 min)
+python -m decision_model.comparison_experiment --flowchart rescue_queue --n-train 12000 --weight-decay 0.1 0.3 --lead-variants-only   # 12k rows (~2.5 min)
+python -m decision_model.make_experiment_scenario              # regenerate scenarios/experiments/stokstad_method_availability.yaml
 ```
 Policy: `ModelPolicy(model).train_on_runlog(runlog_json_or_path, {"sample": ["bronch", "ttnb"]})`, then `policy.choose(view, options)`.

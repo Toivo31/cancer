@@ -7,12 +7,11 @@ import pytest
 
 from decision_model import autograd as ag
 from decision_model.features import N_CONTEXT, AttrVocab, context_vector
-from decision_model.in_loop import (QueueProbe, _next_slot_days, markdown, option_vectors, outcome, run_experiment,
+from decision_model.in_loop import (markdown, option_vectors, options_with_queue, outcome, run_experiment,
                                     sampling_tests, save)
 from decision_model.models import CorrectionModel, DotProductModel
 from decision_model.policy import ModelPolicy
 from pathway_sim import PatientView, load_scenario
-from pathway_sim.engine import _Server
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 STOK = ROOT / "scenarios" / "generated" / "stokstad_calibrated.yaml"
@@ -69,13 +68,6 @@ def test_model_policy_uses_revealed_attributes_only():
     assert pol.context_array(v_c)[2] == pytest.approx(12.0 / 60)  # elapsed = t_now
 
 
-def test_queue_probe_matches_engine_booking():
-    s = _Server("x", {"capacity_per_day": 2, "min_lead_days": 3})
-    for t in (0.2, 0.3, 0.4, 0.5, 3.1, 4.7, 4.8, 9.0):
-        lead = _next_slot_days(s, t)
-        assert s.book(t, False) - t == pytest.approx(lead)        # probe does not book, book does
-
-
 def test_outcome_and_option_features_use_public_information():
     sc = load_scenario(str(STOK))
     fc = sc.flowcharts["optimal"]
@@ -84,10 +76,10 @@ def test_outcome_and_option_features_use_public_information():
     fin = load_scenario(str(ROOT / "scenarios" / "finland_lung.yaml"))
     ffc = fin.flowcharts["baseline"]
     assert sampling_tests(fin, ffc, "sample_choice") == {"bronchoscopy", "ttnb"}
-    assert QueueProbe(fin, ffc, "sample_choice").has_servers(fin, ffc)
+    assert options_with_queue(fin, ffc, "sample_choice") == ["bronch", "ttnb"]
     ov = option_vectors(sc, fc, "method")
     assert set(ov) == {"bronch1", "ttnb1"} and ov["bronch1"][0] == 1 and ov["ttnb1"][1] == 1
-    assert not QueueProbe(sc, fc, "method").has_servers(sc, fc)  # Stokstad waits are delays, no booking book
+    assert options_with_queue(sc, fc, "method") == []              # Stokstad waits are delays, no booking book
 
     class E:
         def __init__(self, test, t_ready, t_result, result):
