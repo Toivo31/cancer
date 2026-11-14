@@ -48,6 +48,27 @@ python -m optimiser scenarios/generated/stokstad_calibrated.yaml --start faster_
 python -m decision_model.benchmark --quick
 ```
 
+### Decisions through JEV (docs/platform/specs/02-jev-interface.md)
+
+Decision points ask a backend for a probability per option; the simulator draws the choice (`sample`,
+default) or takes the most likely one (`argmax`). Without `--jev` the rule policy runs exactly as before.
+
+```bash
+# stub with hardcoded probabilities (migrated from the scenario's mix / rules / prefer): same results as today
+python -m pathway_sim run scenarios/finland_lung.yaml --n 5000 --jev stub
+# change one probability and watch the run move (others in that row are rescaled)
+python -m pathway_sim run scenarios/finland_lung.yaml --n 5000 --jev stub --set first_contact.nurse_visit=0.9
+python -m pathway_sim run scenarios/finland_lung.yaml --n 5000 --jev stub --decision-mode argmax
+
+# the same through a JEV service: start the stub server, point the run at it
+python -m jev.stub_server --scenario scenarios/finland_lung.yaml --flowchart baseline --port 8100 &
+python -m pathway_sim run scenarios/finland_lung.yaml --n 5000 --jev http://127.0.0.1:8100
+python -m pathway_sim run scenarios/finland_lung.yaml --n 5000 --jev http://127.0.0.1:8100 --on-error fallback_stub
+
+# contract tests against any JEV address (without --jev-url they start the stub server)
+python -m pytest tests/test_jev_contract.py --jev-url http://127.0.0.1:8100 --jev-point sample_choice --jev-options bronch,ttnb
+```
+
 ## Headline results so far (held-out patients)
 
 | Norwegian pathway (Stokstad et al. 2019) | Published | Simulated |

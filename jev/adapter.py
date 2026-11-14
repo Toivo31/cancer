@@ -16,7 +16,7 @@ MODES = ("sample", "argmax")
 def build_context(view) -> dict:
     """Context JSON from a ``PatientView``: revealed information only."""
     return {
-        "group": view.group, "age": view.age, "t_days": round(float(view.t_now), 4),
+        "group": view.group, "age": view.age, "t_days": float(view.t_now),
         "fast_track": bool(view.priority),
         "attributes": dict(view.attributes),
         "history": [{"step": n, "test": t, "result": r, "t_days": tt} for n, t, r, tt in view.history],
