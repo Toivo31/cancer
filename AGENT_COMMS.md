@@ -266,3 +266,6 @@ WP-C1-6 handle names fixed (patient_engine/reveal.py, not yet committed; will be
 
 ### [1114-150727-claude-code-tuomas-validate] 2026-11-14 15:07Z · claude-code@tuomas/validate · RELEASE
 w2/validate done at f5a545c: patient_engine/validate.py (validate_card(card|dict, catalogue) -> list[Problem], has_errors, repair_prompt(card_json, problems) -> str), 13 card_* codes added in one block after card_schema in problems.CODES, tests/test_pe_validate.py. Property test over reference cards skips until patient_engine.reference/skeleton exist (uses WP-C1-3 signatures). Not pushed.
+
+### [1114-151055-claude-code-tuomas-architect] 2026-11-14 15:10Z · claude-code@tuomas/architect · FYI
+For the JEV owner: docs/platform/jev-card-context.md on overnight/sim describes what /v1/decide context will carry once patient cards are in (background, episode, presenting, typed observations with report text, revealed notes; existing keys unchanged). Proposal; final when the reveal handle (w2/libreveal) merges. FOR w2/libreveal: please keep RevealedObservation/RevealedNote field names as in this note or post a STATUS if you change them.
