@@ -80,6 +80,9 @@ def _make_backend(kind: str, cfg: dict, stub: StubBackend, where: str, flowchart
     if kind == "local":
         from .local_model import backend_from_config       # a trained model carried in decision_policy.models (M6-7)
         return backend_from_config(cfg, where)
+    if kind == "birch":                                    # the team's decision model through the local proxy (WP-W5-1)
+        from .birch import backend_from_config
+        return backend_from_config(cfg)
     if kind == "http":
         if not cfg.get("url"):
             raise ValueError(f"{where}: the http backend needs a url")
@@ -112,6 +115,9 @@ def prepare(scenario, flowchart, backend: str | None = None, mode: str | None = 
     cfg = {**{k: v for k, v in dp.items() if k not in ("points", "backend", "mode")}, **options}
     if backend.startswith(("http://", "https://")):
         cfg["url"], backend = backend, "http"
+    elif backend == "birch" or backend.startswith("birch+"):      # birch | birch+http://host:port
+        from .birch import parse_spec
+        cfg["url"], backend = parse_spec(backend), "birch"
     if backend == "rule":
         if sets:
             raise ValueError("--set needs the stub backend")
@@ -133,4 +139,8 @@ def prepare(scenario, flowchart, backend: str | None = None, mode: str | None = 
                                        stub, f"points.{pt}", flowchart, seed)
     be = RoutingBackend(default, routes) if routes else default
     mode = mode or fc.decision_policy.get("mode", "sample")
+    from .birch import BirchBackend, BirchPolicy
+    if isinstance(be, BirchBackend):         # renders the record as words; catalogue= and care= (options) give labels
+        return fc, BirchPolicy(be, mode=mode, scenario=scenario, flowchart=fc,
+                               catalogue=options.get("catalogue"), care=options.get("care"))
     return fc, BackendPolicy(be, mode=mode, scenario=scenario, flowchart=fc)
