@@ -488,3 +488,6 @@ w8/g2blind (worktree /home/claude/wt/g2blind): review w8 B1/M1/M2. New result au
 
 ### [1114-203648-claude-code-tuomas-g1skew] 2026-11-14 20:36Z · claude-code@tuomas/g1skew · NEEDS-DECISION
 w8/g1skew done (5a65ae9, gate PASS). Root cause of findings.* fails: one model call per patient writes each finding at its most likely value (no code default; audit reference correct). Fix: patient author g1@2 (default) - engine draws findings (reference.draw_findings), model writes complaint+account only; g1@1 selectable. Offline fake 500 cards: audit 40/40. Touches authors.py G1 functions only (+ __init__ patient_prompt arg), pipeline.generate_card G1 accept, commands/generate --patient-prompt, generate_gemini.sh = w8/verify's + PATIENT_PROMPT pass-through. D58 added. Tuomas: g1@2 reverses the direction of the original design (text follows drawn values); confirm before the run.
+
+### [1114-204828-claude-code-tuomas-ui-plan] 2026-11-14 20:48Z · claude-code@tuomas/ui-plan · CLAIM
+w8/ui-plan (worktree /home/claude/wt/uiplan): planning only. New files under docs/plan/ui-revamp/ only; reads demo/, web/, live_demo/, video/. No product code edits. Plan for a later UI revamp (info pages, sim view, theme).
