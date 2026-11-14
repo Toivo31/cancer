@@ -53,6 +53,9 @@
   /* spacing, 4 px base */
   --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px; --s8:64px; --s9:96px;
 
+  /* side gutter of nav and footer: lines them up with .page (max 1440 px wide, 64 px padding) on wide screens */
+  --gutter:max(var(--s8),calc((100% - 1440px) / 2 + var(--s8)));
+
   /* type */
   --font-sans:"Inter","Helvetica Neue",Helvetica,Arial,system-ui,sans-serif;
   --font-mono:"Courier Prime","Courier New",Courier,monospace;
@@ -127,7 +130,7 @@ html:not([data-theme="night"]) body{background-image:none}
 ::selection{background:var(--mustard-tint);color:var(--ink)}
 
 /* ---------- Site nav (filled by site.js: Site.nav(pageId)) ---------- */
-.site-nav{display:flex;align-items:center;gap:var(--s6);padding:var(--s4) var(--s8);
+.site-nav{display:flex;align-items:center;gap:var(--s6);padding:var(--s4) var(--gutter);
   border-bottom:1px solid var(--ink);background:var(--paper)}
 .site-nav__brand{font:700 15px/1 var(--font-sans);letter-spacing:.04em;text-transform:uppercase;color:var(--ink);
   text-decoration:none;white-space:nowrap}
@@ -191,10 +194,11 @@ button.chip{cursor:pointer}
 /* ---------- Commands (the terminal chip); digits allowed inside .cmd and <code> ---------- */
 .cmd{display:inline-block;padding:2px var(--s2);background:var(--carbon);color:var(--card);
   font:400 13px/1.45 var(--font-mono);border-radius:0;white-space:pre-wrap;word-break:break-word}
+html[data-theme="night"] .cmd{color:var(--ink)}
 pre.cmd{display:block;padding:var(--s3) var(--s4);margin:0 0 var(--s4);overflow-x:auto;white-space:pre}
 
 /* ---------- Footer ---------- */
-.footer-strip{margin-top:var(--s7);padding:var(--s4) var(--s8);border-top:1px solid var(--ink);
+.footer-strip{margin-top:var(--s7);padding:var(--s4) var(--gutter);border-top:1px solid var(--ink);
   font:400 12px/1.5 var(--font-mono);letter-spacing:.04em;color:var(--ink-3)}
 
 /* ---------- Drawer (side panel, e.g. the simulator's Details menu) ---------- */
@@ -206,7 +210,7 @@ pre.cmd{display:block;padding:var(--s3) var(--s4);margin:0 0 var(--s4);overflow-
 /* ---------- Narrow screens ---------- */
 @media (max-width:900px){
   .page{padding:0 var(--s5)}
-  .site-nav,.footer-strip{padding-left:var(--s5);padding-right:var(--s5)}
+  :root{--gutter:var(--s5)}
   .site-nav{flex-wrap:wrap;gap:var(--s3) var(--s5)}
   .page-title{font-size:32px}
 }
