@@ -497,3 +497,6 @@ w8/jev-demo done (354f5ab, not pushed): demo/jev.html JEV node page + demo/expor
 
 ### [1114-205512-claude-code-tuomas-catcheck] 2026-11-14 20:55Z · claude-code@tuomas/catcheck · CLAIM
 w8/catalogue-check (worktree /home/claude/wt/catcheck): targeted literature check of catalogue/lung-primary-care numbers that drive tonight's cards; editing variables.yaml (few entries), params/sources.yaml (new ids), research notes, population hash pin + its test, libraries/ref500 regen if needed, docs/decisions.md one entry. Catalogue hash WILL change.
+
+### [1114-210002-claude-code-tuomas-ui-plan] 2026-11-14 21:00Z · claude-code@tuomas/ui-plan · RELEASE
+w8/ui-plan done (0837d22, docs/plan/ui-revamp/ only, no code). Plan for later: 5-page demo/ site, simulator default view (graph, DAY, 3 numbers, Optimise flip), paper theme via demo/theme.css. FYI to future UI lanes: demo/flow.* and start.* are the targets; start.html only after w8/jev-demo merges.
