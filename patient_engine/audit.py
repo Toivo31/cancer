@@ -415,6 +415,65 @@ def _leak(cards, catalogue, tol) -> dict[str, Any]:
                         presenting_texts_flagged=flagged["presenting"], reports_flagged=flagged["reports"])
 
 
+# ============================================================================ background realism (review w7, M4)
+
+_BG_DEFAULTS = {"pp": 5.0, "min_n": 20, "max_share": 0.0, "max_under_50": 0.10}
+
+
+def _background_realism(cards, catalogue, tol) -> dict[str, Any]:
+    """Is the background of the cards a possible, plausible population? Hard rules (no violation accepted):
+    pack-years that cannot fit in the card's age (more than two packs a day since age 13), never-smokers with
+    pack-years. Against the population file (``params/population_<catalogue id>.yaml``, patient_engine/population.py),
+    with the expectation of each card given its own age, sex and primary condition: the share of each smoking
+    status in the library, and for each condition with ``min_n`` cards the share aged 65 and over and under 50.
+    Plain rule: at most ``max_under_50`` of lung-cancer cards under 50 (Finland: a few percent). Without a
+    population file only the hard rules run."""
+    from .population import STATUSES, get_model
+    t = {**_BG_DEFAULTS, **tol["checks"].get("background_realism", {})}
+    z = float(tol["z"])
+    model = get_model(catalogue)
+    cells: list[dict[str, Any]] = []
+    smokers = [c for c in cards if "pack_years" in c.background and "age" in c.background]
+    cap = (lambda a: model.max_pack_years(a)) if model else (lambda a: 2.0 * max(0.0, a - 13))
+    imp = [c for c in smokers if c.background["pack_years"] > cap(c.background["age"]) + 1e-9]
+    cells += _share_check("background_realism.pack_years_possible", "", len(imp), len(smokers), t["max_share"],
+                          "cards with more pack-years than the age allows (two packs a day from age 13)",
+                          examples=[c.id for c in imp[:3]])["cells"]
+    nev = [c for c in cards if c.background.get("smoking_status") == "never"]
+    bad = [c for c in nev if c.background.get("pack_years", 0)]
+    cells += _share_check("background_realism.never_smoker_pack_years", "", len(bad), len(nev), t["max_share"],
+                          "never-smokers with pack-years", examples=[c.id for c in bad[:3]])["cells"]
+    if model is not None:
+        mix = [_Cell() for _ in STATUSES]
+        by_cond: dict[str, list] = defaultdict(list)
+        for c in cards:
+            bg, cond = c.background, c.hidden.primary.id
+            if bg.get("smoking_status") not in STATUSES or "age" not in bg or bg.get("sex") not in model.sexes:
+                continue
+            probs = model.smoking_probs_given(bg["age"], bg["sex"], cond)
+            for i, s in enumerate(STATUSES):
+                mix[i].add(probs[i], float(bg["smoking_status"] == s))
+            by_cond[cond].append(c)
+        cells += [_judge(f"background_realism.smoking.{s}", "share", mix[i], z, t["pp"], int(t["min_n"]))
+                  for i, s in enumerate(STATUSES)]
+        b65, b50 = model.band(65), model.band(50)
+        for cond, group in sorted(by_cond.items()):
+            old, young = _Cell(), _Cell()
+            for c in group:
+                bg = c.background
+                pb = model.age_band_probs_given(bg["smoking_status"], bg["sex"], cond)
+                a = bg["age"]
+                old.add(sum(pb[b65:]), float(a >= 65))
+                young.add(sum(pb[:b50]), float(a < 50))
+            cells.append(_judge(f"background_realism.age_65_plus.{cond}", "share", old, z, t["pp"], int(t["min_n"])))
+            cells.append(_judge(f"background_realism.age_under_50.{cond}", "share", young, z, t["pp"], int(t["min_n"])))
+    lc = [c for c in cards if catalogue.conditions[c.hidden.primary.id].cls == "cancer" and "age" in c.background]
+    if len(lc) >= int(t["min_n"]):
+        cells += _share_check("background_realism.cancer_under_50", "", sum(c.background["age"] < 50 for c in lc), len(lc),
+                              t["max_under_50"], "cancer cards under 50")["cells"]
+    return _group("background_realism", "Background realism: possible pack-years, smoking mix and age profile", cells)
+
+
 # ============================================================================ the audit
 
 def audit_library(library, catalogue, tolerances: Mapping[str, Any] | None = None) -> dict[str, Any]:
@@ -428,7 +487,8 @@ def audit_library(library, catalogue, tolerances: Mapping[str, Any] | None = Non
     z = float(tol["z"])
     acc, nd = _accuracy_and_nondiagnostic(cards, catalogue, tol, z)
     checks = [*_findings_cells(cards, catalogue, tol, z), *acc, nd, _state_consistency(cards, tol),
-              _presenting(cards, catalogue, tol), _diversity(cards, tol), _leak(cards, catalogue, tol)]
+              _presenting(cards, catalogue, tol), _diversity(cards, tol), _leak(cards, catalogue, tol),
+              _background_realism(cards, catalogue, tol)]
     n_states: dict[str, int] = defaultdict(int)
     for c in cards:
         for s in c.states:

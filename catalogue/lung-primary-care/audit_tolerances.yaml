@@ -56,3 +56,14 @@ checks:
       Notes that name the hidden diagnosis without a finding that reveals it (validator rule
       card_reveals_condition). The validator already warns per card; 2% of notes is the most a library may
       carry before the notes cannot be shown as unrevealed.
+  background_realism:
+    pp: 5
+    min_n: 20
+    max_share: 0.0
+    max_under_50: 0.10
+    reason: >-
+      Added for review w7 M4 (not part of the catalogue hash). Pack-years that do not fit the card's age, and
+      never-smokers with pack-years, are impossible: no violation accepted. The smoking mix and the share of
+      patients 65 and over or under 50 are compared with the population file (params/population_<id>.yaml) given
+      each card's own age, sex and condition, with the same interval and 5-point floor as the frequency checks.
+      At most 10% of cancer cards may be under 50 (Finland: a few percent; the old generator gave 22%).

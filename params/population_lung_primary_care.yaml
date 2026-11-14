@@ -1,0 +1,134 @@
+format: population/1
+# Population model for the background of synthetic patients of catalogue `lung_primary_care`.
+# Read by patient_engine/population.py. It is NOT part of the catalogue (catalogue-v1 stays locked: the
+# catalogue hash is built from the five catalogue files only, and this file sits outside that folder).
+# Every number is sourced or marked `assumption` with one line of reasoning. Nobody clinical has read it.
+catalogue_id: lung_primary_care
+built_for_catalogue_hash_prefix: 2bcb9c78b2e0     # a test fails when the catalogue changes, so this is re-read
+
+# The marginal the catalogue itself assumes (conditions.yaml, note on lung_cancer prevalence): the
+# condition prevalence levels per smoking status were derived from this mix. The model below is
+# raked (scaled) so that the overall mix of presenters equals it exactly; the age and sex pattern is
+# the Finnish one, the level is the catalogue's. If the mix drifted, overall cancer prevalence would
+# drift from the catalogue's 1.3%.
+smoking_mix: {never: 0.40, former: 0.38, current: 0.22}
+
+# 1. Age of adults who present to primary care with lung symptoms (per mille per band; bands are
+#    [edge, next edge) and the last band ends at 100). Right-tailed with a long run of middle-aged and
+#    older adults, few in their twenties, few over 90.
+#    assumption: shaped like adult respiratory consultations in primary care (mean about 56, median about
+#    57; no Finnish presenter data found). Lung-symptom presenters are older than the adult population
+#    because cough, breathlessness and chest pain rise with age and with smoking history.
+age:
+  edges: [18, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 101]
+  per_mille: [45, 55, 55, 60, 65, 75, 90, 100, 105, 105, 85, 65, 45, 30, 20]
+
+# 5. Sex and region (kept simple).
+#    sex: assumption, women a little more than half (women consult primary care more often; the Finnish
+#    adult population is 51% women). Independent of age; smoking status then differs by sex (below).
+#    region: assumption, 70% urban / 30% rural (Statistics Finland: about 70% of people live in urban
+#    municipalities). Independent of everything else; no catalogue number depends on it.
+sex: {f: 0.52, m: 0.48}
+region: {urban: 0.70, rural: 0.30}
+
+# 2. Smoking status by age band and sex: never / former / current, BEFORE raking to the overall mix.
+#    never:    THL_TUPAKKA2022 (Terve Suomi 2022, never-smokers by sex and age band, secondary copy at
+#              suomenash.fi, read 2026-11-14): men 20-34 39%, 35-49 33%, 50-64 28%, 65-69 29%, 70-74 25%,
+#              75-79 27%, 80-84 30%; women 48, 42, 40, 37, 45, 49, 55%. Bands pooled by hand below.
+#    current:  daily smokers in the same table (men 9, 14, 12, 14% at 20-34, 35-44, 45-54, 55-64; women 9,
+#              12, 11, 12%; 65-84 men 9%, women 5%) times 1.65, the ratio of daily-or-occasional to daily
+#              (men 30/18, women 19/11 over 20+). The 1.65 and the split of 65-84 into two bands are
+#              assumptions.
+#    former:   the remainder (assumption: the table gives no ex-smoker shares by age).
+#    The 18-34 row reuses the 20-34 figures (assumption).
+smoking_by_age_sex:
+  bands:                 # [lower age, upper age (exclusive)] of each row
+    - [18, 35]
+    - [35, 50]
+    - [50, 65]
+    - [65, 75]
+    - [75, 101]
+  m:                     # [never, former, current] per band
+    - [0.39, 0.46, 0.15]
+    - [0.33, 0.46, 0.21]
+    - [0.28, 0.50, 0.22]
+    - [0.27, 0.565, 0.165]
+    - [0.285, 0.615, 0.10]
+  f:
+    - [0.48, 0.37, 0.15]
+    - [0.42, 0.39, 0.19]
+    - [0.40, 0.41, 0.19]
+    - [0.41, 0.49, 0.10]
+    - [0.52, 0.43, 0.05]
+
+# 3. Pack-years from smoking status and age. Years smoked = age - start age, minus years since quitting
+#    for former smokers (at least 1 year smoked); pack-years = years smoked x packs a day, so the value
+#    is always possible for the age. All of this is assumption unless noted.
+pack_years:
+  start_age: {min: 13, median: 17, max: 28, log_sd: 0.25}   # age at first regular smoking; at least 13
+  years_since_quit: {median: 9.0, log_sd: 0.9}              # former smokers; capped so that 1+ year was smoked
+  packs_per_day: {median: 0.65, log_sd: 0.5, min: 0.1, max: 2.0}   # about 13 cigarettes a day; 2 packs is the cap
+  # reason: no Finnish pack-year distribution was found; median 0.65 packs a day keeps a 65-year-old
+  # current smoker at about 30 pack-years, which sits inside the 20 to 40 range of screening cohorts.
+
+# 4. Age relative risk of each condition being the primary condition, among presenters of that age.
+#    Relative to each other only (the scale is arbitrary, it is renormalised): the loader raises the
+#    catalogue's prevalence at each smoking level by these ratios and rescales so that, within each
+#    smoking level, each condition's overall share is the catalogue's number and every age's shares sum
+#    to 1 (iterative proportional fitting). So overall prevalence per smoking level does not move; only
+#    who the patients are does. Values at the ages 25, 35, ..., 85, log-linear in between, flat outside.
+#    ages:    25     35     45     55     65     75     85
+age_relative_risk:
+  lung_cancer:
+    rr: [0.02, 0.07, 0.30, 1.0, 2.4, 3.4, 3.0]
+    source: FILHA2026
+    note: >-
+      Shape from Finnish lung-cancer age: median age about 70 (IQR 62-75) in a Finnish metastatic NSCLC
+      cohort (Acta Oncologica, medicaljournalssweden.se/actaoncologica/article/view/44254), and the
+      review's "under-50s a few percent" (docs/review_w7.md M4). The values themselves are an
+      assumption tuned to that: median about 68 and under 50 about 4% of cancers.
+  copd_exacerbation:
+    rr: [0.03, 0.10, 0.40, 1.0, 2.2, 3.0, 3.0]
+    source: assumption
+    note: COPD diagnosed mostly after 40 and commonest after 65 (airflow limitation in screening cohorts, CHEST2025_AIRFLOW); the ratios are an assumption.
+  asthma:
+    rr: [1.6, 1.4, 1.1, 0.9, 0.7, 0.6, 0.5]
+    source: assumption
+    note: Asthma is common at all ages and a little commoner among younger presenters.
+  viral_self_limiting:
+    rr: [1.5, 1.4, 1.2, 1.0, 0.8, 0.6, 0.5]
+    source: assumption
+    note: Acute viral chest illness is commonest in young and middle-aged adults; older adults present with other causes.
+  worried_well:
+    rr: [2.0, 1.8, 1.4, 0.9, 0.5, 0.3, 0.2]
+    source: assumption
+    note: Presenters worried without disease are younger on average; older adults with symptoms tend to have a cause.
+  no_disease_found:
+    rr: [1.2, 1.1, 1.0, 1.0, 0.9, 0.8, 0.7]
+    source: assumption
+    note: Nearly flat; slightly commoner when younger.
+  pneumonia:
+    rr: [0.7, 0.7, 0.8, 1.0, 1.3, 1.8, 2.2]
+    source: assumption
+    note: Pneumonia incidence rises with age.
+  heart_failure:
+    rr: [0.01, 0.03, 0.10, 0.40, 1.2, 3.5, 7.0]
+    source: assumption
+    note: Heart failure is a disease of the old (median age at first diagnosis about 75 in Europe).
+  tuberculosis:
+    rr: [1.3, 1.0, 0.8, 0.8, 1.0, 1.6, 2.0]
+    source: ECDC_TB2024
+    note: Two groups in Finland, foreign-born adults at younger ages and Finnish-born older adults (reactivation); the ratios are an assumption.
+  benign_nodule:
+    rr: [0.1, 0.3, 0.7, 1.2, 1.6, 1.5, 0.9]
+    source: assumption
+    note: Incidental nodules are found mostly in middle and older age (imaging is done more often then).
+  reflux_postinfectious_cough:
+    rr: [0.8, 1.0, 1.3, 1.3, 1.0, 0.8, 0.6]
+    source: assumption
+    note: Middle-aged peak; chronic cough from reflux or after infection.
+
+# Plausibility limits the library audit checks (patient_engine/audit.py, background_realism).
+limits:
+  min_start_age: 13
+  max_packs_per_day: 2.0

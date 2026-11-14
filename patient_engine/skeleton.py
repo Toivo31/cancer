@@ -76,6 +76,7 @@ from pathway_sim.dists import sample, uniform
 
 from .card import INITIAL_STATE, PlannedAttempt, Value
 from .catalogue import Catalogue, Leaf, Test, TestOutput
+from .population import get_model as _population_model
 from .states import resolved_in_state, states_for
 
 SKELETON_FORMAT = "skeleton/1"
@@ -262,11 +263,18 @@ def _truncated_normal(lo: float, hi: float, u: float) -> float:
 
 
 def _draw_background(catalogue: Catalogue, seed: int, index: int, k: int) -> dict[str, Value]:
-    """One candidate background. Default population model (``catalogue/1`` has none yet): a categorical
+    """One candidate background. With a population file (``params/population_<catalogue id>.yaml``, see
+    ``patient_engine/population.py``) age, sex, smoking status, pack-years and region follow it. Otherwise the
+    default population model (``catalogue/1`` has none yet): a categorical
     field is uniform over its values, a binary one a fair coin, a continuous one a normal centred in its
     ``range`` (SD one sixth of the width) truncated to it (default range 0..100)."""
     bg: dict[str, Value] = {}
+    model = _population_model(catalogue)
+    if model is not None:        # params/population_<catalogue id>.yaml: age, sex, smoking, pack-years, region
+        bg = model.draw_background(seed, index, k, catalogue.background)
     for f in catalogue.background.values():
+        if f.id in bg:
+            continue
         u = uniform(seed, index, "bg", k, f.id)
         if f.type == "categorical":
             bg[f.id] = f.values[min(int(u * len(f.values)), len(f.values) - 1)]
@@ -277,7 +285,8 @@ def _draw_background(catalogue: Catalogue, seed: int, index: int, k: int) -> dic
             hi = 100.0 if f.range[1] is None else f.range[1]
             x = _truncated_normal(lo, hi, u)
             bg[f.id] = int(round(x)) if hi - lo >= 50 else round(x, 1)
-    _smoking_consistency(bg, catalogue, seed, index, k)
+    if model is None:
+        _smoking_consistency(bg, catalogue, seed, index, k)
     return bg
 
 
@@ -309,6 +318,11 @@ def _smoking_consistency(bg: dict, catalogue: Catalogue, seed: int, index: int, 
 
 
 def _prevalence_shares(catalogue: Catalogue, bg: Mapping[str, Any]) -> dict[str, float]:
+    """Weights of the conditions for a background: the catalogue's prevalence, and with a population model
+    that prevalence carried by the age relative risks and renormalised (overall shares per smoking level stay)."""
+    model = _population_model(catalogue)
+    if model is not None and "age" in bg and "smoking_status" in bg:
+        return model.condition_shares(bg)
     return {c: max(0.0, float(x.prevalence.resolve(bg))) for c, x in catalogue.conditions.items()}
 
 
@@ -345,8 +359,12 @@ def _draw_primary_and_background(catalogue: Catalogue, design: Design, index: in
         return pick(shares, uniform(seed, index, "primary")), bg
     primary = _assignment(seed, design.counts)[index]
     leaf = catalogue.conditions[primary].prevalence
-    lows = sum(_leaf_bounds(x.prevalence)[0] for x in catalogue.conditions.values())
-    top = min(1.0, _leaf_bounds(leaf)[1] / lows) if lows > 0 else 1.0
+    model = _population_model(catalogue)
+    if model is not None:
+        top = model.top[primary]           # exact upper bound of P(condition | background)
+    else:
+        lows = sum(_leaf_bounds(x.prevalence)[0] for x in catalogue.conditions.values())
+        top = min(1.0, _leaf_bounds(leaf)[1] / lows) if lows > 0 else 1.0
     bg: dict[str, Value] = {}
     for k in range(MAX_BACKGROUND_TRIES):
         bg = _draw_background(catalogue, seed, index, k)
