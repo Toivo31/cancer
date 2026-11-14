@@ -1,7 +1,7 @@
 # Status
 
 The only file in this folder that changes often. Written by the integrator at every sync point.
-Last update: **Sat 14 Nov 2026, about 17:30 Helsinki.** Deadline: Sun 15 Nov 10:00 Helsinki.
+Last update: **Sat 14 Nov 2026, about 16:15 Helsinki.** Deadline: Sun 15 Nov 10:00 Helsinki.
 
 ## Branches
 

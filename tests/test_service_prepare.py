@@ -12,7 +12,7 @@ from service.prepare import prepare_run
 
 
 @pytest.mark.parametrize("template,yaml,fid,n", [("finland_lung", "finland_lung.yaml", "baseline", 300),
-                                                 ("norway_check", "stokstad.yaml", "observed", 60)])
+                                                 ("norway_check", "generated/stokstad_calibrated.yaml", "observed", 60)])
 def test_stored_documents_reproduce_the_yaml_metrics(tmp_path, template, yaml, fid, n):
     with TestClient(create_app(Settings(data_dir=tmp_path / "d", web_dir=tmp_path / "w"))) as c:
         p = c.post("/api/projects", json={"name": "t", "template": template}).json()["id"]

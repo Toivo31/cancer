@@ -1,13 +1,13 @@
 # Execution strategy
 
-Part 1 assesses the first parallel wave (14 Nov, 15:10 to 16:30 Helsinki). Part 2 is the revised
+Part 1 assesses the first parallel wave (14 Nov, 15:10 to 16:10 Helsinki). Part 2 is the revised
 strategy every later wave follows. Builders need only "Rules for builders" and "Definition of
 done"; the integrator needs all of it.
 
 ## Part 1. Assessment of the first wave
 
 **What was done.** Ten agent lanes in separate git worktrees, coordinated by one session. In about
-80 minutes: the JEV contract with stub and HTTP backends (M1), a safe condition evaluator and
+an hour: the JEV contract with stub and HTTP backends (M1), a safe condition evaluator and
 structured validation, the flow data library and the offline flow page, the service (documents,
 projects, jobs, runs, optimisations), the React app with the flowchart canvas, layers and
 playback, datasets and training, deployment files, plus an evidence lane and a security review.
