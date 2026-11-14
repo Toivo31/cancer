@@ -21,6 +21,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
+from optimiser.labels import polish_change  # noqa: E402
 from optimiser.search import cohorts  # noqa: E402
 from pathway_sim import load_scenario, simulate  # noqa: E402
 from pathway_sim.flow import build_flow  # noqa: E402
@@ -46,7 +47,9 @@ def opt_flowchart(sc, name: str, fid: str):
     d = json.loads((ROOT / "runs" / f"{name}.json").read_text())
     fc = parse_flowchart(fid, {**d["flowchart_after"], "id": fid})
     validate_flowchart(sc, fc)
-    return fc, [s["plain"] for s in d["steps"]]
+    # plain wording as on the dashboard (optimiser.labels), not the optimiser's raw text
+    fc0 = sc.flowcharts[d["start"]]
+    return fc, [polish_change(fc0, s["kind"], s["target"], s["other"]) for s in d["steps"]]
 
 
 def make(sc, fc, held, key, label, role, note="", conditional=False, changes=None, sample=300, check=None, meta=None):
@@ -92,7 +95,7 @@ def build(quick: bool = False, sample: int = 300) -> list[dict]:
              check=dashboard_share(bundle, "stokstad", "authors_pathway"), sample=sample),
     ]
     out.append({"id": "norway", "title": "Norwegian hospital, rebuilt from Stokstad et al. 2019", "synthetic": False,
-                "target_days": sc.target_days, "default_pair": ["observed", "suggested"],
+                "target_days": sc.target_days, "default_pair": ["authors", "suggested_faster_pet"],
                 "description": "100 early-stage lung cancer patients at one Norwegian centre, rebuilt step by step and calibrated on the "
                                "observed pathway only. Patients are simulated; the pathway and its waits are published.",
                 "published": {"observed_share": pub["observed"]["share_within_target"],
