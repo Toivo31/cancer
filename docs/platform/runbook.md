@@ -49,6 +49,11 @@ JEV calls at all. Even a listed name is refused if it resolves to a link-local o
 Residual risk: the name is resolved when the policy is built and again when the connection is made; an allowed name whose
 DNS an attacker controls could change in between. List only names you control.
 
+The team's decision model (checkpoint 2350) is not reached through `backend: http`: run `python -m decision_api.server`
+on the host (no key: the owner's hosted gateway, 6 calls a minute and 120 an hour shared with everyone; outbound HTTPS to
+`*.modal.run` must be allowed) and use `birch` as the JEV spec. Install, limits and the smoke command:
+`docs/platform/jev-birch.md` ("Install and run").
+
 ## One host for the platform and Eemeli's live demo
 
 `PROXY=1 deploy/deploy.sh ...` starts Caddy (compose profile `proxy`, host networking) in front of two loopback-only upstreams:

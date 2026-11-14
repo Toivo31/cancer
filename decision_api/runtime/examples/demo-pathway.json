@@ -1,0 +1,29 @@
+{
+  "case": {
+    "case_id": "synthetic-pathway-demo",
+    "context": "Synthetic diagnostic-pathway intake. Propose one allowed next step for a clinician to review.",
+    "step": 1,
+    "evidence": [
+      {"source_id": "sim:intake", "available_at_step": 0, "text": "The intake description is available for review."},
+      {"source_id": "sim:future", "available_at_step": 3, "text": "This future simulator observation must not enter the current decision."}
+    ]
+  },
+  "workflow": {
+    "id": "synthetic-intake",
+    "version": "1",
+    "root": "intake",
+    "nodes": {
+      "intake": {
+        "question": "Which allowed next step should be proposed for review?",
+        "protocol": "Synthetic integration workflow only. A clinician reviews the proposal; no treatment or referral is executed.",
+        "actions": [
+          {"id": "review", "description": "Review the available history with the clinician", "next": "await-review"},
+          {"id": "complete-intake", "description": "Request the missing intake information", "next": "await-information"}
+        ]
+      },
+      "await-review": {"terminal": true},
+      "await-information": {"terminal": true}
+    }
+  },
+  "node_id": "intake"
+}

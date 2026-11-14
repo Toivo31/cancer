@@ -1,0 +1,174 @@
+[
+  {
+    "seconds": 33.73187841598701,
+    "refinement": {
+      "enabled": true,
+      "mode": "frozen_pretrained_nemotron",
+      "original_context": "Synthetic diagnostic-pathway intake. Propose one allowed next step for a clinician to review.",
+      "context": "Synthetic diagnostic-pathway intake. Propose one allowed next step for a clinician to review.\n\nQuestions and allowed choices:\nWhich allowed next step should be proposed for review?\nAllowed choices: Review the available history with the clinician; Request the missing intake information\n\nAdditional task instructions (not patient evidence):\nRetrieve available history, then give a quick evidence summary.\n\nActual tool result: retrieve_information(patient)\n{\"as_of_step\": 1, \"entries\": [{\"source_id\": \"sim:intake-01\", \"text\": \"Synthetic patient reports a changing skin lesion. This statement is not a diagnosis.\", \"timestamp\": \"2026-11-14T08:00:00Z\"}, {\"source_id\": \"sim:review-02\", \"text\": \"Synthetic follow-up note: review the supplied photograph and documented history.\", \"timestamp\": \"2026-11-14T09:00:00Z\"}], \"patient\": \"sim:demo-record\", \"synthetic\": true}\n\nGenerated evidence summary (may contain errors; not a source record):\nThe available history includes a synthetic patient report of a changing skin lesion (not a diagnosis) and a follow-up note to review the supplied photograph and documented history. No additional missing intake information is indicated in the retrieved record. Proposed next step for clinician review: Review the available history with the clinician.",
+      "tokens_used": 84,
+      "tokens_generated": 84,
+      "generation_cache_hits": 0,
+      "rounds_used": 2,
+      "tool_calls_used": 1,
+      "trace": [
+        {
+          "round": 1,
+          "tokens_used": 18,
+          "tokens_generated": 18,
+          "generation_cache_hit": false,
+          "tool": "retrieve_information",
+          "arguments": {
+            "patient": "sim:demo-record"
+          },
+          "response": {
+            "patient": "sim:demo-record",
+            "as_of_step": 1,
+            "synthetic": true,
+            "entries": [
+              {
+                "source_id": "sim:intake-01",
+                "timestamp": "2026-11-14T08:00:00Z",
+                "text": "Synthetic patient reports a changing skin lesion. This statement is not a diagnosis."
+              },
+              {
+                "source_id": "sim:review-02",
+                "timestamp": "2026-11-14T09:00:00Z",
+                "text": "Synthetic follow-up note: review the supplied photograph and documented history."
+              }
+            ]
+          },
+          "status": "evidence_added"
+        },
+        {
+          "round": 2,
+          "tokens_used": 66,
+          "tokens_generated": 66,
+          "generation_cache_hit": false,
+          "status": "summary_added",
+          "summary": "The available history includes a synthetic patient report of a changing skin lesion (not a diagnosis) and a follow-up note to review the supplied photograph and documented history. No additional missing intake information is indicated in the retrieved record. Proposed next step for clinician review: Review the available history with the clinician."
+        }
+      ],
+      "source_ids": [
+        "sim:intake-01",
+        "sim:review-02"
+      ],
+      "budget": {
+        "max_tokens": 128,
+        "max_rounds": 3,
+        "max_tool_calls": 2,
+        "max_context_chars": 12000
+      },
+      "stop_reason": "summary_complete",
+      "includes_question": true,
+      "visible_input_source_ids": [
+        "sim:intake"
+      ],
+      "generator_calls": 2
+    },
+    "backend": {
+      "model": "nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-BF16",
+      "revision": "fb0ee0bc6b3f70342afd8d84cb80dbadbaa8a1fe",
+      "training_identity": "003086694525587bde55201db3713f64f434df916492669a2836b871cc7d089d",
+      "step": 2350,
+      "checkpoint_sha256": "22570c201a9e3d25dcdf7aa904770a568328e034ccb5ac89623784707a7323e8",
+      "quantization": "nf4-experts-merged-adapters",
+      "mode": "model"
+    },
+    "decision_id": "c894b63faa794ddf8db83d5310ebe84c",
+    "score_cache": {
+      "enabled": true,
+      "context_hits": 0,
+      "candidate_hits": 0,
+      "candidate_count": 2,
+      "bytes": 98304,
+      "max_bytes": 67108864
+    }
+  },
+  {
+    "seconds": 2.753945638993173,
+    "refinement": {
+      "enabled": true,
+      "mode": "frozen_pretrained_nemotron",
+      "original_context": "Synthetic diagnostic-pathway intake. Propose one allowed next step for a clinician to review.",
+      "context": "Synthetic diagnostic-pathway intake. Propose one allowed next step for a clinician to review.\n\nQuestions and allowed choices:\nWhich allowed next step should be proposed for review?\nAllowed choices: Review the available history with the clinician; Request the missing intake information\n\nAdditional task instructions (not patient evidence):\nRetrieve available history, then give a quick evidence summary.\n\nActual tool result: retrieve_information(patient)\n{\"as_of_step\": 1, \"entries\": [{\"source_id\": \"sim:intake-01\", \"text\": \"Synthetic patient reports a changing skin lesion. This statement is not a diagnosis.\", \"timestamp\": \"2026-11-14T08:00:00Z\"}, {\"source_id\": \"sim:review-02\", \"text\": \"Synthetic follow-up note: review the supplied photograph and documented history.\", \"timestamp\": \"2026-11-14T09:00:00Z\"}], \"patient\": \"sim:demo-record\", \"synthetic\": true}\n\nGenerated evidence summary (may contain errors; not a source record):\nThe available history includes a synthetic patient report of a changing skin lesion (not a diagnosis) and a follow-up note to review the supplied photograph and documented history. No additional missing intake information is indicated in the retrieved record. Proposed next step for clinician review: Review the available history with the clinician.",
+      "tokens_used": 84,
+      "tokens_generated": 0,
+      "generation_cache_hits": 2,
+      "rounds_used": 2,
+      "tool_calls_used": 1,
+      "trace": [
+        {
+          "round": 1,
+          "tokens_used": 18,
+          "tokens_generated": 0,
+          "generation_cache_hit": true,
+          "tool": "retrieve_information",
+          "arguments": {
+            "patient": "sim:demo-record"
+          },
+          "response": {
+            "patient": "sim:demo-record",
+            "as_of_step": 1,
+            "synthetic": true,
+            "entries": [
+              {
+                "source_id": "sim:intake-01",
+                "timestamp": "2026-11-14T08:00:00Z",
+                "text": "Synthetic patient reports a changing skin lesion. This statement is not a diagnosis."
+              },
+              {
+                "source_id": "sim:review-02",
+                "timestamp": "2026-11-14T09:00:00Z",
+                "text": "Synthetic follow-up note: review the supplied photograph and documented history."
+              }
+            ]
+          },
+          "status": "evidence_added"
+        },
+        {
+          "round": 2,
+          "tokens_used": 66,
+          "tokens_generated": 0,
+          "generation_cache_hit": true,
+          "status": "summary_added",
+          "summary": "The available history includes a synthetic patient report of a changing skin lesion (not a diagnosis) and a follow-up note to review the supplied photograph and documented history. No additional missing intake information is indicated in the retrieved record. Proposed next step for clinician review: Review the available history with the clinician."
+        }
+      ],
+      "source_ids": [
+        "sim:intake-01",
+        "sim:review-02"
+      ],
+      "budget": {
+        "max_tokens": 128,
+        "max_rounds": 3,
+        "max_tool_calls": 2,
+        "max_context_chars": 12000
+      },
+      "stop_reason": "summary_complete",
+      "includes_question": true,
+      "visible_input_source_ids": [
+        "sim:intake"
+      ],
+      "generator_calls": 2
+    },
+    "backend": {
+      "model": "nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-BF16",
+      "revision": "fb0ee0bc6b3f70342afd8d84cb80dbadbaa8a1fe",
+      "training_identity": "003086694525587bde55201db3713f64f434df916492669a2836b871cc7d089d",
+      "step": 2350,
+      "checkpoint_sha256": "22570c201a9e3d25dcdf7aa904770a568328e034ccb5ac89623784707a7323e8",
+      "quantization": "nf4-experts-merged-adapters",
+      "mode": "model"
+    },
+    "decision_id": "bb6fa5c330654416ac1d0938324f50fc",
+    "score_cache": {
+      "enabled": true,
+      "context_hits": 1,
+      "candidate_hits": 2,
+      "candidate_count": 2,
+      "bytes": 98304,
+      "max_bytes": 67108864
+    }
+  }
+]

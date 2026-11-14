@@ -52,6 +52,12 @@ class RoutesTests(unittest.TestCase):
             with urlopen(request, timeout=5) as response: return response.status, response.read()
         except HTTPError as error: return error.code, error.read()
 
+    def test_repeated_ready_photo_reuses_registered_asset_without_skipping_scoring(self):
+        self.api.call('POST','/samples/example-1/score',{})
+        self.api.call('POST','/samples/example-1/score',{})
+        self.assertEqual(sum(r.full_url.endswith('/prepare') for r in self.upstream.calls),1)
+        self.assertEqual(sum(r.full_url.endswith('/v1/score') for r in self.upstream.calls),2)
+
     def test_saved_examples_assets_do_not_call_gpu_or_reveal_key(self):
         for path in ['/decision', '/decision-assets/client.js', '/decision-assets/widget.js', '/decision-assets/samples/example-1.png', '/api/decision/examples']:
             status, body = self.request(path); self.assertEqual(status, 200, path)
@@ -60,7 +66,7 @@ class RoutesTests(unittest.TestCase):
         saved = json.loads(body)
         self.assertEqual(saved['delivery'], 'precomputed')
         self.assertEqual(saved['decision']['backend']['mode'], 'model')
-        self.assertEqual(saved['decision']['backend']['step'], 1138)
+        self.assertEqual(saved['decision']['backend']['step'], 2350)
         self.assertFalse(self.upstream.calls)
         self.assertNotIn(b'type="file"', self.request('/decision')[1])
 

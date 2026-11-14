@@ -1,4 +1,4 @@
-"""WP-W5-1: the Birch (checkpoint 1138) backend against a local mock of the proxy. The real model is never called."""
+"""WP-W5-1: the Birch (checkpoint 2350) backend against a local mock of the proxy. The real model is never called."""
 
 from __future__ import annotations
 

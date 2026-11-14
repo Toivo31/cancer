@@ -64,3 +64,16 @@ test('tool preview is separate from scoring and has no implicit model call',asyn
   await client.refinePreview({example_id:'pathway',reasoning:{enabled:true,max_tokens:64}});
   assert.deepEqual(calls.map(c=>c[0]),['/api/decision/refine-preview']);
 });
+test('hosted jobs poll GET without replaying scoring POST',async()=>{
+  const calls=[];
+  const client=createDecisionClient({fetch:async(url,options)=>{
+    calls.push([url,options]);
+    return {ok:true,status:calls.length===1?202:200,json:async()=>calls.length===1?{delivery:'pending',status_url:`/jobs/${id}`}:{id}};
+  }});
+  assert.deepEqual(await client.score({context:'visible'}),{id});
+  assert.deepEqual(calls.map(([url,options])=>[url,options.method]),[['/api/decision/score','POST'],[`/api/decision/jobs/${id}`,'GET']]);
+});
+test('job polling rejects external locations',async()=>{
+  const {client}=mockClient({ok:true,status:202,json:async()=>({delivery:'pending',status_url:'https://other.example/secret'})});
+  await assert.rejects(client.health(),error=>error.status===502);
+});

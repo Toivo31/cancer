@@ -1,0 +1,125 @@
+{
+  "delivery": "precomputed",
+  "recorded_at": "2026-11-14T17:49:00Z",
+  "description": "Actual Modal checkpoint1138 native pretrained-head refinement, not scripted. Synthetic records only. Generated summary makes an unsupported action recommendation; not clinical validation.",
+  "decision": {
+    "id": "d41bd43c587a44779af052f896e4dd20",
+    "created_at": "2026-11-14T17:48:52.222736+00:00",
+    "case_id": "sanity-synthetic-pathway",
+    "backend": {
+      "model": "nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-BF16",
+      "revision": "fb0ee0bc6b3f70342afd8d84cb80dbadbaa8a1fe",
+      "training_identity": "0874771d4646ff78946d85e5f8195eceb2daa76957cb2008b5c380ecdc85f75e",
+      "step": 1138,
+      "checkpoint_sha256": "43ff62d125eef476fffbd32aaf43ee9130a5ec7212c973592aa91625b3e883a5",
+      "quantization": "nf4-experts-merged-adapters",
+      "mode": "model"
+    },
+    "score_kind": "candidate_softmax",
+    "requires_review": true,
+    "questions": [
+      {
+        "id": "intake",
+        "text": "Which allowed next step should be proposed for review?",
+        "candidate_format": "newline",
+        "choices": [
+          {
+            "id": "review",
+            "text": "Review the available history with the clinician",
+            "score": 0.40891924500465393
+          },
+          {
+            "id": "complete-intake",
+            "text": "Request the missing intake information",
+            "score": 0.5910807251930237
+          }
+        ],
+        "proposed_action_id": "complete-intake",
+        "score_margin": 0.18216148018836975
+      }
+    ],
+    "cache": {
+      "enabled": true,
+      "context_hits": 0,
+      "candidate_hits": 0,
+      "candidate_count": 2,
+      "bytes": 196608,
+      "max_bytes": 67108864
+    },
+    "latency_ms": 6298.152,
+    "pathway": {
+      "workflow_id": "synthetic-intake",
+      "workflow_version": "1",
+      "workflow_sha256": "e576a952f5586ac94bd9d6ffeaeb8b0c394f26fa48ca9f468924cff3497a8b4e",
+      "node_id": "intake",
+      "step": 1,
+      "visible_source_ids": [
+        "sim:intake"
+      ],
+      "allowed_next_nodes": {
+        "review": "await-review",
+        "complete-intake": "await-information"
+      }
+    },
+    "proposed_next_node_id": "await-information"
+  },
+  "refinement": {
+    "enabled": true,
+    "mode": "frozen_pretrained_nemotron",
+    "original_context": "Synthetic diagnostic-pathway intake. Propose one allowed next step for a clinician to review.",
+    "context": "Synthetic diagnostic-pathway intake. Propose one allowed next step for a clinician to review.\n\nQuestions and allowed choices:\nWhich allowed next step should be proposed for review?\nAllowed choices: Review the available history with the clinician; Request the missing intake information\n\nAdditional task instructions (not patient evidence):\nRetrieve the available patient history, then give a quick evidence summary.\n\nActual tool result: retrieve_information(patient)\n{\"as_of_step\": 1, \"entries\": [{\"source_id\": \"sim:intake-01\", \"text\": \"Synthetic patient reports a changing skin lesion. This statement is not a diagnosis.\", \"timestamp\": \"2026-11-14T08:00:00Z\"}, {\"source_id\": \"sim:review-02\", \"text\": \"Synthetic follow-up note: review the supplied photograph and documented history.\", \"timestamp\": \"2026-11-14T09:00:00Z\"}], \"patient\": \"sim:demo-record\", \"synthetic\": true}\n\nGenerated evidence summary (may contain errors; not a source record):\nThe available synthetic history includes a patient-reported changing skin lesion (not a diagnosis) and a follow-up note to review the documented history and photograph. No additional missing intake information is indicated in the retrieved record, so the appropriate next step for clinician review is to review the available history.",
+    "tokens_used": 80,
+    "rounds_used": 2,
+    "tool_calls_used": 1,
+    "trace": [
+      {
+        "round": 1,
+        "tokens_used": 18,
+        "tool": "retrieve_information",
+        "arguments": {
+          "patient": "sim:demo-record"
+        },
+        "response": {
+          "patient": "sim:demo-record",
+          "as_of_step": 1,
+          "synthetic": true,
+          "entries": [
+            {
+              "source_id": "sim:intake-01",
+              "timestamp": "2026-11-14T08:00:00Z",
+              "text": "Synthetic patient reports a changing skin lesion. This statement is not a diagnosis."
+            },
+            {
+              "source_id": "sim:review-02",
+              "timestamp": "2026-11-14T09:00:00Z",
+              "text": "Synthetic follow-up note: review the supplied photograph and documented history."
+            }
+          ]
+        },
+        "status": "evidence_added"
+      },
+      {
+        "round": 2,
+        "tokens_used": 62,
+        "status": "summary_added",
+        "summary": "The available synthetic history includes a patient-reported changing skin lesion (not a diagnosis) and a follow-up note to review the documented history and photograph. No additional missing intake information is indicated in the retrieved record, so the appropriate next step for clinician review is to review the available history."
+      }
+    ],
+    "source_ids": [
+      "sim:intake-01",
+      "sim:review-02"
+    ],
+    "budget": {
+      "max_tokens": 128,
+      "max_rounds": 3,
+      "max_tool_calls": 2,
+      "max_context_chars": 12000
+    },
+    "stop_reason": "summary_complete",
+    "includes_question": true,
+    "visible_input_source_ids": [
+      "sim:intake"
+    ],
+    "generator_calls": 2
+  }
+}
