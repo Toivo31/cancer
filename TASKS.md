@@ -65,13 +65,13 @@ branch and gets merged in. Run all tests with `python -m pytest -q`.
 - [x] E5 Data quality & transparency statement (section 8 OPEN item)
 
 ## Follow-ups found overnight (not blocking the demo)
-- [ ] D6 Decision model: add revealed attributes (e.g. tumour location) to the context so it can learn the sampling-method choice; run it as `--policy model` at one choice node vs the rule policy and vs dot-product (the architecture-proof node, open Q12)
-- [ ] V4 Stokstad: model "incomplete workup at tumour board -> re-discussed next week" (16 patients) and check whether the faster-PET over-prediction shrinks
+- [ ] D6 (wave 2, track model2) Decision model: add revealed attributes (e.g. tumour location) to the context so it can learn the sampling-method choice; run it as `--policy model` at one choice node vs the rule policy and vs dot-product (the architecture-proof node, open Q12)
+- [ ] V4 (wave 2, track sens) Stokstad: model "incomplete workup at tumour board -> re-discussed next week" (16 patients) and check whether the faster-PET over-prediction shrinks
 - [x] V5 Bootstrap 100-patient cohorts for CIs on simulated shares
 - [x] U7 Dashboard: show the capacity probe ("one more slot per day here gains X pp") and the optimiser's step-by-step evidence
 
-- [ ] E6 Fill `[[placeholders]]` in `docs/pitch/data_transparency.md` and soften "wait longest" wording in the video script to the simulated numbers
-- [ ] F4 Finland: sensitivity run on the equity-gap assumption (non-specific imaging rate) and the 41% safety-net share before quoting numbers
+- [ ] E6 (wave 2, track pitch2) Fill `[[placeholders]]` in `docs/pitch/data_transparency.md` and soften "wait longest" wording in the video script to the simulated numbers
+- [ ] F4 (wave 2, track sens) Finland: sensitivity run on the equity-gap assumption (non-specific imaging rate) and the 41% safety-net share before quoting numbers
 - [ ] F5 Engine: `p_positive` by presentation group; re-runnable nodes (loops) for the safety net
 - [ ] O7 Finland optimiser: re-check the held-out missed-cancer guardrail (+0.3 per ~260 cancers) with more seeds
 
@@ -81,3 +81,13 @@ branch and gets merged in. Run all tests with `python -m pytest -q`.
 - [x] I3 README with how to run simulator, optimiser, demo
 - [x] I4 Update `docs/master_plan.md` with decisions taken; reflect against judging criteria
 - [x] I5 Push `overnight/sim`, morning summary
+
+## Wave 2 (14 Nov morning; budget raised)
+- [ ] W1 (model2) Decision model in the loop: learns the sampling-method choice from logged exploration (revealed info only), compared with rule / dot-product / random in full simulation
+- [ ] W2 (sens) Generic sensitivity analysis (`pathway_sim/sensitivity.py`): vary every `assumption` parameter, report effect on headline gains (tornado data) for both scenarios
+- [ ] W3 (sens) External qualitative check: UK rapid-CT finding (faster CXR->CT, unchanged time to treatment) reproduced in the Finnish scenario
+- [ ] W4 (ui2) Dashboard: step-by-step optimiser evidence ("why this change"), cumulative change view, capacity-vs-order comparison, sensitivity panel
+- [ ] W5 (pitch2) `docs/pitch/fill_numbers.py` fills every [[placeholder]] from the bundle; submission text; deck content; video script synced to real numbers
+- [ ] W6 (me) Optimiser: equity guardrail (no presentation group worse off), noise-aware acceptance (several training cohorts), two-step lookahead when no single change helps
+- [ ] W7 (me) Engine: p_positive by group; integration, export, master plan sync
+- [ ] W8 (review) Independent code + claims review of the whole branch before submission
