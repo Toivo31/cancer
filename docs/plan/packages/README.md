@@ -22,6 +22,7 @@ builder agent with no memory of the conversation. Rules for builders: `docs/plan
 | [WP-C1-6](C1/WP-C1-6-library-cohort-reveal.md) | Library store, cohort assembly, reveal handle (P9) + CLI (P13) | M | C1-1, C1-3 | `library/1`, `cohort/1`, reveal | `patient_engine/{library,cohort,reveal,__main__}.py` | yes (I1, I3) | 2c | Sonnet |
 | WP-C1-7 | Audit report (P7) | M | C1-1, C1-3 | audit JSON + Markdown | `patient_engine/audit.py` | no | 2c | Sonnet |
 | WP-C1-8 | Adapter to `pathway_sim.Patient`, comparison report, card shown in the patient trace (P10) | M | C1-6 | – | `patient_engine/adapter.py`, `demo/` (card panel), `docs/patient_engine_comparison.md` | yes (headline) | 2c | Sonnet |
+| [W8 index](W8/README.md) | Wave 8 and after submission: JEV install and GP node, JEV page recordings, card-run runbook, Finland evidence follow-ups, CI and deploy, clinician review, UI WP5 to WP9, human decisions, review leftovers. One ticket index sorted by before freeze / after submission / needs a human | S–M each | see index | – | `docs/plan/packages/W8/` | per WP | 8+ | – |
 
 Wave 2b and 2c packages get their own files once WP-C1-1 has published the contract (their tickets
 name its types). Until then the rows above are the scope.

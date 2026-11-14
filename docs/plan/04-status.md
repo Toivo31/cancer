@@ -60,6 +60,8 @@ below report.
 
 `w8/verify` (review of tonight's fixes, `docs/review_w8_fixes.md`) is finished; it is merged through `w8/g2blind`.
 
+Ticket index for wave 8 and after the submission (sorted: before freeze / after submission / needs a human): `docs/plan/packages/W8/README.md`.
+
 ## Next (in order)
 
 | # | What | When |
