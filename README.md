@@ -55,7 +55,7 @@ Full list: the "safe to claim / do not claim" box in `docs/pitch/filled/deck.md`
 - Not a prediction for real patients, not lives saved. Faster care saving lives in lung cancer is not shown: the lung-surgery delay estimate is not significant.
 - Not "we predicted 80% exactly", and not the older narrow range "78 to 86%" (the range is 62 to 86%). The optimiser did not find the authors' answer from nothing, and the fourth change is not shown safe.
 - 61% is conditional on assumed urgent-booking times. It is not a result.
-- The primary-care loop is a mechanism with placeholder decisions. It fails 7 of 8 consistency checks against the calibrated chain. Do not quote its numbers (sheet E4, E4b).
+- The primary-care loop is a mechanism with placeholder decisions. After retuning it agrees with the calibrated chain only at the edge of the tolerances (8 of 8 checks on the tuning seeds, 6 of 8 on fresh seeds). Quote it as a mechanism, with the numbers and caveats in `docs/encounter_results.md` (sheet E4).
 - Model-written cards are not "leak-free": the review found report wording that gives away false alarms; a fix is in progress. Backgrounds (age, smoking) have no population model yet.
 - Nothing is validated on real patients, and nothing here is clinically reviewed. The Norwegian check covers specialist care, not primary care.
 - Our Finnish calibration uses 37 days from diagnosis to treatment; a lung-specific Finnish study gives about 69. The effect was not rerun.

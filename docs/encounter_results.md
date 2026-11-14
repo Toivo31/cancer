@@ -6,6 +6,17 @@ agrees on **6 of 8**; the same two metrics miss by a little (cancers referred wi
 tolerance of 8; non-cancers referred: 3.1 points too many against 3). Pooled over all 8 seeds both pass narrowly. Read
 this as "the loop reproduces the chain at the edge of the tolerances", not as a clean pass.
 
+**Rerun after the patient-background change (14 Nov, about 19:50 UTC).** After this round was written, patient
+backgrounds got a population model (realistic ages, smoking and pack-years; `docs/decisions.md` D53), and several
+table rows read age and smoking. Rerun on the merged code, nothing retuned: **8 of 8 on seeds 1 to 4, 6 of 8 on fresh
+seeds 5 to 8, 7 of 8 pooled over all eight seeds** (`docs/review_checks/encounter_results.json`,
+`encounter_results_oos.json`, `encounter_results_8seeds.json`). Pooled, the one miss is non-cancers referred: 11.0%
+against the chain's 8.0%, a gap of 3.0 points against a tolerance of 3. On the fresh seeds the two misses are that
+one (3.1 points) and cancers referred within 28 days (8.0 points too many against a tolerance of 8). Cancers first
+treated as something else: 9% [4, 13] over eight seeds (5% on seeds 1 to 4, 12% on seeds 5 to 8). The verdict below is
+unchanged: the loop reproduces the chain at the edge of the tolerances. The tables in sections 1 to 4 are from before
+this rerun; where they differ, the JSON files are current.
+
 Reproduce:
 
 * `python scripts/encounter_report.py` (seeds 1 to 4, about 70 to 110 s; writes `docs/review_checks/encounter_results.json`)
