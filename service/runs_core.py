@@ -11,6 +11,7 @@ and is released before the next seed; the patient log and the decision rows are 
 
 from __future__ import annotations
 
+import copy
 import gzip
 import hashlib
 import json
@@ -203,7 +204,10 @@ def _scenario_for(spec: dict):
     if spec.get("decision_policy") is not None:
         doc["decision_policy"] = spec["decision_policy"]
     sc = documents_to_scenario(spec["world"], [doc])
-    return sc, sc.flowcharts[doc["id"]], doc
+    fc = sc.flowcharts[doc["id"]]
+    if (doc.get("decision_policy") or {}).get("backend", "rule") != "rule":
+        fc.decision_policy = copy.deepcopy(doc["decision_policy"])    # the engine objects carry the JEV config (jev.prepare reads it)
+    return sc, fc, doc
 
 
 def execute_run(ctx, data_dir: str, project_id: str, run_id: str) -> dict:
