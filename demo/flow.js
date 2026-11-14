@@ -246,7 +246,7 @@ function renderPane(pa) {
     if (S.compare && otherSt && side === 1 && st && (st.critical_wait != null) && otherSt.critical_wait != null) {
       const dlt = (st.critical_wait + st.critical_service) - (otherSt.critical_wait + otherSt.critical_service);
       const col = Math.abs(dlt) < .3 ? C.muted : dlt < 0 ? C.mint : C.coral;
-      line2 = `<tspan fill="${col}" font-weight="700">${dlt > 0 ? '+' : '−'}${f1(Math.abs(dlt))} d</tspan> on path`;
+      line2 = `<tspan fill="${col}" font-weight="700">${Math.abs(dlt) < .05 ? '' : dlt > 0 ? '+' : '−'}${f1(Math.abs(dlt))} d</tspan> on path`;
       if (Math.abs(dlt) >= .3) stroke = col;
     }
     if (S.compare && side === 1 && !otherSt && !(other && other.decisions[n.id]) && n.kind !== 'exit') { stroke = C.mint; sw = 2; }
@@ -258,12 +258,12 @@ function renderPane(pa) {
     if (selNodes && selNodes.nodes.has(n.id)) { stroke = C.amber; sw = 2; }
     if (S.hl === n.short) { stroke = C.text; sw = 2.5; }
     const lines = wrap(dn(F, n), 18);
-    const ty = lines.length === 1 ? y + 15 : y + 13;
+    const ty = lines.length === 1 ? y + 15 : y + 11;
     const shape = n.kind === 'decision'
       ? `<rect x="${x}" y="${y}" width="${NODE_W}" height="${NODE_H}" rx="21" fill="${fill}" stroke="${stroke}" stroke-width="${sw}"/>`
       : `<rect x="${x}" y="${y}" width="${NODE_W}" height="${NODE_H}" rx="4" fill="${fill}" stroke="${stroke}" stroke-width="${sw}"/>`;
     svg += `<g data-id="${n.id}">${shape}`;
-    lines.forEach((l, i) => { svg += `<text x="${p.x}" y="${ty + i * 11.5}" text-anchor="middle" font-size="10.5" font-weight="${n.kind === 'step' ? 600 : 700}" fill="${C.text}">${esc(l)}</text>`; });
+    lines.forEach((l, i) => { svg += `<text x="${p.x}" y="${ty + i * 11}" text-anchor="middle" font-size="10.5" font-weight="${n.kind === 'step' ? 600 : 700}" fill="${C.text}">${esc(l)}</text>`; });
     if (line2) svg += `<text x="${p.x}" y="${y + NODE_H - (spark ? 12 : 6)}" text-anchor="middle" class="mono" font-size="9" fill="${C.muted}">${line2}</text>`;
     svg += spark + '</g>';
   });
@@ -387,7 +387,7 @@ function buildPanes() {
     el.className = 'pane ' + (side ? 'right' : 'left');
     el.style.display = hidden ? 'none' : '';
     const opts = sc.variants.map(v => `<option value="${v.key}" ${v.key === S.keys[side] ? 'selected' : ''}>${esc(v.label)}</option>`).join('');
-    el.innerHTML = `<div class="phead"><div class="sel"><span class="tag">${side ? 'After the change' : 'Today'} <span class="delta" data-k="delta"></span></span><select data-side="${side}">${opts}</select></div>
+    el.innerHTML = `<div class="phead"><div class="sel"><span class="tag">${side ? (V.changes && V.changes.length ? 'After the change' : 'Right pathway') : (S.keys[0] === 'observed' || S.keys[0] === 'baseline' ? 'Today' : 'Left pathway')} <span class="delta" data-k="delta"></span></span><select data-side="${side}">${opts}</select></div>
       <div class="big" data-k="big"></div><div class="kv" data-k="kv"></div></div>
       <div class="counters" data-k="counters"></div>
       <div class="gwrap"><div data-k="svg"></div><canvas></canvas><div class="hit"></div></div>`;
@@ -512,8 +512,10 @@ function renderSide() {
   let h = '';
   if (S.sel) h += traceCard();
   h += layerCard();
+  const sc0 = D.scenarios.find(s => s.id === S.sid);
+  if (sc0.published) h += validationCard();   // the main point of the Norwegian screen: first
   h += lostCard();
-  h += validationCard();
+  if (!sc0.published) h += validationCard();
   if (S.layer === 'decisions') h += decisionsCard();
   h += aboutCard();
   side.innerHTML = h;
@@ -631,7 +633,7 @@ function aboutCard() {
   const V = S.panes.map(p => p.V);
   let h = `<div class="card"><h3>What you are looking at</h3>
     <p>Each dot is one simulated patient, starting on day 0 at first contact. Dots wait (amber) and are served (blue) at the steps; treated patients land on the right of the last step, mint if in time.</p>
-    <p>Left: the pathway as it runs today. Right: the same patients with the change. Numbers on the graph count every simulated patient (${fmt(S.panes[0].P.F.totals.n)}); the moving dots are a sample of ${S.panes[0].P.F.cohort.size}, and so are the live counters above each graph. The clock is days since each patient's own first contact.</p>${S.panes[0].P.F.cohort.strata.other ? `<p>The sample has ${S.panes[0].P.F.cohort.strata.cancer} patients with cancer and ${S.panes[0].P.F.cohort.strata.other} without, so that some reach treatment; in the full run only ${pct(S.panes[0].P.F.totals.n_cancer / S.panes[0].P.F.totals.n, 1)} have cancer.</p>` : ''}`;
+    <p>Left: the pathway as it runs today, or the one you picked on the left. Right: the same patients with the change, or the one you picked on the right. Numbers on the graph count every simulated patient (${fmt(S.panes[0].P.F.totals.n)}); the moving dots are a sample of ${S.panes[0].P.F.cohort.size}, and so are the live counters above each graph. The clock is days since each patient's own first contact.</p>${S.panes[0].P.F.cohort.strata.other ? `<p>The sample has ${S.panes[0].P.F.cohort.strata.cancer} patients with cancer and ${S.panes[0].P.F.cohort.strata.other} without, so that some reach treatment; in the full run only ${pct(S.panes[0].P.F.totals.n_cancer / S.panes[0].P.F.totals.n, 1)} have cancer.</p>` : ''}`;
   V.forEach((v, i) => { if (v.note) h += `<p><b style="color:${i ? C.mint : C.coral}">${esc(v.label)}.</b> ${esc(v.note)}</p>`; });
   const ch = V[1].changes && V[1].changes.length ? V[1].changes : null;
   if (ch) h += `<p><b>Changes in the right pathway</b><br>${ch.map(esc).join('<br>')}</p>`;

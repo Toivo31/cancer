@@ -108,7 +108,7 @@ footer{margin-top:2.5rem;color:var(--dim);font-family:var(--mono);font-size:.78r
 </head>
 <body>
 <header class="top">
-  <div class="brand"><b>&#9632;</b> Equal care across Finland</div>
+  <div class="brand"><b>&#9632;</b> <a href="start.html" title="Back to the demo in order" style="color:inherit;text-decoration:none">Equal care across Finland</a></div>
   <span class="badge illus" id="illus" hidden>Illustrative data</span>
   <nav class="tabs" id="tabs" role="tablist" aria-label="Screens"></nav>
   <div class="spacer"></div>
@@ -116,6 +116,7 @@ footer{margin-top:2.5rem;color:var(--dim);font-family:var(--mono);font-size:.78r
 </header>
 <main id="view" tabindex="-1"></main>
 
+<script src="data/start_bundle.js"></script>
 <script id="bundle" type="application/json">
 {
  "generated_at": "2026-11-14T09:46:44+00:00",
@@ -6595,7 +6596,7 @@ function validation(sc,cv){
   var G=[["Observed pathway",g(b,"share_within_target"),pub.baseline_share],
          ["Faster PET scan only",g(pv,"metrics","share_within_target"),pub.faster_pet_share]];
   if(av){G.push(["Authors' reordered pathway",g(av,"metrics","share_within_target"),pub.optimal_share]);
-         G.push(["Our suggested change, found blind",g(a,"share_within_target"),null]);}
+         G.push(["Our suggested change (same scanner), found blind",g(a,"share_within_target"),null]);}
   else G.push(["Reordered steps (suggested change)",g(a,"share_within_target"),pub.optimal_share]);
   G=G.filter(function(r){return isNum(r[1])||isNum(r[2])});
   if(!G.length)return '';
@@ -6615,7 +6616,14 @@ function validation(sc,cv){
   var h='<h2>Does the model reproduce a real study?</h2>';
   h+='<p class="lede">Share of patients treated within '+esc(sc.target_days||42)+' days. The left bar of each pair is our simulation. The observed pathway is fitted to the study; every other bar is a prediction made without looking at the published result. The right bars are from '+esc(plain(pub.source||"the published study"))+'.</p>';
   h+='<div class="legend"><span><i style="background:'+C.serve+'"></i>Our simulation</span><span><i style="background:'+C.pub+'"></i>Published study</span></div>';
-  return h+'<div class="panel">'+s+'</div>';
+  h+='<div class="panel">'+s+'</div>';
+  var N=window.START_DATA&&window.START_DATA.norway,P=N&&N.all_settings&&N.all_settings.pred,ne=sc.headline_no_new_equipment;
+  if(av&&P&&P.optimal&&isNum(pub.optimal_share)){
+    h+='<p class="lede" style="margin-top:1rem"><b>How to read the bars.</b> The authors&rsquo; '+pct(pub.optimal_share)+' assumes a new, faster PET-CT scanner; our suggested-change bar uses the same scanner, so the fair comparison is '+pct(g(a,"share_within_target"))+' against '+pct(g(av,"metrics","share_within_target"))+' in the simulator.'
+      +(ne&&isNum(ne.share)?' With no new equipment our suggested change gives '+pct(ne.share)+'.':'')
+      +' The '+pct(pub.optimal_share)+' match is the best fit: over all '+esc(N.all_settings.accepted)+' settings that fit the observed data the authors&rsquo; pathway comes out at '+pct(P.optimal.min)+' to '+pct(P.optimal.max)+', typically about '+pct(P.optimal.median)+'. The model also over-predicts the faster scanner alone ('+pct(g(pv,"metrics","share_within_target"))+' against '+pct(pub.faster_pet_share)+' published). Trust the ranking of reorderings, not their exact size.</p>';
+  }
+  return h;
 }
 function screen3(sc){
   var cv=changeVariant(sc);
