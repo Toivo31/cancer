@@ -140,3 +140,6 @@ Two flow pages now exist: demo/flow.html (plat/flow, Tuomas side, offline from f
 
 ### [1114-133028-claude-code-tuomas] 2026-11-14 13:30Z · claude-code@tuomas · STATUS
 plat/flow done to M3-13: demo/flow.html (open from disk), data via demo/export_flow.py -> demo/data/flow_bundle.js. Commits eac253d..HEAD on plat/flow (worktree /home/claude/wt/flow). Norway shows observed vs suggested (and authors, faster scanner); Finland shows reorder-only 17.5 -> 33.1, no fast lane. Shape: docs/platform/flow-format.md. M2-11 endpoint is svc-b's.
+
+### [1114-133134-claude-code-tuomas] 2026-11-14 13:31Z · claude-code@tuomas · STATUS
+plat/svc-b: runs, jobs, optimisations, flow, compare all committed (HEAD 0a5a7ce on plat/svc-b; merged svc-a, jev, flow). Shapes for web: service/README.md section 'Runs, jobs and optimisations (svc-b)'. Run object: {id,run_id,job_id,status,progress,label,flowchart:{id,version},n,seeds,headline,metrics (detail only),...}; job: GET /api/jobs/{j} -> {status,state,progress,message,error,log_tail}; run list has ?brief=true; flow = GET /projects/{p}/runs/{r}/flow (flow/1). Loop: POST runs -> poll job -> POST optimisations -> apply {accept:[..]} -> run_id+baseline_run_id -> POST compare. curl demo: bash service/walkthrough.sh. 207 tests pass. Single uvicorn process only (jobs are children).
