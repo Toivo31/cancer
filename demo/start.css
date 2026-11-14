@@ -1,68 +1,92 @@
-/* Start page. Same look as encounter.css (copied, so the other pages can change on their own). */
-:root{
-  --night:#0A0F14; --p1:#111A24; --p2:#16222F; --line:#2C3F52; --text:#EAF1F8; --muted:#A8B8C9; --dim:#6F8296;
-  --coral:#FF9A7A; --mint:#55E3B0; --amber:#FFC04D; --blue:#62B0FF; --red:#FF5D73;
-  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
-  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
-}
-*{box-sizing:border-box}
-html,body{margin:0;background:var(--night);color:var(--text);font-family:var(--sans);-webkit-font-smoothing:antialiased}
-body{background-image:linear-gradient(rgba(98,176,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(98,176,255,.05) 1px,transparent 1px);background-size:48px 48px;min-height:100vh}
-a{color:inherit}
-.eyebrow{font:600 10px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--mint)}
-.num{font-family:var(--mono);font-weight:800;letter-spacing:-.04em}
-.top{display:flex;align-items:center;gap:20px;padding:12px 22px;border-bottom:1px solid var(--line);flex-wrap:wrap}
-.top h1{margin:5px 0 0;font:700 20px/1.1 var(--sans);letter-spacing:-.01em}
-.top .sub{margin:5px 0 0;font:12px/1.35 var(--sans);color:var(--muted);max-width:900px}
-.badge{margin-left:auto;font:600 10px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;padding:6px 9px;border:1px solid var(--amber);color:var(--amber);border-radius:3px}
-main{padding:12px 22px 6px;max-width:1500px;margin:0 auto;counter-reset:step}
-.row{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1.25fr) minmax(0,.95fr);gap:18px;align-items:center;background:linear-gradient(#111A24,#16222F);border:1px solid var(--line);border-radius:4px;padding:9px 16px;margin-bottom:8px;counter-increment:step;position:relative}
-.row:before{content:counter(step);position:absolute;left:-1px;top:-1px;background:var(--mint);color:#06130d;font:800 11px/1 var(--mono);padding:4px 7px;border-radius:4px 0 4px 0}
-.row h2{margin:0 0 3px;font:700 15px/1.15 var(--sans);padding-left:18px}
-.row p{margin:0;font-size:12px;line-height:1.4;color:var(--muted)}
-.row .what{padding-left:18px}
-.proof{display:flex;flex-direction:column;gap:3px;min-width:0}
-.big{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
-.big .num{font-size:25px;line-height:1.05;color:var(--mint)}
-.big .arrow{font:700 16px var(--mono);color:var(--dim)}
-.big .num.warn{color:var(--amber)}
-.cap{font:11px/1.35 var(--sans);color:var(--muted)}
-.cap b{color:var(--text);font-weight:600}
-.pending{font:700 12px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--amber)}
-.go{display:flex;flex-direction:column;gap:5px;align-items:flex-start}
-.btn{display:inline-block;text-decoration:none;background:transparent;border:1px solid var(--line);color:var(--muted);padding:7px 11px;border-radius:4px;font:600 10.5px/1.2 var(--mono);letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
-.btn:hover,.btn:focus-visible{border-color:var(--blue);color:var(--text);outline:none}
-.btn.main{border-color:var(--mint);color:var(--mint);background:rgba(85,227,176,.08)}
-.btn.sm{font-size:9.5px;padding:5px 8px;letter-spacing:.08em}
-.btnrow{display:flex;gap:5px;flex-wrap:wrap}
-code,.cmd{font:11px/1.4 var(--mono);color:var(--blue);background:#0E161F;border:1px solid var(--line);border-radius:3px;padding:1px 5px}
-.cmd{display:block;padding:4px 7px;margin-bottom:3px;white-space:normal;word-break:break-all}
-.honest{padding:4px 22px 18px;max-width:1500px;margin:0 auto;font:11.5px/1.55 var(--sans);color:var(--muted)}
-.honest b{color:var(--text)}
-.honest .v{color:var(--mint)}
-@media (max-width:1100px){.row{grid-template-columns:1fr}}
+/* Overview page (demo/start.html). Layout only; colours, type and shared classes come from theme.css.
+   Page prefix: .ov-  Design constants (sizes of the small graphics) live here, not in start.js. */
 
-/* Norway detail */
-details.more{margin-top:2px}
-details.more summary{cursor:pointer;font:600 11.5px/1.35 var(--sans);color:var(--blue);padding:2px 0}
-details.more .cap{margin-top:3px}
-details.more .cap p{margin:0 0 5px}
+.ov-top{padding-top:var(--s6);padding-bottom:var(--s5)}
+.ov-top .lede{max-width:62ch;font-size:19px}
 
-/* Synthetic patients card */
-.card-block{background:linear-gradient(#111A24,#16222F);border:1px solid var(--line);border-radius:4px;padding:10px 16px 12px;margin:0 0 8px}
-.card-block h2{margin:0 0 3px;font:700 15px/1.15 var(--sans)}
-.card-block .what{margin:0 0 8px;font-size:12px;line-height:1.4;color:var(--muted);max-width:1100px}
-.pcols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
-.pcol{border:1px solid var(--line);border-radius:4px;padding:8px 11px;background:#0E161F;min-width:0}
-.pcol h3{margin:0 0 6px;font:700 10px/1.2 var(--mono);letter-spacing:.12em;text-transform:uppercase}
-.pcol.model h3{color:var(--mint)}
-.pcol.tmpl h3{color:var(--amber)}
-.pcol .lab{font:600 9.5px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin:7px 0 2px}
-.pcol .lab:first-of-type{margin-top:0}
-.pcol .txt{font:12px/1.4 var(--sans);color:var(--text)}
-.pbg{font:11px/1.4 var(--mono);color:var(--muted);margin:0 0 6px}
-details.hidden-side{margin-top:8px;border:1px dashed var(--red);border-radius:4px;padding:5px 10px;background:rgba(255,93,115,.05)}
-details.hidden-side summary{cursor:pointer;font:700 10px/1.4 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--red)}
-details.hidden-side .txt{font:12px/1.4 var(--sans);color:var(--text);margin-top:5px}
-.pcounts{margin-top:8px;font:11.5px/1.45 var(--sans);color:var(--muted)}
-.pcounts b{color:var(--text)}
+/* ---------- The three cards (the video's look: outlined card, number, inset panel, one line) ---------- */
+.ov-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--s5);counter-reset:ovcard;margin-top:var(--s5)}
+.ov-card{position:relative;display:flex;flex-direction:column;gap:var(--s2);padding:var(--s5);min-width:0}
+.ov-card__title{display:flex;align-items:baseline;gap:var(--s3);font:700 20px/1.15 var(--font-sans);text-transform:uppercase;letter-spacing:.01em;color:var(--ink);min-height:2.3em}
+.ov-card__n{counter-increment:ovcard;flex:none}
+.ov-card__n::before{content:counter(ovcard)}
+.ov-card__graphic{position:relative;height:128px;display:flex;align-items:center;justify-content:center;padding:var(--s3) var(--s4);margin:var(--s1) 0 var(--s2)}
+.ov-card__num{display:flex;align-items:baseline;gap:var(--s2);margin-top:var(--s1)}
+.ov-card__num .num{font-size:48px;line-height:1}
+.ov-card__unit{font:600 18px/1 var(--font-sans);color:var(--ink)}
+.ov-arrow{font:400 28px/1 var(--font-sans);color:var(--ink-3);padding:0 var(--s1)}
+.ov-card__text{margin:0;font:400 15px/1.45 var(--font-sans);color:var(--ink-2)}
+.ov-card__range{margin:0;color:var(--ink-2);text-transform:none;letter-spacing:.02em}
+.ov-card__stamp{position:absolute;right:calc(-1 * var(--s3));bottom:calc(-1 * var(--s3));font-size:11px;background:var(--card)}
+
+/* Claim labels (D69): published / our simulation / our assumption, each a link to research.html#<claim id> */
+.ov-basis{margin:auto 0 0;padding-top:var(--s2);font:400 12px/1.4 var(--font-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+.ov-basis__link{color:var(--brown);text-decoration:none;border-bottom:1px dotted currentColor}
+.ov-basis__link:hover{color:var(--ink)}
+.ov-basis__link::before{content:"\25CF\00a0";font-size:9px;vertical-align:1px}
+.ov-basis--published::before{content:"\25CB\00a0"}
+.ov-basis--assumption::before{content:"\25B3\00a0"}
+
+/* Card I: mini pathway (inline SVG; the pile is the one mustard thing on the page) */
+.ov-path{width:100%;max-width:260px;height:100%}
+.ov-path__edge{fill:none;stroke:var(--ink-3);stroke-width:1.2}
+.ov-path__step{fill:var(--ink)}
+.ov-path__step--wait{fill:var(--card);stroke:var(--mustard);stroke-width:2.5}
+.ov-path__pile circle{fill:var(--mustard)}
+
+/* Card II: two bars, today (faint) and reordered (ink); heights set from the bundle in start.js */
+.ov-bars{display:flex;align-items:stretch;justify-content:center;gap:var(--s7);height:100px;width:100%}
+.ov-bars__col{display:flex;flex-direction:column;align-items:center;gap:var(--s1);height:100%}
+.ov-bars__track{position:relative;flex:1;width:56px;background:var(--card);border-bottom:1px solid var(--ink-3)}
+.ov-bars__bar{position:absolute;left:0;right:0;bottom:0;height:0}
+.ov-bars__bar--today{background:var(--faint)}
+.ov-bars__bar--after{background:var(--ink)}
+.ov-bars__bar::after{content:attr(data-v);position:absolute;left:100%;bottom:100%;transform:translate(4px,50%);font:400 12px/1 var(--font-mono);color:var(--ink-3)}
+
+/* Card III: dot and range on a shared 0-100 % axis; positions set from the bundle in start.js */
+.ov-range{width:100%;display:flex;flex-direction:column;gap:var(--s4)}
+.ov-range__row{display:grid;grid-template-columns:6.5em 1fr;align-items:center;gap:var(--s3)}
+.ov-range__axis{position:relative;height:16px;border-bottom:1px solid var(--line)}
+.ov-range__ring,.ov-range__dot{position:absolute;top:50%;width:12px;height:12px;border-radius:50%;transform:translate(-50%,-50%)}
+.ov-range__ring{border:2px solid var(--brown);background:transparent;width:16px;height:16px}
+.ov-range__dot{background:var(--ink);width:8px;height:8px}
+.ov-range__bar{position:absolute;top:50%;height:2px;background:var(--ink);transform:translateY(-50%)}
+.ov-range__bar::before,.ov-range__bar::after{content:"";position:absolute;top:-4px;width:1.5px;height:10px;background:var(--ink)}
+.ov-range__bar::before{left:0}
+.ov-range__bar::after{right:0}
+.ov-range__key{display:flex;align-items:center;justify-content:center;gap:var(--s1);flex-wrap:nowrap;font-size:11px;margin-top:var(--s1)}
+.ov-range__key > span{position:relative;transform:none;top:auto;display:inline-block;flex:none}
+.ov-range__ring--key{width:10px;height:10px;border-width:1.5px;margin-left:var(--s2)}
+.ov-range__ring--key{margin-left:0}
+.ov-range__dot--key{width:8px;height:8px;margin-left:var(--s3)}
+.ov-range__bar--key{width:18px;height:2px;margin-left:var(--s3)}
+.ov-range__bar--key::before,.ov-range__bar--key::after{top:-3px;height:8px}
+
+.ov-range__axis--scale::before,.ov-range__axis--scale::after{position:absolute;top:100%;margin-top:3px;font:400 10px/1 var(--font-mono);color:var(--ink-3)}
+.ov-range__axis--scale::before{content:"0%";left:0}
+.ov-range__axis--scale::after{content:"100%";right:0}
+.ov-link{font:400 14px/1.4 var(--font-sans);color:var(--brown)}
+
+/* ---------- DETAILS ---------- */
+.details .finding{max-width:64ch}
+.ov-detail{max-width:80ch}
+.ov-big{display:flex;align-items:baseline;gap:var(--s2);flex-wrap:wrap;margin:var(--s2) 0}
+.ov-big .num{font-size:32px;line-height:1.1}
+.ov-big .ov-arrow{font-size:22px}
+.ov-cap{margin:0 0 var(--s2);max-width:80ch;font:400 15px/1.55 var(--font-sans);color:var(--ink-2)}
+.ov-cap p{margin:0 0 var(--s2)}
+.ov-cap code,.ov-what code{background:var(--inset);padding:0 var(--s1)}
+.ov-what{max-width:80ch;font:400 15px/1.55 var(--font-sans);color:var(--ink-2);margin:0 0 var(--s3)}
+.ov-links{max-width:100ch;margin:var(--s3) 0 0;font:400 14px/1.6 var(--font-sans);color:var(--ink-3)}
+.ov-cmds{display:flex;flex-direction:column;align-items:flex-start;gap:var(--s1);margin:0 0 var(--s3)}
+.ov-pending{font:700 12px var(--font-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mustard-ink)}
+.ov-detail__stamp{margin:0 0 var(--s3)}
+.ov-more{margin:var(--s2) 0 var(--s3);padding:var(--s3) var(--s4);background:var(--inset);max-width:80ch}
+.ov-more summary{cursor:pointer;font:600 15px/1.4 var(--font-sans);color:var(--ink)}
+.ov-more .ov-cap{margin-top:var(--s2)}
+.ov-claims{list-style:none;margin:var(--s3) 0 0;padding:0;max-width:80ch}
+.ov-claims li{margin:0 0 var(--s1);font:400 13px/1.5 var(--font-sans);color:var(--ink-3)}
+.ov-claims .ov-basis__link{font:400 12px/1.4 var(--font-mono);letter-spacing:.06em;text-transform:uppercase}
+.ov-honest{max-width:80ch;margin:0;padding-left:var(--s5);font:400 15px/1.6 var(--font-sans);color:var(--ink-2)}
+
+@media (max-width:1100px){.ov-cards{grid-template-columns:1fr}}
