@@ -1,0 +1,26 @@
+# Tests the gate leaves out of the fast tier (pytest -m "not slow"); they run with -m slow or scripts/gate.sh --slow.
+# One entry per line: a test file, a node id (parametrised tests match with or without the [param] suffix),
+# or a class. Lines starting with # are comments. Read by tests/conftest.py; no test file needs editing.
+# Chosen from `python -m pytest -q --durations=70` on 2026-11-14 (unloaded machine, 161 s in total):
+# every test over about 2 s (call or fixture setup), then enough more to bring the fast tier under 2 minutes.
+tests/test_decision_model_loop.py::test_in_loop_stokstad_small
+tests/test_optimiser_stub_equivalence.py::test_same_changes_and_heldout_numbers_under_rule_and_stub
+tests/test_jev_cli.py::test_http_url_and_failure
+tests/test_expr.py::test_shipped_scenarios_give_identical_results
+tests/test_decision_model_comparison.py::test_comparison_experiment_quick
+tests/test_service_loop.py::test_optimisation_result_has_labels_evidence_and_unseen_numbers
+tests/test_jev_cli.py::test_default_unchanged_and_stub_equals_rule
+tests/test_jev_cli.py::test_set_changes_the_run_and_decision_mode
+tests/test_service_datasets.py::test_local_trainer_attach_and_run
+tests/test_service_apply.py::test_apply_all_equals_optimiser_output
+tests/test_service_loop.py::test_finnish_template_loop_with_a_short_warm_up
+tests/test_documents.py::test_round_trip_identical_metrics
+tests/test_jev_stub.py::test_experiment_scenarios_reproduce_exactly
+tests/test_finland.py::test_baseline_has_no_stuck_patients_and_queues_form
+tests/test_service_loop.py::test_standardise_under_stub_changes_the_table_and_the_rerun_reflects_it
+tests/test_flow.py::test_json_serialisable_and_format
+tests/test_service_datasets.py::test_run_to_dataset_to_model_to_attach
+tests/test_jev_stub.py::test_shipped_scenarios_reproduce_exactly
+tests/test_expr.py::test_every_shipped_expression_matches_python_on_all_environments
+tests/test_service_datasets.py::test_upload_report_and_errors_do_not_stop_storing
+tests/test_finland.py::test_fast_track_marks_only_non_specific_presenters

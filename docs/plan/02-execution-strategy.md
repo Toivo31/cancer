@@ -120,16 +120,22 @@ reviewer has looked at anything marked "review required" in the package.
 
 ### The gate (run by the integrator at every sync point)
 
-| Step | Command | Budget |
-|---|---|---|
-| Fast tests | `python -m pytest -q -m "not slow"` | under 2 minutes |
-| Contract tests | `python -m pytest -q tests/contracts` (plus the JEV contract test against the stub server) | under 1 minute |
-| Golden checks | Norway observed about 40% within 42 days through the CLI **and** through the service template; the Finnish headline numbers in the bundle match the pitch files (`docs/pitch/fill_numbers.py --check`) | under 2 minutes |
-| Web | `npm run typecheck && npm test` in `web/` | under 2 minutes |
-| Slow suite | `python -m pytest -q -m slow` | before any push to `main` and at wave close |
+One command: **`scripts/gate.sh`** (add `--slow` for the slow tier; `PYTHON=...` picks the interpreter, by default the first
+`python` that can import the service's dependencies, else the main checkout's `.venv`). It prints one PASS/FAIL/SKIP line per
+step and exits non-zero if any step fails.
 
-Until the markers and `tests/contracts/` exist, the integrator runs the full suite. Creating them
-is work package `WP-INFRA-1` (see `04-status.md`).
+| Step | Command (run by `scripts/gate.sh`) | Measured |
+|---|---|---|
+| Fast tests | `python -m pytest -q -m "not slow"` | about 90 s (budget 2 min) |
+| Contract tests | `python -m pytest -q tests/contracts` (JEV contract against the stub server, `flow/1`, service OpenAPI, fast/slow partition) | about 7 s (budget 1 min) |
+| Golden checks | `python -m pytest -q tests/test_golden_templates.py tests/test_golden_cli.py`: Norway observed 0.34 to 0.46 within 42 days through the CLI **and** through the service (template and API); every pitch placeholder fills and `docs/pitch/filled/` is current; Finnish bundle sanity | about 6 s (budget 2 min) |
+| Web | `npm run typecheck && npm test` in `web/`; prints "skipped: run npm install in web/" if `web/node_modules` is missing | |
+| Slow suite | `scripts/gate.sh --slow` (`python -m pytest -q -m slow`) | about 90 s; before any push to `main` and at wave close |
+
+Slow tests are listed in `tests/slow_tests.txt` (a file, a node id or a class per line; `tests/conftest.py` adds the `slow` marker),
+so a lane marks a slow test by adding a line there or `@pytest.mark.slow` in its own file. `tests/contracts/test_tiers.py` checks that the
+two tiers together are the whole suite and that no list entry is stale. `tests/security` stays out of the default run
+(`--ignore=tests/security` in `pytest.ini`) until WP-C6-SEC1 is merged green; the integrator removes the ignore then.
 
 ### Integration checklist (per merged lane)
 
