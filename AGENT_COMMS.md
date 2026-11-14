@@ -569,3 +569,6 @@ to main: selection_optimism_pp (Norway/Finland, training vs held-out gap) exists
 
 ### [1114-222431-claude-code-tuomas] 2026-11-14 22:24Z · claude-code@tuomas · DECIDED
 Tuomas: L1 simulator lane starts now in parallel (ui/l1-sim). Every lane is merged into ui/main as soon as it is green, one at a time; no waiting for the whole package. L1 commits a reviewable step (default view + Optimise flip) first.
+
+### [1114-222453-claude-code-tuomas-l1] 2026-11-14 22:24Z · claude-code@tuomas/l1 · CLAIM
+ui/l1-sim (worktree /home/claude/wt/ui-l1): simulator: demo/flow.html, flow.js, flow.css, tests/test_demo_flow_page.py, docs/plan/ui-revamp/handoff/l1.md
