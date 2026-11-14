@@ -6,7 +6,7 @@ from pathlib import Path
 import requests
 
 BASE=os.environ.get('WEBDRIVER_URL','http://127.0.0.1:4445')
-SITE=os.environ.get('WEBSITE_URL','https://cancer123--equal-care-pathways-web.us-east.modal.run/?release=20261115-3')
+SITE=os.environ.get('WEBSITE_URL','https://cancer123--equal-care-pathways-web.us-east.modal.run/?release=20261115-4')
 profile=Path.home()/'snap/firefox/common/equal-care-slides-qa';profile.mkdir(parents=True,exist_ok=True)
 r=requests.post(BASE+'/session',json={'capabilities':{'alwaysMatch':{'browserName':'firefox','moz:firefoxOptions':{'args':['-headless','-profile',str(profile)]}}}},timeout=60)
 r.raise_for_status();sid=r.json()['value']['sessionId'];url=BASE+'/session/'+sid
@@ -23,7 +23,7 @@ def wait(s,seconds=20):
  while time.monotonic()<end:
   if js(s):return
   time.sleep(.15)
- raise AssertionError(s)
+ raise AssertionError((s,js('return [document.getElementById("photo-result")?.textContent,Array.from(document.scripts).map(s=>s.src)]')))
 def check(name,s):
  assert js(s), (name,js('return [document.getElementById("custom-result").textContent,Array.from(document.scripts).map(s=>s.src)]'))
  checks.append(name)
@@ -38,12 +38,19 @@ try:
  check('desktop slide fits viewport','return document.documentElement.scrollHeight<=innerHeight+2')
  check('exactly three slides','return document.querySelectorAll("main>.page").length===3')
  check('simulation has no controls','return document.getElementById("sim-frame").contentDocument.querySelectorAll("button,input,select").length===0')
+ check('graph is vertical','return document.getElementById("sim-frame").contentDocument.getElementById("scene").viewBox.baseVal.height > document.getElementById("sim-frame").contentDocument.getElementById("scene").viewBox.baseVal.width')
  check('branching graph','return document.getElementById("sim-frame").contentDocument.querySelectorAll(".edge").length>12')
  before=js('return document.getElementById("sim-frame").contentDocument.querySelector(".patient").getAttribute("cx")');time.sleep(.5)
  assert before!=js('return document.getElementById("sim-frame").contentDocument.querySelector(".patient").getAttribute("cx")');checks.append('patient animation moves')
  screenshot('simulation-desktop.png')
  click('next');wait('return !document.getElementById("studio").hidden')
- check('desktop decision slide fits viewport','return document.documentElement.scrollHeight<=innerHeight+2')
+ check('decision examples share one scrollable page','return document.documentElement.scrollHeight>innerHeight && document.querySelectorAll("[role=tab]").length===0')
+ check('all examples visible','return ["text","retrieval","photo","custom"].every(id=>!document.getElementById(id).hidden)')
+ check('predefined examples have no live controls','return document.querySelectorAll("#text .live-call,#retrieval .live-call,#photo .live-call").length===0')
+ check('medical text recorded result','return document.getElementById("text-result").textContent.includes("1138")')
+ check('saved retrieval evidence separate','return document.querySelectorAll("#retrieval-result .evidence").length>=2')
+ js('document.getElementById("photo-select").value="example-2";document.getElementById("photo-select").dispatchEvent(new Event("change"))')
+ check('photo selection loads saved scores','return document.getElementById("photo-result").textContent.includes("60.1%")')
  # Intercept only the external decision API, retaining real assets and the production SDK.
  js(r'''window.calls=[];window.pendingResult=null;window.slow=false;window.originalFetch=window.fetch;
  window.fetch=async(url,init={})=>{
@@ -60,22 +67,6 @@ try:
  if(!window.pendingResult){window.pendingResult=decision;return reply({delivery:'pending',status_url:'/jobs/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'},202);}
  return reply(decision);
  };''')
- js('document.getElementById("text-form").requestSubmit()');wait('return document.querySelectorAll("#text-result .score-row").length===3')
- check('text uses live score endpoint','return calls.filter(x=>x.path==="/score").length===1')
- check('accepted job polled without repeating POST','return calls.some(x=>x.path.startsWith("/jobs/"))')
- check('all supplied text choices sent','return calls.find(x=>x.path==="/score").body.questions[0].choices.length===3')
- js('document.querySelector("#text-result .review input").value="demo reviewer";document.querySelector("#text-result .review button").click()')
- wait('return document.querySelector("#text-result .review p").textContent.includes("recorded separately")')
- check('human review is separate','return calls.some(x=>x.path.includes("/review")&&x.body.reviewer==="demo reviewer")')
- click('retrieval-tab');check('recorded retrieval source separated','return document.querySelectorAll("#text-result .evidence").length>=2')
- click('retrieval-live');wait('return document.getElementById("text-result").textContent.includes("Test evidence summary")')
- check('retrieval native reasoning contract','return calls.some(x=>x.path==="/reason"&&x.body.example_id==="pathway"&&x.body.reasoning.enabled)')
- route('studio/photo');js('document.getElementById("photo-select").value="example-2";document.getElementById("photo-select").dispatchEvent(new Event("change"))')
- check('original photo saved score','return document.getElementById("photo-result").textContent.includes("60.1%")')
- js('document.getElementById("photo-context").value="Updated synthetic context";document.getElementById("photo-context").dispatchEvent(new Event("input"));document.getElementById("photo-form").requestSubmit()')
- wait('return document.getElementById("photo-result").textContent.includes("LIVE MODEL RESULT")')
- check('photo live preserves image and custom context','return calls.some(x=>x.path==="/samples/example-2/score"&&x.body.context==="Updated synthetic context"&&x.body.questions[0].candidate_format==="inline")')
- click('photo-saved');check('saved photo restores original context','return document.getElementById("photo-context").value.includes("age: 55")')
  route('studio/custom');js('document.getElementById("choices").value="Only one";document.getElementById("custom-form").requestSubmit()')
  check('choice count validation','return document.getElementById("custom-result").textContent.includes("2–8")')
  js(r'document.getElementById("choices").value="First\nSecond";document.getElementById("question").value="A custom question?";document.getElementById("custom-form").requestSubmit()')

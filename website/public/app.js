@@ -1,17 +1,15 @@
-import {createDecisionClient} from './client.js?v=20261115-3';
-import {render as renderResults} from './results.js?v=20261115-3';
+import {createDecisionClient} from './client.js?v=20261115-4';
+import {render as renderResults} from './results.js?v=20261115-4';
 const $=id=>document.getElementById(id);
 const api=createDecisionClient({baseUrl:'https://cancer123--birch-decision-1138-demo.us-east.modal.run/api/decision',fetch:(...args)=>globalThis.fetch(...args)});
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const versions={};let busy=false,saved,recording,catalog;let textMode='medical';
+const versions={};let busy=false,saved,recording,catalog,textRecord;
 const slides=['simulation','studio','manifesto'];
-function route(){let [page,t]=(location.hash.slice(1)||'simulation').split('/');if(page==='pathway')page='simulation';if(!slides.includes(page))page='simulation';for(const id of slides)$(id).hidden=id!==page;document.querySelectorAll('nav a').forEach(a=>{const active=a.hash==='#'+page;a.classList.toggle('active',active);if(active)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});if(page==='studio')tab(['text','photo','custom'].includes(t)?t:'text');const i=slides.indexOf(page);$('slide-counter').textContent=`0${i+1} / 03`;$('previous').disabled=i===0;$('next').disabled=i===2;notifySimulation(page==='simulation');}
+function route(){let [page,t]=(location.hash.slice(1)||'simulation').split('/');if(page==='pathway')page='simulation';if(!slides.includes(page))page='simulation';for(const id of slides)$(id).hidden=id!==page;document.querySelectorAll('nav a').forEach(a=>{const active=a.hash==='#'+page;a.classList.toggle('active',active);if(active)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});const i=slides.indexOf(page);$('slide-counter').textContent=`0${i+1} / 03`;$('previous').disabled=i===0;$('next').disabled=i===2;notifySimulation(page==='simulation');}
 function notifySimulation(visible){$('sim-frame').contentWindow?.postMessage({type:'simulation-visibility',visible},location.origin);}
 function currentIndex(){const p=location.hash.slice(1).split('/')[0];return Math.max(0,slides.indexOf(p));}
 $('previous').onclick=()=>location.hash=slides[Math.max(0,currentIndex()-1)];$('next').onclick=()=>location.hash=slides[Math.min(2,currentIndex()+1)];
 window.addEventListener('keydown',e=>{if(e.target.closest('input,textarea,select,button,[role=tab]')||e.altKey||e.ctrlKey||e.metaKey)return;if(e.key==='ArrowRight')$('next').click();if(e.key==='ArrowLeft')$('previous').click();});
-function tab(t){for(const id of ['text','photo','custom']){$(id).hidden=id!==t;const b=$('tab-'+id);b.setAttribute('aria-selected',id===t);b.tabIndex=id===t?0:-1;}}
-document.querySelectorAll('[data-tab]').forEach((b,i,all)=>{b.onclick=()=>location.hash='studio/'+b.dataset.tab;b.onkeydown=e=>{if(['ArrowLeft','ArrowRight'].includes(e.key)){e.preventDefault();const next=all[(i+(e.key==='ArrowRight'?1:all.length-1))%all.length];next.click();next.focus();}};});
 window.addEventListener('hashchange',route);$('sim-frame').addEventListener('load',()=>notifySimulation(!$('simulation').hidden));route();
 function clearResult(id){versions[id]=(versions[id]||0)+1;$(id).innerHTML='<div class="empty-state"><span>✳</span><h3>Ready for your question.</h3><p>Set the context and possible answers, then compute live on Modal.</p></div>';}
 function render(id,data,isSaved){renderResults(id,data,isSaved,{$,api,esc});}
@@ -19,17 +17,11 @@ async function run(id,work){if(busy)return;busy=true;const v=versions[id]=(versi
 function choices(value){const rows=value.split('\n').map(s=>s.trim()).filter(Boolean);if(rows.length<2||rows.length>8)throw Error('Enter 2–8 possible answers, one per line.');return rows.map((text,i)=>({id:'answer-'+i,text}));}
 function inputRequest(contextId,questionId,choicesId,qid){const context=$(contextId).value.trim(),text=$(questionId).value.trim();if(!context||!text)throw Error('Enter both context and question.');return{context,questions:[{id:qid,text,choices:choices($(choicesId).value)}]};}
 function submitError(id,e){clearResult(id);$(id).innerHTML=`<div class="error" role="alert">${esc(e.message)}</div>`;}
-function setTextMode(mode){textMode=mode;$('text-form').hidden=mode!=='medical';$('retrieval-input').hidden=mode!=='retrieval';for(const id of ['medical','retrieval']){$(id+'-tab').classList.toggle('active',id===mode);$(id+'-tab').setAttribute('aria-pressed',id===mode);}clearResult('text-result');if(mode==='retrieval'&&recording)render('text-result',recording,true);}
-$('medical-tab').onclick=()=>setTextMode('medical');$('retrieval-tab').onclick=()=>setTextMode('retrieval');
-$('text-form').onsubmit=e=>{e.preventDefault();try{const r=inputRequest('text-context','text-question','text-choices','medical-text');run('text-result',()=>api.score(r));}catch(error){submitError('text-result',error);}};
-$('retrieval-saved').onclick=()=>{if(!recording)return;versions['text-result']=(versions['text-result']||0)+1;render('text-result',recording,true);};
-$('retrieval-live').onclick=()=>{const instructions=$('retrieval-instructions').value;run('text-result',()=>api.reason({example_id:'pathway',reasoning:{enabled:true,max_tokens:256,max_rounds:4,max_tool_calls:2,additional_prompt:instructions}}));};
 function restorePhoto(showSaved=true){if(!catalog||!saved)return;const id=$('photo-select').value,p=catalog.examples.find(x=>x.id===id);$('lesion').src='samples/'+id+'.png';$('photo-context').value=p.context;$('photo-question').value='Is this skin lesion malignant?';$('photo-choices').value='Non-malignant\nMalignant';clearResult('photo-result');if(showSaved)render('photo-result',saved.entries[id],true);}
-$('photo-select').onchange=()=>restorePhoto();$('photo-saved').onclick=()=>restorePhoto();
-$('photo-form').onsubmit=e=>{e.preventDefault();try{const sample=$('photo-select').value,r=inputRequest('photo-context','photo-question','photo-choices','skin-category');r.questions[0].candidate_format='inline';run('photo-result',()=>api.scoreExample(sample,r));}catch(error){submitError('photo-result',error);}};
+$('photo-select').onchange=()=>restorePhoto();
 $('custom-form').onsubmit=e=>{e.preventDefault();try{const request=inputRequest('context','question','choices','custom'),refine=$('refine').checked;run('custom-result',()=>refine?api.reason({request,reasoning:{enabled:true,max_tokens:128,max_tool_calls:0}}):api.score(request));}catch(error){submitError('custom-result',error);}};
 // Every input change invalidates the display version so late replies cannot replace a changed case.
-for(const [ids,target]of [[['context','question','choices','refine'],'custom-result'],[['text-context','text-question','text-choices','retrieval-instructions'],'text-result'],[['photo-context','photo-question','photo-choices'],'photo-result']])for(const id of ids)$(id).addEventListener('input',()=>clearResult(target));
-for(const id of ['text-result','photo-result','custom-result'])clearResult(id);
+for(const [ids,target]of [[['context','question','choices','refine'],'custom-result']])for(const id of ids)$(id).addEventListener('input',()=>clearResult(target));
+for(const id of ['text-result','retrieval-result','photo-result','custom-result'])clearResult(id);
 async function json(path){const r=await fetch(path);if(!r.ok)throw Error('Could not load the bundled example.');return r.json();}
-try{[saved,recording,catalog]=await Promise.all([json('data/precomputed.json'),json('data/precomputed-reasoning.json'),json('samples/catalog.json')]);restorePhoto();}catch(e){$('photo-result').innerHTML=`<div class="error" role="alert">${esc(e.message)}</div>`;for(const id of ['photo-saved','retrieval-saved','photo-select'])$(id).disabled=true;}
+try{[saved,recording,catalog,textRecord]=await Promise.all([json('data/precomputed.json'),json('data/precomputed-reasoning.json'),json('samples/catalog.json'),json('data/precomputed-text.json')]);restorePhoto();$('text-context').value=textRecord.request.context;$('text-choices').value=textRecord.request.questions[0].choices.map(c=>c.text).join(String.fromCharCode(10));render('text-result',textRecord,true);render('retrieval-result',recording,true);}catch(e){$('photo-result').innerHTML=`<div class="error" role="alert">${esc(e.message)}</div>`;for(const id of ['photo-select'])$(id).disabled=true;}
