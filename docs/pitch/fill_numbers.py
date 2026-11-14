@@ -544,30 +544,134 @@ def robustness_values(V: dict, val: dict | None) -> None:
             V["s_ext_auth_in_ci_pct"] = pc(sum(lo <= r["optimal"]["share_within_target"] <= hi for r in acc) / len(acc))
             V["s_ext_fast_in_ci_pct"] = pc(sum(flo <= r["faster_pet"]["share_within_target"] <= fhi for r in acc) / len(acc))
             V["s_ext_recount"] = n0(len(acc))
-    # Placeholders waiting for the lane w7/norway-opt (optimiser flowcharts on the 184 settings, ablation without the
-    # fourth change). The pitch says "being checked" until these files exist; see numbers_sheet.md, section P.
-    pend = sorted(glob.glob(str(d / "norway_opt_*.json")))
-    V["s_opt184_pending"] = "no" if pend else "yes"
-    V["s_opt184_files"] = ", ".join(Path(x).name for x in pend) or "none yet"
+
+
+def optimiser_values(V: dict) -> None:
+    """Optimiser on the 184 settings, ablation and structure check (docs/validation.md, "Optimiser robustness,
+    ablation and structure check"). Files: docs/review_checks/norway_opt_summary.json, norway_opt_structure.json,
+    norway_opt_grid.json, norway_opt_bestfit.json. Also the demo start bundle's without-fourth re-simulation."""
+    d = ROOT / "docs" / "review_checks"
+    sm, st, gr = load(d / "norway_opt_summary.json"), load(d / "norway_opt_structure.json"), load(d / "norway_opt_grid.json")
+    V["o_files"] = ", ".join(Path(x).name for x in sorted(glob.glob(str(d / "norway_opt_*.json")))) or "none yet"
+    if not (sm and st):
+        V["o_available"] = "no"
+        return
+    V["o_available"] = "yes"
+    b, c, df, bf = sm["bands_percent"], sm["counts"], sm["differences_pts"], sm["best_fit_shipped_percent"]
+    f0 = lambda x: n0(x)  # noqa: E731
+    V["o_n"] = n0(sm["n_settings"])
+    V["o_fast_min"], V["o_fast_med"], V["o_fast_max"] = f0(b["full_fast"]["min"]), f0(b["full_fast"]["median"]), f0(b["full_fast"]["max"])
+    V["o_nof_min"], V["o_nof_med"], V["o_nof_max"] = f0(b["full_nofast"]["min"]), f0(b["full_nofast"]["median"]), f0(b["full_nofast"]["max"])
+    V["o_obs_min"], V["o_obs_max"] = f0(b["observed"]["min"]), f0(b["observed"]["max"])
+    V["o_nof_beats_obs"] = n0(c["opt_nofast_beats_observed"])
+    V["o_nof_beats_fast"] = n0(c["opt_nofast_beats_fasterpet"])
+    V["o_nof_loses_fast"] = n0(sm["n_settings"] - c["opt_nofast_beats_fasterpet"])
+    V["o_fast_beats_fast"] = n0(c["opt_fast_beats_fasterpet"])
+    V["o_nod_fast_bf"], V["o_nod_nof_bf"] = f0(bf["no_d_fast"]), f0(bf["no_d_nofast"])
+    V["o_nod_fast_bf1"], V["o_nod_nof_bf1"] = n1(bf["no_d_fast"]), n1(bf["no_d_nofast"])
+    dv = [bf["full_nofast"] - bf["no_d_nofast"], bf["full_fast"] - bf["no_d_fast"],
+          df["full_nofast - no_d_nofast (value of d)"]["median"], df["full_fast - no_d_fast (value of d)"]["median"]]
+    V["o_d_lo"], V["o_d_hi"] = f0(min(dv)), f0(max(dv))
+    V["o_b_loss_med"] = f0(df["full_nofast - no_b_nofast"]["median"])
+    V["o_nod_beats_auth"] = n0(c["no_d_fast_beats_authors"])
+    # structure check
+    gb = st["grid_bands"]
+    V["o_ship_med"], V["o_ship_in"] = pc1(gb["optimal"]["share"]["median"] / 100), n0(gb["optimal"]["in_published_CI_72_87"])
+    V["o_nogate_bf"] = f0(st["best_fit_shipped_percent"]["optimal_nogate"])
+    V["o_nogate_bf1"] = n1(st["best_fit_shipped_percent"]["optimal_nogate"])
+    V["o_full_fast_bf1"] = n1(bf["full_fast"])
+    V["o_nogate_med"] = n1(gb["optimal_nogate"]["share"]["median"])
+    V["o_nogate_gain"] = n1(gb["optimal_nogate"]["minus_authors_pts"]["median"])
+    V["o_petvisit_loss"] = n1(-gb["optimal_petvisit"]["minus_authors_pts"]["median"])
+    lit = gb["optimal_petvisit_nogate"]
+    V["o_lit_bf"] = f0(st["best_fit_shipped_percent"]["optimal_petvisit_nogate"])
+    V["o_lit_med"] = f0(lit["share"]["median"])
+    V["o_lit_min"], V["o_lit_max"] = f0(lit["share"]["min"]), f0(lit["share"]["max"])
+    V["o_lit_in"] = n0(lit["in_published_CI_72_87"])
+    if gr:
+        diffs = []
+        for r in gr["rows"]:
+            ref = next((x for x in st["rows"] if x["i"] == r["i"]), None)
+            if ref and "optimal_nogate" in ref:
+                diffs.append(abs(r["full_fast"]["share_within_target"] - ref["optimal_nogate"]["share_within_target"]) * 100)
+        if diffs:
+            V["o_gap_lo"], V["o_gap_hi"] = n1(min(diffs)), n1(max(diffs))
+    # demo start bundle: re-simulation without the fourth change at the best-fit setting (held-out cohorts)
+    sb = ROOT / "demo" / "data" / "start_bundle.js"
+    if sb.exists():
+        try:
+            data = json.loads(sb.read_text().split("=", 1)[1].strip().rstrip(";"))
+            wf = (data.get("norway") or {}).get("without_fourth")
+            if wf:
+                V["o_bundle_three"], V["o_bundle_four"] = pc(wf["three_changes"]), pc(wf["all_four"])
+        except Exception:
+            pass
+    # ready-made sentences, so every pitch file says the same thing (numbers_sheet.md rows B1 to B6)
+    V["o_txt_fast"] = (f"{V['s_opt_share']}% at the best fit; {V['o_fast_min']} to {V['o_fast_max']}% across all {V['o_n']} settings "
+                       f"(median {V['o_fast_med']}%)")
+    V["o_txt_nof"] = (f"{V['s_noeq_share']}% at the best fit; {V['o_nof_min']} to {V['o_nof_max']}% across all {V['o_n']} settings "
+                      f"(median {V['o_nof_med']}%), against {V['o_obs_min']} to {V['o_obs_max']}% for today's pathway")
+    V["o_txt_core"] = ("Starting from the observed pathway and without being told the answer, the optimiser arrived at the authors' redesign "
+                       "(their three changes, plus one overlapping change that needs a clinical check) and performs about the same as the "
+                       f"authors' pathway built without a wait for sampling ({V['o_nogate_bf1']}% against {V['o_full_fast_bf1']}% at the best fit; "
+                       f"within {V.get('o_gap_lo', '?')} to {V.get('o_gap_hi', '?')} points in every setting). It did not beat the authors")
+    V["o_txt_scanner"] = (f"Without new equipment it beats today's pathway in {V['o_nof_beats_obs']} of {V['o_n']} settings but beats the faster "
+                          f"scanner alone in only {V['o_nof_beats_fast']} of {V['o_n']}; with the scanner it beats the scanner alone in "
+                          f"{V['o_fast_beats_fast']} of {V['o_n']}")
+    V["o_txt_fourth"] = (f"Without the fourth change the optimiser still gives {V['o_nod_fast_bf']}% at the best fit with the scanner and "
+                         f"{V['o_nod_nof_bf']}% without; the fourth change is worth {V['o_d_lo']} to {V['o_d_hi']} points and overlaps with "
+                         "\"tumour board before sampling\". It was not in the paper and needs a clinical check")
+    V["o_txt_lead"] = (f"The optimiser's apparent lead over our simulated authors' pathway ({V['s_opt_share']}% against {V['s_auth_share']}%) is not a "
+                       "finding about care: our version of the authors' pathway makes treatment wait for a tissue sample that starts after the "
+                       f"tumour board, while the paper takes the sample while the patient waits for treatment; with that wait removed the "
+                       f"authors' pathway gives {V['o_nogate_bf']}%")
+    V["o_txt_literal"] = (f"A stricter reading of the paper's text (PET-CT at the first visit, treatment not waiting for sampling) gives a median of "
+                          f"{V['o_lit_med']}% over the {V['o_n']} settings ({V['o_lit_min']} to {V['o_lit_max']}%; {V['o_lit_in']} of {V['o_n']} inside "
+                          f"the published {V['val_pub_opt_ci']}%) and {V['o_lit_bf']}% at the best fit. Caveats: we read summaries of the paper, not "
+                          "its figures, and the observed pathway was not recalibrated under that reading; the shipped scenario is unchanged and "
+                          "this is an open decision for the human lead")
+
+    # which sentences were written while this check was pending (none now; kept so a rerun can list them)
+    V["s_opt184_pending"] = "no"
+    V["s_opt184_files"] = V["o_files"]
 
 
 def library_values(V: dict) -> None:
-    """Counts of patient cards, from libraries/*/manifest.json. 'reference' = template-written (model 'fake')."""
-    ref = llm = 0
-    n_llm_libs = 0
+    """Counts of patient cards from libraries/*/manifest.json. Template-written = model 'fake'. Model-written cards are split by
+    results prompt: g2@1 (old: report wording leaked the error plan, found by review w7 B1; reports are rebuilt from values before
+    a decider sees them) and g2@2 (the engine sets every value; the model writes report text from the reported values only)."""
+    ref = 0
+    llm_old = llm_new = n_old_libs = n_new_libs = 0
     for m in sorted(glob.glob(str(ROOT / "libraries" / "*" / "manifest.json"))):
         d = load(Path(m))
         n = sum(d["card_count_by_condition"].values())
         if d.get("model") == "fake":
             ref += n
+        elif (d.get("prompts") or {}).get("results") == "g2@2":
+            llm_new += n
+            n_new_libs += 1
         else:
-            llm += n
-            n_llm_libs += 1
+            llm_old += n
+            n_old_libs += 1
     V["lib_ref_n"] = thousands(ref)
-    V["lib_llm_n"] = thousands(llm)
-    V["lib_llm_libs"] = n0(n_llm_libs)
+    V["lib_llm_n"] = thousands(llm_old + llm_new)
+    V["lib_llm_old_n"], V["lib_llm_new_n"] = thousands(llm_old), thousands(llm_new)
+    V["lib_llm_libs"] = n0(n_old_libs + n_new_libs)
     r = load(ROOT / "libraries" / "ref500" / "manifest.json")
     V["lib_ref_id"] = r["id"] if r else "unknown"
+    a = load(ROOT / "libraries" / "ref500" / "audit.json")
+    V["lib_ref_audit"] = n0(sum(1 for c in a["checks"] if c["status"] == "pass")) if a else "?"
+    V["lib_ref_audit_total"] = n0(len(a["checks"])) if a else "?"
+    if llm_new:
+        V["lib_g2_sentence"] = (f"{thousands(llm_new)} model-written cards in {n_new_libs} libraries use the new result prompt g2@2 "
+                                "(values set by the engine, report text written from the reported values only); the remaining "
+                                f"{thousands(llm_old)} use the old prompt g2@1 and have their report text rebuilt from values before any decider sees it")
+    else:
+        V["lib_g2_sentence"] = ("the new result prompt (g2@2: the engine sets every value, the language model writes report text from the "
+                                "reported values only) has not yet been run on the real model; the "
+                                f"{thousands(llm_old)} model-written cards in the repository use the old prompt g2@1, and their report text is "
+                                "rebuilt from values before any decider sees it")
+    V["lib_g2_status"] = "run" if llm_new else "not yet run on the real model"
 
 
 def catalogue_values(V: dict) -> None:
@@ -595,17 +699,43 @@ def catalogue_values(V: dict) -> None:
 
 
 def encounter_values(V: dict) -> None:
-    """Consistency of the primary-care encounter loop with the calibrated chain (docs/encounter_results.md)."""
-    e = load(ROOT / "docs" / "review_checks" / "encounter_results.json")
-    if not e:
+    """Primary-care encounter loop against the calibrated chain (docs/encounter_results.md). Headline: the pooled eight-seed file;
+    in-sample (tuning seeds 1-4) and fresh seeds (5-8) from the two four-seed files."""
+    rc = ROOT / "docs" / "review_checks"
+    pool, tune, fresh = (load(rc / f) for f in ("encounter_results_8seeds.json", "encounter_results.json", "encounter_results_oos.json"))
+    if not (pool and tune and fresh):
         return
-    c = e["consistency"]
-    ok = sum(1 for x in c.values() if x.get("within_tolerance") or x.get("passes"))
-    V["e_checks_total"] = n0(len(c))
-    V["e_checks_passed"] = n0(ok)
-    V["e_checks_failed"] = n0(len(c) - ok)
-    f = e["finding"]
+
+    def tally(e):
+        c = e["consistency"]
+        ok = [k for k, x in c.items() if x.get("within_tolerance") or x.get("passes")]
+        return len(ok), len(c), [k for k in c if k not in ok]
+
+    for tag, e in (("pool", pool), ("tune", tune), ("fresh", fresh)):
+        ok, tot, miss = tally(e)
+        V[f"e_{tag}_ok"], V[f"e_{tag}_total"], V[f"e_{tag}_miss_n"] = n0(ok), n0(tot), n0(len(miss))
+    names = {"ref_med": "median days to referral", "ref14": "cancers referred within 14 days", "ref28": "cancers referred within 28 days",
+             "ref42": "cancers referred within 42 days", "referred": "cancers ever referred", "treated": "cancers treated",
+             "within90": "cancers treated within 90 days", "noncancer_referred": "non-cancer patients referred"}
+    for tag, e in (("pool", pool), ("fresh", fresh)):
+        V[f"e_{tag}_miss"] = " and ".join(names[k] for k in tally(e)[2]) or "none"
+    nc = pool["consistency"]["noncancer_referred"]
+    V["e_nc_loop"], V["e_nc_chain"] = pc1(nc["loop"]["mean"]), pc1(nc["chain"]["mean"])
+    V["e_nc_tol"] = n0(100 * nc["tolerance"])
+    V["e_framing"] = (f"it reproduces the calibrated chain at the edge of the tolerances: {V['e_tune_ok']} of {V['e_tune_total']} checks on the "
+                      f"seeds it was tuned on, {V['e_fresh_ok']} of {V['e_fresh_total']} on fresh seeds, {V['e_pool_ok']} of {V['e_pool_total']} pooled over eight seeds")
+    f = pool["finding"]
     V["e_ref_median"] = n0(f["days_to_referral_median"]["mean"])
+    V["e_chain_ref_median"] = n0(pool["consistency"]["ref_med"]["chain"]["mean"])
+    w = f["share_first_treated_as_something_else"]
+    V["e_wrong_pct"], V["e_wrong_lo"], V["e_wrong_hi"] = pc(w["mean"]), pc(w["lo"]), pc(w["hi"])
+    V["e_wrong_tune_pct"] = pc(tune["finding"]["share_first_treated_as_something_else"]["mean"])
+    V["e_wrong_fresh_pct"] = pc(fresh["finding"]["share_first_treated_as_something_else"]["mean"])
+    wd, nd = f["days_to_referral_median_with_wrong_treatment"], f["days_to_referral_median_without_wrong_treatment"]
+    V["e_wrong_days"], V["e_wrong_days_lo"], V["e_wrong_days_hi"] = n0(round(wd["mean"], -1)), n0(wd["lo"]), n0(wd["hi"])
+    V["e_other_days"] = n0(nd["mean"])
+    V["e_ratio"] = n0(wd["mean"] / nd["mean"])
+    V["e_n_cancers"] = n0(f["n_cancers"]["mean"])
 
 
 def build_values() -> dict:
@@ -621,6 +751,7 @@ def build_values() -> dict:
     scenario_source_values(V)
     range_values(V)
     robustness_values(V, val)
+    optimiser_values(V)
     library_values(V)
     catalogue_values(V)
     encounter_values(V)
@@ -669,10 +800,6 @@ def main() -> int:
             print(f"  [[{k}]] in {', '.join(sorted(fs))}")
         return 1 if a.strict else 0
     print("all placeholders filled")
-    if V.get("s_opt184_pending") == "no":
-        print("NOTE: docs/review_checks/norway_opt_*.json now exist (" + V["s_opt184_files"] + "). The pitch still says the optimiser's "
-              "results on all 184 settings and without the fourth change are pending. Update numbers_sheet.md section P and the "
-              "sentences marked 'pending' in deck.md, submission.md, qa.md, data_transparency.md, then rerun.")
     return 0
 
 
