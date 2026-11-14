@@ -181,7 +181,7 @@ def walk(args, out=print, input_fn=input) -> dict:
         out("Model calls: " + json.dumps(summary))
     result = {"format": "jev_walk/1", "decider": args.jev, "outcome": pr.outcome, "steps": step.steps,
               "record": pr.record.to_json(), "record_text": record_lines, "model_calls": summary,
-              "hidden_truth_for_scoring": {"primary_condition": pr.primary_condition, "library": lib.id, "patient": ix}}
+              "hidden_block_scoring_only": {"primary_condition": pr.primary_condition, "library": lib.id, "patient": ix}}
     p = Path(args.out) if args.out else Path(args.work_dir) / "walks" / f"walk_{args.pick or 'card'}_{ix}_{args.jev.replace(':', '_').replace('/', '_')}.json"
     p.parent.mkdir(parents=True, exist_ok=True)
     p.write_text(json.dumps(result, indent=1))

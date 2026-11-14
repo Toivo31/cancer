@@ -274,7 +274,7 @@ def test_walk_against_the_mock_runs_end_to_end(tmp_path):
     saved = json.loads(next((tmp_path / "walks").glob("*.json")).read_text())
     assert saved["format"] == "jev_walk/1"
     # the saved record the decider saw holds no hidden truth: only the scoring block does
-    truth = saved["hidden_truth_for_scoring"]["primary_condition"]
+    truth = saved["hidden_block_scoring_only"]["primary_condition"]
     assert truth not in json.dumps(saved["steps"]) and truth not in json.dumps(saved["record"])
 
 
