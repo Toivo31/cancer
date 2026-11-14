@@ -49,6 +49,30 @@ revealed side. **I3**: same patient and seed give the same result.
   every decider path, or stop telling the model the error plan (let it write from the values only); that changes the
   G2 prompt, not the catalogue hash. Until then: do not train or test the JEV on Gemini cards through the HTTP path.
 
+#### B1 fixed (branch `w7/g2safe`)
+
+- **Result author `g2@2`** (now the default of `python -m patient_engine generate`): the engine decides every
+  status and value from the settled error plan (`skeleton.settle_attempt`, as the reference generator does); the
+  model writes only the report wording and the GP note. Its prompt is `authors.results_user(...)`, whose only inputs
+  are age, sex, smoking, the reported symptoms, each attempt's status and reported values, and the fixed list of
+  first-contact tests: no condition, finding, cause, plan label, state name, persona, region or card id. A test
+  pins this (same prompt, byte for byte, when every hidden input changes and the values stay). Repairs to G2 use a
+  condition-blind name check and fixed messages, so a repair cannot tell the model the diagnosis or a state name.
+  Prompt `patient_engine/prompts/g2_results.v2.*`; input about 18.5k tokens per card instead of 27.6k (`--estimate`).
+- **Old cards** (`g2@1`: `gemini_trial`, `gemini_s2_30`, the 500-card Gemini libraries): `RevealHandle.reveal`
+  serves a card's stored report only when `results_text_is_safe(provenance)` (generator `reference`, or results
+  prompt in `reveal.SAFE_RESULTS_PROMPTS = {"g2@2"}`); otherwise it rebuilds it with `reference.report_text`, and
+  withholds that card's GP notes. Every encounter path (ordered tests, hospital CT and PET-CT) goes through it, so
+  `pathway_sim/encounter.py` is unchanged. `ref500` (made by the fake, prompts g2@1) is unaffected: its reports
+  already equal the value rendering (checked on all 67 236 attempts). `jev/birch.py` fallback renders values only.
+- **M3**: `record_text` names a result by its output (`suspicious for malignancy`, `FDG avid`), not the variable.
+- **Measure**: audit check `report_wording` (built-in tolerance; the locked catalogue's tolerances file may add
+  one). On `gemini_s2_30`: FAIL, false alarms hedged 51% against true positives 2% (+52 points within
+  test-output strata, z 9.1), naive Bayes on the words 0.30 balanced accuracy above the same classifier on
+  value-only text; misses 10% against 3% (+8 points, NB excess 0.09). `ref500` and fake g2@2 libraries: PASS.
+- Tests: `tests/test_review_w7_report_leak.py` no longer xfail, rewritten to the rule as built (the report a
+  decider receives, through the handle); `tests/test_pe_results_author_v2.py`.
+
 ### B2. The demo path shows pre-tuning numbers, and "pending" for numbers that are ready
 
 - **What.** `demo/data/encounter_bundle.js` was generated at 16:42 UTC; the tuned decision tables were merged at 17:00

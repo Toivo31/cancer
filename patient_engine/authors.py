@@ -22,8 +22,12 @@ What each author returns (the shapes are JSON Schemas derived from ``card_schema
     G1  {"states": {state: {"findings": {variable id: {"value", "caused_by"}},
                             "presenting": {"reported": [variable id], "text": str},
                             "account": {"text": str, "mentions": [variable id]}}}}      one call, every state
-    G2  {"observations": {test id: [{"status", "values", "report"}]},
-         "gp_note": {"text": str, "mentions": [test id | test.output id]}}              one call per state
+    G2  g2@2 (default): {"reports": {test id: [str per attempt]}, "gp_note": {"text", "mentions"}}; the values are
+        the engine's (``g2_values``) and ``g2_merge`` joins them to the reports        one call per state
+        g2@1: {"observations": {test id: [{"status", "values", "report"}]}, "gp_note": {...}}
+
+Information boundary of g2@2 (review w7 B1): the result author's prompt is ``results_user`` of public inputs only
+(age, sex, smoking, reported symptoms, every attempt's status and values), so its wording cannot carry the error plan.
 
 The skeleton fixes the background, the conditions and their attributes and the error plan; the
 authors never write those. Prompts are data files in ``patient_engine/prompts/`` (see its README).
