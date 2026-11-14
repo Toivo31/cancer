@@ -101,11 +101,12 @@ def start_optimisation(rt: Runtime, project_id: str, fid: str, version: int | No
     s["max_changes"] = int(s.get("max_changes") or 6)
     if not 1 <= s["max_changes"] <= 12:
         raise ApiError(429, "limit_exceeded", "max_changes must be between 1 and 12")
-    allow = s.get("allow") or (["detach", "relax", "standardise"] if backend == "rule" else ["detach", "relax"])
+    hardcoded = backend in ("rule", "stub")                 # spec 05 / F7: a model (http, local) competes with "always choose X"; hardcoded tables do not
+    allow = s.get("allow") or (["detach", "relax", "standardise"] if hardcoded else ["detach", "relax"])
     bad = [a for a in allow if a not in KINDS]
     if bad:
         raise ApiError(422, "invalid_request", f"Unknown change kind {bad}; use {list(KINDS)}")
-    if "standardise" in allow and backend != "rule" and not s.get("allow_standardise_under_jev"):
+    if "standardise" in allow and not hardcoded and not s.get("allow_standardise_under_jev"):
         raise ApiError(422, "standardise_under_jev",
                        "'standardise' overrides a decision point and competes with the decision model; leave it out, or "
                        "set allow_standardise_under_jev to accept that (decision F7)")

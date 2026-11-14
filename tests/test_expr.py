@@ -52,6 +52,17 @@ def py_eval(expr: str, env: dict):
 
 # ----------------------------------------------------------------------------- shipped scenarios
 
+def _without_decision_bookkeeping(o):
+    """The JEV work added mode/backend/model to every choice record (who answered the decision).
+    They are new information, not behaviour, so the digests taken with the eval-based engine ignore them."""
+    if isinstance(o, dict):
+        return {k: _without_decision_bookkeeping(v) for k, v in o.items()
+                if not (k in ("mode", "backend", "model") and "chosen" in o)}
+    if isinstance(o, list):
+        return [_without_decision_bookkeeping(v) for v in o]
+    return o
+
+
 def test_shipped_scenarios_give_identical_results():
     """Locks metrics and run logs of every shipped scenario x flowchart x {rule policy, random policy}
     against digests taken with the eval-based engine (tests/fixtures/guard_eval_baseline.json)."""
@@ -68,7 +79,7 @@ def test_shipped_scenarios_give_identical_results():
             for pname, pol in (("rules", None), ("random", RandomPolicy(1))):
                 run = simulate(sc, fid, pts, policy=pol, seed=1)
                 m = compute_metrics(run, sc)
-                got[f"{rel}|{fid}|{pname}"] = {"n": n, "run": h(run.to_dict()), "metrics": h(m),
+                got[f"{rel}|{fid}|{pname}"] = {"n": n, "run": h(_without_decision_bookkeeping(run.to_dict())), "metrics": h(m),
                                                "share_within_target": m["share_within_target"],
                                                "median_days_to_treatment": m["median_days_to_treatment"],
                                                "stuck": m["stuck"], "missed_cancers": m["missed_cancers"]}
