@@ -7,9 +7,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-  :root { --bg: #fbfaf7; --ink: #2d2d2a; --dim: #6b6b66; --hot: #c87d00; --ok: #1e8755; --honey: #e8c56a; }
+  :root { --bg: #fdfcf8; --ink: #2d2d2a; --dim: #6b6b66; --hot: #c87d00; --ok: #1e8755; --honey: #e8c56a; }
   html, body { margin: 0; height: 100%; background: var(--bg); overflow: hidden; }
-  canvas { display: block; width: 100vw; height: 100vh; }
+  /* everything drawn is greyscale; only the page background (yellowish white) keeps its tint */
+  canvas { display: block; width: 100vw; height: 100vh; filter: url(#ink) grayscale(1); }
   #help { position: fixed; right: 16px; bottom: 12px; font: 13px/1.5 "Inter", sans-serif; color: var(--dim);
           background: rgba(0,0,0,.6); padding: 10px 14px; border: 1px solid #222; white-space: pre; }
   .hidden { display: none; }
@@ -17,13 +18,23 @@
 </head>
 <body>
 <canvas id="c"></canvas>
+<!-- old-printer ink: edges roughened by noise, ink spread a little and softened -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <filter id="ink" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
+    <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="7" result="noise"/>
+    <feDisplacementMap in="SourceGraphic" in2="noise" scale="0.8" xChannelSelector="R" yChannelSelector="G" result="rough"/>
+    <feMorphology in="rough" operator="dilate" radius="0.2" result="spread"/>
+    <feGaussianBlur in="spread" stdDeviation="0.35" result="bleed"/>
+    <feComponentTransfer in="bleed"><feFuncA type="linear" slope="1.15" intercept="0"/></feComponentTransfer>
+  </filter>
+</svg>
 <div id="help">space  play / pause      r  restart
 → / ←  switch pathway, same patients, same day
 1 2 3  pick pathway     s  split view (today vs change)
 n  Finland / Norway     g  colour by symptom group
 l  step labels          + −  speed
 h  hide this help and the UI for recording</div>
-<script src="dots_data.js?v=18"></script>
+<script src="dots_data.js?v=27"></script>
 <script>
 "use strict";
 // One dot = one simulated lung cancer patient (exported by export_dots.py from the pathway simulator).
@@ -286,7 +297,7 @@ let last = performance.now();
 function frame(now) {
   const dt = Math.min(0.1, (now - last) / 1000); last = now;
   if (st.playing) st.day = Math.min(st.endDay, st.day + dt * st.speed);
-  ctx.fillStyle = "#fbfaf7"; ctx.fillRect(0, 0, W, H);
+  ctx.clearRect(0, 0, W, H);   // transparent: the yellowish-white page shows through
   const mode = SHOW.active ? SHOW.update() : (qs.has("race") ? "race" : qs.has("flow") ? "flow" : qs.has("doc") ? "doc" : "lanes");
   if (mode === "card" || mode === "race" || mode === "flow" || mode === "doc" || mode === "zoom" || mode === "pop") {
     if (mode === "card") SHOW.drawCard();
@@ -361,10 +372,10 @@ window.addEventListener("keydown", (e) => {
 });
 
 </script>
-<script src="race.js?v=18"></script>
-<script src="flow.js?v=18"></script>
-<script src="zoom.js?v=18"></script>
-<script src="show.js?v=18"></script>
+<script src="race.js?v=27"></script>
+<script src="flow.js?v=27"></script>
+<script src="zoom.js?v=27"></script>
+<script src="show.js?v=27"></script>
 <script>
 resize();
 requestAnimationFrame(frame);

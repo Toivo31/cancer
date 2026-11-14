@@ -96,7 +96,16 @@ The note reader and decision model are prototypes; the on-screen footer says so.
 | 40% treated within 42 days → 80% with the reordered pathway (model estimate) | Stokstad T, et al. BMC Health Serv Res 2019;19:679, doi:10.1186/s12913-019-4517-z | Team's full-text read (params/sources.yaml on overnight/sim); 80% CI 72-87% |
 | Lung cancer surgery OR 1.48 (women, high vs low education), similar by income | Zai X, Li P, Dei Bardi L, et al. MPIDR WP 2025-016, doi:10.4054/MPIDR-WP-2025-016 | Full text read (p. 8) |
 | 123 vs 207 days, DLBCL, occupational/private vs public route | Kuitunen et al. Cancer Medicine 2026;15:e71920 | AstraZeneca briefing slide (rendered table) |
-| Goal 3 wording | National Cancer Strategy 2026-2035 (STM) | From the AZ briefing notes; the valtioneuvosto.fi PDF returned 403 to automated download, so re-check the wording by hand |
+| Goal 3 "Varmistetaan yhdenvertainen ja vaikuttava syövänhoito"; indicator 3.1 "Potilaat pääsevät hoitoon tavoiteaikojen puitteissa" | Kansallinen syöpästrategia 2026-2035, Sosiaali- ja terveysministeriö | Full PDF read (14 Nov): Goal 3 title p. 32; indicator under 3.1 p. 33; p. 33 also says the lack of national coordination "ylläpitää alueellista eriarvoisuutta"; responsible for 3.1: FICAN, national cancer groups, Duodecim, STM, Palko (p. 34) |
 | CT finds 97% | none | Simulator assumption; labelled as such |
 
 Changed: the earlier 75% X-ray figure (Bradley et al. 2021, 86/114) could not be checked (PubMed and BJGP pages did not load), so the video and the note reader now use the 2019 systematic review. The simulator itself still uses 0.754.
+
+## Greyscale version (current)
+
+Everything drawn on the canvas is greyscale (CSS `filter: grayscale(1)` on the canvas); only the page background keeps a faint warm white (#fdfcf8). Grey levels: vague symptoms black, alarm symptoms mid grey, treated later light grey; the fast lane is a dashed line and its balls a darker grey.
+
+## Simpler version with ink (current)
+
+- Strategy picture and article cards are off (`SHOW_DOCS = false` in flow.js); their sources stay in the "Sources checked" table. The flowchart is centred; the clock is top left; the "Who falls behind" facts stay in a small box on the left.
+- Old-printer ink: an SVG filter (`#ink` in index.html) roughens edges with noise, spreads the ink slightly (dilate) and softens it (blur), before the greyscale filter. Tune `scale`, `radius` and `stdDeviation` there.

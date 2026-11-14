@@ -117,12 +117,16 @@ def main(argv=None):
     print("finland_lung")
     sc = load_scenario(sim / "scenarios" / "finland_lung.yaml")
     held = cohorts(sc, (301, 302), int(sc.raw.get("default_n", 2000)))
-    opt = parse_flowchart("suggested", json.loads((sim / "runs" / "opt_finland.json").read_text())["flowchart_after"])
+    # suggested change (reorder only, the dashboard headline) and the conditional urgent-booking result
+    sug = parse_flowchart("suggested", json.loads((sim / "runs" / "opt_fi_noft.json").read_text())["flowchart_after"])
+    fast = parse_flowchart("fastlane", json.loads((sim / "runs" / "opt_finland.json").read_text())["flowchart_after"])
     fi = [
         variant(sc, sc.flowcharts["baseline"], held, "Today's pathway", "baseline",
                 bundle_share(bundle, "finland_lung", "baseline")),
-        variant(sc, opt, held, "Optimiser's change: priority after the hospital handles the referral", "optimiser",
-                bundle_share(bundle, "finland_lung", "optimiser")),
+        variant(sc, sug, held, "Suggested change: book the specialist visit when the referral arrives; reserve the treatment slot when the case goes to the tumour board",
+                "solution", bundle_share(bundle, "finland_lung", "optimiser")),
+        variant(sc, fast, held, "Fast lane (conditional): every referred patient booked urgently; depends on the assumed urgent booking time",
+                "fastlane", bundle_share(bundle, "finland_lung", "conditional_urgent_booking")),
         variant(sc, sc.flowcharts["bundled_workup"], held, "CT and PET-CT ordered together at the specialist visit",
                 "bundled", bundle_share(bundle, "finland_lung", "bundled_workup")),
     ]

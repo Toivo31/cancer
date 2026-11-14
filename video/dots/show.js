@@ -23,7 +23,7 @@ const SHOW = (() => {
     [20, 25, "Pink: vague symptoms. Today they are sent back to the GP again and again."],
     [25, 36, "Her referral arrives at the hospital. Our note reader flags the warning signs; the decision model estimates which test finds the cancer fastest. A clinician decides."],
     [36, DROP, "She goes on the fast lane."],
-    [DROP, 58, "Within 90 days: vague symptoms 13 to 54 percent, alarm symptoms 27 to 79. Median 103 days becomes 80. A clinician decides every case."],
+    [DROP, 58, "Reordering two steps alone: 18 to 33 percent within 90 days. With a fast lane, up to 61 percent if urgent booking times hold. Same cancers missed. A clinician decides."],
     [58, 72, "Tested blind on a real Norwegian hospital study: it reproduces their 40 percent, and the reordering that reached 80."],
     [72, 92, "What a wellbeing services county does."],
     [92, 98, "A doctor decides every case. All patients are simulated."],

@@ -1,9 +1,13 @@
-"""Note reader demo server (standard library only).
+"""Demo server (standard library only): the flowchart demo, the note reader and the team report.
 
     .venv/bin/python -m note_reader.server            # http://127.0.0.1:8770
+
+GET  /                 live_demo/flow.html (flowchart simulation, click a patient for the trace)
+GET  /note             the note reader page
+GET  /report/          copy of the team dashboard (live_demo/build_report.py) in the light theme
+GET  /dots/...         video/dots assets (flow.js, dots_data.js)
     .venv/bin/python -m note_reader.server --precompute   # refresh note_reader/precomputed.json
 
-GET  /                 the page (note_reader/index.html)
 GET  /api/examples     synthetic example notes
 POST /api/read         {"text": "..."} -> flags (checked against the text) + next-step estimates
 
@@ -17,6 +21,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import mimetypes
 import os
 import sys
 import time
@@ -32,6 +37,9 @@ from technique_classifier.llm import classify  # noqa: E402
 from note_reader.next_step import next_step  # noqa: E402
 
 PRE = HERE / "precomputed.json"
+DEMO = ROOT / "live_demo"            # flow.html (our demo page; separate from the team's demo/ folder)
+DOTS = ROOT / "video" / "dots"       # flow.js and the exported patient data
+REPORT = DEMO / "report"             # copy of the team dashboard (live_demo/build_report.py)
 MAX_CHARS = 2000
 
 
@@ -76,11 +84,33 @@ class Handler(BaseHTTPRequestHandler):
     def _json(self, code: int, obj) -> None:
         self._send(code, json.dumps(obj).encode(), "application/json")
 
+    def _static(self, base: Path, rel: str) -> None:
+        """Serve a file under `base` only (no path traversal)."""
+        target = (base / rel).resolve()
+        if not str(target).startswith(str(base.resolve())) or not target.is_file():
+            return self._json(404, {"error": "not found"})
+        body = target.read_bytes()
+        ctype = mimetypes.guess_type(target.name)[0] or "application/octet-stream"
+        if target.suffix in (".html", ".js", ".css", ".json"):
+            ctype += "; charset=utf-8"
+        if base == REPORT and target.name == "index.html":   # team dashboard + our light theme
+            body = body.replace(b"</head>", b'<link rel="stylesheet" href="light.css">\n</head>', 1)
+        self._send(200, body, ctype)
+
     def do_GET(self):
-        if self.path in ("/", "/index.html"):
+        path = self.path.split("?", 1)[0].split("#", 1)[0]
+        if path in ("/", "/index.html"):
+            self._static(DEMO, "flow.html")                       # the demo: flowchart simulation
+        elif path in ("/note", "/note/"):
             self._send(200, (HERE / "index.html").read_bytes(), "text/html; charset=utf-8")
-        elif self.path == "/api/examples":
+        elif path == "/api/examples":
             self._send(200, (HERE / "examples.json").read_bytes(), "application/json")
+        elif path.startswith("/dots/"):
+            self._static(DOTS, path[len("/dots/"):])
+        elif path == "/report":
+            self.send_response(301); self.send_header("Location", "/report/"); self.end_headers()
+        elif path.startswith("/report/"):
+            self._static(REPORT, path[len("/report/"):] or "index.html")
         else:
             self._json(404, {"error": "not found"})
 
