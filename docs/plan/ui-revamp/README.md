@@ -4,7 +4,7 @@
 graph, a day counter, three numbers and one Optimise button. It is built by six page lanes in parallel on a shared
 contract, with everything else paused, and closed with a handoff that paused agents read before resuming.
 
-Status: plan only (branch `w8/ui-plan`), no product code changed. Written Sat 14 Nov 21:00 to 21:40 UTC.
+Status: plan only, merged into `overnight/sim` (21:40 UTC); no product code changed. Reviewed 21:45 UTC: ready once the pre-pause data steps in 08 section 1 are done (see "Before the pause" below).
 Submission Sun 10:00 Helsinki; code freeze 04:00 UTC. Tuomas's choices are recorded as D60 to D63 in `docs/decisions.md`.
 
 | Document | What it holds |
@@ -34,6 +34,8 @@ Submission Sun 10:00 Helsinki; code freeze 04:00 UTC. Tuomas's choices are recor
 | React app | Not restyled for Sunday (lane L7 waits) |
 | Norway framing (D62) | Plausibility framing of `docs/norway_case_study.md`; ranges always; never "beats the authors" |
 | JEV page wording (D63) | Kept as built; restructure and restyle only |
+| Dashboard "Before and after" (D66) | `index.html` screen 5 kept as built, re-themed only (script colours may change); linked from the Simulator's Optimise result (`index.html#<scenario>/5`) |
+| Simulator graph (D67) | Less by default: edge thickness only, node names only, numbers on hover/click; keep the coloured "return" path and the dashed group boxes; a Details switch for the dense view |
 
 ## Lanes, critical path, cut line
 
@@ -70,6 +72,13 @@ Each lane writes `handoff/<lane>.md`. The integrator assembles `HANDOFF.md` and 
    caveats moved down and not deleted, Norway framing per D62, and a human read of L3 and L4 text before they go into the nav.
 5. **Guarded pages:** `start.html` and `jev.html` have tests forbidding typed digits and limiting JS numerals; design
    constants have to live in CSS or `data-*` attributes.
+
+## Before the pause (architect, about 25 minutes)
+
+1. Regenerate `libraries/ref500` with g2@3 (M2 and D65 change its content and id), audit it.
+2. `demo/export_cards.py`: prefer libraries made with `g2@3`, not `g2@2` (g2@2 is no longer in the safe set).
+3. `python demo/export_all.py`, `python docs/pitch/fill_numbers.py --strict`, gate, commit, then the snapshot and tag in 08 section 1.
+4. The Gemini v2 card run (Tuomas's Mac) lands after the handoff: the Patients and Overview pages must show whatever `cards_bundle.js` holds when re-exported (no typed counts), so a later `export_all.py` updates them without UI work.
 
 ## Still for Tuomas
 

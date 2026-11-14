@@ -145,7 +145,7 @@ runs only in the integrator, once per merge. No lane runs exporters (except L4's
 - **Fits before the freeze now:** L0, L1, L2, L3, L4 (page top + robustness; links the existing `docs/norway_case_study.md`; the printable white-paper page comes after), L5, L6. Six page agents plus the foundation agent and the integrator.
 - **Still after the submission:** the Norway case-study paper, the full React-app revamp (WP7 beyond tokens), one
   simulator for all surfaces (WP8, with Eemeli), pixel-diff regression.
-- **Cut order if the night runs late** (drop from the bottom): L4 robustness small multiples (keep the one chart)
+- **Cut order if the night runs late** (drop from the bottom): L4 robustness small multiples (keep the one chart) D67 adds hover/click readouts to L1: if L1 runs late, ship names-only nodes and thickness-only edges first (the default view), and cut the Details "Show all numbers" switch and the pinned-card polish before cutting the Optimise flip.
   → L3's reveal interaction (keep the static figure) → L1 step 5 animation (keep the plain toggle). Do not cut L0, L1 1–4, or L2.
 - **Stop rule at 03:15 UTC:** anything not merged into `ui/main` stays on its branch. `ui/main` ships as it is, or, if the
   final shots show a broken simulator, `ui/main` without L1 (revert L1's merge) ships.
