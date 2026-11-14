@@ -6,7 +6,7 @@ Track F. All data are synthetic. Every parameter carries `source:` (an id in `pa
 
 One large wellbeing services county (about 500,000 people, Pirkanmaa-sized; see limitations), clock from **first contact in primary care** (nurse or GP) to **start of treatment**. 44 chest-symptom presenters arrive per day (Poisson), about 16,000 in the measured year, **1.6% of them have lung cancer** (about 260 a year). The rest are pneumonia (17%), COPD exacerbation (14%), benign nodule (3%), other benign chest conditions (30%) and self-limiting illness (34%).
 
-- **Two presentation groups** (equity split): `site_specific` (alarm symptoms such as haemoptysis, 16% of presenters, 3.1% cancer, KOO2023) and `non_specific` (fatigue, weight loss, cough; 84%, 1.3% cancer, BRADLEY2021). 31% of cancers present site-specifically. Groups are drawn through `share_by_condition`; because the engine cannot key `p_positive` on group, the cancers are two conditions (`lung_cancer_site`, `lung_cancer_nonspec`) with different test accuracies.
+- **Two presentation groups** (equity split): `site_specific` (alarm symptoms such as haemoptysis, 16% of presenters, 3.1% cancer, KOO2023) and `non_specific` (fatigue, weight loss, cough; 84%, 1.3% cancer, BRADLEY2021). 31% of cancers present site-specifically. Groups are drawn through `share_by_condition`; the scenario encodes the cancers as two conditions (`lung_cancer_site`, `lung_cancer_nonspec`) with different test accuracies.
 - **Stages** (the brief's four): detection (nurse/GP, chest X-ray, GP review, safety net), referral (referral letter, hospital referral handling, specialist visit), diagnosis (CT, bronchoscopy or needle biopsy, PET-CT), treatment start (weekly tumour board, treatment slot).
 - **Queues** are `server` resources booked by appointment: a wait = booking lead (`min_lead_days`, appointment books are filled days ahead) + overload queue. Capacities are slices of county capacity for this stream, not whole-county capacities.
 - **Nurse first**: a choice node with a 50/50 `mix` (KHALIFE2025: 40-60%). The nurse rarely orders imaging herself, so most nurse-first patients need a second appointment.
@@ -50,12 +50,14 @@ Other checks: no stuck patients in any flowchart; missed cancers are discharged 
 
 ## 3. Flowcharts compared
 
+*The table below is from an earlier five-seed run and is kept for the per-flowchart reading; the headline held-out numbers (today 18% to 33% within 90 days with the optimiser's two reorders; urgent booking for everyone is a conditional finding) are in `demo/data/demo_bundle.json` and `docs/pitch/filled/`. The fast-track flowchart now uses `urgent_lead_days` rather than a negative `extra_wait` workaround.*
+
 All four alternatives are **hand-written**; the optimiser track builds the automatic search. `baseline_plus_capacity` is a control. Same patients (common random numbers) in every row.
 
 - `baseline`: nurse/GP -> chest X-ray -> GP review -> referral -> specialist visit -> CT -> sampling -> PET-CT -> tumour board -> treatment slot.
 - `direct_ct`: GPs order CT directly (alarm-symptom presenters skip the X-ray, a suspicious film goes to CT before the referral). **Needs CT capacity 8** (demand 7-8 a weekday against 2.6): the flowchart carries `resource_overrides: ct_scanner 8`.
 - `bundled_workup` (Stokstad-style): at the specialist visit CT and PET-CT are ordered together (PET for patients with a suspicious film), the tumour board meets before sampling, a treatment slot is booked while sampling runs, treatment starts when both are ready. **Needs PET-CT capacity 3** (demand 2.3 a weekday against 0.9); `resource_overrides: pet_scanner 3`.
-- `fast_track_nonspecific`: `fast_track: true` for non-specific presenters with a suspicious film (priority in every server queue, `urgent_reserved_share` 0.14 on the clinic and 0.32 on CT) and shortened booking leads at every later step (see section 6, workaround).
+- `fast_track_nonspecific`: `fast_track: true` for non-specific presenters with a suspicious film (priority in every server queue, `urgent_reserved_share` 0.14 on the clinic and 0.32 on CT) and shortened booking leads at every later step (now `urgent_lead_days` on the servers; see section 6).
 - `baseline_plus_capacity`: baseline order with CT 8 and PET-CT 3. The difference between this row and `direct_ct` / `bundled_workup` is the effect of the order of steps.
 
 | Flowchart | On-time (42 d) | Median days to treatment | Mean days | Treated within 90 d | Median days to tissue diagnosis | Missed cancers per seed (of 258) | Tests per patient | Cost per patient (EUR) | Non-cancer exit, median / mean d |
@@ -123,14 +125,14 @@ Diagnostic runs with unchanged capacity (seed 1, overrides removed in memory): `
 - **Result independence**: test results are drawn independently given the condition (engine simplification), so a cancer missed on the film is no more likely to be missed on CT.
 - **Missed cancers are cancers never diagnosed in this episode**; in reality some would return later or present as emergencies. 10.7% is plausible but not sourced.
 - **False positives** are crude (CT/PET false-positive rates assumed); chest X-ray PPV comes out at 13% against 9% in BRADLEY2021.
-- **Fast track** reservations and shortened leads are workarounds; see below.
+- **Fast track** reservations and shortened urgent leads are assumptions (`urgent_lead_days`); the optimiser search excludes fast track, and urgent booking for every referral is reported only as a conditional finding.
 
-## 6. Engine bugs and feature requests (pathway_sim/ not touched)
+## 6. Engine bugs and feature requests (status after the 14 Nov review: items 1, 2 and 4 are now done)
 
-1. **`utilisation` is understated.** `_Server.summary` averages over the weekdays from `warmup_days` to the *last exit*, which is 100+ days after the last arrival, so the draining tail dilutes it: the engine reports 62-78% for resources whose utilisation over the measured year is 76-92%. Suggested: use [warmup, last arrival].
-2. **No urgent booking lead.** Priority only lets a patient use reserved slots; the lead (`min_lead_days`) is the same, so `fast_track` barely helps when waits are mostly lead. Workaround: `*_fast` tests with a negative `extra_wait` (a fixed shift) that shorten the lead for the same server. Request: `urgent_lead_days` on servers.
+1. **`utilisation` was understated (fixed).** The engine now computes utilisation over [warm-up, last arrival]. Original problem: `_Server.summary` averages over the weekdays from `warmup_days` to the *last exit*, which is 100+ days after the last arrival, so the draining tail dilutes it: the engine reports 62-78% for resources whose utilisation over the measured year is 76-92%. Suggested: use [warmup, last arrival].
+2. **No urgent booking lead (fixed: `urgent_lead_days` exists on servers, used by the `*_fast` tests and the conditional urgent-booking variant).** The conditional urgent-booking result depends on those assumed leads (see `docs/review.md` B1). Original problem: Priority only lets a patient use reserved slots; the lead (`min_lead_days`) is the same, so `fast_track` barely helps when waits are mostly lead. Workaround: `*_fast` tests with a negative `extra_wait` (a fixed shift) that shorten the lead for the same server. Request: `urgent_lead_days` on servers.
 3. **`capacity_per_day` must be an integer and `urgent_reserved_share` floors.** At 1-3 slots the utilisation and reservations are coarse (floor(3 x 0.68) = 2, i.e. a reservation of 1 slot needs a share just under 1/cap). Request: fractional capacity or `capacity_per_week`.
-4. **`p_positive` cannot depend on `group`** (only on condition and attributes), so presentation groups had to be encoded as separate cancer conditions. Request: `{by: group, ...}`.
+4. **`p_positive` could not depend on `group` (fixed: the engine now supports `p_positive` by group).** Original problem: `p_positive` could not depend on `group` (only on condition and attributes), so presentation groups had to be encoded as separate cancer conditions. Request: `{by: group, ...}`.
 5. **Guards are evaluated once and a skipped node never re-runs**, and there are no loops. Re-presentation and the safety net are modelled as a zero-time `symptoms_persist` test plus a GP visit with a long `extra_wait`. Works, but that visit pre-books its slot at decision time, which makes it a booking in the future, not a queue entry at the later date.
 6. **`milestone: diagnosis` semantics** differ between flowcharts when sampling moves; `median_days_to_diagnosis` is not comparable between `baseline` and `bundled_workup`. Consider an optional second milestone ("decision made" at the board).
 7. `compare` regenerates the patients for every flowchart and shows only four numbers; on-time at 42 d is 0% for all Finnish flowcharts, so it shows no movement. A configurable secondary threshold would help.

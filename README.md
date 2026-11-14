@@ -9,9 +9,9 @@ Plan: `docs/master_plan.md`. Interface contract: `docs/architecture.md`. Open ch
 
 ```bash
 pip install -r requirements.txt            # pyyaml, numpy
-python -m pytest -q                        # all tests, ~3 s
-python -m pathway_sim demo                 # full loop -> demo/data/demo_bundle.json (~1 min)
-open demo/index.html                       # the dashboard (works offline, keys 1-4)
+python -m pytest -q                        # all tests, ~35 s
+python -m pathway_sim demo                 # full loop -> demo/data/demo_bundle.json (~9 min; `--quick` ~2.5 min)
+open demo/index.html                       # the dashboard (works offline, 6 screens, keys 1-6)
 ```
 
 ## What is where
@@ -52,12 +52,29 @@ python -m decision_model.benchmark --quick
 |---|---|---|
 | Observed pathway (calibrated) | 40% within 42 d | 40% |
 | Faster PET-CT only | 48% | 60% (we over-predict, see `docs/validation.md`) |
-| Authors' reordered pathway | 80% | 80% (predicted, not fitted) |
-| Optimiser, blind, same premise as the authors | n/a | 88%: it finds the authors' three changes plus one |
+| Authors' reordered pathway | 80% | 80% (predicted, not fitted; the calibrated "PET-CT ordered at triage" practice is carried into it, with PET-CT ordered at the first visit it would be 66%, `docs/review_checks/stokstad_pet_triage_result.json`) |
+| Optimiser, same premise as the authors | n/a | 88%: it finds the authors' three changes plus one |
 | Optimiser, no new equipment | n/a | 67% |
 
-No missed cancers and no extra tests in any accepted change. The guardrails also block "faster by
-skipping tissue sampling".
+The Norwegian search chose from a menu of about 70 single changes that included each of the authors' changes as one edit; it was
+not told which. Its fourth change plans tissue sampling at referral triage, before a specialist has seen the patient, and needs a
+clinical check.
+
+| Finnish synthetic county (held-out, 90-day provisional target) | Within 90 d | Note |
+|---|---|---|
+| Today | 18% | |
+| Optimiser: two reorders, no new equipment, no priority lane | 33% | reserve the treatment slot at tumour-board referral; book the specialist visit on referral arrival |
+| Same extra CT and PET-CT capacity, today's order | 31% | capacity-only control |
+| Hand-written order-together pathway | 54% | needs 3 PET-CT slots |
+| **Conditional:** urgent booking for every referred patient | 18% / 44% / 61% | at 0 / 50 / 100% of the assumed urgent booking-lead reduction; depends entirely on assumed leads, not a recommendation |
+
+Finnish capacities and all booking leads are assumptions calibrated to published waits. The 90-day target is provisional. Counts of
+sourced and assumed scenario inputs are in `docs/pitch/filled/data_transparency.md`. The parameter table in the demo lists evidence
+and calibration targets, not only simulator inputs.
+
+Missed cancers do not change in any accepted Finnish change; the tissue-confirmed guardrail is active in Finland (bronchoscopy and
+needle biopsy count as confirming) and blocks "faster by skipping tissue sampling". In the Norwegian check every patient has cancer
+and there is no discharge exit, so the missed-cancer check is vacuous there.
 
 ## How a scenario is written
 

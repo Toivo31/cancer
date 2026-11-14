@@ -67,6 +67,7 @@ intervals overlap only at the edge.
   another, add up to more than its 46.5-day median, so some steps must overlap in practice; we
   model the overlap explicitly and label it `assumption`. With the full text's figure 4 the
   overlap could be checked.
+- **Disclosure (review M3):** the calibrated observed practice of ordering PET-CT at referral triage (share 1.0, the grid maximum) is carried into the authors' pathway through a shared mix object. With PET-CT ordered at triage for 100%, 50% or 0% of patients, the simulated authors' pathway gives 80%, 73% or 66% (0% = PET-CT ordered at the first visit, as the paper describes; `docs/review_checks/stokstad_pet_triage_result.json`). "Predicted, not fitted" holds, but the 80% is not independent of the fitted practice. Three of the five calibrated parameters sit at the edge of the grid.
 - The authors' 80% is itself a model estimate, and all 100 patients had cancer. This validates
   specialist-care ordering, not primary-care filtering.
 

@@ -156,6 +156,7 @@ Code is on branch `overnight/sim`; how to run it is in `README.md`. Provisional 
 - **Open question 9, guardrails** (*provisional*): no more missed or untreated cancers, at most 2 percent more tests or invasive procedures, at most 2 percent fewer tissue-confirmed diagnoses, and no longer exit times for patients without cancer.
   - The tissue-confirmed guardrail was added after the optimiser tried "skip tissue sampling" to save time.
   - The scenario also lists clinical needs, for example "the tumour board needs PET-CT", that no change may break.
+  - *Update 14 Nov, review:* the tissue-confirmed guardrail is now active in Finland too (bronchoscopy and needle biopsy are marked as confirming). In the Norwegian check the missed-cancer guardrail is vacuous, because every patient has cancer and there is no discharge exit.
 - **Validation result** (`docs/validation.md`):
   - Calibrating only the observed pathway reproduces the observed 40 percent. It then *predicts* 78 to 86 percent for the authors' pathway (published 80 percent) and their 16 percent drop in sampling procedures.
   - It over-predicts "faster PET only": 55 to 67 percent against the published 48 percent.
@@ -163,10 +164,11 @@ Code is on branch `overnight/sim`; how to run it is in `README.md`. Provisional 
     1. the tumour board before sampling;
     2. PET-CT always ordered on time;
     3. the exercise test ordered early.
-  - It also finds a fourth change: booking tissue sampling at referral triage. That needs a clinical check.
+  - It also finds a fourth change: planning tissue sampling when the referral is triaged, before the first hospital visit (before a specialist has seen the patient). That needs a clinical check.
   - This reaches 88 percent on held-out patients. Without new equipment it reaches 67 percent.
+  - *Disclosures (review M3, M7):* the 80 percent "prediction" carries the calibrated observed practice of ordering PET-CT at referral triage into the authors' pathway; with PET-CT ordered only at the first visit the simulated authors' pathway gives 66 percent. The search chose from a menu of about 70 single changes that included each of the authors' changes as one edit, and was not told which ones the authors made.
 - **Decision model** (`decision_model/README.md`):
-  - On a task where the right answer depends on the set of options, the correction model beats a parameter-matched dot-product model: 84.5 against 78.3 percent accuracy.
+  - On a task where the right answer depends on the set of options, the correction model beats a parameter-matched dot-product model: 84.5 against 79.0 percent accuracy (78.3 percent is the smaller d=32 dot-product model).
   - The "half the compute for a second question" claim was *not* reproduced at our model sizes. Only the context embedding is cached, so a second question costs 76 to 91 percent of the first.
   - *Update 14 Nov, wave 2:* the model now runs inside the simulator at the sampling-method choice. It is trained from a random-exploration log on revealed outcomes only (reward = usable result − days/30, a value judgement, D25).
     - On the Norwegian scenario it rediscovers the location rule (central → bronchoscopy, peripheral → needle biopsy) and ties with it.
@@ -178,10 +180,12 @@ Code is on branch `overnight/sim`; how to run it is in `README.md`. Provisional 
   - No presentation group may get slower or less often on time.
   - A two-step lookahead lets it accept pairs of changes that only help together.
   - Norway: the same four changes as before; held-out 60% → 88%, selection optimism 1.7 points.
-  - Finland: only "fast track every suspected-cancer referral from referral handling onwards" survives; held-out within 90 days 18% → 57%. "GP first instead of nurse first" now fails: it gives more missed cancers and is not better in every cohort.
+  - Finland (after review B1, fast track excluded from the search): two reorders survive, "reserve the treatment slot when the case is sent to the tumour board" and "book the specialist visit as soon as the referral arrives". Held-out within 90 days 18% → 33%, median 102 → 94 days, no new equipment, missed cancers unchanged.
+  - The earlier 61% ("urgent booking for every referred patient") is a **conditional finding**: it gives the same lead reduction to everyone, so the gain is exactly the assumed gap between routine and urgent booking leads. With 0 / 50 / 100% of the assumed reduction the share is 18 / 44 / 61%. Never present it as the headline or as a fast lane.
+  - "GP first instead of nurse first" did not pass the safety checks on the training patients (half a missed cancer more per cohort, one patient in one cohort). On unseen patients it looked neutral to positive (fewer missed, but it trips the equity guardrail), so the rejection is noise-level and it needs a paired test with more cohorts.
 - **Sensitivity** (`docs/sensitivity.md`):
   - Norway: reorder beats observed in 80 of 80 joint draws of the unsourced parameters, with a gain of +32 to +48 points.
-  - Finland: the direction holds but the size is uncertain by about 10 points.
+  - Finland: the direction holds but the size is uncertain by about 10 points. These runs compare the hand-written order-together pathway, not the two accepted reorders or the urgent-booking variant.
   - Reordering alone, against a capacity-matched control, gives about +20 points. It turns negative if CT or PET-CT is one slot short.
   - The Finnish equity gap comes entirely from our detection assumptions, not from Finnish data. Claim it only as "in our synthetic county, under these assumptions".
 - **External check** (`docs/external_checks.md`): the UK rapid-CT pattern is reproduced. Moving the CT earlier cut X-ray to CT result from 29 to 9 days, but X-ray to tumour board decision stayed at 61 days.

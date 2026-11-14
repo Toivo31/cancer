@@ -206,6 +206,7 @@ def finland_values(V: dict, bundle: dict) -> None:
     bundled = by_flowchart(f, "bundled_workup")["metrics"]
     fast = by_flowchart(f, "fast_track_nonspecific")["metrics"]
     capctl = by_flowchart(f, "baseline_plus_capacity")["metrics"]
+    cond_v = by_role(f, "conditional_urgent_booking")
     so = f["optimiser"]
     sh = lambda m: m["share_within_target"]  # noqa: E731
     V.update({
@@ -246,6 +247,27 @@ def finland_values(V: dict, bundle: dict) -> None:
         "f_direct_gain_pp": n0(100 * (sh(direct) - sh(base))),
         "f_fast_gain_pp": n0(100 * (sh(fast) - sh(base))),
     })
+
+    ch = by_role(f, "optimiser")["changes"]
+    for i, c in enumerate(ch, 1):
+        V[f"f_change_{i}"] = c
+    V["f_opt_vs_capctl_pp"] = n0(100 * (sh(opt) - sh(capctl)))
+    V["f_opt_gain_vs_capctl_note"] = "more" if sh(opt) > sh(capctl) else "less"
+    if cond_v:
+        rows = {round(r["share_of_lead_reduction"] * 100): r for r in cond_v["conditional"]}
+        for k, r in rows.items():
+            V[f"f_cond_share_{k}"] = pc(r["share_within_target"])
+            V[f"f_cond_median_{k}"] = n0(r["median_days_to_treatment"])
+            V[f"f_cond_missed_{k}"] = n1(r["missed_cancers"])
+        V["f_cond_gain_100_pp"] = n0(100 * (rows[100]["share_within_target"] - rows[0]["share_within_target"]))
+        V["f_cond_table"] = md_table(
+            ["Share of the assumed urgent-booking lead reduction that holds", f"Treated within {V['f_target']} d", "Median days", "Missed cancers per cohort"],
+            [[f"{k}%", f"{pc(r['share_within_target'])}%", n0(r["median_days_to_treatment"]), n1(r["missed_cancers"])]
+             for k, r in sorted(rows.items())])
+        cm = cond_v["metrics"]
+        for tag in ("ns", "ss"):
+            grp = "non_specific" if tag == "ns" else "site_specific"
+            V[f"f_cond_{tag}_share"] = pc(cm["by_group"][grp]["share_within_target"])
 
     # where time is lost
     st = base["stage_breakdown"]
@@ -305,10 +327,11 @@ def finland_values(V: dict, bundle: dict) -> None:
     V["f_variant_table"] = md_table(
         ["Flowchart (same patients)", "Origin", f"Treated within {V['f_target']} d", "Median days", "Missed cancers per cohort", "Tests per patient"],
         [row("Baseline", base, "starting point"),
-         row("Suggested change (2 steps)", opt, "optimiser, held-out"),
+         row(f"Suggested change ({len(ch)} reorders, no new capacity)", opt, "optimiser, held-out"),
          row("GPs order CT directly (needs 8 CT slots)", direct, "hand-written"),
          row("Order CT + PET-CT together, board before sampling (needs 3 PET slots)", bundled, "hand-written"),
-         row("Fast lane for vague symptoms", fast, "hand-written"),
+         row("Hand-written priority track for vague symptoms", fast, "hand-written"),
+         *([row("Conditional: urgent booking for every referred patient (assumed lead times, 100% of the reduction)", cond_v["metrics"], "conditional finding")] if cond_v else []),
          row("Baseline order, same extra CT and PET capacity", capctl, "capacity-only control")])
     V["f_equity_table"] = md_table(
         ["Flowchart", "Vague (non-specific) symptoms: within target", "Alarm (site-specific) symptoms: within target",
@@ -317,6 +340,13 @@ def finland_values(V: dict, bundle: dict) -> None:
          for lab, t in (("Baseline", "base"), ("Suggested change", "opt"), ("GPs order CT directly", "direct"),
                         ("Order together", "bundle"), ("Fast lane for vague symptoms", "fast"),
                         ("Capacity-only control", "capctl"))])
+
+    V["f_cap_control_table"] = md_table(
+        ["Option (same patients)", f"Treated within {V['f_target']} d", "Median days"],
+        [["Baseline", f"{pc(sh(base))}%", n0(base["median_days_to_treatment"])],
+         ["Large capacity increase, same order (CT 8, PET-CT 3)", f"{pc(sh(capctl))}%", n0(capctl["median_days_to_treatment"])],
+         ["Same extra capacity plus ordering tests together (hand-written)", f"{pc(sh(bundled))}%", n0(bundled["median_days_to_treatment"])],
+         ["Suggested change, no new capacity", f"{pc(sh(opt))}%", n0(opt["median_days_to_treatment"])]])
 
     probe = f["capacity_probe"]
     V["f_cap_top_name"] = probe[0]["label"]
@@ -338,6 +368,46 @@ def bundle_values(V: dict, bundle: dict) -> None:
     V["sourced_count"] = n0(sum(1 for x in a if x["status"] == "sourced"))
     V["bundle_date"] = bundle["generated_at"][:10]
     V["bundle_is_fixture"] = "illustrative fixture" if bundle.get("fixture") else "real run"
+
+
+def count_source_tags(path: Path) -> dict[str, int]:
+    """Count every `source:` tag in a scenario file (each tag once, anchors not re-counted)."""
+    import yaml
+    from collections import Counter
+    c: Counter = Counter()
+    seen: set[int] = set()
+
+    def walk(n):
+        if id(n) in seen:
+            return
+        seen.add(id(n))
+        if isinstance(n, yaml.MappingNode):
+            for k, v in n.value:
+                if k.value == "source" and isinstance(v, yaml.ScalarNode):
+                    c["assumption" if v.value == "assumption" else ("untagged" if v.value in ("", "none") else "sourced")] += 1
+                walk(v)
+        elif isinstance(n, yaml.SequenceNode):
+            for x in n.value:
+                walk(x)
+
+    walk(yaml.compose(path.read_text()))
+    return dict(c)
+
+
+def scenario_source_values(V: dict) -> None:
+    for tag, fn in (("f", "finland_lung"), ("s", "stokstad")):
+        c = count_source_tags(ROOT / "scenarios" / f"{fn}.yaml")
+        tot = sum(c.values())
+        V[f"{tag}_scn_n"] = n0(tot)
+        V[f"{tag}_scn_assumption"] = n0(c.get("assumption", 0))
+        V[f"{tag}_scn_sourced"] = n0(c.get("sourced", 0))
+        V[f"{tag}_scn_untagged"] = n0(c.get("untagged", 0))
+    p = load(ROOT / "docs" / "review_checks" / "stokstad_pet_triage_result.json")
+    if p:
+        r = p["share_within_target_by_pet_triage_share"]
+        V["s_auth_pet_triage_100"] = pc(r["1.0"])
+        V["s_auth_pet_triage_50"] = pc(r["0.5"])
+        V["s_auth_pet_first_visit"] = pc(r["0.0"])
 
 
 def decision_model_values(V: dict) -> None:
@@ -400,6 +470,7 @@ def build_values() -> dict:
     stokstad_values(V, bundle, val)
     finland_values(V, bundle)
     decision_model_values(V)
+    scenario_source_values(V)
     sensitivity_values(V)
     return V
 
@@ -423,6 +494,9 @@ def main() -> int:
     n_files = 0
     for p in sorted(PITCH.glob("*.md")):
         text = p.read_text()
+        if p.name == "video_script.md":  # spoken word count, computed from the filled spoken section
+            spoken = PLACEHOLDER.sub(lambda mo: V.get(mo.group(1), "x"), text.split("## Spoken text only")[1].split("## Claims")[0])
+            V["spoken_words"] = str(round(len(spoken.split()), -1))
 
         def sub(mo, name=p.name):
             k = mo.group(1)
