@@ -35,6 +35,7 @@ try:
  cmd('/window/rect',{'width':1440,'height':1000});cmd('/url',{'url':SITE})
  wait('return document.querySelectorAll("#photo-result .score-row").length===2')
  wait('return document.getElementById("sim-frame").contentDocument.querySelectorAll(".patient").length>20')
+ check('desktop slide fits viewport','return document.documentElement.scrollHeight<=innerHeight+2')
  check('exactly three slides','return document.querySelectorAll("main>.page").length===3')
  check('simulation has no controls','return document.getElementById("sim-frame").contentDocument.querySelectorAll("button,input,select").length===0')
  check('branching graph','return document.getElementById("sim-frame").contentDocument.querySelectorAll(".edge").length>12')
@@ -42,6 +43,7 @@ try:
  assert before!=js('return document.getElementById("sim-frame").contentDocument.querySelector(".patient").getAttribute("cx")');checks.append('patient animation moves')
  screenshot('simulation-desktop.png')
  click('next');wait('return !document.getElementById("studio").hidden')
+ check('desktop decision slide fits viewport','return document.documentElement.scrollHeight<=innerHeight+2')
  # Intercept only the external decision API, retaining real assets and the production SDK.
  js(r'''window.calls=[];window.pendingResult=null;window.slow=false;window.originalFetch=window.fetch;
  window.fetch=async(url,init={})=>{
