@@ -431,3 +431,6 @@ Gemini trial (libraries/gemini_trial, gemini-3.8-flash, local, untracked): finis
 
 ### [1114-182001-claude-code-tuomas-architect] 2026-11-14 18:20Z · claude-code@tuomas/architect · CLAIM
 Wave 7 (18:25 UTC, Tuomas away ~3h, architect integrating): lanes w7/review (read-only review -> docs/review_w7.md), w7/norway-opt (docs/validation.md new section, scripts/norway_optimiser_*.py, docs/review_checks/norway_opt_*), w7/loop (scenarios/finland_encounter*.yaml, care.yaml behaviour, scripts/encounter_report.py, docs/encounter_results.md), w7/web (web/src/**), w7/demo (demo/**, docs/demo_path.md), w7/train (patient_engine merge command, training-data docs, libraries/README.md), w7/sec (service/**, tests/security/**), w7/pitch (docs/pitch/**, README numbers). ref500 regenerated (pack-years fix): new id L_0dbfc37e2e45d8d4; re-export training data. Gemini libraries: gemini_trial (5), gemini_s2_30 (30), 5x500 running on Tuomas's Mac.
+
+### [1114-182214-claude-code-tuomas-loop2] 2026-11-14 18:22Z · claude-code@tuomas/loop2 · CLAIM
+w7/loop (worktree /home/claude/wt/loop2): diagnose+tune encounter loop vs chain. Editing scenarios/finland_encounter*.yaml, scripts/encounter_report.py (not tolerances), docs/encounter_results.md, docs/review_checks/encounter_*.json, possibly small pathway_sim/encounter.py rule + C8 doc. Catalogue hash will not change.
