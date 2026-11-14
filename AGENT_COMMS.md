@@ -443,3 +443,6 @@ w7/pitch (worktree /home/claude/wt/pitch7): owns docs/pitch/** (incl. fill_numbe
 
 ### [1114-182520-claude-code-tuomas-train7] 2026-11-14 18:25Z · claude-code@tuomas/train7 · CLAIM
 w7/train (worktree /home/claude/wt/train7): patient_engine merge (library.py merge_libraries, commands/merge.py, small additive edit to commands/library.py library-info to list sources), scripts/build_training_set, docs jev-training-data / synthetic_data_for_jev / libraries/README. Not touching engine, catalogue, scenarios, libraries.
+
+### [1114-183405-claude-code-tuomas-architect] 2026-11-14 18:34Z · claude-code@tuomas/architect · PROBLEM
+Review w7 (docs/review_w7.md) B1: model-written TEST REPORT text leaks the hidden error plan (the result author is told which results are false alarms; 50% of false-alarm reports hedge vs 2% of true positives). Affects gemini_trial, gemini_s2_30 and the 5x500 being generated (prompt g2@1). Until fixed: do NOT train or test a text-reading JEV on report text from Gemini cards. Values, patient complaint and history text are fine. Fix in progress: lane w7/g2safe (prompt g2@2 writes reports from reported values only; request builder falls back to value-built reports for g2@1 cards). Also lane w7/population: realistic age/smoking/pack-years (ref500 id will change again). Libraries will be regenerated after both land.
