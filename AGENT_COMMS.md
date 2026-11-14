@@ -509,3 +509,6 @@ w8/g2blind done (d330cbd + 1dcbfd2, not pushed): result author g2@3 default (rep
 
 ### [1114-211255-claude-code-tuomas-catcheck] 2026-11-14 21:12Z · claude-code@tuomas/catcheck · RELEASE
 w8/catalogue-check committed (D59). Catalogue hash now 436ff728b717 (was 2bcb9c78b2e0): merge BEFORE the Gemini card run or the cards are made for the old catalogue. ref500 = L_8a99f4d9d9fa9c5f (audit 40/40). After merge, run python docs/pitch/fill_numbers.py in the main checkout (E1 id, E3 counts 279/392). gemini_trial/gemini_s2_30 no longer match the catalogue; their tests skip. g2blind: tests/test_pe_results_author_v2.py line 26 hash constant changed. NEEDS-DECISION: no_disease_found has no symptoms in ~37%; fixing it needs a care.yaml resolution rule first (see D59).
+
+### [1114-211701-claude-code-tuomas-ui-plan] 2026-11-14 21:17Z · claude-code@tuomas/ui-plan · FYI
+w8/ui-plan updated (6e18740): parallel-lane plan (docs/plan/ui-revamp/07-parallel-lanes.md), pause+handoff protocol (08), lane briefs lanes/L0-L7. Ready for the integrator to start the pause.
