@@ -75,7 +75,11 @@ def make_comparison_task(n: int, seed: int = 0, relative: bool = True) -> Datase
     return Dataset(ctx, opts, mask, comparison_label(ctx, opts, mask, relative))
 
 
-# ---------------------------------------------------------------- RunLog adapter
+# ---------------------------------------------------------------- RunLog adapter (retired)
+# Deprecated (ticket M6-2): decisions of a run are dataset rows now (``jev.dataset.rows_from_log`` or
+# ``GET /runs/{r}/decisions``), read back by ``jev.Dataset``, and the numpy model is trained from them by
+# ``jev.train("local", ...)``. This adapter reads the old contract RunLog format and guesses the context from
+# events; it stays only so ``ModelPolicy.train_on_runlog`` and its fixture keep working.
 def runlog_to_examples(runlog: dict | str, choice_nodes: dict[str, list[str]],
                        test_table: dict | None = None, node_to_test: dict[str, str] | None = None,
                        ages: dict[int, int] | None = None) -> Dataset:
@@ -90,6 +94,8 @@ def runlog_to_examples(runlog: dict | str, choice_nodes: dict[str, list[str]],
     node_to_test: node id -> test id for the history (defaults to the event's `test`).
     Hidden fields (condition, cancer) are never read.
     """
+    import warnings
+    warnings.warn("runlog_to_examples is retired: use jev.dataset rows and jev.train('local', ...) (spec 06)", DeprecationWarning, stacklevel=2)
     if isinstance(runlog, str):
         with open(runlog) as f:
             runlog = json.load(f)

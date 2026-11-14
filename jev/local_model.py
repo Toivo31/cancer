@@ -48,7 +48,8 @@ def layout_for(sc, fc, points: list[str]) -> dict:
     return {"groups": [g["id"] for g in sc.groups],
             "pairs": [[a, str(v)] for a, spec in sorted(sc.attributes.items()) for v in sorted((spec.get("values") or {}))],
             "steps": [nid for nid, n in fc.nodes.items() if n.kind != "choice" and n.test],
-            "options": options, "option_meta": meta, "points": list(points)}
+            "options": options, "option_meta": meta, "points": list(points),
+            "point_options": {pt: list(fc.nodes[pt].options) for pt in points}}
 
 
 def n_ctx(lay: dict) -> int:
