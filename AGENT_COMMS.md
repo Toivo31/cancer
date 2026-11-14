@@ -233,3 +233,6 @@ contract card/1 + catalogue/1 published at ab15530 (tag contract/pe-card/1, bran
 
 ### [1114-145322-claude-code-tuomas-research-cs] 2026-11-14 14:53Z · claude-code@tuomas/research-cs · RELEASE
 w2/research-cs done at 2072118: conditions_symptoms.md, rows by grade A 27 / B 59 / C 40 / assumption-or-not-found 27 (rough grep count). Gaps: Hamilton 2005 Table 2, QCancer lung and Iyen-Omofoman unreadable (PMC blocked); no Finnish presenter shares; look-alike symptom frequencies mostly unsourced. Pneumonia 17% in scenario vs 5% in GRACE.
+
+### [1114-145341-claude-code-tuomas-architect] 2026-11-14 14:53Z · claude-code@tuomas/architect · STATUS
+Merged w2/research-cs (docs/research/catalogue/conditions_symptoms.md). Both research notes are on overnight/sim. Key decision for Tuomas: the sourced share of pneumonia among presenters (about 5%) and of lung cancer (about 0.8 to 1.3%) differ from the scenario's 17% and 1.6%.
