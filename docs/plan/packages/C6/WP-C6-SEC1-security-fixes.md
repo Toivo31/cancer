@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | Component | C6 platform; `docs/platform/security-review.md`; triage in `docs/plan/04-status.md` ("Security review") |
-| Status | not started |
+| Status | done (commit 18cec7e) |
 | Size | M |
 | Needs | – |
 | Provides | nothing new; safer service |
@@ -56,11 +56,41 @@ Accounts, per-user auth, WAF, deployment files (`deploy/`, `Dockerfile`), `web/`
 
 | | ID | Ticket | Size | Done when |
 |---|---|---|---|---|
-| [ ] | SEC1-T1 | Make `tests/security` runnable as one command; convert passing xfails; allowlist fixture | S | one run, no hang; list of real remaining failures |
-| [ ] | SEC1-T2 | F16 flow endpoint bounded | M | parallel-request test passes; default flow unchanged |
-| [ ] | SEC1-T3 | F3 non-finite numbers rejected; old poisoned project readable | S | tests pass |
-| [ ] | SEC1-T4 | F2 rest and F5 caps in `jev/http.py`, off-loop calls | S | tests pass |
-| [ ] | SEC1-T5 | F6 errors without tracebacks; F7 delete cancels jobs | S | tests pass |
-| [ ] | SEC1-T6 | Status column in the review; triage of F14, F18 and the low ones | S | every finding has a status |
+| [x] | SEC1-T1 | Make `tests/security` runnable as one command; convert passing xfails; allowlist fixture | S | one run, no hang; list of real remaining failures |
+| [x] | SEC1-T2 | F16 flow endpoint bounded | M | parallel-request test passes; default flow unchanged |
+| [x] | SEC1-T3 | F3 non-finite numbers rejected; old poisoned project readable | S | tests pass |
+| [x] | SEC1-T4 | F2 rest and F5 caps in `jev/http.py`, off-loop calls | S | tests pass |
+| [x] | SEC1-T5 | F6 errors without tracebacks; F7 delete cancels jobs | S | tests pass |
+| [x] | SEC1-T6 | Status column in the review; triage of F14, F18 and the low ones | S | every finding has a status |
 
 ## Report (builder fills in at the end)
+
+Commit range `7e77f47..18cec7e` on `w2/sec1` (plus the report commit after it). Per-finding status and the proving tests are in
+`docs/platform/security-review.md` ("Status").
+
+- Fixed: F16, F3, F5, F6, F7, F9, F10, F11, and the parts of F4 that were still open (`/decide` with an unreachable JEV is 502;
+  non-string `backend`/`url` and non-object `points` are 422). F1, F2, F13 were already fixed by the deployment lane; their tests are normal tests now.
+- Accepted: F8 (Docker PID 1; `PR_SET_PDEATHSIG` tried, no effect because the parent is the forkserver), F12 (one shared token),
+  F14 and F18 (existing rate and active-job limits plus hosted settings), F15 (`pathway_sim.validate` is not in this package's paths),
+  F17 (`jev/stub_server.py` is a dev tool and not in this package's paths).
+- Tests: `python -m pytest -q tests/security` passes in one run (150 passed, 5 xfailed in about 80 s); `tests/test_service_*.py` and `tests/test_jev*.py` green.
+  The five remaining `xfail(strict=True)` are F8, F12, F15 (two) and F17. The fuzzer's `KNOWN_500` is empty and its xfail reminder is deleted.
+  Every fixed finding has a test that failed on the old code (checked by running the new tests against `7e77f47`'s `service/` and `jev/`).
+- JEV allowlist in tests: `tests/security/conftest.py` has an `allow_jev` fixture; `internal_server` uses it. Tests whose job process needs the variable
+  use `PATHWAY_JOB_START=spawn` (the shared forkserver keeps the environment it started with).
+
+### Decisions made
+
+- F16: a rebuild is a job and the request waits (not 422), so the web app's `?sample=...&seeds=...` calls and `tests/test_service_runs.py` keep working.
+  At most `max_jobs` rebuilds may wait at once (429 `flow_busy`); the job has a 60 s limit; its output is a temporary blob that the request deletes.
+- F5: calls that run while a request waits use a 1 s timeout and no retry (the review test wants a 2.5 s policy timeout to answer in under 2 s);
+  jobs keep the policy's timeout up to the 5 s cap. These routes are now `async def` and use `service.limits.offload` (4 threads, 16 places).
+- F3: one ASGI middleware (`RejectNonFinite`) buffers bodies of up to the 1 MB document limit; `run_view` also scrubs stored non-finite values.
+- F11: key patterns no longer allow dots, so blob keys with a dot are refused (none exist).
+
+### What others must know
+
+- Web app: no JSON shape changed. New refusals: 422 `invalid_document` for NaN/Infinity, 422 for versions outside 1..10**6 and ids starting with `.` or `-`,
+  429 `flow_busy` and 429 `busy` under load, 502 `backend_unavailable` from `/decide`.
+- Flowchart ids that started with `_`, `.` or `-` are no longer accepted (none in the templates).
+- Not run: a real uvicorn instance behind a proxy; only `TestClient` and local servers.
