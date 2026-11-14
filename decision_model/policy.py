@@ -33,13 +33,14 @@ def _get(view, name, default=None):
 
 class ModelPolicy:
     def __init__(self, model=None, test_table=None, node_to_test=None, attr_vocab: AttrVocab | None = None,
-                 option_vectors: dict | None = None, elapsed: str = "auto"):
+                 option_vectors: dict | None = None, elapsed: str = "auto", extra_context=None):
         self.model = model if model is not None else CorrectionModel(n_layers=2, seed=0)
         self.test_table = test_table or DEFAULT_TEST_TABLE
         self.node_to_test = DEFAULT_NODE_TO_TEST if node_to_test is None else node_to_test
         self.attr_vocab = attr_vocab
         self.option_vectors = option_vectors
         self.elapsed = elapsed
+        self.extra_context = extra_context  # optional callable(view) -> array appended to the context
         self.n_fallbacks = 0
         self._cache: dict = {}  # context key -> cached context embedding
 
@@ -59,8 +60,11 @@ class ModelPolicy:
             if arrival is None:
                 arrival = min((h[3] for h in history), default=t_now)
         attrs = _get(view, "attributes") if self.attr_vocab is not None else None
-        return context_vector(_get(view, "age"), _get(view, "group") == "non_specific",
-                              t_now - arrival, status, attrs, self.attr_vocab)
+        v = context_vector(_get(view, "age"), _get(view, "group") == "non_specific",
+                           t_now - arrival, status, attrs, self.attr_vocab)
+        if self.extra_context is not None:
+            v = np.concatenate([v, np.asarray(self.extra_context(view), float)])
+        return v
 
     def option_rows(self, options: list[str]) -> list[np.ndarray]:
         """Raises KeyError for an option without features. ``option_vectors`` may be a dict
