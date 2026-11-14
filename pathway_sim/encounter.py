@@ -419,6 +419,13 @@ def world_library(world: EncounterWorld) -> Library:
     per, seed = int(spec.get("per_condition", 60)), int(spec.get("seed", 1))
     key = f"{world.catalogue.version_hash}|{per}|{seed}"
     if key not in _LIBRARIES:
+        cached = _library_cache_dir(world, per, seed)
+        if cached is not None and (cached / "manifest.json").exists():
+            try:
+                _LIBRARIES[key] = load_library(cached, world.catalogue)
+                return _LIBRARIES[key]
+            except Exception:              # damaged cache: regenerate
+                pass
         from patient_engine.reference import reference_cards
         design = Design(mode="stratified", n=per * len(world.catalogue.conditions),
                         counts=tuple((c, per) for c in world.catalogue.conditions))
@@ -426,7 +433,34 @@ def world_library(world: EncounterWorld) -> Library:
         d = Path(tempfile.mkdtemp(prefix="enc_lib_"))
         write_library(cards, world.catalogue, d, meta={"created": "1970-01-01T00:00:00Z"})
         _LIBRARIES[key] = load_library(d, world.catalogue)
+        if cached is not None:             # disk cache (runs/libraries/, gitignored); same content, same library id
+            try:
+                cached.parent.mkdir(parents=True, exist_ok=True)
+                tmp = Path(tempfile.mkdtemp(prefix=cached.name + ".", dir=cached.parent))
+                write_library(cards, world.catalogue, tmp, meta={"created": "1970-01-01T00:00:00Z"})
+                tmp.rename(cached)
+            except OSError:                # another process won the race, or a read-only tree
+                pass
     return _LIBRARIES[key]
+
+
+_CACHE_ROOT = Path(__file__).resolve().parent.parent / "runs" / "libraries"
+
+
+def _library_cache_dir(world: EncounterWorld, per: int, seed: int) -> Path | None:
+    """``runs/libraries/encounter_ref_<key>`` for generated reference cards; the key covers the catalogue hash,
+    the design and the generator's source files, so a change to any of them makes a new entry. None when the
+    generator sources cannot be read."""
+    h = hashlib.sha256(f"{world.catalogue.version_hash}|{per}|{seed}".encode())
+    try:
+        import patient_engine
+        pe = Path(patient_engine.__file__).parent
+        for name in ("reference.py", "skeleton.py", "card.py", "library.py", "states.py"):
+            f = pe / name
+            h.update(f.read_bytes() if f.exists() else b"-")
+    except OSError:
+        return None
+    return _CACHE_ROOT / f"encounter_ref_{h.hexdigest()[:16]}"
 
 
 def world_cohort(world: EncounterWorld, n: int, seed: int) -> Cohort:
@@ -682,6 +716,10 @@ class EncounterSimulation(Simulation):
         self.book(pr, role, t, False)
 
     def on_event(self, pr, kind: str, node: str, attempt: int, t: float) -> None:
+        if kind == "enc_refer" and pr.phase == "referral_letter":
+            pr.phase = "primary"
+            self.refer(pr, t, node == "urgent")
+            return
         if pr.phase != "primary":
             return
         if kind == "enc":
@@ -799,9 +837,23 @@ class EncounterSimulation(Simulation):
         elif a.kind == "refer":
             pr.record.append(Entry(rel, pr.episode, "referral", encounter=pr.enc_in_episode, role=role,
                                    action=action_id, note=f"{self.label(action_id)} sent."))
-            self.refer(pr, t, a.urgency == "urgent")
+            self.send_referral(pr, t, a.urgency == "urgent")
         elif a.kind == "discharge":
             self.discharge(pr, t, a.advice, role=role, action=action_id)
+
+    def send_referral(self, pr, t: float, urgent: bool) -> None:
+        """C8 rule 9 (referral letter): the referral reaches the hospital after the wait of the hospital scenario's
+        letter step (``hospital.referral_letter``, the chain's ``gp_referral_letter``), as in the chain, where the
+        referral clock (``referral_in``) stops only after the GP has written and sent the letter. Without the setting
+        the patient enters the hospital part at once."""
+        name = self.world.hospital.get("referral_letter")
+        spec = (self.tests.get(name) or {}).get("wait") if name else None
+        if not spec:
+            self.refer(pr, t, urgent)
+            return
+        wait = max(0.0, sample(spec, self.u(pr, "letter", pr.referrals)))
+        pr.phase = "referral_letter"
+        self.push(t + wait, "enc_refer", pr.patient.id, "urgent" if urgent else "routine")
 
     def order_test(self, pr, role: str, test_id: str, t: float) -> None:
         test = self.cat.tests[test_id]

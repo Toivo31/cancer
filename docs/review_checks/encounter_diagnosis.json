@@ -1,0 +1,114 @@
+{
+ "n_patients": 13498,
+ "n_cancers": 180,
+ "noncancer_by_condition": {
+  "viral_self_limiting": {
+   "n": 6069,
+   "referred": 0.06953369583127368,
+   "contribution": 0.03168643940531611,
+   "episodes": 1.3252595155709344
+  },
+  "no_disease_found": {
+   "n": 2696,
+   "referred": 0.06713649851632048,
+   "contribution": 0.013590629223607148,
+   "episodes": 1.2492581602373887
+  },
+  "copd_exacerbation": {
+   "n": 1018,
+   "referred": 0.17681728880157171,
+   "contribution": 0.013515542874305451,
+   "episodes": 2.3978388998035363
+  },
+  "pneumonia": {
+   "n": 669,
+   "referred": 0.19730941704035873,
+   "contribution": 0.009911398107823998,
+   "episodes": 2.367713004484305
+  },
+  "asthma": {
+   "n": 793,
+   "referred": 0.14627994955863807,
+   "contribution": 0.008710016518996846,
+   "episodes": 4.075662042875158
+  },
+  "heart_failure": {
+   "n": 665,
+   "referred": 0.16390977443609023,
+   "contribution": 0.008184412073884968,
+   "episodes": 3.4646616541353383
+  },
+  "benign_nodule": {
+   "n": 245,
+   "referred": 0.4326530612244898,
+   "contribution": 0.007959153025979876,
+   "episodes": 1.1795918367346938
+  },
+  "reflux_postinfectious_cough": {
+   "n": 745,
+   "referred": 0.11812080536912752,
+   "contribution": 0.006607598738549332,
+   "episodes": 3.408053691275168
+  },
+  "worried_well": {
+   "n": 406,
+   "referred": 0.19704433497536947,
+   "contribution": 0.006006907944135756,
+   "episodes": 2.455665024630542
+  },
+  "tuberculosis": {
+   "n": 12,
+   "referred": 0.6666666666666666,
+   "contribution": 0.0006006907944135756,
+   "episodes": 8.583333333333334
+  }
+ },
+ "noncancer_routes_pts": {
+  "gp#04": 6.847875056314762,
+  "default row": 0.12764679381288482,
+  "gp#21": 0.9385793662712119,
+  "gp#01 haemoptysis->X-ray row": 0.3003453972067878,
+  "gp#10 NT-proBNP positive row": 0.1426640636732242,
+  "gp#02": 0.12013815888271512,
+  "gp#25": 0.9085448265505331,
+  "gp#31 episode>=3 row": 0.3228713019972969,
+  "gp#24": 0.40546628622916353,
+  "gp#09 NT-proBNP positive row": 0.37543174650848476,
+  "gp#03 treatment review row": 0.04505180958101817,
+  "gp#06": 0.1426640636732242
+ },
+ "noncancer_film_pts": {
+  "film abnormal (false positive)": 7.013065024778495,
+  "no film": 0.8184412073884968,
+  "film negative": 2.8457726385343145
+ },
+ "noncancer_episode_pts": {
+  "2": 2.0348400660759873,
+  "1": 7.0881513740801925,
+  "3": 0.7808980327376484,
+  "4": 0.7733893978074786
+ },
+ "cancer_days_mean": {
+  "first_visit_wait": 7.282688235294118,
+  "nurse_to_gp": 5.334694117647059,
+  "test_turnaround": 6.205535294117647,
+  "review_after_result": 3.314076470588236,
+  "follow_up_interval": 1.8030176470588235,
+  "treatment_review": 3.5323823529411764,
+  "return_delay": 5.707194117647059,
+  "booking_after_return": 2.7038411764705876,
+  "other": 0.0
+ },
+ "chain_noncancer_routes_pts": {
+  "not referred": 92.10308190791952,
+  "re-presentation (after negative film)": 1.9214829327104213,
+  "positive film": 5.319870394092382,
+  "second look after negative film": 0.6555647652776732
+ },
+ "chain_cancer_routes": {
+  "positive film": 0.4845814977973568,
+  "second look after negative film": 0.04405286343612335,
+  "not referred": 0.08370044052863436,
+  "re-presentation (after negative film)": 0.3876651982378855
+ }
+}

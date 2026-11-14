@@ -26,7 +26,7 @@ policy: finland_encounter_policy.yaml
 resources_file: finland_encounter_resources.yaml   # WP-C8-3; merged over `resources` below when present
 
 library:                             # reference cards generated per primary condition (seeded, deterministic)
-  per_condition: 60
+  per_condition: 200                # W7: was 60. With 60 cards per condition the false-positive film rate of the common viral cards was set by 3 cards (5% first-film abnormal against about 1.4% the catalogue implies); 200 cuts that card-reuse artefact. Cached under runs/libraries/
   seed: 1
 prevalence: catalogue                # the catalogue's base prevalence of each primary condition
 arrivals: {rate_per_day: 44, source: assumption, note: "as finland_lung: a Pirkanmaa-sized stream of chest-symptom presenters"}
@@ -35,7 +35,8 @@ hospital:
   scenario: finland_lung.yaml
   flowchart: baseline
   entry: referral_in                 # the referral node; it and everything downstream of it are kept
-  urgent_referral_priority: true     # refer_urgent fast-tracks the patient (reserved slots, urgent leads)
+  referral_letter: gp_referral_letter   # W7 (C8 rule 9): the GP writes and sends the referral first (the chain's wait, median 3 d, p90 7, assumption); the loop's referral clock stops when it is sent, as the chain's referral_in. Without it the loop skipped this step and its referral times were not comparable
+  urgent_referral_priority: false    # W7: was true. The chain's calibrated baseline fast-tracks nobody (fast track is its own scenario, fast_track_nonspecific); with true the loop's urgent referrals got reserved slots and urgent leads that the calibration never saw (assumption, for consistency with the chain)
   # Hospital steps whose test maps to a catalogue test read the card (I3: same attempt numbering as
   # primary care); the others keep finland_lung's condition-dependent probabilities (known weakness).
   card_tests: {chest_ct: chest_ct, pet_ct: pet_ct}
@@ -79,4 +80,5 @@ natural_course:
   heart_failure: {p: 0.0, days: {dist: fixed, value: 0}, source: assumption}
   benign_nodule: {p: 0.0, days: {dist: fixed, value: 0}, source: assumption, note: "a nodule does not go away; it rarely causes symptoms"}
   tuberculosis: {p: 0.0, days: {dist: fixed, value: 0}, source: assumption}
+  worried_well: {p: 0.8, days: {dist: lognormal, median: 21, p90: 60}, source: assumption, note: "W7 NEW (was absent, so worried-well symptoms never ended and these patients came back all year): health worry settles in most after being seen; not sourced"}
   unexplained: {p: 0.98, days: {dist: lognormal, median: 21, p90: 60}, source: assumption, note: "TUNED in WP-W4-1 (was p 0.6, median 30, p90 90): with 0.6 a patient with an ordinary self-limiting illness kept coming back for a year"}
