@@ -89,4 +89,3 @@ class TensorSharingTests(unittest.TestCase):
         runner.generate(messages,max_new_tokens=2)
         self.assertEqual(len(calls),3)
         self.assertIsInstance(full.language_model.lm_head,nn.Identity)
-

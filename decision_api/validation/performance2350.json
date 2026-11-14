@@ -1,0 +1,279 @@
+{
+  "measured": {
+    "checkpoint": {
+      "model": "nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-BF16",
+      "revision": "fb0ee0bc6b3f70342afd8d84cb80dbadbaa8a1fe",
+      "training_identity": "003086694525587bde55201db3713f64f434df916492669a2836b871cc7d089d",
+      "step": 2350,
+      "checkpoint_sha256": "22570c201a9e3d25dcdf7aa904770a568328e034ccb5ac89623784707a7323e8",
+      "quantization": "nf4-experts-merged-adapters",
+      "mode": "model"
+    },
+    "first_score": {
+      "seconds": 3.409334632000025,
+      "probabilities": [
+        [
+          0.38101306557655334,
+          0.6189869046211243
+        ]
+      ],
+      "cache": {
+        "enabled": true,
+        "context_hits": 0,
+        "candidate_hits": 0,
+        "candidate_count": 2,
+        "bytes": 98304,
+        "max_bytes": 67108864
+      }
+    },
+    "cached_score": {
+      "seconds": 0.21316382399999156,
+      "probabilities": [
+        [
+          0.38101306557655334,
+          0.6189869046211243
+        ]
+      ],
+      "cache": {
+        "enabled": true,
+        "context_hits": 1,
+        "candidate_hits": 2,
+        "candidate_count": 2,
+        "bytes": 98304,
+        "max_bytes": 67108864
+      }
+    },
+    "generation": [
+      {
+        "seconds": 17.807452821000027,
+        "refinement": {
+          "enabled": true,
+          "mode": "frozen_pretrained_nemotron",
+          "original_context": "Synthetic performance check: changing skin lesion, no diagnosis.",
+          "context": "Synthetic performance check: changing skin lesion, no diagnosis.\n\nQuestions and allowed choices:\nWhat information is available for review?\nAllowed choices: Available history; Missing test results\n\nAdditional task instructions (not patient evidence):\nRetrieve available history, then give a short evidence summary.\n\nActual tool result: retrieve_information(patient)\n{\"as_of_step\": 1, \"entries\": [{\"source_id\": \"sim:intake-01\", \"text\": \"Synthetic patient reports a changing skin lesion. This statement is not a diagnosis.\", \"timestamp\": \"2026-11-14T08:00:00Z\"}, {\"source_id\": \"sim:review-02\", \"text\": \"Synthetic follow-up note: review the supplied photograph and documented history.\", \"timestamp\": \"2026-11-14T09:00:00Z\"}], \"patient\": \"sim:demo-record\", \"synthetic\": true}\n\nGenerated evidence summary (may contain errors; not a source record):\nAvailable history includes a synthetic patient report of a changing skin lesion (not a diagnosis) and a follow-up note to review the supplied photograph and documented history. No test results are present in the retrieved record.",
+          "tokens_used": 65,
+          "tokens_generated": 65,
+          "generation_cache_hits": 0,
+          "rounds_used": 2,
+          "tool_calls_used": 1,
+          "trace": [
+            {
+              "round": 1,
+              "tokens_used": 18,
+              "tokens_generated": 18,
+              "generation_cache_hit": false,
+              "tool": "retrieve_information",
+              "arguments": {
+                "patient": "sim:demo-record"
+              },
+              "response": {
+                "patient": "sim:demo-record",
+                "as_of_step": 1,
+                "synthetic": true,
+                "entries": [
+                  {
+                    "source_id": "sim:intake-01",
+                    "timestamp": "2026-11-14T08:00:00Z",
+                    "text": "Synthetic patient reports a changing skin lesion. This statement is not a diagnosis."
+                  },
+                  {
+                    "source_id": "sim:review-02",
+                    "timestamp": "2026-11-14T09:00:00Z",
+                    "text": "Synthetic follow-up note: review the supplied photograph and documented history."
+                  }
+                ]
+              },
+              "status": "evidence_added"
+            },
+            {
+              "round": 2,
+              "tokens_used": 47,
+              "tokens_generated": 47,
+              "generation_cache_hit": false,
+              "status": "summary_added",
+              "summary": "Available history includes a synthetic patient report of a changing skin lesion (not a diagnosis) and a follow-up note to review the supplied photograph and documented history. No test results are present in the retrieved record."
+            }
+          ],
+          "source_ids": [
+            "sim:intake-01",
+            "sim:review-02"
+          ],
+          "budget": {
+            "max_tokens": 128,
+            "max_rounds": 3,
+            "max_tool_calls": 2,
+            "max_context_chars": 12000
+          },
+          "stop_reason": "summary_complete",
+          "includes_question": true,
+          "visible_input_source_ids": [],
+          "generator_calls": 2
+        }
+      },
+      {
+        "seconds": 0.0008189089999746102,
+        "refinement": {
+          "enabled": true,
+          "mode": "frozen_pretrained_nemotron",
+          "original_context": "Synthetic performance check: changing skin lesion, no diagnosis.",
+          "context": "Synthetic performance check: changing skin lesion, no diagnosis.\n\nQuestions and allowed choices:\nWhat information is available for review?\nAllowed choices: Available history; Missing test results\n\nAdditional task instructions (not patient evidence):\nRetrieve available history, then give a short evidence summary.\n\nActual tool result: retrieve_information(patient)\n{\"as_of_step\": 1, \"entries\": [{\"source_id\": \"sim:intake-01\", \"text\": \"Synthetic patient reports a changing skin lesion. This statement is not a diagnosis.\", \"timestamp\": \"2026-11-14T08:00:00Z\"}, {\"source_id\": \"sim:review-02\", \"text\": \"Synthetic follow-up note: review the supplied photograph and documented history.\", \"timestamp\": \"2026-11-14T09:00:00Z\"}], \"patient\": \"sim:demo-record\", \"synthetic\": true}\n\nGenerated evidence summary (may contain errors; not a source record):\nAvailable history includes a synthetic patient report of a changing skin lesion (not a diagnosis) and a follow-up note to review the supplied photograph and documented history. No test results are present in the retrieved record.",
+          "tokens_used": 65,
+          "tokens_generated": 0,
+          "generation_cache_hits": 2,
+          "rounds_used": 2,
+          "tool_calls_used": 1,
+          "trace": [
+            {
+              "round": 1,
+              "tokens_used": 18,
+              "tokens_generated": 0,
+              "generation_cache_hit": true,
+              "tool": "retrieve_information",
+              "arguments": {
+                "patient": "sim:demo-record"
+              },
+              "response": {
+                "patient": "sim:demo-record",
+                "as_of_step": 1,
+                "synthetic": true,
+                "entries": [
+                  {
+                    "source_id": "sim:intake-01",
+                    "timestamp": "2026-11-14T08:00:00Z",
+                    "text": "Synthetic patient reports a changing skin lesion. This statement is not a diagnosis."
+                  },
+                  {
+                    "source_id": "sim:review-02",
+                    "timestamp": "2026-11-14T09:00:00Z",
+                    "text": "Synthetic follow-up note: review the supplied photograph and documented history."
+                  }
+                ]
+              },
+              "status": "evidence_added"
+            },
+            {
+              "round": 2,
+              "tokens_used": 47,
+              "tokens_generated": 0,
+              "generation_cache_hit": true,
+              "status": "summary_added",
+              "summary": "Available history includes a synthetic patient report of a changing skin lesion (not a diagnosis) and a follow-up note to review the supplied photograph and documented history. No test results are present in the retrieved record."
+            }
+          ],
+          "source_ids": [
+            "sim:intake-01",
+            "sim:review-02"
+          ],
+          "budget": {
+            "max_tokens": 128,
+            "max_rounds": 3,
+            "max_tool_calls": 2,
+            "max_context_chars": 12000
+          },
+          "stop_reason": "summary_complete",
+          "includes_question": true,
+          "visible_input_source_ids": [],
+          "generator_calls": 2
+        }
+      }
+    ],
+    "peak_gib": 78.53602600097656
+  },
+  "branch_parity": {
+    "checkpoint": {
+      "model": "nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-BF16",
+      "revision": "fb0ee0bc6b3f70342afd8d84cb80dbadbaa8a1fe",
+      "training_identity": "003086694525587bde55201db3713f64f434df916492669a2836b871cc7d089d",
+      "step": 2350,
+      "checkpoint_sha256": "22570c201a9e3d25dcdf7aa904770a568328e034ccb5ac89623784707a7323e8",
+      "quantization": "nf4-experts-merged-adapters",
+      "mode": "model"
+    },
+    "refinement": {
+      "enabled": true,
+      "mode": "frozen_pretrained_nemotron",
+      "original_context": "Synthetic intake: the patient reports a changing skin lesion. Only the currently visible record is available.",
+      "context": "Synthetic intake: the patient reports a changing skin lesion. Only the currently visible record is available.\n\nQuestions and allowed choices:\nWhat should be reviewed next?\nAllowed choices: Review available history; Invent missing test results\n\nAdditional task instructions (not patient evidence):\nRetrieve the available patient history, then give a quick evidence summary.\n\nActual tool result: retrieve_information(patient)\n{\"as_of_step\": 1, \"entries\": [{\"source_id\": \"sim:intake-01\", \"text\": \"Synthetic patient reports a changing skin lesion. This statement is not a diagnosis.\", \"timestamp\": \"2026-11-14T08:00:00Z\"}, {\"source_id\": \"sim:review-02\", \"text\": \"Synthetic follow-up note: review the supplied photograph and documented history.\", \"timestamp\": \"2026-11-14T09:00:00Z\"}], \"patient\": \"sim:demo-record\", \"synthetic\": true}\n\nGenerated evidence summary (may contain errors; not a source record):\nThe available record for sim:demo-record contains only a patient-reported changing skin lesion and a follow-up note to review the supplied photograph and documented history. No diagnosis, test results, or additional clinical findings are present. The next appropriate step is to review the available history rather than invent missing test results.",
+      "tokens_used": 84,
+      "tokens_generated": 84,
+      "generation_cache_hits": 0,
+      "rounds_used": 2,
+      "tool_calls_used": 1,
+      "trace": [
+        {
+          "round": 1,
+          "tokens_used": 18,
+          "tokens_generated": 18,
+          "generation_cache_hit": false,
+          "tool": "retrieve_information",
+          "arguments": {
+            "patient": "sim:demo-record"
+          },
+          "response": {
+            "patient": "sim:demo-record",
+            "as_of_step": 1,
+            "synthetic": true,
+            "entries": [
+              {
+                "source_id": "sim:intake-01",
+                "timestamp": "2026-11-14T08:00:00Z",
+                "text": "Synthetic patient reports a changing skin lesion. This statement is not a diagnosis."
+              },
+              {
+                "source_id": "sim:review-02",
+                "timestamp": "2026-11-14T09:00:00Z",
+                "text": "Synthetic follow-up note: review the supplied photograph and documented history."
+              }
+            ]
+          },
+          "status": "evidence_added"
+        },
+        {
+          "round": 2,
+          "tokens_used": 66,
+          "tokens_generated": 66,
+          "generation_cache_hit": false,
+          "status": "summary_added",
+          "summary": "The available record for sim:demo-record contains only a patient-reported changing skin lesion and a follow-up note to review the supplied photograph and documented history. No diagnosis, test results, or additional clinical findings are present. The next appropriate step is to review the available history rather than invent missing test results."
+        }
+      ],
+      "source_ids": [
+        "sim:intake-01",
+        "sim:review-02"
+      ],
+      "budget": {
+        "max_tokens": 128,
+        "max_rounds": 3,
+        "max_tool_calls": 2,
+        "max_context_chars": 12000
+      },
+      "stop_reason": "summary_complete",
+      "includes_question": true,
+      "visible_input_source_ids": [],
+      "generator_calls": 2
+    },
+    "generation_seconds": 20.44941260400003,
+    "classifier_before": [
+      [
+        0.7923851609230042,
+        0.20761480927467346
+      ]
+    ],
+    "classifier_after": [
+      [
+        0.7923851609230042,
+        0.20761480927467346
+      ]
+    ],
+    "max_score_error": 0.0,
+    "shared_prefix": true,
+    "decision_branch_restored": true,
+    "allocated_gib": 78.27584409713745,
+    "peak_gib": 78.53602600097656
+  },
+  "rejected_experiment": {
+    "name": "joint text/candidate batching",
+    "max_absolute_score_drift": 0.012699916958808899,
+    "enabled": false
+  }
+}

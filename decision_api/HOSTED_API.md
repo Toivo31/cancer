@@ -167,3 +167,9 @@ An experimental batching path changed some relative scores by up to0.0127 in
 the synthetic checks. It was removed; production retains the original independent
 encoding shapes. Fresh-context generation and scale-to-zero cold starts still
 have their original model-compute/startup costs.
+
+
+Measured warm checks: fresh scoring3.41s, feature-cached scoring0.21s; native generation17.8s, then two generation-cache hits with an actual fresh record retrieval. These are specific demo cases, not a general latency guarantee; cold starts still take minutes.
+
+
+A complete public reasoning + scoring call measured33.7s fresh and2.75s repeated for the same synthetic example. The repeat still retrieved the record and created a fresh decision; generation reuse is explicitly marked.
