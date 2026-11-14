@@ -24,6 +24,7 @@ import os
 import sys
 from pathlib import Path
 
+from ..authors import PATIENT_VERSIONS
 from ..catalogue import CatalogueError, load_catalogue
 from ..llm import Budget, LLMClient, LLMError
 from ..pipeline import (GenerationConfig, GenerationError, estimate_cost, generate_library_with_report,
@@ -52,6 +53,9 @@ def register(subparsers) -> None:
     p.add_argument("--max-repairs", type=int, default=2)
     p.add_argument("--g1-temperature", type=float)
     p.add_argument("--g2-temperature", type=float)
+    p.add_argument("--patient-prompt", choices=PATIENT_VERSIONS, default=None,
+                   help="patient-author version: g1@2 (default) the engine draws the findings from the catalogue and the "
+                        "model writes the complaint and account; g1@1 the model writes the findings too")
     p.set_defaults(func=run)
 
 
@@ -74,7 +78,7 @@ def run(args) -> int:
         print(f"generate: {e}", file=sys.stderr)
         return 2
     if args.estimate:
-        e = estimate_cost(cat, design, args.seed)
+        e = estimate_cost(cat, design, args.seed, patient_prompt=args.patient_prompt)
         print(json.dumps(e, indent=2))
         return 0
     out = Path(args.out)
@@ -99,7 +103,8 @@ def run(args) -> int:
 
         manifest, rep = generate_library_with_report(cat, design, args.seed, client, budget=budget, out_dir=out,
                                                      results_client=g2, config=cfg, work_dir=work,
-                                                     resume=args.resume, progress=progress)
+                                                     resume=args.resume, progress=progress,
+                                                     patient_prompt=args.patient_prompt)
     except (LLMError, GenerationError) as e:
         print(f"generate: {type(e).__name__}: {e}", file=sys.stderr)
         return 1

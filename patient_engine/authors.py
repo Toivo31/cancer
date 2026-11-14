@@ -5,6 +5,7 @@
     authors = Authors(catalogue)                       # schemas and prompts, built once per catalogue
     req1 = authors.g1_request(skeleton)                # dict(system, user, schema) for LLMClient.complete_json
     answer1 = client.complete_json(**req1, key="card-7:g1")
+    answer1, problems = authors.g1_accept(skeleton, answer1)   # g1@2: joins the engine's findings to the answer
     findings = authors.findings_of(answer1)            # variable id -> value, ready for settle_error_plan
     plan = settle_error_plan(catalogue, skeleton, findings)["all_active"]
     req2 = authors.g2_request(skeleton, answer1, plan)
@@ -17,9 +18,15 @@ hidden truth because they must write it; what they write into notes and reports 
 revealed side will read, so the prompts tell them not to name the diagnosis, and the validator
 (rule 8, ``card_reveals_condition``) checks it. The pipeline treats that warning as an error.
 
+Patient author versions (D58). ``g1@2`` (default): the engine draws every state's findings (``profile``, the
+reference generator's ``draw_findings``) and the model writes presenting and account around them; it sees symptoms
+and signs only. ``g1@1``: the model wrote the findings too, and one call per patient wrote each at its most likely
+value (audit ``findings.*`` failed on every Gemini g1@1 library).
+
 What each author returns (the shapes are JSON Schemas derived from ``card_schema(catalogue)``)::
 
-    G1  {"states": {state: {"findings": {variable id: {"value", "caused_by"}},
+    G1  g1@2: {"states": {state: {"presenting", "account"}}}; ``g1_accept`` adds the engine's findings, giving g1@1's
+        g1@1: {"states": {state: {"findings": {variable id: {"value", "caused_by"}},
                             "presenting": {"reported": [variable id], "text": str},
                             "account": {"text": str, "mentions": [variable id]}}}}      one call, every state
     G2  g2@2 (default): {"reports": {test id: [str per attempt]}, "gp_note": {"text", "mentions"}}; the values are
@@ -58,6 +65,8 @@ from .schema import card_schema, schema_problems
 from .skeleton import Skeleton, common_facts, illness_ids, plan_to_json, settle_attempt
 from .states import resolved_in_state
 
+from .reference import draw_findings
+
 PROMPT_DIR = Path(__file__).with_name("prompts")
 
 #: role -> version id stored in ``provenance.prompts`` for new cards (the default of ``Authors``). A new wording is a
@@ -66,10 +75,21 @@ PROMPT_DIR = Path(__file__).with_name("prompts")
 #: report wording and the GP note from public inputs. ``g2@1`` (the model saw the findings and the plan and wrote
 #: values and reports) is kept selectable (``Authors(cat, results_prompt="g2@1")``) for comparison only: its report
 #: text carries the error plan, and ``patient_engine.reveal`` never serves it (``SAFE_RESULTS_PROMPTS``).
-PROMPT_VERSIONS = {"patient": "g1@1", "results": "g2@2"}
-_STEMS = {"g1@1": "g1_patient.v1", "g2@1": "g2_results.v1", "g2@2": "g2_results.v2"}
+#: ``g1@2`` (G1 skew fix, 14 Nov night): the engine draws every state's findings from the catalogue
+#: (``reference.draw_findings``, the reference generator's own sampler) and the model writes only the presenting
+#: complaint and the account around them. ``g1@1`` (the model wrote the findings) is kept selectable
+#: (``Authors(cat, patient_prompt="g1@1")``): one call per patient cannot produce population frequencies, so its
+#: findings collapse to the most likely value (every asthma card wheezes, every lab sits at its median; audit
+#: ``findings.*`` fails on every Gemini g1@1 library).
+PROMPT_VERSIONS = {"patient": "g1@2", "results": "g2@2"}
+_STEMS = {"g1@1": "g1_patient.v1", "g1@2": "g1_patient.v2", "g2@1": "g2_results.v1", "g2@2": "g2_results.v2"}
 #: result-author versions this module can build
 RESULTS_VERSIONS = ("g2@1", "g2@2")
+#: patient-author versions this module can build
+PATIENT_VERSIONS = ("g1@1", "g1@2")
+#: g1@2: finding kinds the patient author sees (the patient's own experience and what an examination finds);
+#: labs, imaging, function and tissue truths stay with the engine
+G1_VISIBLE_KINDS = ("symptom", "sign")
 #: g2@2: tests whose attempt 1 the GP note summarises (primary-care resources), definitive tests excluded
 FIRST_CONTACT_RESOURCES = frozenset({"gp", "gp_appt", "lab", "poc_device", "xray"})
 #: g2@2: longest report and note the schema accepts (short outputs keep the JSON intact)
@@ -183,6 +203,31 @@ def _variable_line(cat: Catalogue, sk: Skeleton, v: Variable) -> str:
     return head + (" | reference " + "; ".join(refs) if refs else "")
 
 
+def profile_text(cat: Catalogue, findings: Mapping[str, Finding]) -> str:
+    """g1@2: one state's symptom and sign findings in words (present with their cause, then absent). Only the kinds in
+    ``G1_VISIBLE_KINDS``; measured, imaging and tissue truths are never shown to the patient author."""
+    lines = []
+    for kind, head in (("symptom", "Symptoms"), ("sign", "Signs a doctor would find on examination")):
+        present, absent = [], []
+        for vid, v in cat.variables.items():
+            if v.kind != kind or v.type != "binary":
+                continue
+            f = findings[vid]
+            if f.value is True:
+                cause = ", ".join(cat.conditions[c].label for c in f.caused_by) or "the background"
+                label = _lower(v.label)
+                present.append(f"{vid} ({label + '; ' if label != vid.replace('_', ' ') else ''}from {cause})")
+            else:
+                absent.append(vid)
+        lines.append(f"  {head} present: {'; '.join(present) or 'none'}")
+        lines.append(f"  {head} absent: {', '.join(absent) or 'none'}")
+    return "\n".join(lines)
+
+
+def _findings_json(findings: Mapping[str, Finding]) -> dict:
+    return {vid: {"value": f.value, "caused_by": list(f.caused_by)} for vid, f in findings.items()}
+
+
 def _findings_text(cat: Catalogue, findings: Mapping[str, Any]) -> str:
     lines = []
     for vid in cat.variables:
@@ -289,13 +334,17 @@ def _lower(s: str) -> str:
 class Authors:
     """Schemas and prompt builders of G1 and G2 for one catalogue. Stateless after construction, thread-safe."""
 
-    def __init__(self, catalogue: Catalogue, results_prompt: str | None = None):
+    def __init__(self, catalogue: Catalogue, results_prompt: str | None = None, patient_prompt: str | None = None):
         self.cat = catalogue
         self.results_version = results_prompt or PROMPT_VERSIONS["results"]
         if self.results_version not in RESULTS_VERSIONS:
             raise ValueError(f"unknown result-author version {self.results_version!r}; known: {RESULTS_VERSIONS}")
+        self.patient_version = patient_prompt or PROMPT_VERSIONS["patient"]
+        if self.patient_version not in PATIENT_VERSIONS:
+            raise ValueError(f"unknown patient-author version {self.patient_version!r}; known: {PATIENT_VERSIONS}")
         #: what goes into ``provenance.prompts`` and the library manifest
-        self.prompt_versions = {"patient": PROMPT_VERSIONS["patient"], "results": self.results_version}
+        self.prompt_versions = {"patient": self.patient_version, "results": self.results_version}
+        self._g1_request_cache: dict[tuple, dict] = {}
         full = card_schema(catalogue)
         self._defs = full["$defs"]
         variables = list(catalogue.variables)
@@ -350,6 +399,11 @@ class Authors:
         return self.results_version == "g2@2"
 
     @property
+    def profiled(self) -> bool:
+        """g1@2: the engine draws the findings, the patient author writes presenting and account only."""
+        return self.patient_version == "g1@2"
+
+    @property
     def results_schema(self) -> dict:
         return self.g2v2_schema if self.v2 else self.g2_schema
 
@@ -374,20 +428,75 @@ class Authors:
                                           "properties": {st: block for st in key}}}}
         return self._g1_cache[key]
 
+    def g1_request_schema_for(self, states: Sequence[str]) -> dict:
+        """The schema the patient author answers with: g1@1 the whole ``g1_schema_for``; g1@2 presenting and account
+        only (no findings), with ``reported`` limited to symptoms and ``mentions`` to symptoms and signs."""
+        if not self.profiled:
+            return self.g1_schema_for(states)
+        key = tuple(states)
+        if key not in self._g1_request_cache:
+            text = self._text
+            symptoms = [v for v, x in self.cat.variables.items() if x.kind == "symptom"]
+            visible = [v for v, x in self.cat.variables.items() if x.kind in G1_VISIBLE_KINDS]
+            block = {
+                "type": "object", "required": ["presenting", "account"], "additionalProperties": False,
+                "properties": {
+                    "presenting": {"type": "object", "required": ["reported", "text"], "additionalProperties": False,
+                                   "properties": {"reported": {"type": "array", "uniqueItems": True,
+                                                               "items": {"enum": symptoms}}, "text": text}},
+                    "account": {"type": "object", "required": ["text", "mentions"], "additionalProperties": False,
+                                "properties": {"text": text, "mentions": {"type": "array", "uniqueItems": True,
+                                                                          "items": {"enum": visible}}}}}}
+            self._g1_request_cache[key] = {
+                "type": "object", "required": ["states"], "additionalProperties": False,
+                "properties": {"states": {"type": "object", "required": list(key), "additionalProperties": False,
+                                          "properties": {st: block for st in key}}}}
+        return self._g1_request_cache[key]
+
+    def profile(self, sk: Skeleton) -> dict[str, dict[str, Finding]]:
+        """g1@2: every state's findings, drawn by the engine exactly as the reference generator draws them
+        (``reference.draw_findings``: deterministic in catalogue and skeleton, keyed numbers per variable)."""
+        return {st: draw_findings(self.cat, sk, st) for st in sk.states}
+
     # ------------------------------------------------------------------ requests
 
     def g1_request(self, sk: Skeleton) -> dict:
         """``dict(system, user, schema)`` for the patient author (every state of the card in one answer).
-        Reads the skeleton and the catalogue only."""
+        Reads the skeleton and the catalogue only (g1@2: and the engine's findings drawn from them)."""
         cat = self.cat
+        ver = self.patient_version
+        if self.profiled:
+            prof = self.profile(sk)
+            states = "\n\n".join(f"- {st}: {state_note(cat, sk, st)}\n{profile_text(cat, prof[st])}" for st in sk.states)
+            user = fill(load_prompt(ver, "user"), card_id=sk.id, states=states,
+                        background=_background_text(sk.background), conditions=_conditions_text(cat, sk), brief=sk.brief)
+            return {"system": load_prompt(ver, "system"), "user": user, "schema": self.g1_request_schema_for(sk.states)}
         variables = "\n".join(_variable_line(cat, sk, v) for v in cat.variables.values())
         states = "\n".join(f"- {st}: {state_note(cat, sk, st)}" for st in sk.states)
-        user = fill(load_prompt(PROMPT_VERSIONS["patient"], "user"),
+        user = fill(load_prompt(ver, "user"),
                     card_id=sk.id, states=states,
                     background=_background_text(sk.background), conditions=_conditions_text(cat, sk),
                     brief=sk.brief, n_variables=str(len(cat.variables)), variables=variables)
-        return {"system": load_prompt(PROMPT_VERSIONS["patient"], "system"), "user": user,
+        return {"system": load_prompt(ver, "system"), "user": user,
                 "schema": self.g1_schema_for(sk.states)}
+
+    def g1_accept(self, sk: Skeleton, answer: Any) -> tuple[dict | None, list[Problem]]:
+        """The patient author's answer as the rest of the pipeline reads it (``{"states": {st: {findings, presenting,
+        account}}}``) and its problems. g1@1: the answer itself and ``g1_problems``. g1@2: the answer is checked
+        against its own schema, then the engine's findings (``profile``) are joined to it and ``presenting.reported``
+        is checked against them. A problem list that is not empty comes with ``None``."""
+        states = tuple(sk.states)
+        if not self.profiled:
+            probs = self.g1_problems(answer, states)
+            return (None if probs else answer), probs
+        probs = schema_problems(answer, self.g1_request_schema_for(states))
+        if probs:
+            return None, probs
+        prof = self.profile(sk)
+        full = {"states": {st: {"findings": _findings_json(prof[st]), "presenting": answer["states"][st]["presenting"],
+                                "account": answer["states"][st]["account"]} for st in states}}
+        probs = self.g1_problems(full, states)
+        return (None if probs else full), probs
 
     def g2_request(self, sk: Skeleton, g1: Mapping[str, Any], plan: Mapping[str, Sequence], state: str = INITIAL_STATE
                    ) -> dict:
@@ -582,8 +691,11 @@ class Authors:
         if role == "g2" and self.v2:
             return (f"{original_user}\n\n---\nYour previous answer:\n{json.dumps(previous, sort_keys=True)}\n\n"
                     f"{text}\nThe values are final; change only the texts.")
-        shape = ("`states` (each with `findings`, `presenting` and `account`)" if role == "g1"
-                 else "`observations` and `gp_note`")
+        if role == "g1" and self.profiled:
+            shape = "`states` (each with `presenting` and `account`; the findings are fixed)"
+        else:
+            shape = ("`states` (each with `findings`, `presenting` and `account`)" if role == "g1"
+                     else "`observations` and `gp_note`")
         mapping = ("Paths starting `hidden.findings.<state>` refer to `states.<state>.findings`, `presenting.<state>` to "
                    "`states.<state>.presenting`, `notes[0]`, `notes[2]`... to the `account` of the first, second... state."
                    if role == "g1" else
