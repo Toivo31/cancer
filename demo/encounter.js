@@ -36,6 +36,9 @@ const KIND_STROKE = {role: C.ink2, referral: C.ink, treat: C.ink3, start: C.ink3
 function init() {
   if (!D) { document.querySelector('main').innerHTML = '<p class="cmd">data/encounter_bundle.js not found. Run: python demo/export_encounter.py</p>'; return; }
   if (window.Site && Site.nav) Site.nav('simulator');
+  // D69 claim label: link to the research register entry (research.html#<claim id>, lane L9). Built here, like the
+  // Overview's claim links, so the static page has no link to a file that may not be merged yet.
+  const st = $('#assumed'); if (st && st.dataset.claim) st.href = 'research.html#' + st.dataset.claim;
   W = D.size.w; HH = D.size.h; NW = D.size.node_w; NH = D.size.node_h;
   nodes = D.nodes; pos = {}; nid = {};
   nodes.forEach((n, i) => { pos[n.id] = n; nid[n.id] = i; });

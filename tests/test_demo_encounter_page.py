@@ -67,7 +67,8 @@ def test_encounter_details_keep_counters_results_and_caveats():
     # the graph, the record and the truth toggle stay above Details
     for el in ('id="gw"', 'id="side"', 'id="truth"', 'id="play"', 'id="slider"', 'id="speed"', 'id="layers"'):
         assert el in top, el
-    assert "Assumed behaviour" in top and "research.html#as-primary-care-behaviour" in top
+    assert "Assumed behaviour" in top and 'data-claim="as-primary-care-behaviour"' in top
+    assert "'research.html#' + st.dataset.claim" in (DEMO / "encounter.js").read_text()
     js = (DEMO / "encounter.js").read_text()
     for caveat in ("All patients are simulated", "placeholder tables", "one illustration run", "not clinical advice"):
         assert caveat.lower() in js.lower(), caveat
