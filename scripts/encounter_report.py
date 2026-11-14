@@ -173,8 +173,9 @@ def ci(xs):
 
 def agg(dicts):
     out = {}
-    for k in dicts[0]:
-        vals = [d[k] for d in dicts]
+    keys = list(dict.fromkeys(k for d in dicts for k in d))   # a small group can be missing in one seed
+    for k in keys:
+        vals = [d[k] for d in dicts if k in d]
         if isinstance(vals[0], dict):
             out[k] = agg(vals)
         elif isinstance(vals[0], (int, float)) or vals[0] is None:
