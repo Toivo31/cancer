@@ -224,5 +224,9 @@ def test_audit_report_wording_skips_small_and_passes_template_libraries(lung, tm
     generate_library_with_report(lung, design, 3, reference_fake_client(lung, design, 3), out_dir=tmp_path / "S")
     rep = audit_library(load_library(tmp_path / "S", lung), lung, tol)
     chk = next(c for c in rep["checks"] if c["id"] == "report_wording")
-    assert chk["status"] in ("skipped", "pass")
-    assert any(x["status"] == "skipped" for x in chk["cells"])          # 11 cards: too few misses
+    assert chk["status"] == "pass"                                     # template text: no gap, no excess
+    tiny = load_catalogue(TINY)
+    d2 = make_design(tiny, {"lung_cancer": 1, "pneumonia": 1})
+    generate_library_with_report(tiny, d2, 3, reference_fake_client(tiny, d2, 3), out_dir=tmp_path / "T")
+    rep2 = audit_library(load_library(tmp_path / "T", tiny), tiny, None)
+    assert next(c for c in rep2["checks"] if c["id"] == "report_wording")["status"] == "skipped"
