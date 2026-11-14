@@ -570,6 +570,30 @@ def library_values(V: dict) -> None:
     V["lib_ref_id"] = r["id"] if r else "unknown"
 
 
+def catalogue_values(V: dict) -> None:
+    """Source tags in catalogue/lung-primary-care/*.yaml, counted as demo/export_start.py counts them
+    (every mapping with a string `source`). The older '177 of about 260' in libraries/ref500.md pre-dates care.yaml."""
+    import yaml
+    acc = {"total": 0, "assumption": 0}
+
+    def walk(n):
+        if isinstance(n, dict):
+            src = n.get("source")
+            if isinstance(src, str):
+                acc["total"] += 1
+                acc["assumption"] += src.strip().lower() == "assumption"
+            for v in n.values():
+                walk(v)
+        elif isinstance(n, list):
+            for v in n:
+                walk(v)
+
+    for f in sorted((ROOT / "catalogue" / "lung-primary-care").glob("*.yaml")):
+        walk(yaml.safe_load(f.read_text(encoding="utf-8")))
+    V["cat_total"], V["cat_assump"] = n0(acc["total"]), n0(acc["assumption"])
+    V["cat_sourced"] = n0(acc["total"] - acc["assumption"])
+
+
 def encounter_values(V: dict) -> None:
     """Consistency of the primary-care encounter loop with the calibrated chain (docs/encounter_results.md)."""
     e = load(ROOT / "docs" / "review_checks" / "encounter_results.json")
@@ -598,6 +622,7 @@ def build_values() -> dict:
     range_values(V)
     robustness_values(V, val)
     library_values(V)
+    catalogue_values(V)
     encounter_values(V)
     sensitivity_values(V)
     return V
