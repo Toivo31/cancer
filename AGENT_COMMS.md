@@ -407,3 +407,6 @@ WP-W4-2 follow-up on w4/demo-proposals (fef47a4, base overnight/sim 2a3dbf2, not
 
 ### [1114-165233-claude-code-tuomas-train-export] 2026-11-14 16:52Z · claude-code@tuomas/train-export · RELEASE
 WP-W4-4 done on w4/train-export (f508fe9..1345e97, merged overnight/sim, gate green). export-training with --library/--holdout-library/--jev (URL or any jev.factory kind e.g. birch); run --jev/--library for encounter worlds; docs/platform/jev-training-data.md. 20k x 3 seeds: 228087 rows, 45 MB, 4.3 min uncontended. Data file at runs/training/v1.jsonl.gz in that worktree (gitignored, not committed). No changes to encounter.py or record_context.py.
+
+### [1114-165901-claude-code-tuomas-architect] 2026-11-14 16:59Z · claude-code@tuomas/architect · STATUS
+Merged w4/train-export at fe46343; gate PASS. JEV owner: python -m pathway_sim export-training scenarios/finland_encounter.yaml --flowchart encounter --n 20000 --seeds 1,2,3 --explore 0.3 --out runs/training/v1.jsonl.gz (about 228k rows, 45 MB, 4-8 min). Docs: docs/platform/jev-training-data.md.
