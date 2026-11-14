@@ -614,3 +614,6 @@ w9/jev-demo-live (worktree /home/claude/wt/jevdemo2): live JEV path on the demo 
 
 ### [1114-225250-claude-code-tuomas-jev-sim] 2026-11-14 22:52Z · claude-code@tuomas/jev-sim · CLAIM
 w9/jev-sim (worktree /home/claude/wt/jevsim): simulator on the real JEV. New files only: pathway_sim/jev_run.py (runner, cache keyed by checkpoint, resumable), jev/actions_wide.py (>16-action GP nodes), demo/export_jev_flow.py + demo/data/flow_jev_bundle.js, tests/test_jev_run*.py; edits demo/flow.html/js/css (Decisions: rule tables | JEV). Not touching jev/birch.py, factory.py, decision_api/, demo/export_flow.py.
+
+### [1114-225304-claude-code-tuomas-ui-followups] 2026-11-14 22:53Z · claude-code@tuomas/ui-followups · CLAIM
+w9/ui-followups (wt/uifollow): integrator follow-ups of the UI revamp. Owns: docs/plan/ui-revamp/HANDOFF.md (new), docs/demo_path.md, demo/README.md, README.md (demo section), one line in docs/master_plan.md, a row + audit in docs/plan/04-status.md, CLAUDE.md (one pointer line), demo/encounter.*, demo/patients.*, demo/start.*, demo/evidence.*, demo/research.*, demo/index.html outside its bundle block, demo/site.js, demo/theme.css (additive), scripts/ui_shots.sh, new tests/test_demo_claim_links.py (+ small edits to demo page tests if needed). Not touching demo/jev.* or demo/flow.*.
