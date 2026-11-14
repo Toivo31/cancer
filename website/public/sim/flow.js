@@ -1026,7 +1026,7 @@ function frame(now) {
   const dt = Math.min(.25, (now - last) / 1000); last = now;
   if (S.playing) {
     S.t += dt * S.speed;
-    if (S.t >= S.H) { S.t = S.H; setPlaying(false); }
+    if (S.t >= S.H) { S.t = 0; }
   }
   $('#slider').value = S.t;
   const dd = String(Math.round(S.t)).padStart(3, '0');

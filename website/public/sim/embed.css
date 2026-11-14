@@ -10,3 +10,5 @@
   .sim-graph.is-split{grid-template-columns:1fr 1fr}
 }
 .sim{padding-left:0;padding-right:0}
+#bar,#menu,#optcard,.sim-drawer,#lede,#pairnote,#legend,.sim-opt{display:none!important}
+.sim-body{padding-bottom:0}
