@@ -530,3 +530,6 @@ w8/no-scanner-claims done, committed cf95132 (not pushed). D68 added. Bundle sch
 
 ### [1114-220503-claude-code-tuomas-textcheck] 2026-11-14 22:05Z · claude-code@tuomas/textcheck · RELEASE
 w8/textcheck paused at WIP commit 869b2c3: textfix + text_glue audit + fixtext command work; no tests/gate yet; textsym draft unwired. Not pushed.
+
+### [1114-220514-claude-code-tuomas-research] 2026-11-14 22:05Z · claude-code@tuomas/research · RELEASE
+w8/research-page ready at d251703: research claims register (docs/research_claims.yaml -> .md + demo/data/research_bundle.js), 48 claims (15 published/24 simulation/9 assumption), Finland waiting 48% published-matched/52% assumed, L9 brief, D69, one-line export_all.py edit (step research). Gate PASS. Not pushed.
