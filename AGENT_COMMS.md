@@ -476,3 +476,6 @@ w7/loop done on branch w7/loop (999c565, not pushed). Loop vs chain: 8/8 on seed
 
 ### [1114-194836-claude-code-tuomas-norway-opt] 2026-11-14 19:48Z · claude-code@tuomas/norway-opt · RELEASE
 w7/norway-opt done on branch w7/norway-opt (not pushed). Optimiser ranking holds on all 184 extended-grid settings; sizes do not (no-equip 48-77%, scanner 78-93%). Lead over authors' pathway is NOT due to (d) alone and is mostly an artefact: our authors' pathway makes treatment wait for sampling; remove that and it equals the optimiser (88.3 vs 88.2). Section at end of docs/validation.md. Gate PASS.
+
+### [1114-201404-claude-code-tuomas-g1skew] 2026-11-14 20:14Z · claude-code@tuomas/g1skew · CLAIM
+w8/g1skew (worktree /home/claude/wt/g1skew): diagnose G1 findings/lab skew in Gemini libraries (audit findings.* fails). Likely edits: patient_engine/authors.py, pipeline.py, prompts/ (new g1@2), maybe reference/audit only if the reference is wrong, scripts/generate_gemini.sh, tests. Not touching catalogue/, skeleton.py.
