@@ -1,5 +1,8 @@
 # Decision tables for the primary-care encounter loop (format encounter_policy/1, WP-C8-1).
-# ALL NUMBERS BELOW ARE PLACEHOLDERS (source: assumption) until WP-C8-3 fills them from research.
+# D51: only the JEV decides in the final model; these tables are the placeholder decisions and the baseline.
+# Numbers: first filled from docs/research/catalogue/care_practice.md section 11 (WP-W4-1), then tuned against the
+# calibrated chain (docs/encounter_results.md lists every tuned row with its old value). Every row is `assumption`:
+# no Finnish decision-rate data (X-ray, antibiotics, referral) was found.
 #
 # FORMAT
 #   format: encounter_policy/1
@@ -50,45 +53,67 @@
 format: encounter_policy/1
 points:
   nurse_encounter:
-    default: {book_gp_routine: 0.55, advice_return: 0.4, book_gp_urgent: 0.05}
+    default: {book_gp_routine: 0.6, advice_return: 0.37, book_gp_urgent: 0.03}
     source: assumption
-    note: "PLACEHOLDER. Most chest-symptom contacts with a nurse are passed on to a GP (KHALIFE2025 says nurse first contact is common; the split is not sourced)"
     rules:
-      - when: "found.haemoptysis or found.weight_loss"
-        probs: {book_gp_urgent: 0.9, book_gp_routine: 0.1}
-        source: assumption
-        note: "PLACEHOLDER: alarm symptoms go to a GP soon"
-      - when: "episode >= 2"
-        probs: {book_gp_routine: 0.8, book_gp_urgent: 0.15, advice_return: 0.05}
-        source: assumption
-        note: "PLACEHOLDER: a patient who comes back is rarely sent home by the nurse again"
+    - when: found.haemoptysis or (found.weight_loss and age >= 50)
+      probs: {book_gp_urgent: 0.85, book_gp_routine: 0.15}
+      source: assumption
+    - when: age >= 50 and smoking_status != 'never' and (found.dyspnoea or found.fatigue or found.chest_pain or found.appetite_loss or found.hoarseness)
+      probs: {book_gp_urgent: 0.5, book_gp_routine: 0.5}
+      source: assumption
+    - when: episode >= 2
+      probs: {book_gp_routine: 0.8, book_gp_urgent: 0.15, advice_return: 0.05}
+      source: assumption
   gp_encounter:
-    default: {order_chest_xray: 0.35, treat_antibiotics: 0.2, advice_return: 0.4, order_blood_count: 0.05}
+    default: {advice_return: 0.414, order_crp: 0.052, order_chest_xray: 0.207, treat_antibiotics: 0.062, order_blood_count: 0.052, follow_up: 0.104, order_spirometry: 0.052,
+      discharge: 0.052, refer_routine: 0.005}
     source: assumption
-    note: "PLACEHOLDER first visit without alarm findings"
     rules:
-      - when: "last.chest_xray.abnormal"
-        probs: {refer_urgent: 0.85, refer_routine: 0.1, follow_up: 0.05}
-        source: assumption
-        note: "PLACEHOLDER: suspicious film is referred"
-      - when: "found.haemoptysis and attempts.chest_xray == 0"
-        probs: {order_chest_xray: 0.85, refer_urgent: 0.15}
-        source: assumption
-      - when: "reason == 'result' and last.chest_xray.abnormal is False and episode >= 2"
-        probs: {refer_routine: 0.4, treat_antibiotics: 0.2, advice_return: 0.4}
-        source: assumption
-        note: "PLACEHOLDER: clear film but the patient keeps coming back"
-      - when: "reason == 'result' and last.chest_xray.abnormal is False"
-        probs: {advice_return: 0.6, treat_antibiotics: 0.3, follow_up: 0.1}
-        source: assumption
-      - when: "reason == 'treatment'"
-        probs: {advice_return: 0.6, order_chest_xray: 0.3, follow_up: 0.1}
-        source: assumption
-        note: "PLACEHOLDER review after a treatment"
-      - when: "episode >= 3"
-        probs: {order_chest_xray: 0.5, refer_routine: 0.4, advice_return: 0.1}
-        source: assumption
-        note: "PLACEHOLDER third episode: work up or refer"
-      - when: "episode >= 2 and attempts.chest_xray == 0"
-        probs: {order_chest_xray: 0.7, treat_antibiotics: 0.1, advice_return: 0.2}
-        source: assumption
+    - when: found.haemoptysis and attempts.chest_xray == 0
+      probs: {order_chest_xray: 0.85, refer_urgent: 0.1, order_chest_ct: 0.05}
+      source: assumption
+    - when: last.chest_xray.abnormal
+      probs: {refer_urgent: 0.75, refer_routine: 0.1, order_chest_ct: 0.05, follow_up: 0.1}
+      source: assumption
+    - when: last.nt_probnp.positive
+      probs: {order_echo: 0.5, treat_diuretic: 0.45, refer_routine: 0.05}
+      source: assumption
+    - when: last.spirometry.positive
+      probs: {treat_inhaler: 0.55, order_spirometry_reversibility: 0.3, follow_up: 0.15}
+      source: assumption
+    - when: last.crp.crp is not None and last.crp.crp >= 50
+      probs: {treat_antibiotics: 0.5, order_chest_xray: 0.4, follow_up: 0.1}
+      source: assumption
+    - when: attempts.chest_xray >= 1 and last.chest_xray.abnormal is False and episode >= 2 and (found.weight_loss or (age >= 50 and smoking_status != 'never' and
+        (found.dyspnoea or found.fatigue or found.chest_pain or found.appetite_loss or found.hoarseness)))
+      probs: {refer_routine: 0.5, order_chest_ct: 0.05, advice_return: 0.45}
+      source: assumption
+    - when: attempts.chest_xray >= 1 and last.chest_xray.abnormal is False and episode >= 2
+      probs: {refer_routine: 0.02, order_chest_ct: 0.01, treat_antibiotics: 0.1, advice_return: 0.87}
+      source: assumption
+    - when: reason == 'result' and last.chest_xray.abnormal is False
+      probs: {advice_return: 0.65, follow_up: 0.15, treat_antibiotics: 0.1, order_spirometry: 0.1}
+      source: assumption
+    - when: found.ankle_oedema and found.dyspnoea
+      probs: {order_nt_probnp: 0.6, order_chest_xray: 0.2, treat_diuretic: 0.1, order_echo: 0.1}
+      source: assumption
+    - when: found.wheeze and attempts.spirometry == 0
+      probs: {order_spirometry: 0.45, treat_inhaler: 0.35, order_crp: 0.2}
+      source: assumption
+    - when: reason == 'treatment'
+      probs: {advice_return: 0.6, order_chest_xray: 0.25, follow_up: 0.15}
+      source: assumption
+    - when: episode >= 3
+      probs: {refer_routine: 0.35, order_chest_xray: 0.15, order_chest_ct: 0.02, advice_return: 0.48}
+      source: assumption
+    - when: episode >= 2 and attempts.chest_xray == 0
+      probs: {order_chest_xray: 0.7, order_crp: 0.15, advice_return: 0.15}
+      source: assumption
+    - when: attempts.chest_xray == 0 and (found.weight_loss or (age >= 50 and smoking_status != 'never' and (found.dyspnoea or found.fatigue or found.chest_pain or
+        found.appetite_loss or found.hoarseness)))
+      probs: {order_chest_xray: 0.85, advice_return: 0.15}
+      source: assumption
+    - when: reason == 'result' and attempts.chest_xray == 0
+      probs: {order_chest_xray: 0.25, treat_antibiotics: 0.15, advice_return: 0.6}
+      source: assumption
