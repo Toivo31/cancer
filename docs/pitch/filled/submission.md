@@ -8,7 +8,7 @@
 
 ## Summary
 
-We built a simulator and optimiser for the lung cancer diagnostic pathway. Synthetic patients run through an editable flowchart of steps; the optimiser proposes a different order of steps using only what steps revealed; the same patients are rerun to accept a change and held-out patients are used to report it. In our synthetic Finnish county the suggested change raises the share treated within 90 days of first contact from 18% to 64%. All data is synthetic.
+We built a simulator and optimiser for the lung cancer diagnostic pathway. Synthetic patients run through an editable flowchart of steps; the optimiser proposes a different order of steps using only what steps revealed; the same patients are rerun to accept a change and held-out patients are used to report it. In our synthetic Finnish county the suggested change raises the share treated within 90 days of first contact from 18% to 61%. All data is synthetic.
 
 ## Problem
 
@@ -28,8 +28,8 @@ Each flowchart step reveals results, takes time and uses a resource. Proposals a
 ## Results (held-out, with sources)
 
 - **Norwegian check** (Stokstad et al. 2019, 100 early-stage patients). Fitted only to the observed pathway: 40% within 42 days (published 40%). Predicted, not fitted: the authors' reordered pathway 80% (published 80%). Faster PET-CT alone: we predict 60%, the paper reports 48%; we over-predict. A blind search finds the authors' three changes plus a fourth (tissue sampling booked at the first visit, needs a clinical check) and reaches 88% with the faster scanner, 67% without new equipment.
-- **Finnish synthetic county.** Within 90 days (provisional target; no Finnish first-contact target found): 18% to 64%, median 102 to 80 days. Missed cancers 27.5 to 25.0 per cohort, tests per patient 0.41 to 0.39. The same extra CT and PET capacity without reordering reaches 31%; with reordering 54%.
-- **Equity** (assumption-built groups). Vague symptoms 16% to 60%, alarm symptoms 31% to 78%. The gap in points widens; the gap in median days narrows.
+- **Finnish synthetic county.** Within 90 days (provisional target; no Finnish first-contact target found): 18% to 61%, median 102 to 80 days. Missed cancers 27.5 to 27.5 per cohort, tests per patient 0.41 to 0.41. The same extra CT and PET capacity without reordering reaches 31%; with reordering 54%.
+- **Equity** (assumption-built groups). Vague symptoms 13% to 54%, alarm symptoms 27% to 79%. The gap in points widens; the gap in median days narrows.
 - **Decision model.** On a task where the right answer depends on the set of options, a correction model beats a parameter-matched dot-product model: 84.5% against 79.0%. The claim that a second question costs half the compute was not reproduced at our sizes (76-91% of the first). It is not yet in the demo loop.
 
 ## What is new, and what is not

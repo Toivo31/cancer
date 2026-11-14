@@ -25,7 +25,7 @@ Finland has the longest lung cancer waits in the Nordics at the first steps, wit
 
 ## Gain claimed (from the run of [[bundle_date]])
 
-In our synthetic county, on held-out patients: the optimiser's suggested change ([[f_change_1]]; [[f_change_2]]) takes the share treated within [[f_target]] days from [[f_share_base]]% to [[f_share_opt]]% and the median from [[f_median_base]] to [[f_median_opt]] days. The hand-written "order together" flowchart reaches [[f_bundle_share]]%. Missed cancers go from [[f_missed_base]] to [[f_missed_opt]] per cohort and tests per patient from [[f_tests_base]] to [[f_tests_opt]].
+In our synthetic county, on held-out patients: the optimiser's suggested change ([[f_changes]]) takes the share treated within [[f_target]] days from [[f_share_base]]% to [[f_share_opt]]% and the median from [[f_median_base]] to [[f_median_opt]] days. The hand-written "order together" flowchart reaches [[f_bundle_share]]%. Missed cancers go from [[f_missed_base]] to [[f_missed_opt]] per cohort and tests per patient from [[f_tests_base]] to [[f_tests_opt]].
 
 Equity: [[f_ns_share_base]]% to [[f_ns_share_opt]]% for vague-symptom patients and [[f_ss_share_base]]% to [[f_ss_share_opt]]% for alarm-symptom patients. The gap in points [[f_gap_pp_widens]] ([[equity_gap_before_pp]] to [[equity_gap_after_pp]]); the gap in median days [[f_gap_days_narrows]] ([[f_gap_days_before]] to [[f_gap_days_after]]). Both groups gain; we do not claim the gap closes.
 

@@ -31,24 +31,24 @@ Strategy Goal 3 asks for *equal* as well as effective care, and includes an indi
 
 ## 3. What the simulator shows
 
-In our synthetic Finnish county (about 16 177 chest-symptom presenters per held-out cohort, 1.6% with lung cancer, 15% presenting with alarm symptoms), each patient has a presentation group: `site_specific` (alarm symptoms) or `non_specific` (vague symptoms). The groups differ only in how likely the detection step is to send them on, so the gap at baseline follows from our assumption (D9), not from Finnish data.
+In our synthetic Finnish county (about 16 177 chest-symptom presenters per held-out cohort, 1.6% with lung cancer, 16% presenting with alarm symptoms), each patient has a presentation group: `site_specific` (alarm symptoms) or `non_specific` (vague symptoms). The groups differ only in how likely the detection step is to send them on, so the gap at baseline follows from our assumption (D9), not from Finnish data.
 
-**Baseline.** Share treated within 90 days (provisional target, D20): 16% for vague-symptom patients against 31% for alarm-symptom patients, a gap of 14.9 points; median days 107 against 94. Share of cancers never diagnosed in the episode: 13.6% against 7.7%.
+**Baseline.** Share treated within 90 days (provisional target, D20): 13% for vague-symptom patients against 27% for alarm-symptom patients, a gap of 13.6 points; median days 108 against 96. Share of cancers never diagnosed in the episode: 12.5% against 6.3%.
 
-**With the suggested change** (held-out): 60% against 78% within 90 days. Both groups gain (vague symptoms 44 points, alarm symptoms 47). The gap in percentage points widens (14.9 to 18.6) because the alarm group starts closer to the threshold; the gap in median days narrows (13.6 to 7.3 days). We report both because they point in different directions, and we do not claim the change closes the gap in shares. Missed cancers among vague-symptom patients go from 13.6% to 10.8% of that group (we have not separated which of the two steps drives this; one plausible route is that GP-first visits image more patients in the model).
+**With the suggested change** (held-out): 54% against 79% within 90 days. Both groups gain (vague symptoms 40 points, alarm symptoms 52). The gap in percentage points widens (13.6 to 25.9) because the alarm group starts closer to the threshold; the gap in median days narrows (11.2 to 9.7 days). We report both because they point in different directions, and we do not claim the change closes the gap in shares. Missed cancers among vague-symptom patients go from 12.5% to 12.5% of that group (we have not separated which of the two steps drives this; one plausible route is that GP-first visits image more patients in the model).
 
 | Flowchart | Vague (non-specific) symptoms: within target | Alarm (site-specific) symptoms: within target | Gap, pp | Gap in median days |
 |---|---|---|---|---|
-| Baseline | 16% | 31% | 14.9 | 13.6 |
-| Suggested change | 60% | 78% | 18.6 | 7.3 |
-| GPs order CT directly | 14% | 44% | 29.4 | 16.9 |
-| Order together | 41% | 78% | 37.3 | 17.1 |
-| Fast lane for vague symptoms | 33% | 42% | 9.4 | 8.6 |
-| Capacity-only control | 22% | 45% | 23.3 | 12.7 |
+| Baseline | 13% | 27% | 13.6 | 11.2 |
+| Suggested change | 54% | 79% | 25.9 | 9.7 |
+| GPs order CT directly | 11% | 41% | 29.3 | 15.6 |
+| Order together | 42% | 79% | 37.0 | 17.0 |
+| Fast lane for vague symptoms | 33% | 46% | 12.6 | 8.7 |
+| Capacity-only control | 24% | 46% | 21.3 | 11.2 |
 
-Reading the table: the hand-written flowcharts reach the two groups differently. Ordering CT directly helps mainly the alarm group and widens the gap in median days (13.6 to 16.9); the fast lane for vague symptoms is the one that most narrows the gap in shares (9.4 points) but gains less overall (37% against 64%). Which of these is "more equal" depends on the measure, and that is a choice for the team and, in practice, for clinicians.
+Reading the table: the hand-written flowcharts reach the two groups differently. Ordering CT directly helps mainly the alarm group and widens the gap in median days (11.2 to 15.6); the fast lane for vague symptoms is the one that most narrows the gap in shares (12.6 points) but gains less overall (37% against 61%). Which of these is "more equal" depends on the measure, and that is a choice for the team and, in practice, for clinicians.
 
-The demo also reports waits for non-cancer patients as the crowd-out guardrail: median days to leave the pathway 16.8 at baseline and 13.8 with the suggested change.
+The demo also reports waits for non-cancer patients as the crowd-out guardrail: median days to leave the pathway 16.8 at baseline and 16.8 with the suggested change.
 
 ## 4. What it cannot show
 

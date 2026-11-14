@@ -12,7 +12,7 @@ It does not have to. The Norwegian case tests the engine's reordering logic agai
 Mostly. Fitted: 40% against 40%. Predicted: 80% against 80% for the authors' pathway. It misses on the faster scanner alone: 60% against 48%. The authors' 80% is also a model estimate.
 
 **4. How does it avoid hindsight bias?**
-Proposals are scored on groups from revealed timestamps only, not by judging a late test on patients who failed earlier ones. Acceptance is a rerun of the same patients (common random numbers), and we report on held-out patients. Selection optimism: 2.3 points (Norwegian) and 1.8 (Finnish).
+Proposals are scored on groups from revealed timestamps only, not by judging a late test on patients who failed earlier ones. Acceptance is a rerun of the same patients (common random numbers), and we report on held-out patients. Selection optimism: 1.7 points (Norwegian) and -1.4 (Finnish).
 
 **5. The acceptance step uses simulated truth. Isn't that cheating?**
 It is the one step with no real-world equivalent, and we say so. In practice it is a monitored pilot. Proposals never see the hidden condition.
@@ -30,13 +30,13 @@ Pick one lung unit. Order PET-CT, exercise test and the tumour-board slot togeth
 Provisional (D20). From first contact, every flowchart is at 0% within the Norwegian 42 days, and we found no Finnish first-contact target. Median days (102 to 80) does not depend on the choice.
 
 **10. Does the change widen inequality?**
-Both groups gain (16% to 60% vague, 31% to 78% alarm). The gap in points widens; the gap in median days narrows. The group difference is our assumption (D9), so this shows how a change reaches each group, not how unequal Finland is.
+Both groups gain (13% to 54% vague, 27% to 79% alarm). The gap in points widens; the gap in median days narrows. The group difference is our assumption (D9), so this shows how a change reaches each group, not how unequal Finland is.
 
 **11. Does speed come at the cost of missed cancers or other patients?**
-Not in the model: missed cancers 27.5 to 25.0 per cohort, tests per patient 0.41 to 0.39, non-cancer patients leave in 16.8 to 13.8 days. Guardrails include tissue-confirmed diagnoses, added after the optimiser tried skipping sampling. Crowd-out depends on how many slots a fast lane reserves.
+Not in the model: missed cancers 27.5 to 27.5 per cohort, tests per patient 0.41 to 0.41, non-cancer patients leave in 16.8 to 16.8 days. Guardrails include tissue-confirmed diagnoses, added after the optimiser tried skipping sampling. Crowd-out depends on how many slots a fast lane reserves.
 
 **12. Isn't adding capacity simpler?**
-Sometimes. One more slot at the busiest scanner (the pet scanner) adds 9.7 points; the next best adds 3.6 and the rest at most 1.5. Reordering with extra capacity adds 36 points. The two are not exclusive; reordering needs the capacity at the scanner it moves work to. Capacity vs order in our county is a result of our assumptions; the Norwegian study is the independent evidence.
+Sometimes. One more slot at the busiest scanner (the PET-CT scanner) adds 9.7 points; the next best adds 3.6 and the rest at most 1.5. Reordering with extra capacity adds 36 points. The two are not exclusive; reordering needs the capacity at the scanner it moves work to. Capacity vs order in our county is a result of our assumptions; the Norwegian study is the independent evidence.
 
 ## If pressed
 

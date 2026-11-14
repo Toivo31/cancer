@@ -51,13 +51,13 @@ Across the 11 accepted parameter sets the predicted share for the authors' pathw
 
 | Run | Training cohort, after change | Held-out, after change | Selection optimism (training minus held-out, pp) |
 |---|---|---|---|
-| Norwegian, blind search with faster scanner | 88% | 88% | 2.3 |
-| Norwegian, blind search without new equipment | 67% | 67% | -0.5 |
-| Finnish synthetic county, target 90 d | 67% | 64% | 1.8 |
+| Norwegian, blind search with faster scanner | 88% | 88% | 1.7 |
+| Norwegian, blind search without new equipment | 66% | 67% | -0.6 |
+| Finnish synthetic county, target 90 d | 56% | 61% | -1.4 |
 
 Held-out cohorts hold about 1 000 simulated patients (Norwegian) and about 16 177 (Finnish) each. Headline figures in the video and deck are the held-out numbers. The optimism column is as reported by the optimiser (it compares the predicted with the rerun result); a negative value means the held-out result was higher than the training one.
 
-Finnish guardrails on the held-out cohort (suggested change against baseline): missed cancers 27.5 to 25.0 per cohort, tests per patient 0.41 to 0.39, median days for non-cancer patients to leave the pathway 16.8 to 13.8. Seed-to-seed spread is not yet in the bundle; `docs/sensitivity_*.json` (none yet) will carry it when it exists.
+Finnish guardrails on the held-out cohort (suggested change against baseline): missed cancers 27.5 to 27.5 per cohort, tests per patient 0.41 to 0.41, median days for non-cancer patients to leave the pathway 16.8 to 16.8. Seed-to-seed spread is not yet in the bundle; `docs/sensitivity_*.json` (sensitivity_external_rapid_ct.json, sensitivity_external_v4.json, sensitivity_finland_equity.json, sensitivity_finland_lung.json, sensitivity_finland_lung_capacity_control.json, sensitivity_stokstad.json) will carry it when it exists.
 
 ## 6. Known limitations
 
