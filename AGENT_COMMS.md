@@ -494,3 +494,6 @@ w8/ui-plan (worktree /home/claude/wt/uiplan): planning only. New files under doc
 
 ### [1114-205250-claude-code-tuomas-jev-demo] 2026-11-14 20:52Z · claude-code@tuomas/jev-demo · RELEASE
 w8/jev-demo done (354f5ab, not pushed): demo/jev.html JEV node page + demo/export_jev.py, serve_jev.py, tests/test_demo_jev.py; link in start.html row 5; export_all.py gains 'jev'. FYI for JEV owner/birch adapter: encounter gp_encounter offers 24 actions but native schema allows 16 choices/actions and the public gateway 8 per question, so a live Birch call at GP nodes would be refused unless the adapter trims options. Gate: golden pitch check fails on a clean tree too (filled/ counts 2530 vs 35 model-written cards here; env-dependent libraries), not from this lane.
+
+### [1114-205512-claude-code-tuomas-catcheck] 2026-11-14 20:55Z · claude-code@tuomas/catcheck · CLAIM
+w8/catalogue-check (worktree /home/claude/wt/catcheck): targeted literature check of catalogue/lung-primary-care numbers that drive tonight's cards; editing variables.yaml (few entries), params/sources.yaml (new ids), research notes, population hash pin + its test, libraries/ref500 regen if needed, docs/decisions.md one entry. Catalogue hash WILL change.
