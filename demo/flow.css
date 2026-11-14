@@ -26,13 +26,14 @@
 
 .sim-lede{margin:0;font:400 15px/1.5 var(--font-sans);color:var(--ink-2);max-width:34ch}
 .sim-legend{margin:0}
+.sim-legend .nw{white-space:nowrap}
 .sim-legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin:0 4px 0 0;vertical-align:0}
 .sim-pairnote{margin:0;padding:var(--s2) var(--s3);border-left:2px solid var(--brick);color:var(--ink-2)}
 
 /* TODAY | AFTER THE CHANGE */
 .sim-flip{display:flex;flex-direction:column;align-items:flex-start;gap:var(--s3)}
 .sim-flip[hidden]{display:none}
-.sim-toggle{display:inline-flex;border:1px solid var(--ink)}
+.sim-toggle{display:inline-flex;flex-wrap:wrap;border:1px solid var(--ink);max-width:100%}
 .sim-toggle__b{border:0;background:transparent;color:var(--ink);padding:9px 14px;cursor:pointer;
   font:600 13px/1.2 var(--font-sans);letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
 .sim-toggle__b + .sim-toggle__b{border-left:1px solid var(--ink)}
@@ -109,11 +110,14 @@
 .sim-menu__link:hover{color:var(--brown)}
 
 /* drawer content (the old side cards, restyled) */
-.sim-drawer{width:min(460px,100vw);padding:var(--s5) var(--s5) 96px;z-index:46}
+.sim-drawer{width:min(460px,100vw);bottom:65px;padding:var(--s5) var(--s5) var(--s6);z-index:29;border-top:0}
+.sim-drawer .card{border:0;padding:0;background:none}
+.sim-drawer .card + .card{margin-top:var(--s6)}
+.sim-drawer .x{display:none}
 .sim-drawer h3{margin:0 0 var(--s3);font:700 13px/1.3 var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink)}
 .sim-drawer p{margin:0 0 var(--s3);font-size:14px;line-height:1.5;color:var(--ink-2)}
 .sim-drawer b{color:var(--ink)}
-.sim-drawer__x{float:right;border:1px solid var(--ink-3);background:none;padding:2px 8px;cursor:pointer;
+.sim-drawer__x{float:right;margin:0 0 var(--s3) var(--s3);border:1px solid var(--ink-3);background:none;padding:2px 8px;cursor:pointer;
   font:400 12px/1.4 var(--font-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2)}
 .sim-drawer__x:hover{color:var(--ink);border-color:var(--ink)}
 .sim-drawer table{width:100%;border-collapse:collapse;font-size:13px;margin:0 0 var(--s3)}
@@ -132,7 +136,7 @@
 .lost .nm span{font:400 11px var(--font-mono);color:var(--ink-3);white-space:nowrap}
 .bar2{height:12px;background:var(--inset);position:relative}
 .bar2 i{position:absolute;left:0;top:0;bottom:0;background:var(--c)}
-.bar2 em{position:absolute;right:4px;top:0;font:700 10px/12px var(--font-mono);font-style:normal;color:var(--ink)}
+.bar2 em{position:absolute;right:2px;top:0;padding:0 3px;background:var(--card);font:700 10px/12px var(--font-mono);font-style:normal;color:var(--ink)}
 .dec{margin:var(--s2) 0 var(--s4)}.dec .nm{font-size:13px;margin-bottom:3px;color:var(--ink)}
 .dec .row{display:grid;grid-template-columns:110px 1fr 1fr;gap:6px;align-items:center;font-size:12px;color:var(--ink-2);margin:2px 0}
 .sim-counts{display:grid;grid-template-columns:auto 1fr 1fr;gap:4px var(--s4);font:400 13px/1.5 var(--font-mono);color:var(--ink-2)}

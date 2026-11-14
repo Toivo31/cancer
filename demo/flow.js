@@ -195,7 +195,8 @@ function wrap(s, w) {
     if ((cur + ' ' + wd).trim().length <= w) lines[lines.length - 1] = (cur + ' ' + wd).trim();
     else lines.push(wd);
   });
-  return lines.slice(0, 2).map((l, i, a) => i === 1 && a.length === 2 && lines.length > 2 ? l.slice(0, w - 1) + '…' : l);
+  // up to three lines: the exporter's short names are shown whole, not cut by the canvas (D67)
+  return lines.slice(0, 3).map((l, i, a) => i === 2 && lines.length > 3 ? l.slice(0, w - 1) + '…' : l);
 }
 function mix(a, b, t) { return a.map((v, i) => Math.round(v + (b[i] - v) * t)); }
 function dn(F, n) {
@@ -215,11 +216,12 @@ function globalMax(key) {
 }
 function sc() { return D.scenarios.find(s => s.id === S.sid); }
 function variantOf(s, key) { return s.variants.find(v => v.key === key); }
+const SHORT = {observed: 'Today', baseline: 'Today', suggested: 'Optimiser', authors: "Authors' pathway", faster_pet: 'Faster scanner'};
 function sideName(side) {
   const k = S.keys[side], V = variantOf(sc(), k);
   if (side === 0 && (k === 'observed' || k === 'baseline')) return 'Today';
-  if (side === 1 && V && V.changes && V.changes.length) return 'After the change';
-  return V ? V.label : k;
+  if (side === 1 && V && V.changes && V.changes.length && (S.keys[0] === 'observed' || S.keys[0] === 'baseline')) return 'After the change';
+  return SHORT[k] || (V ? V.label : k);
 }
 /* steps a change touches: steps where a connection now arrives or no longer arrives, and choices whose shares moved
    (exits and milestones left out) */
@@ -341,14 +343,14 @@ function renderPane(pa) {
     if (selNodes && selNodes.nodes.has(n.id)) { stroke = C.ink; sw = 2.2; }
     if (S.hl === n.short) { stroke = C.ink; sw = 3; }
     const tall = S.tall;
-    const lines = wrap(dn(F, n), 18);
-    const ty = tall ? (lines.length === 1 ? y + 15 : y + 12) : (lines.length === 1 ? p.y + 4 : p.y - 2);
+    const lines = wrap(dn(F, n), 18), fs = lines.length > 2 ? 10 : 12, lh = lines.length > 2 ? 9.5 : 12;
+    const ty = tall ? (lines.length === 1 ? y + 15 : y + 12) : p.y + fs / 3 - (lines.length - 1) * lh / 2;
     const rx = n.kind === 'decision' ? NODE_H / 2 : 2;
     let g = `<g data-id="${n.id}">`;
     if (changed && changed.has(n.id))
       g += `<rect x="${x - 4}" y="${y - 4}" width="${NODE_W + 8}" height="${NODE_H + 8}" rx="${rx + 3}" fill="none" stroke="${C.mustard}" stroke-width="2" stroke-dasharray="4 3"/>`;
     g += `<rect data-r="1" x="${x}" y="${y}" width="${NODE_W}" height="${NODE_H}" rx="${rx}" fill="${fill}" stroke="${stroke}" stroke-width="${sw}" ${n.kind === 'exit' && n.outcome !== 'treatment' ? 'stroke-dasharray="3 2"' : ''}/>`;
-    lines.forEach((l, i) => { g += `<text x="${p.x}" y="${ty + i * 12}" text-anchor="middle" font-size="12" font-weight="${n.kind === 'exit' && n.outcome === 'treatment' ? 700 : 600}" fill="${txt}">${esc(l)}</text>`; });
+    lines.forEach((l, i) => { g += `<text x="${p.x}" y="${ty + i * lh}" text-anchor="middle" font-size="${fs}" font-weight="${n.kind === 'exit' && n.outcome === 'treatment' ? 700 : 600}" fill="${txt}">${esc(l)}</text>`; });
     if (line2 && tall) g += `<text x="${p.x}" y="${y + NODE_H - (spark ? 12 : 6)}" text-anchor="middle" class="mono" font-size="9.5" fill="${C.ink3}">${line2}</text>`;
     if (delta) g += `<text x="${p.x}" y="${y + NODE_H + 24}" text-anchor="middle" class="mono" font-size="10.5" font-weight="700" fill="${C.ink}" stroke="${C.paper}" stroke-width="3" paint-order="stroke">${delta}</text>`;
     // queue label ("18 waiting"): filled in by updateQueues
@@ -555,9 +557,8 @@ function wireHit(pa) {
   pa.hit.addEventListener('mousemove', ev => {
     if (S.pin) return;
     const pt = toLogical(ev);
-    const dot = nearestDot(pa, pt);
+    const n = nodeAt(pt), dot = nearestDot(pa, pt, n ? 2.5 : 7.5);   // over a step, the step wins unless right on a dot
     if (dot) { pa.hit.style.cursor = 'pointer'; showTip(ev, dotTip(pa, dot)); return; }
-    const n = nodeAt(pt);
     if (n) { pa.hit.style.cursor = 'pointer'; showTip(ev, nodeTip(pa, n)); return; }
     const e = edgeAt(pt);
     pa.hit.style.cursor = 'default';
@@ -565,9 +566,9 @@ function wireHit(pa) {
   });
   pa.hit.addEventListener('mouseleave', () => { if (!S.pin) hideTip(); });
   pa.hit.addEventListener('click', ev => {
-    const pt = toLogical(ev), dot = nearestDot(pa, pt);
+    const pt = toLogical(ev), n = nodeAt(pt), dot = nearestDot(pa, pt, n ? 2.5 : 7.5);
     if (dot) { unpin(); selectPatient(pa.side, dot.d.idx); return; }
-    const n = nodeAt(pt), e = n ? null : edgeAt(pt);
+    const e = n ? null : edgeAt(pt);
     if (n || e) {
       S.pin = {side: pa.side, id: n ? n.id : e.id, edge: !n, x: ev.clientX, y: ev.clientY};
       showTip(ev, n ? nodeTip(pa, n) : edgeTip(pa, e));
@@ -578,8 +579,8 @@ function wireHit(pa) {
     if (S.sel) { S.sel = null; S.panes.forEach(p => p.selNodes = null); S.panes.forEach(renderPane); if (S.drawer === 'trace') closeDrawer(); }
   });
 }
-function nearestDot(pa, pt) {
-  let best = null, bd = 7.5;
+function nearestDot(pa, pt, within) {
+  let best = null, bd = within || 7.5;
   pa.hitDots.forEach(o => { const dd = Math.hypot(o.x - pt.x, o.y - pt.y); if (dd < bd) { bd = dd; best = o; } });
   return best;
 }
@@ -624,7 +625,6 @@ function nodeTip(pa, n) {
   if (pa.side === 1 || S.opt) h += ` <span class="m">· ${esc(sideName(pa.side).toLowerCase())}</span>`;
   if (q && n.kind !== 'exit') h += `<br><span class="k">Now, day ${Math.round(S.t)}</span><br><span class="m">${q.n} of the ${pa.dots.length} sampled patients waiting here for more than ${QUEUE.WAIT_MIN} days</span>`;
   h += `<br><span class="k">Whole run, all simulated patients</span>`;
-  if (n.resource && F.resources[n.resource]) h += `<br><span class="m">${esc(F.resources[n.resource].label)}</span>`;
   if (st) {
     h += `<br><span class="m">${fmt(st.n)} patients through (${fmt(st.n_cancer)} with cancer)</span>`;
     if (st.wait_median != null) {
@@ -675,7 +675,9 @@ function renderHead() {
   h += row('Median days to treatment', f1(A.metrics.median_days_to_treatment), f1(B.metrics.median_days_to_treatment), '', '', true);
   if (missedAny) h += row('Cancers missed, per cohort', f1(A.metrics.missed_cancers), f1(B.metrics.missed_cancers), '', '', true);
   const cl = CLAIM[S.sid] || {};
-  h += `<div class="sim-head__basis"><span class="sim-basis">Our simulation</span> whole run, ${fmt(A.totals.n)} simulated patients · ${claimLink(two ? cl.share : (cl.today || cl.share))}</div>`;
+  const byKey = {faster_pet: 'sim-no-faster-pet-overpredicted', authors: 'sim-no-authors-band'};
+  const claim = !two ? (cl.today || cl.share) : S.sid === 'norway' && byKey[S.keys[1]] ? byKey[S.keys[1]] : cl.share;
+  h += `<div class="sim-head__basis"><span class="sim-basis">Our simulation</span> whole run, ${fmt(A.totals.n)} simulated patients · ${claimLink(claim)}</div>`;
   $('#head').innerHTML = h;
   $('#head').classList.toggle('is-two', two);
 }
@@ -697,7 +699,7 @@ function renderChrome() {
   ob.classList.toggle('btn--primary', !S.opt);
   ob.classList.toggle('btn--secondary', S.opt);
   const dot = (c, ring) => `<i style="${ring ? `border:1.5px solid ${c};background:none` : `background:${c}`}"></i>`;
-  $('#legend').innerHTML = `${dot(C.ink)}moving or being seen · ${dot(C.faint)}waiting · <span style="color:${C.mustardInk}">steps turn mustard, then brick, as patients pile up</span>` +
+  $('#legend').innerHTML = `<span class="nw">${dot(C.ink)}moving or being seen</span> · <span class="nw">${dot(C.faint)}waiting</span> · <span style="color:${C.mustardInk}">steps turn mustard, then brick, as patients pile up</span>` +
     (S.sid === 'finland' ? ` · <span style="color:${C.brown}">return: back to primary care</span>` : '');
   const note = pairNote();
   $('#pairnote').hidden = !note;
@@ -785,7 +787,7 @@ function renderMenu() {
       <label><input type="checkbox" data-opt="split" ${S.split ? 'checked' : ''}> Side by side</label>
       <label><input type="checkbox" data-opt="dense" ${S.dense ? 'checked' : ''}> Show all numbers on the graph</label>
       <label><input type="checkbox" data-opt="big" ${S.big ? 'checked' : ''}> Draw larger and scroll</label></div>
-      <p class="sim-menu__help">Change per step and side by side compare today with after the change (they press Optimise first).</p></div>
+      <p class="sim-menu__help">Change per step and side by side compare today with after the change; turning one on applies Optimise.</p></div>
     <div class="sim-menu__sec sim-menu__links">
       ${item('lost', 'Where time is lost')}${s.published ? item('check', 'Check against the published study') : ''}
       ${item('pair', 'Compare other pathways')}${item('results', 'All results')}
@@ -1060,7 +1062,7 @@ function init() {
   if (sp > 0 && sp <= 64) S.speed = sp;
   S.big = q.has('large');
   S.dense = q.has('numbers');
-  S.tall = S.dense;
+  S.tall = S.dense || S.layer !== 'flow';
   $('#scn').innerHTML = D.scenarios.map(s => `<option value="${s.id}">${esc(s.id === 'norway' ? 'Norway · published study' : 'Finland · synthetic')}</option>`).join('') +
     '<option value="__encounter">Primary-care loop ›</option>';
   setScenario(S.sid, q);
@@ -1079,11 +1081,11 @@ function init() {
   $('#details').onclick = e => { e.stopPropagation(); toggleMenu(); };
   $('#menu').addEventListener('change', e => {
     const t = e.target;
-    if (t.name === 'layer') { S.layer = t.value; unpin(); S.panes.forEach(renderPane); renderMenu(); return; }
+    if (t.name === 'layer') { S.layer = t.value; S.tall = S.dense || S.layer !== 'flow'; unpin(); buildPanes(); renderMenu(); return; }
     const k = t.dataset.opt;
     if (k === 'deltas') { S.deltas = t.checked; if (S.deltas && !S.opt) { S.opt = true; S.side = 1; showPanes(); renderChrome(); } else S.panes.forEach(renderPane); }
     else if (k === 'split') { S.split = t.checked; if (S.split) S.opt = true; showPanes(); renderChrome(); }
-    else if (k === 'dense') { S.dense = t.checked; S.tall = S.dense; buildPanes(); }
+    else if (k === 'dense') { S.dense = t.checked; S.tall = S.dense || S.layer !== 'flow'; buildPanes(); }
     else if (k === 'big') { S.big = t.checked; S.panes.forEach(fit); }
   });
   $('#menu').addEventListener('click', e => {
