@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JEV at one node: the team's decision model</title>
+<link rel="stylesheet" href="jev.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand"><a class="eyebrow back" href="start.html" title="Back to the demo in order">&larr; Demo start</a> <span class="eyebrow dot">·</span> <span class="eyebrow">Decision model · one node at a time</span>
+    <h1>JEV: give it a context and the allowed answers, get a score for every answer</h1>
+    <p class="sub">Pick an example, or write your own. Every output on this page says where it came from: a recording of the deployed model, a live call, or nothing yet. A person decides; the model proposes.</p></div>
+  <span class="badge" title="Every patient and record on this page is synthetic.">Synthetic data only</span>
+</header>
+
+<main>
+  <section class="card" id="model-card" aria-labelledby="mc-title">
+    <div class="mc-head">
+      <div>
+        <span class="eyebrow">Model card</span>
+        <h2 id="mc-title">JEV, the team's decision model</h2>
+        <p class="lede">A decision model, not a chatbot. It reads a context, takes a question with a fixed list of allowed answers, and returns one score per answer in a single pass. The answers are what the pathway allows at that node, so it can only propose a step that exists.</p>
+      </div>
+      <div class="hf" id="hf"></div>
+    </div>
+    <div class="mc-body">
+      <div class="arch">
+        <div class="diagram" id="diagram" aria-label="Architecture diagram">
+          <div class="lane refine"><span class="box opt">Optional, off by default: the backbone's original language head calls read-only tools and writes a short evidence summary</span><span class="arr">appended to the context</span></div>
+          <div class="lane">
+            <span class="box in">Context<small>record, symptoms, notes, tool results</small></span><span class="arr">→</span>
+            <span class="box enc">Frozen backbone + trained adapters<small id="d-enc"></small></span><span class="arr">→</span>
+            <span class="box vec">context vector</span>
+          </div>
+          <div class="lane">
+            <span class="box in">Each answer, with its question<small>encoded on its own</small></span><span class="arr">→</span>
+            <span class="box enc">same encoder</span><span class="arr">→</span>
+            <span class="box vec">one vector per answer</span>
+          </div>
+          <div class="lane join">
+            <span class="box head">Scoring head: the answers attend to each other<small>score = direct match with the context + a correction from the whole answer set</small></span><span class="arr">→</span>
+            <span class="box out">one score per answer<small>softmax over the offered answers</small></span><span class="arr">→</span>
+            <span class="box person">a person accepts or overrides</span>
+          </div>
+        </div>
+        <p class="short" id="arch-short"></p>
+        <details class="fold"><summary>How it works, step by step</summary><ol class="plain" id="arch-text"></ol></details>
+      </div>
+      <div class="factcol"><dl class="facts" id="facts"></dl></div>
+    </div>
+  </section>
+
+  <section class="endpoint" id="endpoint" aria-label="Where answers come from">
+    <span class="eyebrow">Answers come from</span>
+    <select id="ep-mode" aria-label="Endpoint"></select>
+    <input id="ep-url" type="url" placeholder="https://host/api/decision" aria-label="Endpoint URL" hidden>
+    <span class="ep-status" id="ep-status"></span>
+  </section>
+
+  <nav class="presets" id="presets" aria-label="Examples"></nav>
+
+  <section class="work" id="work" aria-live="polite"></section>
+</main>
+
+<footer class="honest" id="honest"></footer>
+
+<script src="data/jev_bundle.js"></script>
+<script src="jev.js"></script>
+</body>
+</html>
