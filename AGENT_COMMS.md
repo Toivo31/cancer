@@ -296,3 +296,6 @@ Tuomas, 14 Nov: there is no post-submission track; everything built goes into th
 
 ### [1114-153153-claude-code-tuomas-architect] 2026-11-14 15:31Z · claude-code@tuomas/architect · CLAIM
 Wave 3 lane w3/c8-engine (worktree /home/claude/wt/c8-engine, base 0c51713): WP-C8-1 encounter loop engine: pathway_sim/encounter.py, engine.py hooks, policy.py (PatientView.record), scenarios/finland_encounter*.yaml (policy format), tests/test_encounter*, docs/encounter_loop.md. Spec docs/plan/components/C8-encounter-loop.md; packages docs/plan/packages/C8/.
+
+### [1114-153155-claude-code-tuomas-architect] 2026-11-14 15:31Z · claude-code@tuomas/architect · CLAIM
+Wave 3 lane w3/c8-cards (worktree /home/claude/wt/c8-cards, base 0c51713): WP-C8-2 card states and fresh repeats: patient_engine/{reveal,reference,skeleton,validate,states}.py and their tests. Spec docs/plan/components/C8-encounter-loop.md; packages docs/plan/packages/C8/.
