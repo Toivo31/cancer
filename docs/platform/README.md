@@ -79,7 +79,7 @@ Each milestone ends with something Tuomas can run. Specs are in `specs/`, ticket
 | M0 | Foundation (done) | `python -m pathway_sim demo`, dashboard | – | done |
 | M1 | **JEV in the graph**: decision points, stub with hardcoded probabilities, API contract, stub server | CLI run with `--jev stub` and `--jev http://…`; change a probability, see the result move | 01, 02 | M |
 | M2 | **Service**: API for flowcharts, runs, optimisations; background jobs | The whole loop with `curl` or the generated API page | 01, 03 | M–L |
-| M3 | **Run from the browser**: open a template, see the graph, edit JEV probabilities, run, see results | Browser at `localhost:8000` | 04 | L |
+| M3 | **Run from the browser**: open a template, see the flowchart, edit JEV probabilities, run, and watch the patients flow through the graph (counts, waits, decisions, playback); dashboard as a report tab | Browser at `localhost:8000` | 04 | L |
 | M4 | **Optimise and rerun in the browser**: suggested changes with evidence, accept, rerun, compare | Same | 04, 05 | M |
 | M5 | **Build your own flowchart**: full editor, world editor, import/export | Same | 01, 04 | L |
 | M6 | **Train JEV on your dataset**: upload, validate, train, attach; real JEV API hookup | Same; contract tests against the JEV API | 06 | M–L |

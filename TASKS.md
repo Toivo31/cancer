@@ -93,4 +93,4 @@ branch and gets merged in. Run all tests with `python -m pytest -q`.
 - [x] W8 (review) Independent code + claims review of the whole branch before submission
 
 ## Platform (direction set 14 Nov)
-Plan, specs and tickets for the online platform live in `docs/platform/` (`tickets.md` has the queue: M0 to M8). Not started; waiting on forks F1 to F7.
+Plan, specs and tickets for the online platform live in `docs/platform/` (main screen = the flowchart simulation with run layers and playback, D31) (`tickets.md` has the queue: M0 to M8). Not started; waiting on forks F1 to F7.

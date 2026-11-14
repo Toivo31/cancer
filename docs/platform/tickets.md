@@ -8,7 +8,7 @@ person. "Needs" lists tickets that must be done first; tickets without a shared 
 parallel. **T** marks a ticket that waits on Tuomas (a fork in `README.md` section 5).
 
 Critical path to the first browser loop:
-`M1-1 → M1-2 → M1-3 → M2-1 → M2-3 → M2-5 → M2-6 → M3-1 → M3-4/5/6/7 → M2-7 → M4`.
+`M1-1 → M1-2 → M1-3 → M2-1 → M2-3 → M2-5 → M2-6 → M3-1 → M3-4/5/6 → M2-11 → M3-10/11 → M2-7 → M4`.
 
 ## M0 Foundation wrap-up
 
@@ -46,6 +46,7 @@ Critical path to the first browser loop:
 | [ ] | M2-7 | Optimisations: job, result with labels and evidence, `apply` with a subset and linked changes | M | M2-6 | Applying all changes equals the optimiser's own output; subset tests |
 | [ ] | M2-8 | "Try a decision" endpoint | S | M2-4 | Returns the stub's probabilities for a hand-entered context |
 | [ ] | M2-9 | API tests including the full loop: template → run → optimise → apply → rerun → compare | M | M2-7 | Loop test passes with small `n` and asserts same patients |
+| [ ] | M2-11 | Flow endpoint: per-step and per-edge counts, waits, critical-path share, queue series, decision shares, and a sampled cohort of patient traces for playback | M | M2-6 | Totals equal the run's metrics; sample size and seed configurable; one test on both shipped templates |
 | [ ] | M2-10 | `service/README.md` with a `curl` walkthrough of the loop | S | M2-9 | Walkthrough runs as written |
 
 ## M3 Run from the browser (spec 04)
@@ -58,8 +59,12 @@ Critical path to the first browser loop:
 | [ ] | M3-4 | Read-only flowchart graph with auto-layout; decisions highlighted; version picker | M | M3-3 | Both templates draw without overlaps; parallel steps side by side |
 | [ ] | M3-5 | Decisions table: edit hardcoded probabilities and conditions; saves a new version | M | M3-4 | Rows must sum to 100; saved table round-trips |
 | [ ] | M3-6 | Run panel: settings, start, progress, cancel, history | M | M3-3, M2-6 | A run started in the browser finishes and appears in history |
-| [ ] | M3-7 | Results view: existing dashboard embedded and fed by the run's bundle | M | M3-6 | All dashboard screens render for a fresh run |
-| [ ] | M3-8 | Compare two runs | S | M3-6 | Deltas shown; different-patient runs refused with a reason |
+| [ ] | M3-7 | Report tab: existing dashboard embedded and fed by the run's bundle | M | M3-6 | All dashboard screens render for a fresh run |
+| [ ] | M3-8 | Compare two runs: headline table and the Compare layer on the graph | S | M3-6, M3-10 | Deltas shown on steps and edges; different-patient runs refused with a reason |
+| [ ] | M3-10 | **Run layers on the flowchart**: flow counts, time per step, decisions' chosen shares, queues; "where time is lost" list | M | M3-4, M2-11 | After a run the Norway graph shows the PET and tumour-board waits as the darkest steps; counts match the metrics |
+| [ ] | M3-11 | **Playback**: time slider, play, speed, dots moving along the graph, live counters | M | M3-10 | A 300-patient cohort plays through the Finnish scenario at 60 frames a second on a laptop; counters at the end equal the run's totals |
+| [ ] | M3-12 | Patient trace: click a dot or list row; steps with wait/took/result, decisions with offered probabilities, critical path highlighted | S | M3-11 | Trace of one patient equals that patient's record in the run log |
+| [ ] | M3-13 | Offline flow page `demo/flow.html` (no build): graph, flow/time/decision layers and playback from precomputed logs; fallback demo | M | M2-11 shape agreed | Opens from disk with no server; shows Norway observed vs optimised side by side |
 | [ ] | M3-9 | Scripted browser pass with screenshots | S | M3-7 | One command opens a template, edits a probability, runs, saves screenshots |
 
 ## M4 Optimise and rerun in the browser (specs 04, 05)
@@ -68,7 +73,7 @@ Critical path to the first browser loop:
 |---|---|---|---|---|---|
 | [ ] | M4-1 | Optimise panel: settings, start, progress by step | S | M2-7, M3-6 | Job runs from the browser |
 | [ ] | M4-2 | Suggested changes with evidence; list of changes blocked by safety checks | M | M4-1 | Matches the API result; honesty line shown |
-| [ ] | M4-3 | Graph diff: before and after with changed connections highlighted | M | M3-4, M4-1 | Norway template diff shows the tumour board moving before sampling |
+| [ ] | M4-3 | Graph diff: before and after side by side on the canvas with changed connections highlighted and the Compare layer on | M | M3-4, M4-1 | Norway template diff shows the tumour board moving before sampling |
 | [ ] | M4-4 | Accept a subset → new version → rerun on unseen patients → comparison | M | M4-2, M3-8 | Whole loop in the browser without touching the CLI |
 | [ ] | M4-5 | Optimiser under JEV: `standardise` rule, moved-probabilities report, conditional fast-track finding | S | M2-7, T (F7) | Tests for each rule; spec 05 behaviours hold |
 
