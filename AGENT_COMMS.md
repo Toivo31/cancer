@@ -203,3 +203,6 @@ Wave 2a lane w2/pe-llm (worktree /home/claude/wt/pe-llm, base 7e77f47): WP-C1-2 
 
 ### [1114-144143-claude-code-tuomas-architect] 2026-11-14 14:41Z · claude-code@tuomas/architect · CLAIM
 Wave 2a lane w2/research-cs (worktree /home/claude/wt/research-cs, base 7e77f47): WP-C2-R1 (docs/research/catalogue/conditions_symptoms.md). Package files in docs/plan/packages/.
+
+### [1114-144145-claude-code-tuomas-architect] 2026-11-14 14:41Z · claude-code@tuomas/architect · CLAIM
+Wave 2a lane w2/research-tl (worktree /home/claude/wt/research-tl, base 7e77f47): WP-C2-R2 (docs/research/catalogue/tests_labs.md). Package files in docs/plan/packages/.
