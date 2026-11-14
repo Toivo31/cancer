@@ -36,3 +36,26 @@ reference generator (so the whole pipeline runs offline and in tests).
 - [ ] Prompts ask for English text (C1 Q5), synthetic, no real names or places beyond the region field.
 
 ## Report (builder fills in)
+
+**Built** (branch `w3/pe-authors`): `patient_engine/authors.py` (G1/G2 prompt builders, schemas, assembly, repair routing),
+`patient_engine/pipeline.py` (`generate_card`, `generate_library`, `generate_library_with_report`, `reference_fake_client`,
+`estimate_cost`), `patient_engine/commands/generate.py`, `patient_engine/prompts/` (`g1_patient.v1.*`, `g2_results.v1.*`, README),
+`tests/test_pe_authors.py`, `tests/test_pe_pipeline.py` (27 tests, about 2 s). Gate: PASS.
+
+**Real run**: `export LLM_BASE_URL=... LLM_MODEL=... LLM_API_KEY=...` (optional `LLM_MODEL_G2`), then
+`python -m patient_engine generate --catalogue catalogue/lung-primary-care --n 300 --seed 1 --out runs/libraries/L1 --max-calls 2000`.
+`--estimate` prints calls and tokens first; `--resume` replaces a partial library (same cache). Exit 3 = partial.
+
+**Cost per card (lung catalogue, measured prompt sizes)**: 2 calls (plus repairs, plus the client's own schema retries), about 12.4k input
+tokens (G2 is most of it: schema, 16 tests x 3 attempts of plan) and about 4k output tokens (reference output 2.7k x 1.5). 300 cards: about
+600 calls, 3.7M in, 1.2M out, before repairs and any reasoning tokens.
+
+**Decisions**
+- Background, conditions, attributes and the error plan come from the skeleton and engine; the models write findings, presenting text, account, results, reports, GP note.
+- G1 sees reference chances per variable for this patient (resolved per condition) so frequencies can match; the audit (G4) still has to measure drift.
+- G2 gets the settled plan plus engine-suggested numbers for measured outputs and for `wrong` categorical ones (keeps error sizes inside the validator's bands).
+- Repair: failing author gets its own answer back plus `repair_prompt`; a G1 repair re-asks G2. `card_reveals_condition` is promoted to an error in the pipeline.
+- Cards run one per thread (not `LLMClient.map`) so a budget stop leaves whole cards. Partial flag lives in `<out>.work/generation_report.json`, because `LibraryManifest` has no field for it.
+- `presenting.reported` must be true symptom findings (checked, repaired, not silently fixed). Temperatures default to unset (reasoning models reject them).
+
+**Not done**: states other than `all_active` (raises NotImplementedError); G4 audit; `free` error mode; real endpoint never exercised (json_schema mode and server quirks untested); findings-from-engine fallback if G1 drifts too typical.
