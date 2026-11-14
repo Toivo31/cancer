@@ -107,7 +107,7 @@ def _flowchart_ref(store: Store, p: str, fid: str | None, version: int | None) -
 
 @router.post("/projects/{p}/datasets", status_code=201)
 async def upload_dataset(request: Request, name: str = Query("uploaded dataset", max_length=80), flowchart: str | None = Query(None, description="Flowchart id to check against"),
-                         version: int | None = Query(None, description="Its version; default the latest"),
+                         version: int | None = Query(None, ge=1, le=10**6, description="Its version; default the latest"),
                          format: str | None = Query(None, description="jsonl or csv; default: guessed from the first character"),
                          project: dict = Depends(get_project), store: Store = Depends(get_store)):
     """Upload rows as the request body: JSON lines (one decision per line) or CSV (``decision_point, patient_id, t_days, offered,

@@ -2,14 +2,17 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, Query, Response
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, Path, Query, Response
 
 from pathway_sim.documents import DocumentError, normalise_flowchart_doc
 
 from ..config import Settings
 from ..deps import get_project, get_settings, get_store, get_templates
 from ..errors import ERROR_RESPONSES, ApiError, not_found
-from ..models import (FlowchartDocument, FlowchartSummary, FlowchartWithLatest, ProjectCreate, ProjectDetail,
+from ..runtime import Runtime, get_runtime
+from ..models import (VERSION_MAX, FlowchartDocument, FlowchartSummary, FlowchartWithLatest, ProjectCreate, ProjectDetail,
                       ProjectRename, ProjectSummary, ValidateRequest, ValidationResult, VersionInfo, WorldDocument,
                       WorldResponse)
 from ..store import Conflict, NotFound, Store
@@ -52,8 +55,8 @@ def _version_number(v: str) -> int | None:
         n = int(v)
     except ValueError:
         raise ApiError(422, "invalid_version", f"'{v}' is not a version number or 'latest'") from None
-    if n < 1:
-        raise ApiError(422, "invalid_version", "Versions start at 1")
+    if not 1 <= n <= VERSION_MAX:
+        raise ApiError(422, "invalid_version", f"Versions run from 1 to {VERSION_MAX}")
     return n
 
 
@@ -103,8 +106,10 @@ def rename_project(req: ProjectRename, project: dict = Depends(get_project), sto
 
 
 @router.delete("/projects/{p}", status_code=204)
-def delete_project(project: dict = Depends(get_project), store: Store = Depends(get_store)):
-    """Deletes the project with its world, flowcharts, runs and stored results."""
+def delete_project(project: dict = Depends(get_project), store: Store = Depends(get_store), rt: Runtime = Depends(get_runtime)):
+    """Deletes the project with its world, flowcharts, runs and stored results. Its queued and running jobs are
+    cancelled first (F7), so nothing is written for it afterwards and no worker slot stays busy."""
+    rt.cancel_project_jobs(project["id"])
     store.delete_project(project["id"])
     return Response(status_code=204)
 
@@ -209,7 +214,7 @@ def add_version(f: str, doc: FlowchartDocument, project: dict = Depends(get_proj
 
 
 @router.put("/projects/{p}/flowcharts/{f}/versions/{v}", response_model=FlowchartDocument, **DOC)
-def replace_version(f: str, v: int, doc: FlowchartDocument, project: dict = Depends(get_project), store: Store = Depends(get_store)):
+def replace_version(f: str, v: Annotated[int, Path(ge=1, le=VERSION_MAX)], doc: FlowchartDocument, project: dict = Depends(get_project), store: Store = Depends(get_store)):
     """Overwrite a version that no run has used yet. 409 ``version_locked`` once a run has used it."""
     d = _checked_flowchart(store, project["id"], doc, fid=f)
     try:

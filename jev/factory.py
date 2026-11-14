@@ -9,11 +9,15 @@ migrated copy (options reordered to follow each legacy ``mix``), so run the retu
 
 from __future__ import annotations
 
+import contextlib
+import contextvars
+import math
+
 from pathway_sim.policy import RulePolicy
 
 from .adapter import BackendPolicy
 from .migrate import migrate_flowchart
-from .http import HttpBackend
+from .http import MAX_TIMEOUT, HttpBackend
 from .local import RuleBackend
 from .routing import RoutingBackend
 from .stub import StubBackend
@@ -38,6 +42,35 @@ def set_probability(points: dict, point: str, option: str, prob: float) -> None:
         raise ValueError(f"{point}: a one-option row must have probability 1")
 
 
+_LIMITS: contextvars.ContextVar = contextvars.ContextVar("jev_call_limits", default=None)
+
+
+@contextlib.contextmanager
+def call_limits(timeout: float, retries: int = 0):
+    """Tighter limits for every ``http`` backend built inside the block (the service uses it for calls made while a
+    web request waits: the policy's own timeout is only ever lowered, and it is not retried)."""
+    token = _LIMITS.set((float(timeout), int(retries)))
+    try:
+        yield
+    finally:
+        _LIMITS.reset(token)
+
+
+def _http_limits(cfg: dict) -> tuple[float, int]:
+    """Timeout and retries for an http backend: the policy may ask for less than the server's cap, never more."""
+    try:
+        timeout = float(cfg.get("timeout", 2.0))
+    except (TypeError, ValueError):
+        raise ValueError("decision_policy.timeout must be a number of seconds") from None
+    if not math.isfinite(timeout) or timeout <= 0:
+        raise ValueError("decision_policy.timeout must be a positive number of seconds")
+    timeout, retries = min(timeout, MAX_TIMEOUT), 1
+    lim = _LIMITS.get()
+    if lim is not None:
+        timeout, retries = min(timeout, lim[0]), min(retries, lim[1])
+    return timeout, retries
+
+
 def _make_backend(kind: str, cfg: dict, stub: StubBackend, where: str, flowchart=None, seed: int = 0):
     """One backend from its config (``decision_policy`` or a per-point override)."""
     if kind == "stub":
@@ -51,7 +84,8 @@ def _make_backend(kind: str, cfg: dict, stub: StubBackend, where: str, flowchart
         if not cfg.get("url"):
             raise ValueError(f"{where}: the http backend needs a url")
         on_error = cfg.get("on_error", "fail")
-        return HttpBackend(cfg["url"], cfg.get("model"), timeout=float(cfg.get("timeout", 2.0)),
+        timeout, retries = _http_limits(cfg)
+        return HttpBackend(cfg["url"], cfg.get("model"), timeout=timeout, retries=retries,
                            on_error=on_error, fallback=stub if on_error == "fallback_stub" else None)
     raise ValueError(f"{where}: unknown backend {kind!r}")
 
@@ -69,6 +103,12 @@ def prepare(scenario, flowchart, backend: str | None = None, mode: str | None = 
     """
     dp = dict(flowchart.decision_policy or {})
     backend = backend or dp.get("backend", "stub")
+    if not isinstance(backend, str):
+        raise ValueError(f"decision_policy.backend must be a string such as 'stub', 'rule' or 'http', not {type(backend).__name__}")
+    if not isinstance(dp.get("url", ""), str):
+        raise ValueError("decision_policy.url must be a string")
+    if dp.get("points") and not isinstance(dp["points"], dict):
+        raise ValueError("decision_policy.points must be an object with one entry per decision point")
     cfg = {**{k: v for k, v in dp.items() if k not in ("points", "backend", "mode")}, **options}
     if backend.startswith(("http://", "https://")):
         cfg["url"], backend = backend, "http"

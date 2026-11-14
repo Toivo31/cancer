@@ -17,6 +17,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from . import errors, routes, security
+from .limits import RejectNonFinite
 from .config import Settings
 from .deps import Services
 from .store import Conflict, NotFound
@@ -103,6 +104,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         if getattr(m, "router", None) is not None:
             app.include_router(m.router, prefix="/api")
 
+    app.add_middleware(RejectNonFinite)           # F3: NaN / Infinity never reach a stored document
     app.add_middleware(BodyLimit, limit=app.state.services.settings.max_document_bytes)
     security.install(app)                         # token, read-only mode, rate limits (spec 07); outermost, so it runs first
 

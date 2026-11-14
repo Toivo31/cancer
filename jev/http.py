@@ -14,6 +14,7 @@ from __future__ import annotations
 import http.client
 import json
 import logging
+import math
 import socket
 import urllib.parse
 
@@ -23,6 +24,9 @@ from .fields import ResponseCache
 
 log = logging.getLogger("jev")
 ON_ERROR = ("fail", "fallback_stub")
+MAX_TIMEOUT = 5.0               # seconds per attempt, whatever the policy asks for (security review F5)
+MAX_RETRIES = 1
+MAX_RESPONSE_BYTES = 1 << 20    # a JEV answer larger than 1 MiB is refused, never held in memory
 
 
 class HttpBackend:
@@ -33,6 +37,10 @@ class HttpBackend:
             raise ValueError(f"on_error must be one of {ON_ERROR}")
         if on_error == "fallback_stub" and fallback is None:
             raise ValueError("on_error='fallback_stub' needs a fallback backend")
+        timeout, retries = float(timeout), int(retries)
+        if not math.isfinite(timeout) or timeout <= 0:
+            raise ValueError(f"timeout must be a positive number of seconds, not {timeout!r}")
+        timeout, retries = min(timeout, MAX_TIMEOUT), max(0, min(retries, MAX_RETRIES))
         u = urllib.parse.urlparse(url if "//" in url else "http://" + url)
         if u.scheme not in ("http", "https") or not u.hostname:
             raise ValueError(f"bad JEV url {url!r}")
@@ -70,7 +78,14 @@ class HttpBackend:
                 self.http_calls += 1
                 self._conn.request(method, self.prefix + path, body=data, headers=headers)
                 r = self._conn.getresponse()
-                raw = r.read()
+                length = r.getheader("Content-Length")
+                if length and length.isdigit() and int(length) > MAX_RESPONSE_BYTES:
+                    self.close()
+                    raise BackendError(f"JEV at {self.url} sent a response over the {MAX_RESPONSE_BYTES} byte limit")
+                raw = r.read(MAX_RESPONSE_BYTES + 1)
+                if len(raw) > MAX_RESPONSE_BYTES:
+                    self.close()
+                    raise BackendError(f"JEV at {self.url} sent a response over the {MAX_RESPONSE_BYTES} byte limit")
             except (OSError, http.client.HTTPException) as e:        # includes timeouts, refused, reset
                 self.close()
                 last = f"{type(e).__name__}: {e}"
@@ -79,7 +94,7 @@ class HttpBackend:
                 last = f"HTTP {r.status} from {self.url}{path}"
                 continue
             if r.status >= 400:                                      # our request is wrong: do not retry
-                raise BackendError(f"JEV at {self.url} rejected the request ({r.status}): {raw[:300].decode(errors='replace')}")
+                raise BackendError(f"JEV at {self.url} rejected the request (HTTP {r.status})")
             try:
                 return json.loads(raw)
             except ValueError:

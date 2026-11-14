@@ -26,7 +26,6 @@ def http_policy(url, **extra):
 
 
 # ------------------------------------------------------------------------------------------ F2: no destination checks
-@pytest.mark.xfail(strict=True, reason="F2: JEV_ALLOWED_HOSTS is not implemented; the service calls any host a client names")
 def test_run_with_url_outside_the_allowlist_is_refused_before_any_request(client, project, internal_server, monkeypatch):
     url, srv = internal_server
     monkeypatch.setenv("JEV_ALLOWED_HOSTS", "jev.example.org")
@@ -35,14 +34,12 @@ def test_run_with_url_outside_the_allowlist_is_refused_before_any_request(client
     assert srv.hits == [], "the service already sent a request to a host that is not on the allowlist"
 
 
-@pytest.mark.xfail(strict=True, reason="F2: the first 300 bytes of whatever an internal host answers are echoed back in the 422 message")
 def test_internal_response_body_is_not_reflected_to_the_client(client, project, internal_server):
     url, srv = internal_server
     r = client.post(f"/api/projects/{project}/runs", json={"flowchart": {"id": "observed"}, "n": 60, "decision_policy": http_policy(url + "/admin")})
     assert "SECRET-FROM-INTERNAL-SERVICE" not in r.text
 
 
-@pytest.mark.xfail(strict=True, reason="F2: user:password@ in the URL is accepted and then repeated in error messages")
 def test_credentials_in_url_are_refused_or_hidden(client, project, internal_server):
     url, _ = internal_server
     dirty = url.replace("http://", "http://svc:hunter2@")
@@ -50,12 +47,20 @@ def test_credentials_in_url_are_refused_or_hidden(client, project, internal_serv
     assert "hunter2" not in r.text
 
 
-@pytest.mark.xfail(strict=True, reason="F2: loopback, private, link-local (cloud metadata) and IPv6 addresses all pass URL parsing")
 @pytest.mark.parametrize("url", ["http://127.0.0.1:9", "http://localhost:9", "http://10.0.0.5", "http://192.168.1.1", "http://169.254.169.254/latest/meta-data",
                                  "http://[::1]:9", "http://[fd00::1]", "http://0.0.0.0:9", "http://2130706433/", "http://metadata.google.internal"])
-def test_backend_refuses_non_public_destinations(url):
+def test_backend_refuses_non_public_destinations(url, monkeypatch):
+    """The destination check lives in ``service.security`` (``check_jev_url``, called before ``jev.prepare`` builds a backend):
+    nothing is on the allowlist by default, and link-local / cloud-metadata addresses stay refused even when listed."""
+    from service import security
+    monkeypatch.delenv("JEV_ALLOWED_HOSTS", raising=False)
     with pytest.raises(ValueError):
-        HttpBackend(url)          # the constructor only parses; nothing is sent
+        security.check_jev_url(url)          # nothing is resolved or sent for an unlisted host
+    host = url.split("://", 1)[1].split("/", 1)[0]
+    monkeypatch.setenv("JEV_ALLOWED_HOSTS", host)
+    if host.startswith(("169.254.", "metadata")):
+        with pytest.raises(ValueError):
+            security.check_jev_url(url)      # listed, still refused: cloud metadata
 
 
 def test_redirects_are_not_followed(client, project):
@@ -101,7 +106,6 @@ def _quiet(fn):
 
 
 # ------------------------------------------------------------------------------------------ F5: sizes and timeouts
-@pytest.mark.xfail(strict=True, reason="F5: the response is read whole with no size limit (an oversized JEV answer is held in memory)")
 def test_oversized_jev_response_is_cut_off():
     big = 40 * 1024 * 1024
 
@@ -131,15 +135,17 @@ def test_oversized_jev_response_is_cut_off():
     except Exception:
         pass
     srv.shutdown()
-    assert Flood.sent < 2 * 1024 * 1024, f"the client read {Flood.sent // 1024} KiB of an answer that should have been cut off at about 1 MiB"
+    # What the server managed to write is the client's reading plus the kernel's socket buffers (a few MiB on loopback);
+    # the unlimited client took all 40 MiB.
+    assert Flood.sent < 8 * 1024 * 1024, f"the client read {Flood.sent // 1024} KiB of an answer that should have been cut off at about 1 MiB"
 
 
-@pytest.mark.xfail(strict=True, reason="F5: the client chooses the timeout; /decide waits for it in an API worker thread")
-def test_client_cannot_choose_a_long_jev_timeout(client, project):
+def test_client_cannot_choose_a_long_jev_timeout(client, project, allow_jev):
     silent = socket.socket()
     silent.bind(("127.0.0.1", 0))
     silent.listen(8)
     url = f"http://127.0.0.1:{silent.getsockname()[1]}"
+    allow_jev(url)                 # allowed host: what is under test is the time the service waits for it
     t = time.time()
     client.post(f"/api/projects/{project}/decide", json={**DECIDE, "decision_policy": http_policy(url, timeout=2.5)})
     took = time.time() - t
@@ -147,8 +153,8 @@ def test_client_cannot_choose_a_long_jev_timeout(client, project):
     assert took < 2.0, f"the request was held for {took:.1f}s because the client asked for a 2.5 s timeout (and the call is retried once)"
 
 
-@pytest.mark.xfail(strict=True, reason="F5: enough slow /decide calls occupy every API worker thread, and even /api/health stops answering")
 def test_slow_jev_calls_cannot_stall_the_whole_api():
+    """The child process allows its own silent local server through ``JEV_ALLOWED_HOSTS`` (it sets it itself)."""
     import subprocess
     import sys
     from pathlib import Path
@@ -160,13 +166,12 @@ def test_slow_jev_calls_cannot_stall_the_whole_api():
 
 
 # ------------------------------------------------------------------------------------------ F4: errors become 500
-@pytest.mark.xfail(strict=True, reason="F4: an unreachable JEV makes /decide answer 500 (BackendError is not caught there)")
-def test_decide_with_unreachable_jev_is_a_client_error(client, project):
+def test_decide_with_unreachable_jev_is_a_client_error(client, project, allow_jev):
+    allow_jev("127.0.0.1:1")
     r = client.post(f"/api/projects/{project}/decide", json={**DECIDE, "decision_policy": http_policy("http://127.0.0.1:1", timeout=0.2)})
     assert r.status_code in (400, 422, 502, 503, 504), r.status_code
 
 
-@pytest.mark.xfail(strict=True, reason="F4: a decision_policy whose backend or url has the wrong type is a 500, not a 422")
 @pytest.mark.parametrize("policy", [{"backend": 5}, {"backend": None}, {"backend": ["http"]}, {"backend": "http", "url": 5}, {"backend": "http", "url": ["x"]}])
 @pytest.mark.parametrize("where", ["decide", "runs"])
 def test_wrong_typed_decision_policy_is_a_422(client, project, policy, where):

@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS flowchart_versions (
     FOREIGN KEY (project_id, flowchart_id) REFERENCES flowcharts(project_id, id) ON DELETE CASCADE);
 """
 
-_KEY = re.compile(r"^[A-Za-z0-9_.-]{1,80}$")
+_KEY = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]{0,79}")
 
 
 def now() -> str:
@@ -120,7 +120,7 @@ class Store:
 
     def _blob_path(self, project_id: str, kind: str, key: str) -> Path:
         for part in (project_id, kind, key):
-            if not _KEY.match(part):
+            if not _KEY.fullmatch(part):
                 raise ValueError(f"bad blob path part {part!r}")
         return self.blob_dir / project_id / kind / f"{key}.json.gz"
 

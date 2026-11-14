@@ -111,7 +111,6 @@ def test_a_hostile_but_accepted_world_fails_alone_at_the_time_limit(tmp_path):
 
 
 # ------------------------------------------------------------------------------------------ F6: internals in job errors
-@pytest.mark.xfail(strict=True, reason="F6: GET /api/jobs/{id} returns the worker's Python traceback with absolute server paths")
 def test_failed_job_does_not_show_a_traceback_or_server_paths(client):
     rt = client.app.state.runtime
     j = rt.runner.submit("t", jf.failer)
@@ -120,7 +119,6 @@ def test_failed_job_does_not_show_a_traceback_or_server_paths(client):
     assert "Traceback" not in body and "/home/" not in body and ".py" not in body, body[:300]
 
 
-@pytest.mark.xfail(strict=True, reason="F6: the same traceback is copied into the run's error field (GET .../runs/{r})")
 def test_failed_run_does_not_show_a_traceback_or_server_paths(client, project):
     w = world_of(client, project)
     w["arrivals"] = {"rate_per_day": 0}                         # passes validation today (F15), fails in the engine
@@ -147,7 +145,6 @@ def _delete_while_running(tmp_path):
     return c, p, r
 
 
-@pytest.mark.xfail(strict=True, reason="F7: deleting a project does not stop its running job")
 def test_deleting_a_project_stops_its_running_jobs(tmp_path):
     c, p, r = _delete_while_running(tmp_path)
     try:
@@ -181,7 +178,7 @@ def test_store_recreates_blob_directory_of_a_deleted_project(tmp_path):
 
 
 # ------------------------------------------------------------------------------------------ F8: orphan after the service dies
-@pytest.mark.xfail(strict=True, reason="F8: a job process outlives a service that was killed (OOM, SIGKILL) and runs on to its end")
+@pytest.mark.xfail(strict=True, reason="F8 (accepted for the hackathon): a job process outlives a service that was killed (OOM, SIGKILL); the Docker container dies with PID 1. PR_SET_PDEATHSIG was tried: the parent is the forkserver, which does not die with the service")
 def test_job_process_does_not_outlive_a_killed_service(tmp_path):
     out = tmp_path / "out.txt"
     with open(out, "w") as fh:        # a file, not a pipe: the orphan inherits the descriptor and would keep a pipe open until it ends
@@ -250,8 +247,9 @@ def test_identical_requests_from_many_clients_make_one_run(tmp_path):
 
 
 # ------------------------------------------------------------------------------------------ F16: heavy work in the API process
-@pytest.mark.xfail(strict=True, reason="F16: GET .../flow with a non-default sample re-simulates the run inside the API process, unbounded in parallel")
 def test_flow_rebuild_is_bounded_by_the_job_limit(tmp_path, monkeypatch):
+    """F16: eight parallel non-default flow requests never simulate in the API process, and never more at once than there
+    are job slots; the requests the slots cannot take are answered 429 instead of being queued without bound."""
     import service.runs_core as core
     with make_client(tmp_path, max_jobs=2) as c:
         p = new_project(c)
@@ -271,9 +269,26 @@ def test_flow_rebuild_is_bounded_by_the_job_limit(tmp_path, monkeypatch):
                 with lock:
                     state["now"] -= 1
 
-        monkeypatch.setattr(core, "simulate", slow)
+        monkeypatch.setattr(core, "simulate", slow)      # would be seen if the API process simulated
         with ThreadPoolExecutor(8) as pool:
             codes = list(pool.map(lambda k: c.get(f"/api/projects/{p}/runs/{r['id']}/flow", params={"sample_seed": k + 1}).status_code, range(8)))
-        assert set(codes) == {200}
-        assert os.getpid() not in state["pids"], "the flow was re-simulated inside the API process"
+        assert set(codes) <= {200, 429} and 200 in codes, codes
+        assert state["pids"] == set(), "the flow was re-simulated inside the API process"
         assert state["peak"] <= 2, f"{state['peak']} simulations ran at once (max_jobs is 2)"
+        # the answer of a rebuild is a real flow document, and no temporary file is left behind
+        ok = c.get(f"/api/projects/{p}/runs/{r['id']}/flow", params={"sample": 40, "sample_seed": 3})
+        assert ok.status_code == 200 and ok.json()["meta"]["sample_seed"] == 3
+        assert not list((tmp_path / "data" / "blobs" / p / "flowtmp").glob("*"))
+
+
+def test_flow_rebuild_runs_as_a_job_and_the_default_flow_does_not(tmp_path):
+    with make_client(tmp_path, max_jobs=2) as c:
+        p = new_project(c)
+        r = c.post(f"/api/projects/{p}/runs", json={"flowchart": {"id": "observed"}, "n": 100, "seeds": [1]}).json()
+        assert wait_job(c, r["job_id"])["status"] == "succeeded"
+        rt = c.app.state.runtime
+        before = len(rt.runner.list())
+        assert c.get(f"/api/projects/{p}/runs/{r['id']}/flow").status_code == 200          # the stored flow: no job
+        assert len(rt.runner.list()) == before
+        assert c.get(f"/api/projects/{p}/runs/{r['id']}/flow", params={"sample_seed": 9}).status_code == 200
+        assert [j.kind for j in rt.runner.list()].count("flow") == 1

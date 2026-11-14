@@ -124,12 +124,14 @@ def test_patient_log_is_the_analyst_view_and_does_contain_the_truth(client, proj
     assert "cancer" in p and "condition" in p
 
 
-def test_what_the_jev_receives_contains_only_revealed_information(tmp_path):
+def test_what_the_jev_receives_contains_only_revealed_information(tmp_path, allow_jev, monkeypatch):
     """Run the whole path through a local JEV server that records every request body."""
     import jev
     from jev.stub import StubBackend
     from jev.stub_server import serve_in_thread
 
+    # The job process must see JEV_ALLOWED_HOSTS, which this test sets after the shared forkserver started: use spawn, which copies the environment.
+    monkeypatch.setenv("PATHWAY_JOB_START", "spawn")
     with make_client(tmp_path, max_jobs=1) as c:
         p = new_project(c)
         world = world_of(c, p)
@@ -150,6 +152,7 @@ def test_what_the_jev_receives_contains_only_revealed_information(tmp_path):
                 return self.inner.decide(reqs)
 
         srv, url = serve_in_thread(Recording())
+        allow_jev(url)
         try:
             policy = {**fc["decision_policy"], "backend": "http", "url": url, "model": "stub@1", "timeout": 5}
             run = c.post(f"/api/projects/{p}/runs", json={"flowchart": {"id": "observed"}, "n": 150, "seeds": [2], "decision_policy": policy})

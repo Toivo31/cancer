@@ -34,3 +34,7 @@ def pid_reporter(ctx, path):
         f.write(str(os.getpid()))
     time.sleep(120)
     return {}
+
+
+def failer_with_path(ctx):
+    open("/home/nobody/secret/dir/missing.json")

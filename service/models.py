@@ -12,6 +12,9 @@ NodeKind = Literal["step", "decision", "join", "milestone", "exit", "choice"]
 EdgeType = Literal["required", "any", "optional", "option"]
 
 
+VERSION_MAX = 10**6       # far above any real count (max_versions is 500), far below SQLite's 2**63 (F9)
+
+
 class _Loose(BaseModel):
     model_config = ConfigDict(extra="allow", populate_by_name=True)
 
@@ -40,9 +43,9 @@ class FlowEdge(_Loose):
 
 class FlowchartDocument(_Loose):
     schema_version: Literal[1] = 1
-    id: str = Field(min_length=1, max_length=80, pattern=r"^[A-Za-z0-9_.-]+$")
-    version: int | None = None
-    parent_version: int | None = None
+    id: str = Field(min_length=1, max_length=80, pattern=r"^[A-Za-z0-9][A-Za-z0-9_.-]*$")
+    version: int | None = Field(None, ge=1, le=VERSION_MAX)
+    parent_version: int | None = Field(None, ge=1, le=VERSION_MAX)
     world_id: str | None = None
     name: str | None = None
     description: str | None = None
@@ -59,7 +62,7 @@ class FlowchartDocument(_Loose):
 
 class WorldDocument(_Loose):
     schema_version: Literal[1] = 1
-    id: str = Field(min_length=1, max_length=80, pattern=r"^[A-Za-z0-9_.-]+$")
+    id: str = Field(min_length=1, max_length=80, pattern=r"^[A-Za-z0-9][A-Za-z0-9_.-]*$")
     name: str | None = None
     description: str | None = None
     clock_start: str | None = None
@@ -184,7 +187,7 @@ class TemplateDetail(TemplateSummary):
 class FlowchartRef(BaseModel):
     model_config = ConfigDict(extra="forbid")
     id: str
-    version: int | None = None          # default: the latest version
+    version: int | None = Field(None, ge=1, le=VERSION_MAX)          # default: the latest version
 
 
 class DecideRequest(BaseModel):

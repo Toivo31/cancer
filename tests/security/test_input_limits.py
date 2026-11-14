@@ -15,20 +15,17 @@ def _world_with_nan(c, p):
     return json.dumps(w).replace('"target_days": 42', '"target_days": NaN'), w
 
 
-@pytest.mark.xfail(strict=True, reason="F3: Python's JSON parser accepts NaN and Infinity, and the documents are stored with them")
 def test_world_with_nan_is_rejected(client, project):
     text, _ = _world_with_nan(client, project)
     r = put_raw(client, f"/api/projects/{project}/world", text)
     assert r.status_code == 422, r.status_code
 
 
-@pytest.mark.xfail(strict=True, reason="F3: Infinity is stored the same way")
 def test_world_with_infinity_is_rejected(client, project):
     w = json.dumps(world_of(client, project)).replace('"target_days": 42', '"target_days": Infinity')
     assert put_raw(client, f"/api/projects/{project}/world", w).status_code == 422
 
 
-@pytest.mark.xfail(strict=True, reason="F3: a flowchart document may carry NaN too (test_overrides is free-form)")
 def test_flowchart_with_nan_is_rejected(client, project):
     doc = client.get(f"/api/projects/{project}/flowcharts/observed/versions/1").json()
     doc.pop("version", None), doc.pop("parent_version", None)
@@ -38,7 +35,6 @@ def test_flowchart_with_nan_is_rejected(client, project):
     assert post_raw(client, f"/api/projects/{project}/flowcharts", text).status_code == 422
 
 
-@pytest.mark.xfail(strict=True, reason="F3: a stored NaN reaches the run metrics and the project's run list then answers 500 for everybody")
 def test_nan_in_world_does_not_poison_the_run_list(client, project):
     text, w = _world_with_nan(client, project)
     put_raw(client, f"/api/projects/{project}/world", text)
@@ -96,20 +92,17 @@ def test_streamed_body_without_content_length_is_cut_at_the_limit(tmp_path):
 
 
 # ------------------------------------------------------------------------------------------ F9: integer overflow
-@pytest.mark.xfail(strict=True, reason="F9: a version number above 2**63 reaches SQLite and overflows -> 500")
 def test_huge_version_in_path_is_a_404_or_422(client, project):
     r = client.get(f"/api/projects/{project}/flowcharts/observed/versions/{10 ** 30}")
     assert r.status_code in (404, 422), r.status_code
 
 
-@pytest.mark.xfail(strict=True, reason="F9: the same overflow through the body of POST /runs")
 def test_huge_version_in_run_request_is_a_404_or_422(client, project):
     r = client.post(f"/api/projects/{project}/runs", json={"flowchart": {"id": "observed", "version": 10 ** 30}, "n": 100})
     assert r.status_code in (404, 422), r.status_code
 
 
 # ------------------------------------------------------------------------------------------ F10: ids that browsers normalise
-@pytest.mark.xfail(strict=True, reason="F10: '.' and '..' are valid flowchart ids; a browser turns .../flowcharts/.. into the parent URL (DELETE -> deletes the project)")
 @pytest.mark.parametrize("bad_id", ["..", "."])
 def test_flowchart_id_cannot_be_a_dot_segment(client, project, bad_id):
     doc = client.get(f"/api/projects/{project}/flowcharts/observed/versions/1").json()
@@ -118,7 +111,6 @@ def test_flowchart_id_cannot_be_a_dot_segment(client, project, bad_id):
     assert client.post(f"/api/projects/{project}/flowcharts", json=doc).status_code == 422
 
 
-@pytest.mark.xfail(strict=True, reason="F10: the same for the world id (used in exports and file names later)")
 def test_world_id_cannot_be_a_dot_segment(tmp_path):
     from service.models import WorldDocument
     with pytest.raises(ValueError):
