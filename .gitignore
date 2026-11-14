@@ -9,3 +9,8 @@ __pycache__/
 # IDE
 .idea/
 .DS_Store
+
+# Web app
+web/node_modules/
+web/dist/
+web/*.tsbuildinfo

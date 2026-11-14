@@ -1,0 +1,74 @@
+{
+ "norway_check/observed": {
+  "n": 1000.0,
+  "share_within_target": 0.401,
+  "median_days_to_treatment": 45.6833,
+  "missed_cancers": 0.0
+ },
+ "norway_check/faster_pet_optimised": {
+  "n": 1000.0,
+  "share_within_target": 0.882,
+  "median_days_to_treatment": 27.0067,
+  "missed_cancers": 0.0
+ },
+ "norway_check/faster_pet": {
+  "n": 1000.0,
+  "share_within_target": 0.603,
+  "median_days_to_treatment": 38.2433,
+  "missed_cancers": 0.0
+ },
+ "norway_check/optimal": {
+  "n": 1000.0,
+  "share_within_target": 0.801,
+  "median_days_to_treatment": 31.0367,
+  "missed_cancers": 0.0
+ },
+ "norway_check/observed_optimised": {
+  "n": 1000.0,
+  "share_within_target": 0.671,
+  "median_days_to_treatment": 36.9833,
+  "missed_cancers": 0.0
+ },
+ "finland_scenario/baseline": {
+  "n": 16176.5,
+  "share_within_target": 0.1754,
+  "median_days_to_treatment": 102.31,
+  "missed_cancers": 27.5
+ },
+ "finland_scenario/baseline_optimised": {
+  "n": 16176.5,
+  "share_within_target": 0.3311,
+  "median_days_to_treatment": 94.08,
+  "missed_cancers": 27.5
+ },
+ "finland_scenario/direct_ct": {
+  "n": 16176.5,
+  "share_within_target": 0.2041,
+  "median_days_to_treatment": 101.855,
+  "missed_cancers": 26.5
+ },
+ "finland_scenario/bundled_workup": {
+  "n": 16176.5,
+  "share_within_target": 0.5371,
+  "median_days_to_treatment": 82.525,
+  "missed_cancers": 27.5
+ },
+ "finland_scenario/fast_track_nonspecific": {
+  "n": 16176.5,
+  "share_within_target": 0.3683,
+  "median_days_to_treatment": 94.615,
+  "missed_cancers": 29.0
+ },
+ "finland_scenario/baseline_plus_capacity": {
+  "n": 16176.5,
+  "share_within_target": 0.3085,
+  "median_days_to_treatment": 96.725,
+  "missed_cancers": 27.5
+ },
+ "finland_scenario/urgent_booking": {
+  "n": 16176.5,
+  "share_within_target": 0.6147,
+  "median_days_to_treatment": 80.01,
+  "missed_cancers": 27.5
+ }
+}
