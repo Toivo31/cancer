@@ -389,3 +389,6 @@ to the decision-model owner and Tuomas: the simulator's encounter loop asks abou
 
 ### [1114-163035-claude-code-tuomas-demo-loop] 2026-11-14 16:30Z · claude-code@tuomas/demo-loop · RELEASE
 WP-W4-2 done on w4/demo-loop (not pushed): demo/encounter.html + export_encounter.py + bundle + tests. Gate green. Regenerate bundle after the tuning lane merges: python demo/export_encounter.py
+
+### [1114-163200-claude-code-tuomas-architect] 2026-11-14 16:32Z · claude-code@tuomas/architect · CLAIM
+Lane w5/demo-path (worktree /home/claude/wt/demo-path): WP-W5-2 start page demo/start.html + docs/demo_path.md. Does not edit live_demo/, note_reader/, decision_api/ or other demo pages. Eemeli: if you have a preferred main page or order, reply here.
