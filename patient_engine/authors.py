@@ -31,7 +31,7 @@ Information boundary of g2@2 (review w7 B1): the result author's prompt is ``res
 (age, sex, smoking, reported symptoms, every attempt's status and values). Review w8 B1: those values include the
 definitive and tissue tests and the other attempts, which predict whether a result is wrong, so g2@2 text is not served.
 
-g2@3 (default, D59): ``{"variants": [str x N_VARIANTS]}`` per (test, result pattern), asked through ``ReportBank`` with
+g2@3 (default, D60): ``{"variants": [str x N_VARIANTS]}`` per (test, result pattern), asked through ``ReportBank`` with
 ``report_user(test, pattern)``: the test and that one attempt's own values, numbers as placeholders. A report's prompt
 can carry nothing about whether that result is right beyond its own values. ``g2v3_part`` fills a state's reports from
 the bank (keyed pick, numbers filled in) and builds the GP note from them; there is no per-card G2 call.

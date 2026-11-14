@@ -1,6 +1,6 @@
 # Review w8: second pass on the g2@2 fix, the population model and the regeneration script (14 Nov night)
 
-> Follow-up (branch `w8/g2blind`, decision D59): B1 fixed by result author `g2@3` (one result per prompt, report bank),
+> Follow-up (branch `w8/g2blind`, decision D60): B1 fixed by result author `g2@3` (one result per prompt, report bank),
 > M1 and M2 fixed; the xfails in `tests/test_review_w8_g2_blind.py` now pass. Measure: `scripts/g2_blindness.py`.
 
 Branch `w8/verify` (from the integration branch at `1128fb6`, with `overnight/sim` `b9c7fe0` merged). Offline only:

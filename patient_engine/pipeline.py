@@ -11,7 +11,7 @@ Per card (``generate_card``)::
     make_skeleton                      engine: condition, attributes, background, persona, nominal plan
     G1  patient author  (model)        findings with causes, what the patient reports, the account
     settle_error_plan                  engine: the plan for the findings G1 wrote (``guided`` mode)
-    G2  result author                  g2@3 (default, D59): the engine writes every value from the plan and picks
+    G2  result author                  g2@3 (default, D60): the engine writes every value from the plan and picks
                                        each report from a bank of wordings the model wrote per (test, result
                                        pattern) with nothing else in the prompt; one bank call per pattern, shared
                                        by every card. g2@2: one call per state with every value (not served,

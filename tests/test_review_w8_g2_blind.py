@@ -1,6 +1,6 @@
 """Review w8: defects in the g2@2 result author and the patient-author leak rule, and their fixes.
 
-Recorded as strict xfails by the review (docs/review_w8_fixes.md, B1, M1, M2); fixed on w8/g2blind (decision D58):
+Recorded as strict xfails by the review (docs/review_w8_fixes.md, B1, M1, M2); fixed on w8/g2blind (decision D60):
 B1 by the result author g2@3, whose prompt for a report holds that one result's own values only; M1 by the
 synonyms of ``validate.CONDITION_TERMS`` and no exemption for the patient's own words; M2 in ``settle_attempt``.
 """

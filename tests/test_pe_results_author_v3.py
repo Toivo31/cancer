@@ -1,4 +1,4 @@
-"""Result author g2@3 (review w8 B1, decision D58): report wording per result pattern, written from one result's own
+"""Result author g2@3 (review w8 B1, decision D60): report wording per result pattern, written from one result's own
 values only and shared by every card (the report bank). All offline with the reference fake."""
 
 from __future__ import annotations

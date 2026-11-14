@@ -8,7 +8,7 @@
 #   bash scripts/generate_gemini.sh resume  # restart any background run that stopped before finishing
 #
 # Libraries are written to libraries/gemini_v2_*; logs to runs/gen_logs/. Synthetic data only.
-# Result author g2@3 (D59): report wordings per result pattern, cached in $BANK_CACHE (default runs/gen_cache/g2_bank)
+# Result author g2@3 (D60): report wordings per result pattern, cached in $BANK_CACHE (default runs/gen_cache/g2_bank)
 # and shared by the trial and all five runs; RESULTS_PROMPT=g2@2 selects the old author (its text is not served).
 set -euo pipefail
 cd "$(dirname "$0")/.."

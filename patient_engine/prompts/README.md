@@ -18,7 +18,7 @@ and in the library manifest, so libraries made with different wording stay disti
 (half of false alarms hedged). `g2@2` is built by `authors.results_user` from public inputs only (age, sex, smoking,
 reported symptoms, each attempt's status and values). Review w8 B1: those values include the definitive and tissue
 tests and the other attempts, which tell a false alarm from a true positive (AUC 1.00), so `g2@2` left
-`reveal.SAFE_RESULTS_PROMPTS`. `g2@3` (D59) asks for the wording of one result at a time: `authors.report_user` of the
+`reveal.SAFE_RESULTS_PROMPTS`. `g2@3` (D60) asks for the wording of one result at a time: `authors.report_user` of the
 test and that attempt's own pattern (binary and categorical values, numbers as `{output}` placeholders), nothing else.
 The answers form a bank keyed by (test, pattern), cached by prompt and shared by every card and run; the engine picks
 one wording per attempt with a keyed number and fills in the numbers. `g2@3` is the one version in the set. A new result-author
