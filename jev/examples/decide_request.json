@@ -1,0 +1,22 @@
+{
+  "model": "stub@1",
+  "requests": [{
+    "request_id": "p1042:sample_method",
+    "decision_point": "sample_method",
+    "question_type": "next_step",
+    "context": {
+      "group": "non_specific", "age": 67, "t_days": 31.5, "fast_track": false,
+      "attributes": {"location": "peripheral"},
+      "history": [
+        {"step": "gp_visit", "test": "gp_assessment", "result": true, "t_days": 13.2},
+        {"step": "ct", "test": "ct_chest", "result": true, "t_days": 30.9}
+      ]
+    },
+    "options": [
+      {"id": "bronch", "label": "Bronchoscopy", "test": "bronchoscopy",
+       "features": {"invasive": true, "cost_eur": 1200, "lead_days": 6.0}},
+      {"id": "ttnb", "label": "Needle biopsy", "test": "ttnb",
+       "features": {"invasive": true, "cost_eur": 900, "lead_days": 2.0}}
+    ]
+  }]
+}
