@@ -53,12 +53,12 @@ Critical path to the first browser loop:
 
 | | ID | Ticket | Size | Needs | Done when |
 |---|---|---|---|---|---|
-| [ ] | M3-1 | Web scaffold (Vite, React, TypeScript), build served by the service | M | M2-3, T (F4) | `localhost:8000` shows the app shell |
-| [ ] | M3-2 | API client and types generated from the API description | S | M3-1 | Type check passes; regenerates with one command |
-| [ ] | M3-3 | Projects screen: list, new from template | S | M3-2, M2-4 | A project created from the Finnish template opens |
-| [ ] | M3-4 | Read-only flowchart graph with auto-layout; decisions highlighted; version picker | M | M3-3 | Both templates draw without overlaps; parallel steps side by side |
-| [ ] | M3-5 | Decisions table: edit hardcoded probabilities and conditions; saves a new version | M | M3-4 | Rows must sum to 100; saved table round-trips |
-| [ ] | M3-6 | Run panel: settings, start, progress, cancel, history | M | M3-3, M2-6 | A run started in the browser finishes and appears in history |
+| [x] | M3-1 | Web scaffold (Vite, React, TypeScript), build served by the service | M | M2-3, T (F4) | `localhost:8000` shows the app shell |
+| [x] | M3-2 | API client and types generated from the API description | S | M3-1 | Type check passes; regenerates with one command |
+| [x] | M3-3 | Projects screen: list, new from template | S | M3-2, M2-4 | A project created from the Finnish template opens |
+| [x] | M3-4 | Read-only flowchart graph with auto-layout; decisions highlighted; version picker | M | M3-3 | Both templates draw without overlaps; parallel steps side by side |
+| [x] | M3-5 | Decisions table: edit hardcoded probabilities and conditions; saves a new version | M | M3-4 | Rows must sum to 100; saved table round-trips |
+| [x] | M3-6 | Run panel: settings, start, progress, cancel, history | M | M3-3, M2-6 | A run started in the browser finishes and appears in history |
 | [ ] | M3-7 | Report tab: existing dashboard embedded and fed by the run's bundle | M | M3-6 | All dashboard screens render for a fresh run |
 | [ ] | M3-8 | Compare two runs: headline table and the Compare layer on the graph | S | M3-6, M3-10 | Deltas shown on steps and edges; different-patient runs refused with a reason |
 | [ ] | M3-10 | **Run layers on the flowchart**: flow counts, time per step, decisions' chosen shares, queues; "where time is lost" list | M | M3-4, M2-11 | After a run the Norway graph shows the PET and tumour-board waits as the darkest steps; counts match the metrics |

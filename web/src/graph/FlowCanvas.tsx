@@ -3,6 +3,7 @@ import { BaseEdge, Background, Controls, Handle, MarkerType, MiniMap, Position, 
 import type { Edge, EdgeProps, Node, NodeProps } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import type { Flowchart, FlowNode, World } from '../api/types'
+import { defaultShares } from '../lib/policy'
 import { layoutFlowchart, MARGIN_X, ROW_GAP, SIZE, structureKey } from './layout'
 
 export const STAGE_LABEL: Record<string, string> = {
@@ -101,7 +102,8 @@ export function FlowCanvas({ flowchart, world, selected, onSelect, nodeOverlay, 
     const ns: Node<PData>[] = flowchart.nodes.map((n) => {
       const pt = flowchart.decision_policy.points[n.id]
       let probLine: string | undefined
-      if (n.kind === 'decision' && pt?.default) probLine = `${Object.keys(pt.default).length} options${pt.rules?.length ? ` · ${pt.rules.length} rule${pt.rules.length > 1 ? 's' : ''}` : ''}`
+      const shares = defaultShares(pt)
+      if (n.kind === 'decision' && shares) probLine = `${Object.keys(shares).length} options${pt.rules?.length ? ` · ${pt.rules.length} rule${pt.rules.length > 1 ? 's' : ''}` : ''}`
       else if (n.kind === 'decision') probLine = 'no probabilities set'
       return {
         id: n.id, type: 'p', position: { x: boxes[n.id].x, y: boxes[n.id].y }, width: SIZE[n.kind].w, height: SIZE[n.kind].h,
@@ -116,7 +118,7 @@ export function FlowCanvas({ flowchart, world, selected, onSelect, nodeOverlay, 
       const on = !focus || incident.has(id)
       let label: string | undefined = ov?.label
       if (label === undefined && e.type === 'option') {
-        const p = flowchart.decision_policy.points[e.from]?.default?.[e.to]
+        const p = defaultShares(flowchart.decision_policy.points[e.from])?.[e.to]
         if (p !== undefined) label = `${Math.round(p * 1000) / 10}%`
       }
       const color = ov?.color ?? (on && focus ? (e.type === 'option' ? '#B79CFF' : '#62B0FF') : st.stroke)

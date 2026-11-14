@@ -59,12 +59,13 @@ export function RunPanel({ pid, flowchart, world, runs, runsError, selectedRun, 
         <div className="stack">
           <div className="kv">
             <span className="dim">Flowchart</span><span className="clamp2" title={flowchart.name}>{flowchart.name} <span className="num dim">v{flowchart.version}</span></span>
-            <span className="dim">Decisions</span><span>{flowchart.decision_policy.backend === 'stub' ? 'Hardcoded probabilities (stored in this version)' : flowchart.decision_policy.backend}</span>
+            <span className="dim">Decisions</span><span>{{ stub: 'Hardcoded probabilities, stored in this version', rule: 'Hardcoded probabilities (older document form)', http: 'JEV API', local: 'Trained model' }[flowchart.decision_policy.backend] ?? flowchart.decision_policy.backend}</span>
             <label className="dim" htmlFor="run-n">Patients</label><input id="run-n" className={`field num-in ${valid || !n ? '' : 'bad'}`} style={{ width: 96 }} value={n} onChange={(e) => setN(e.target.value)} inputMode="numeric" />
             <label className="dim" htmlFor="run-seeds">Seeds</label><input id="run-seeds" className={`field num-in ${seedList ? '' : 'bad'}`} style={{ width: 120, textAlign: 'left' }} value={seeds} onChange={(e) => setSeeds(e.target.value)} placeholder="301, 302" />
             <label className="dim" htmlFor="run-label">Label</label><input id="run-label" className="field" value={label} onChange={(e) => setLabel(e.target.value)} placeholder={`${flowchart.id} v${flowchart.version}`} />
           </div>
           {dirty && <div className="muted" style={{ fontSize: 12 }}>You have unsaved changes in the decisions table. A run uses the saved version.</div>}
+          {valid && world?.default_n && nNum < world.default_n / 2 && <div className="dim" style={{ fontSize: 12 }}>The template default is {world.default_n.toLocaleString('en')} patients. Far fewer means noisier results, and queues have little time to build up.</div>}
           {!valid && <div className="dim" style={{ fontSize: 12 }}>Patients: whole number from 10 to 50,000. Seeds: up to five whole numbers.</div>}
           <div className="form-row">
             <button className="btn primary" disabled={!valid || busy} onClick={start} data-testid="start-run">{busy ? 'Starting…' : 'Run'}</button>

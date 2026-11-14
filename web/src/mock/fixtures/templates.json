@@ -1,12 +1,12 @@
 [
  {
   "id": "norway_check",
-  "name": "Norway check",
+  "name": "Norway check (Stokstad 2019)",
   "description": "Stokstad et al. 2019, St Olavs Hospital: 100 stage I-II lung cancer patients, clock from referral to treatment, 42-day target.",
   "world": {
    "schema_version": 1,
    "id": "norway_check",
-   "name": "Norway check",
+   "name": "Norway check (Stokstad 2019)",
    "clock_start": "referral_received",
    "target_days": 42,
    "default_n": 100,
@@ -165,24 +165,18 @@
       "id": "ct",
       "kind": "step",
       "label": "CT scan",
-      "test": "baseline_ct",
-      "stage": "detection"
+      "test": "baseline_ct"
      },
      {
       "id": "visit",
       "kind": "step",
       "label": "First hospital visit",
-      "test": "first_visit",
-      "stage": "referral"
+      "test": "first_visit"
      },
      {
       "id": "sample_plan",
       "kind": "decision",
-      "label": "Tissue sampling planned?",
-      "options": [
-       "bronch1",
-       "no_sampling"
-      ]
+      "label": "Tissue sampling planned?"
      },
      {
       "id": "no_sampling",
@@ -193,33 +187,25 @@
       "id": "bronch1",
       "kind": "step",
       "label": "Bronchoscopy",
-      "test": "bronchoscopy",
-      "stage": "diagnosis"
+      "test": "bronchoscopy"
      },
      {
       "id": "after_bronch",
       "kind": "decision",
       "label": "After an inconclusive bronchoscopy",
-      "when": "not bronch1",
-      "options": [
-       "ttnb",
-       "bronch2",
-       "no_more"
-      ]
+      "when": "not bronch1"
      },
      {
       "id": "ttnb",
       "kind": "step",
       "label": "Needle biopsy",
-      "test": "ttnb",
-      "stage": "diagnosis"
+      "test": "ttnb"
      },
      {
       "id": "bronch2",
       "kind": "step",
       "label": "Repeat bronchoscopy",
-      "test": "bronchoscopy_repeat",
-      "stage": "diagnosis"
+      "test": "bronchoscopy_repeat"
      },
      {
       "id": "no_more",
@@ -236,33 +222,23 @@
       "kind": "step",
       "label": "New CT (first one inadequate)",
       "test": "ct_redo",
-      "when": "ct_inadequate == 'yes'",
-      "stage": "diagnosis"
+      "when": "ct_inadequate == 'yes'"
      },
      {
       "id": "pet_timing",
       "kind": "decision",
-      "label": "When PET-CT is ordered",
-      "options": [
-       "pet_on_time",
-       "pet_late"
-      ]
+      "label": "When PET-CT is ordered"
      },
      {
       "id": "pet_on_time",
       "kind": "decision",
-      "label": "PET-CT ordered at triage or at the first visit",
-      "options": [
-       "pet_triage",
-       "pet_early_route"
-      ]
+      "label": "PET-CT ordered at triage or at the first visit"
      },
      {
       "id": "pet_triage",
       "kind": "step",
       "label": "PET-CT (ordered at referral triage)",
-      "test": "pet_ct",
-      "stage": "diagnosis"
+      "test": "pet_ct"
      },
      {
       "id": "pet_early_route",
@@ -273,15 +249,13 @@
       "id": "pet_early",
       "kind": "step",
       "label": "PET-CT",
-      "test": "pet_ct",
-      "stage": "diagnosis"
+      "test": "pet_ct"
      },
      {
       "id": "pet_late",
       "kind": "step",
       "label": "PET-CT (ordered late)",
-      "test": "pet_ct_late",
-      "stage": "diagnosis"
+      "test": "pet_ct_late"
      },
      {
       "id": "pet_scan",
@@ -293,8 +267,7 @@
       "kind": "step",
       "label": "Further tests after PET-CT",
       "test": "further_workup",
-      "when": "further_workup_after_pet == 'yes'",
-      "stage": "diagnosis"
+      "when": "further_workup_after_pet == 'yes'"
      },
      {
       "id": "pet",
@@ -305,25 +278,19 @@
       "id": "ex_timing",
       "kind": "decision",
       "label": "When the exercise test is ordered",
-      "when": "needs_exercise_test == 'yes'",
-      "options": [
-       "ex_early",
-       "ex_late"
-      ]
+      "when": "needs_exercise_test == 'yes'"
      },
      {
       "id": "ex_early",
       "kind": "step",
       "label": "Exercise test",
-      "test": "exercise_test",
-      "stage": "diagnosis"
+      "test": "exercise_test"
      },
      {
       "id": "ex_late",
       "kind": "step",
       "label": "Exercise test (ordered late)",
-      "test": "exercise_test_late",
-      "stage": "diagnosis"
+      "test": "exercise_test_late"
      },
      {
       "id": "exercise",
@@ -340,32 +307,28 @@
       "id": "mdt",
       "kind": "step",
       "label": "Tumour board",
-      "test": "tumour_board",
-      "stage": "treatment_start"
+      "test": "tumour_board"
      },
      {
       "id": "book_surgery",
       "kind": "step",
       "label": "Waiting for surgery",
       "test": "surgery_booking",
-      "when": "treatment == 'surgery'",
-      "stage": "treatment_start"
+      "when": "treatment == 'surgery'"
      },
      {
       "id": "book_rt",
       "kind": "step",
       "label": "Waiting for radiotherapy",
       "test": "radiotherapy_booking",
-      "when": "treatment == 'radiotherapy'",
-      "stage": "treatment_start"
+      "when": "treatment == 'radiotherapy'"
      },
      {
       "id": "treat",
       "kind": "exit",
       "label": "Treatment starts",
       "test": "treatment",
-      "outcome": "treatment",
-      "stage": "treatment_start"
+      "outcome": "treatment"
      }
     ],
     "edges": [
@@ -679,24 +642,18 @@
       "id": "ct",
       "kind": "step",
       "label": "CT scan",
-      "test": "baseline_ct",
-      "stage": "detection"
+      "test": "baseline_ct"
      },
      {
       "id": "visit",
       "kind": "step",
       "label": "First hospital visit",
-      "test": "first_visit",
-      "stage": "referral"
+      "test": "first_visit"
      },
      {
       "id": "sample_plan",
       "kind": "decision",
-      "label": "Tissue sampling planned?",
-      "options": [
-       "bronch1",
-       "no_sampling"
-      ]
+      "label": "Tissue sampling planned?"
      },
      {
       "id": "no_sampling",
@@ -707,33 +664,25 @@
       "id": "bronch1",
       "kind": "step",
       "label": "Bronchoscopy",
-      "test": "bronchoscopy",
-      "stage": "diagnosis"
+      "test": "bronchoscopy"
      },
      {
       "id": "after_bronch",
       "kind": "decision",
       "label": "After an inconclusive bronchoscopy",
-      "when": "not bronch1",
-      "options": [
-       "ttnb",
-       "bronch2",
-       "no_more"
-      ]
+      "when": "not bronch1"
      },
      {
       "id": "ttnb",
       "kind": "step",
       "label": "Needle biopsy",
-      "test": "ttnb",
-      "stage": "diagnosis"
+      "test": "ttnb"
      },
      {
       "id": "bronch2",
       "kind": "step",
       "label": "Repeat bronchoscopy",
-      "test": "bronchoscopy_repeat",
-      "stage": "diagnosis"
+      "test": "bronchoscopy_repeat"
      },
      {
       "id": "no_more",
@@ -750,33 +699,23 @@
       "kind": "step",
       "label": "New CT (first one inadequate)",
       "test": "ct_redo",
-      "when": "ct_inadequate == 'yes'",
-      "stage": "diagnosis"
+      "when": "ct_inadequate == 'yes'"
      },
      {
       "id": "pet_timing",
       "kind": "decision",
-      "label": "When PET-CT is ordered",
-      "options": [
-       "pet_on_time",
-       "pet_late"
-      ]
+      "label": "When PET-CT is ordered"
      },
      {
       "id": "pet_on_time",
       "kind": "decision",
-      "label": "PET-CT ordered at triage or at the first visit",
-      "options": [
-       "pet_triage",
-       "pet_early_route"
-      ]
+      "label": "PET-CT ordered at triage or at the first visit"
      },
      {
       "id": "pet_triage",
       "kind": "step",
       "label": "PET-CT (ordered at referral triage)",
-      "test": "pet_ct",
-      "stage": "diagnosis"
+      "test": "pet_ct"
      },
      {
       "id": "pet_early_route",
@@ -787,15 +726,13 @@
       "id": "pet_early",
       "kind": "step",
       "label": "PET-CT",
-      "test": "pet_ct",
-      "stage": "diagnosis"
+      "test": "pet_ct"
      },
      {
       "id": "pet_late",
       "kind": "step",
       "label": "PET-CT (ordered late)",
-      "test": "pet_ct_late",
-      "stage": "diagnosis"
+      "test": "pet_ct_late"
      },
      {
       "id": "pet_scan",
@@ -807,8 +744,7 @@
       "kind": "step",
       "label": "Further tests after PET-CT",
       "test": "further_workup",
-      "when": "further_workup_after_pet == 'yes'",
-      "stage": "diagnosis"
+      "when": "further_workup_after_pet == 'yes'"
      },
      {
       "id": "pet",
@@ -819,25 +755,19 @@
       "id": "ex_timing",
       "kind": "decision",
       "label": "When the exercise test is ordered",
-      "when": "needs_exercise_test == 'yes'",
-      "options": [
-       "ex_early",
-       "ex_late"
-      ]
+      "when": "needs_exercise_test == 'yes'"
      },
      {
       "id": "ex_early",
       "kind": "step",
       "label": "Exercise test",
-      "test": "exercise_test",
-      "stage": "diagnosis"
+      "test": "exercise_test"
      },
      {
       "id": "ex_late",
       "kind": "step",
       "label": "Exercise test (ordered late)",
-      "test": "exercise_test_late",
-      "stage": "diagnosis"
+      "test": "exercise_test_late"
      },
      {
       "id": "exercise",
@@ -854,32 +784,28 @@
       "id": "mdt",
       "kind": "step",
       "label": "Tumour board",
-      "test": "tumour_board",
-      "stage": "treatment_start"
+      "test": "tumour_board"
      },
      {
       "id": "book_surgery",
       "kind": "step",
       "label": "Waiting for surgery",
       "test": "surgery_booking",
-      "when": "treatment == 'surgery'",
-      "stage": "treatment_start"
+      "when": "treatment == 'surgery'"
      },
      {
       "id": "book_rt",
       "kind": "step",
       "label": "Waiting for radiotherapy",
       "test": "radiotherapy_booking",
-      "when": "treatment == 'radiotherapy'",
-      "stage": "treatment_start"
+      "when": "treatment == 'radiotherapy'"
      },
      {
       "id": "treat",
       "kind": "exit",
       "label": "Treatment starts",
       "test": "treatment",
-      "outcome": "treatment",
-      "stage": "treatment_start"
+      "outcome": "treatment"
      }
     ],
     "edges": [
@@ -1208,39 +1134,31 @@
       "id": "ct",
       "kind": "step",
       "label": "CT scan",
-      "test": "baseline_ct",
-      "stage": "detection"
+      "test": "baseline_ct"
      },
      {
       "id": "visit",
       "kind": "step",
       "label": "First hospital visit",
-      "test": "first_visit",
-      "stage": "referral"
+      "test": "first_visit"
      },
      {
       "id": "ct_redo",
       "kind": "step",
       "label": "New CT (first one inadequate)",
       "test": "ct_redo",
-      "when": "ct_inadequate == 'yes'",
-      "stage": "diagnosis"
+      "when": "ct_inadequate == 'yes'"
      },
      {
       "id": "pet_on_time",
       "kind": "decision",
-      "label": "PET-CT ordered at triage or at the first visit",
-      "options": [
-       "pet_triage",
-       "pet_early_route"
-      ]
+      "label": "PET-CT ordered at triage or at the first visit"
      },
      {
       "id": "pet_triage",
       "kind": "step",
       "label": "PET-CT (ordered at referral triage)",
-      "test": "pet_ct",
-      "stage": "diagnosis"
+      "test": "pet_ct"
      },
      {
       "id": "pet_early_route",
@@ -1251,8 +1169,7 @@
       "id": "pet_early",
       "kind": "step",
       "label": "PET-CT",
-      "test": "pet_ct",
-      "stage": "diagnosis"
+      "test": "pet_ct"
      },
      {
       "id": "pet_scan",
@@ -1264,8 +1181,7 @@
       "kind": "step",
       "label": "Further tests after PET-CT",
       "test": "further_workup",
-      "when": "further_workup_after_pet == 'yes'",
-      "stage": "diagnosis"
+      "when": "further_workup_after_pet == 'yes'"
      },
      {
       "id": "pet",
@@ -1277,8 +1193,7 @@
       "kind": "step",
       "label": "Exercise test",
       "test": "exercise_test",
-      "when": "needs_exercise_test == 'yes'",
-      "stage": "diagnosis"
+      "when": "needs_exercise_test == 'yes'"
      },
      {
       "id": "exercise",
@@ -1289,33 +1204,26 @@
       "id": "mdt",
       "kind": "step",
       "label": "Tumour board",
-      "test": "tumour_board",
-      "stage": "treatment_start"
+      "test": "tumour_board"
      },
      {
       "id": "book_surgery",
       "kind": "step",
       "label": "Waiting for surgery",
       "test": "surgery_booking",
-      "when": "treatment == 'surgery'",
-      "stage": "treatment_start"
+      "when": "treatment == 'surgery'"
      },
      {
       "id": "book_rt",
       "kind": "step",
       "label": "Waiting for radiotherapy",
       "test": "radiotherapy_booking",
-      "when": "treatment == 'radiotherapy'",
-      "stage": "treatment_start"
+      "when": "treatment == 'radiotherapy'"
      },
      {
       "id": "sample_plan",
       "kind": "decision",
-      "label": "Tissue sampling planned?",
-      "options": [
-       "method",
-       "no_sampling"
-      ]
+      "label": "Tissue sampling planned?"
      },
      {
       "id": "no_sampling",
@@ -1325,50 +1233,37 @@
      {
       "id": "method",
       "kind": "decision",
-      "label": "Choose sampling method",
-      "options": [
-       "bronch1",
-       "ttnb1"
-      ]
+      "label": "Choose sampling method"
      },
      {
       "id": "bronch1",
       "kind": "step",
       "label": "Bronchoscopy",
-      "test": "bronchoscopy",
-      "stage": "diagnosis"
+      "test": "bronchoscopy"
      },
      {
       "id": "ttnb1",
       "kind": "step",
       "label": "Needle biopsy",
-      "test": "ttnb",
-      "stage": "diagnosis"
+      "test": "ttnb"
      },
      {
       "id": "after_bronch",
       "kind": "decision",
       "label": "After an inconclusive bronchoscopy",
-      "when": "not bronch1",
-      "options": [
-       "ttnb",
-       "bronch2",
-       "no_more"
-      ]
+      "when": "not bronch1"
      },
      {
       "id": "ttnb",
       "kind": "step",
       "label": "Needle biopsy",
-      "test": "ttnb",
-      "stage": "diagnosis"
+      "test": "ttnb"
      },
      {
       "id": "bronch2",
       "kind": "step",
       "label": "Repeat bronchoscopy",
-      "test": "bronchoscopy_repeat",
-      "stage": "diagnosis"
+      "test": "bronchoscopy_repeat"
      },
      {
       "id": "no_more",
@@ -1391,8 +1286,7 @@
       "kind": "exit",
       "label": "Treatment starts",
       "test": "treatment",
-      "outcome": "treatment",
-      "stage": "treatment_start"
+      "outcome": "treatment"
      }
     ],
     "edges": [
@@ -1680,13 +1574,13 @@
   ]
  },
  {
-  "id": "finland_scenario",
-  "name": "Finnish scenario",
+  "id": "finland_lung",
+  "name": "Finnish lung cancer pathway (synthetic)",
   "description": "Synthetic Finnish lung pathway in one wellbeing services county, clock from first contact to treatment, 90-day provisional target.",
   "world": {
    "schema_version": 1,
-   "id": "finland_scenario",
-   "name": "Finnish scenario",
+   "id": "finland_lung",
+   "name": "Finnish lung cancer pathway (synthetic)",
    "clock_start": "first_contact",
    "target_days": 90,
    "default_n": 18800,
@@ -1915,39 +1809,32 @@
     "id": "baseline",
     "version": 1,
     "parent_version": null,
-    "world_id": "finland_scenario",
+    "world_id": "finland_lung",
     "name": "Finnish sequential pathway (nurse/GP, CXR, referral, specialist, CT, sampling, PET-CT, board, treatment)",
     "nodes": [
      {
       "id": "first_contact",
       "kind": "decision",
-      "label": "Nurse or GP first",
-      "options": [
-       "nurse_visit",
-       "gp_visit"
-      ]
+      "label": "Nurse or GP first"
      },
      {
       "id": "nurse_visit",
       "kind": "step",
       "label": "Nurse assessment",
-      "test": "nurse_assessment",
-      "stage": "detection"
+      "test": "nurse_assessment"
      },
      {
       "id": "gp_visit",
       "kind": "step",
       "label": "GP appointment",
-      "test": "gp_assessment",
-      "stage": "detection"
+      "test": "gp_assessment"
      },
      {
       "id": "gp_after_nurse",
       "kind": "step",
       "label": "GP appointment after nurse",
       "test": "gp_assessment_after_nurse",
-      "when": "not nurse_visit",
-      "stage": "detection"
+      "when": "not nurse_visit"
      },
      {
       "id": "cxr_ordered",
@@ -1965,24 +1852,21 @@
       "id": "cxr",
       "kind": "step",
       "label": "Chest X-ray",
-      "test": "chest_xray",
-      "stage": "detection"
+      "test": "chest_xray"
      },
      {
       "id": "second_look",
       "kind": "step",
       "label": "GP review of a negative film",
       "test": "gp_second_look",
-      "when": "not cxr",
-      "stage": "detection"
+      "when": "not cxr"
      },
      {
       "id": "gp_referral",
       "kind": "step",
       "label": "GP writes referral",
       "test": "gp_referral_letter",
-      "when": "cxr or second_look",
-      "stage": "referral"
+      "when": "cxr or second_look"
      },
      {
       "id": "no_referral",
@@ -1994,8 +1878,7 @@
       "id": "persist",
       "kind": "step",
       "label": "Do symptoms persist",
-      "test": "symptoms_persist",
-      "stage": "detection"
+      "test": "symptoms_persist"
      },
      {
       "id": "discharge_no_return",
@@ -2009,8 +1892,7 @@
       "kind": "step",
       "label": "Re-presents to GP",
       "test": "gp_represent",
-      "when": "persist",
-      "stage": "detection"
+      "when": "persist"
      },
      {
       "id": "discharge_represent",
@@ -2029,15 +1911,13 @@
       "id": "triage",
       "kind": "step",
       "label": "Referral handling at hospital",
-      "test": "referral_triage",
-      "stage": "referral"
+      "test": "referral_triage"
      },
      {
       "id": "spec_visit",
       "kind": "step",
       "label": "Specialist visit",
-      "test": "specialist_visit",
-      "stage": "referral"
+      "test": "specialist_visit"
      },
      {
       "id": "discharge_spec",
@@ -2051,8 +1931,7 @@
       "kind": "step",
       "label": "CT chest",
       "test": "chest_ct",
-      "when": "spec_visit",
-      "stage": "diagnosis"
+      "when": "spec_visit"
      },
      {
       "id": "discharge_ct",
@@ -2065,11 +1944,7 @@
       "id": "sample_choice",
       "kind": "decision",
       "label": "Choose sampling method",
-      "when": "ct",
-      "options": [
-       "bronch",
-       "ttnb"
-      ]
+      "when": "ct"
      },
      {
       "id": "bronch",
@@ -2080,15 +1955,13 @@
        "max": 0,
        "true": "nondiagnostic",
        "fallback": "ttnb"
-      },
-      "stage": "diagnosis"
+      }
      },
      {
       "id": "ttnb",
       "kind": "step",
       "label": "Needle biopsy",
-      "test": "ttnb",
-      "stage": "diagnosis"
+      "test": "ttnb"
      },
      {
       "id": "sampling_done",
@@ -2106,23 +1979,20 @@
       "kind": "step",
       "label": "PET-CT",
       "test": "pet_ct",
-      "when": "bronch is not False and ttnb is not False",
-      "stage": "diagnosis"
+      "when": "bronch is not False and ttnb is not False"
      },
      {
       "id": "mdt",
       "kind": "step",
       "label": "Tumour board",
-      "test": "tumour_board",
-      "stage": "treatment_start"
+      "test": "tumour_board"
      },
      {
       "id": "book_treat",
       "kind": "step",
       "label": "Waiting for treatment slot",
       "test": "treatment_booking",
-      "when": "bronch or ttnb or (pet and bronch is not False and ttnb is not False)",
-      "stage": "treatment_start"
+      "when": "bronch or ttnb or (pet and bronch is not False and ttnb is not False)"
      },
      {
       "id": "discharge_mdt",
@@ -2372,39 +2242,32 @@
     "id": "direct_ct",
     "version": 1,
     "parent_version": null,
-    "world_id": "finland_scenario",
+    "world_id": "finland_lung",
     "name": "GPs order CT directly (alarm symptoms skip the chest X-ray; suspicious film goes to CT before referral). Needs about 2.7x the CT slots (CT demand is 7-8 a weekday against 2.6 in the baseline); with the baseline's 3 slots the CT queue grows without bound",
     "nodes": [
      {
       "id": "first_contact",
       "kind": "decision",
-      "label": "Nurse or GP first",
-      "options": [
-       "nurse_visit",
-       "gp_visit"
-      ]
+      "label": "Nurse or GP first"
      },
      {
       "id": "nurse_visit",
       "kind": "step",
       "label": "Nurse assessment",
-      "test": "nurse_assessment",
-      "stage": "detection"
+      "test": "nurse_assessment"
      },
      {
       "id": "gp_visit",
       "kind": "step",
       "label": "GP appointment",
-      "test": "gp_assessment",
-      "stage": "detection"
+      "test": "gp_assessment"
      },
      {
       "id": "gp_after_nurse",
       "kind": "step",
       "label": "GP appointment after nurse",
       "test": "gp_assessment_after_nurse",
-      "when": "not nurse_visit",
-      "stage": "detection"
+      "when": "not nurse_visit"
      },
      {
       "id": "img_ordered",
@@ -2421,11 +2284,7 @@
      {
       "id": "imaging_route",
       "kind": "decision",
-      "label": "Chest X-ray or direct CT",
-      "options": [
-       "route_cxr",
-       "route_ct"
-      ]
+      "label": "Chest X-ray or direct CT"
      },
      {
       "id": "route_cxr",
@@ -2441,39 +2300,34 @@
       "id": "cxr",
       "kind": "step",
       "label": "Chest X-ray",
-      "test": "chest_xray",
-      "stage": "detection"
+      "test": "chest_xray"
      },
      {
       "id": "second_look",
       "kind": "step",
       "label": "GP review of a negative film",
       "test": "gp_second_look",
-      "when": "not cxr",
-      "stage": "detection"
+      "when": "not cxr"
      },
      {
       "id": "ct_first",
       "kind": "step",
       "label": "CT ordered by GP (no X-ray)",
-      "test": "chest_ct",
-      "stage": "diagnosis"
+      "test": "chest_ct"
      },
      {
       "id": "ct_gp",
       "kind": "step",
       "label": "CT ordered by GP after suspicious film",
       "test": "chest_ct",
-      "when": "cxr",
-      "stage": "diagnosis"
+      "when": "cxr"
      },
      {
       "id": "gp_referral",
       "kind": "step",
       "label": "GP writes referral",
       "test": "gp_referral_letter",
-      "when": "ct_first or ct_gp or second_look",
-      "stage": "referral"
+      "when": "ct_first or ct_gp or second_look"
      },
      {
       "id": "no_referral",
@@ -2485,8 +2339,7 @@
       "id": "persist",
       "kind": "step",
       "label": "Do symptoms persist",
-      "test": "symptoms_persist",
-      "stage": "detection"
+      "test": "symptoms_persist"
      },
      {
       "id": "discharge_no_return",
@@ -2500,8 +2353,7 @@
       "kind": "step",
       "label": "Re-presents to GP",
       "test": "gp_represent",
-      "when": "persist",
-      "stage": "detection"
+      "when": "persist"
      },
      {
       "id": "discharge_represent",
@@ -2520,15 +2372,13 @@
       "id": "triage",
       "kind": "step",
       "label": "Referral handling at hospital",
-      "test": "referral_triage",
-      "stage": "referral"
+      "test": "referral_triage"
      },
      {
       "id": "spec_visit",
       "kind": "step",
       "label": "Specialist visit",
-      "test": "specialist_visit",
-      "stage": "referral"
+      "test": "specialist_visit"
      },
      {
       "id": "discharge_spec",
@@ -2542,8 +2392,7 @@
       "kind": "step",
       "label": "CT ordered by specialist (none done yet)",
       "test": "chest_ct",
-      "when": "spec_visit and not (ct_first or ct_gp)",
-      "stage": "diagnosis"
+      "when": "spec_visit and not (ct_first or ct_gp)"
      },
      {
       "id": "ct_known",
@@ -2561,11 +2410,7 @@
      {
       "id": "sample_choice",
       "kind": "decision",
-      "label": "Choose sampling method",
-      "options": [
-       "bronch",
-       "ttnb"
-      ]
+      "label": "Choose sampling method"
      },
      {
       "id": "bronch",
@@ -2576,15 +2421,13 @@
        "max": 0,
        "true": "nondiagnostic",
        "fallback": "ttnb"
-      },
-      "stage": "diagnosis"
+      }
      },
      {
       "id": "ttnb",
       "kind": "step",
       "label": "Needle biopsy",
-      "test": "ttnb",
-      "stage": "diagnosis"
+      "test": "ttnb"
      },
      {
       "id": "sampling_done",
@@ -2602,23 +2445,20 @@
       "kind": "step",
       "label": "PET-CT",
       "test": "pet_ct",
-      "when": "bronch is not False and ttnb is not False",
-      "stage": "diagnosis"
+      "when": "bronch is not False and ttnb is not False"
      },
      {
       "id": "mdt",
       "kind": "step",
       "label": "Tumour board",
-      "test": "tumour_board",
-      "stage": "treatment_start"
+      "test": "tumour_board"
      },
      {
       "id": "book_treat",
       "kind": "step",
       "label": "Waiting for treatment slot",
       "test": "treatment_booking",
-      "when": "bronch or ttnb or (pet and bronch is not False and ttnb is not False)",
-      "stage": "treatment_start"
+      "when": "bronch or ttnb or (pet and bronch is not False and ttnb is not False)"
      },
      {
       "id": "discharge_mdt",
@@ -2955,39 +2795,32 @@
     "id": "bundled_workup",
     "version": 1,
     "parent_version": null,
-    "world_id": "finland_scenario",
+    "world_id": "finland_lung",
     "name": "CT and PET-CT ordered together at the specialist visit, board before sampling, sampling while treatment is booked. Orders about 2.8x as many PET-CT scans (PET demand 2.3 a weekday against 0.8), so it needs 3 PET slots a day; with 1 slot the PET queue grows without bound",
     "nodes": [
      {
       "id": "first_contact",
       "kind": "decision",
-      "label": "Nurse or GP first",
-      "options": [
-       "nurse_visit",
-       "gp_visit"
-      ]
+      "label": "Nurse or GP first"
      },
      {
       "id": "nurse_visit",
       "kind": "step",
       "label": "Nurse assessment",
-      "test": "nurse_assessment",
-      "stage": "detection"
+      "test": "nurse_assessment"
      },
      {
       "id": "gp_visit",
       "kind": "step",
       "label": "GP appointment",
-      "test": "gp_assessment",
-      "stage": "detection"
+      "test": "gp_assessment"
      },
      {
       "id": "gp_after_nurse",
       "kind": "step",
       "label": "GP appointment after nurse",
       "test": "gp_assessment_after_nurse",
-      "when": "not nurse_visit",
-      "stage": "detection"
+      "when": "not nurse_visit"
      },
      {
       "id": "cxr_ordered",
@@ -3005,24 +2838,21 @@
       "id": "cxr",
       "kind": "step",
       "label": "Chest X-ray",
-      "test": "chest_xray",
-      "stage": "detection"
+      "test": "chest_xray"
      },
      {
       "id": "second_look",
       "kind": "step",
       "label": "GP review of a negative film",
       "test": "gp_second_look",
-      "when": "not cxr",
-      "stage": "detection"
+      "when": "not cxr"
      },
      {
       "id": "gp_referral",
       "kind": "step",
       "label": "GP writes referral",
       "test": "gp_referral_letter",
-      "when": "cxr or second_look",
-      "stage": "referral"
+      "when": "cxr or second_look"
      },
      {
       "id": "no_referral",
@@ -3034,8 +2864,7 @@
       "id": "persist",
       "kind": "step",
       "label": "Do symptoms persist",
-      "test": "symptoms_persist",
-      "stage": "detection"
+      "test": "symptoms_persist"
      },
      {
       "id": "discharge_no_return",
@@ -3049,8 +2878,7 @@
       "kind": "step",
       "label": "Re-presents to GP",
       "test": "gp_represent",
-      "when": "persist",
-      "stage": "detection"
+      "when": "persist"
      },
      {
       "id": "discharge_represent",
@@ -3069,15 +2897,13 @@
       "id": "triage",
       "kind": "step",
       "label": "Referral handling at hospital",
-      "test": "referral_triage",
-      "stage": "referral"
+      "test": "referral_triage"
      },
      {
       "id": "spec_visit",
       "kind": "step",
       "label": "Specialist visit",
-      "test": "specialist_visit",
-      "stage": "referral"
+      "test": "specialist_visit"
      },
      {
       "id": "discharge_spec",
@@ -3091,24 +2917,21 @@
       "kind": "step",
       "label": "CT chest",
       "test": "chest_ct",
-      "when": "spec_visit",
-      "stage": "diagnosis"
+      "when": "spec_visit"
      },
      {
       "id": "pet_early",
       "kind": "step",
       "label": "PET-CT ordered with the CT",
       "test": "pet_ct",
-      "when": "spec_visit and cxr",
-      "stage": "diagnosis"
+      "when": "spec_visit and cxr"
      },
      {
       "id": "pet_after_ct",
       "kind": "step",
       "label": "PET-CT after CT (no suspicious film)",
       "test": "pet_ct",
-      "when": "ct and not cxr",
-      "stage": "diagnosis"
+      "when": "ct and not cxr"
      },
      {
       "id": "discharge_ct",
@@ -3122,25 +2945,19 @@
       "kind": "step",
       "label": "Tumour board (before sampling)",
       "test": "tumour_board",
-      "when": "ct",
-      "stage": "treatment_start"
+      "when": "ct"
      },
      {
       "id": "book_treat",
       "kind": "step",
       "label": "Treatment slot booked while sampling (PET not negative)",
       "test": "treatment_booking",
-      "when": "pet_early is not False and pet_after_ct is not False",
-      "stage": "treatment_start"
+      "when": "pet_early is not False and pet_after_ct is not False"
      },
      {
       "id": "sample_choice",
       "kind": "decision",
-      "label": "Choose sampling method",
-      "options": [
-       "bronch",
-       "ttnb"
-      ]
+      "label": "Choose sampling method"
      },
      {
       "id": "bronch",
@@ -3151,15 +2968,13 @@
        "max": 0,
        "true": "nondiagnostic",
        "fallback": "ttnb"
-      },
-      "stage": "diagnosis"
+      }
      },
      {
       "id": "ttnb",
       "kind": "step",
       "label": "Needle biopsy",
-      "test": "ttnb",
-      "stage": "diagnosis"
+      "test": "ttnb"
      },
      {
       "id": "sampling_done",
@@ -3177,8 +2992,7 @@
       "kind": "step",
       "label": "Treatment slot booked after sampling (PET was negative)",
       "test": "treatment_booking",
-      "when": "(bronch or ttnb or ((pet_early or pet_after_ct) and bronch is not False and ttnb is not False)) and not book_treat",
-      "stage": "treatment_start"
+      "when": "(bronch or ttnb or ((pet_early or pet_after_ct) and bronch is not False and ttnb is not False)) and not book_treat"
      },
      {
       "id": "discharge_end",
@@ -3463,39 +3277,32 @@
     "id": "fast_track_nonspecific",
     "version": 1,
     "parent_version": null,
-    "world_id": "finland_scenario",
+    "world_id": "finland_lung",
     "name": "Baseline plus a fast lane for non-specific presenters with a suspicious X-ray (priority, reserved clinic and CT slots, short booking leads)",
     "nodes": [
      {
       "id": "first_contact",
       "kind": "decision",
-      "label": "Nurse or GP first",
-      "options": [
-       "nurse_visit",
-       "gp_visit"
-      ]
+      "label": "Nurse or GP first"
      },
      {
       "id": "nurse_visit",
       "kind": "step",
       "label": "Nurse assessment",
-      "test": "nurse_assessment",
-      "stage": "detection"
+      "test": "nurse_assessment"
      },
      {
       "id": "gp_visit",
       "kind": "step",
       "label": "GP appointment",
-      "test": "gp_assessment",
-      "stage": "detection"
+      "test": "gp_assessment"
      },
      {
       "id": "gp_after_nurse",
       "kind": "step",
       "label": "GP appointment after nurse",
       "test": "gp_assessment_after_nurse",
-      "when": "not nurse_visit",
-      "stage": "detection"
+      "when": "not nurse_visit"
      },
      {
       "id": "cxr_ordered",
@@ -3513,8 +3320,7 @@
       "id": "cxr",
       "kind": "step",
       "label": "Chest X-ray",
-      "test": "chest_xray",
-      "stage": "detection"
+      "test": "chest_xray"
      },
      {
       "id": "fast_lane",
@@ -3528,16 +3334,14 @@
       "kind": "step",
       "label": "GP review of a negative film",
       "test": "gp_second_look",
-      "when": "not cxr",
-      "stage": "detection"
+      "when": "not cxr"
      },
      {
       "id": "gp_referral",
       "kind": "step",
       "label": "GP writes referral",
       "test": "gp_referral_letter",
-      "when": "cxr or second_look",
-      "stage": "referral"
+      "when": "cxr or second_look"
      },
      {
       "id": "no_referral",
@@ -3549,8 +3353,7 @@
       "id": "persist",
       "kind": "step",
       "label": "Do symptoms persist",
-      "test": "symptoms_persist",
-      "stage": "detection"
+      "test": "symptoms_persist"
      },
      {
       "id": "discharge_no_return",
@@ -3564,8 +3367,7 @@
       "kind": "step",
       "label": "Re-presents to GP",
       "test": "gp_represent",
-      "when": "persist",
-      "stage": "detection"
+      "when": "persist"
      },
      {
       "id": "discharge_represent",
@@ -3584,24 +3386,21 @@
       "id": "triage",
       "kind": "step",
       "label": "Referral handling at hospital",
-      "test": "referral_triage",
-      "stage": "referral"
+      "test": "referral_triage"
      },
      {
       "id": "spec_visit",
       "kind": "step",
       "label": "Specialist visit",
       "test": "specialist_visit",
-      "when": "not fast_lane",
-      "stage": "referral"
+      "when": "not fast_lane"
      },
      {
       "id": "spec_visit_fast",
       "kind": "step",
       "label": "Specialist visit (fast lane)",
       "test": "specialist_visit_fast",
-      "when": "fast_lane",
-      "stage": "referral"
+      "when": "fast_lane"
      },
      {
       "id": "spec_ok",
@@ -3621,16 +3420,14 @@
       "kind": "step",
       "label": "CT chest",
       "test": "chest_ct",
-      "when": "not fast_lane",
-      "stage": "diagnosis"
+      "when": "not fast_lane"
      },
      {
       "id": "ct_fast",
       "kind": "step",
       "label": "CT chest (fast lane)",
       "test": "chest_ct_fast",
-      "when": "fast_lane",
-      "stage": "diagnosis"
+      "when": "fast_lane"
      },
      {
       "id": "ct_ok",
@@ -3649,21 +3446,13 @@
       "id": "sample_choice",
       "kind": "decision",
       "label": "Choose sampling method",
-      "when": "not fast_lane",
-      "options": [
-       "bronch",
-       "ttnb"
-      ]
+      "when": "not fast_lane"
      },
      {
       "id": "sample_choice_fast",
       "kind": "decision",
       "label": "Choose sampling method (fast lane)",
-      "when": "fast_lane",
-      "options": [
-       "bronch_fast",
-       "ttnb_fast"
-      ]
+      "when": "fast_lane"
      },
      {
       "id": "bronch",
@@ -3674,15 +3463,13 @@
        "max": 0,
        "true": "nondiagnostic",
        "fallback": "ttnb"
-      },
-      "stage": "diagnosis"
+      }
      },
      {
       "id": "ttnb",
       "kind": "step",
       "label": "Needle biopsy",
-      "test": "ttnb",
-      "stage": "diagnosis"
+      "test": "ttnb"
      },
      {
       "id": "bronch_fast",
@@ -3693,15 +3480,13 @@
        "max": 0,
        "true": "nondiagnostic",
        "fallback": "ttnb_fast"
-      },
-      "stage": "diagnosis"
+      }
      },
      {
       "id": "ttnb_fast",
       "kind": "step",
       "label": "Needle biopsy (fast lane)",
-      "test": "ttnb_fast",
-      "stage": "diagnosis"
+      "test": "ttnb_fast"
      },
      {
       "id": "sampling_done",
@@ -3719,39 +3504,34 @@
       "kind": "step",
       "label": "PET-CT",
       "test": "pet_ct",
-      "when": "not fast_lane and (bronch is not False and ttnb is not False and bronch_fast is not False and ttnb_fast is not False)",
-      "stage": "diagnosis"
+      "when": "not fast_lane and (bronch is not False and ttnb is not False and bronch_fast is not False and ttnb_fast is not False)"
      },
      {
       "id": "pet_fast",
       "kind": "step",
       "label": "PET-CT (fast lane)",
       "test": "pet_ct_fast",
-      "when": "fast_lane and (bronch is not False and ttnb is not False and bronch_fast is not False and ttnb_fast is not False)",
-      "stage": "diagnosis"
+      "when": "fast_lane and (bronch is not False and ttnb is not False and bronch_fast is not False and ttnb_fast is not False)"
      },
      {
       "id": "mdt",
       "kind": "step",
       "label": "Tumour board",
-      "test": "tumour_board",
-      "stage": "treatment_start"
+      "test": "tumour_board"
      },
      {
       "id": "book_treat",
       "kind": "step",
       "label": "Waiting for treatment slot",
       "test": "treatment_booking",
-      "when": "not fast_lane and ((bronch or ttnb or bronch_fast or ttnb_fast) or ((pet or pet_fast) and (bronch is not False and ttnb is not False and bronch_fast is not False and ttnb_fast is not False)))",
-      "stage": "treatment_start"
+      "when": "not fast_lane and ((bronch or ttnb or bronch_fast or ttnb_fast) or ((pet or pet_fast) and (bronch is not False and ttnb is not False and bronch_fast is not False and ttnb_fast is not False)))"
      },
      {
       "id": "book_treat_fast",
       "kind": "step",
       "label": "Waiting for treatment slot (fast lane)",
       "test": "treatment_booking_fast",
-      "when": "fast_lane and ((bronch or ttnb or bronch_fast or ttnb_fast) or ((pet or pet_fast) and (bronch is not False and ttnb is not False and bronch_fast is not False and ttnb_fast is not False)))",
-      "stage": "treatment_start"
+      "when": "fast_lane and ((bronch or ttnb or bronch_fast or ttnb_fast) or ((pet or pet_fast) and (bronch is not False and ttnb is not False and bronch_fast is not False and ttnb_fast is not False)))"
      },
      {
       "id": "discharge_mdt",
@@ -4142,39 +3922,32 @@
     "id": "baseline_plus_capacity",
     "version": 1,
     "parent_version": null,
-    "world_id": "finland_scenario",
+    "world_id": "finland_lung",
     "name": "Baseline order with the extra CT (8 slots) and PET-CT (3 slots) capacity that direct_ct and bundled_workup need (capacity-only control)",
     "nodes": [
      {
       "id": "first_contact",
       "kind": "decision",
-      "label": "Nurse or GP first",
-      "options": [
-       "nurse_visit",
-       "gp_visit"
-      ]
+      "label": "Nurse or GP first"
      },
      {
       "id": "nurse_visit",
       "kind": "step",
       "label": "Nurse assessment",
-      "test": "nurse_assessment",
-      "stage": "detection"
+      "test": "nurse_assessment"
      },
      {
       "id": "gp_visit",
       "kind": "step",
       "label": "GP appointment",
-      "test": "gp_assessment",
-      "stage": "detection"
+      "test": "gp_assessment"
      },
      {
       "id": "gp_after_nurse",
       "kind": "step",
       "label": "GP appointment after nurse",
       "test": "gp_assessment_after_nurse",
-      "when": "not nurse_visit",
-      "stage": "detection"
+      "when": "not nurse_visit"
      },
      {
       "id": "cxr_ordered",
@@ -4192,24 +3965,21 @@
       "id": "cxr",
       "kind": "step",
       "label": "Chest X-ray",
-      "test": "chest_xray",
-      "stage": "detection"
+      "test": "chest_xray"
      },
      {
       "id": "second_look",
       "kind": "step",
       "label": "GP review of a negative film",
       "test": "gp_second_look",
-      "when": "not cxr",
-      "stage": "detection"
+      "when": "not cxr"
      },
      {
       "id": "gp_referral",
       "kind": "step",
       "label": "GP writes referral",
       "test": "gp_referral_letter",
-      "when": "cxr or second_look",
-      "stage": "referral"
+      "when": "cxr or second_look"
      },
      {
       "id": "no_referral",
@@ -4221,8 +3991,7 @@
       "id": "persist",
       "kind": "step",
       "label": "Do symptoms persist",
-      "test": "symptoms_persist",
-      "stage": "detection"
+      "test": "symptoms_persist"
      },
      {
       "id": "discharge_no_return",
@@ -4236,8 +4005,7 @@
       "kind": "step",
       "label": "Re-presents to GP",
       "test": "gp_represent",
-      "when": "persist",
-      "stage": "detection"
+      "when": "persist"
      },
      {
       "id": "discharge_represent",
@@ -4256,15 +4024,13 @@
       "id": "triage",
       "kind": "step",
       "label": "Referral handling at hospital",
-      "test": "referral_triage",
-      "stage": "referral"
+      "test": "referral_triage"
      },
      {
       "id": "spec_visit",
       "kind": "step",
       "label": "Specialist visit",
-      "test": "specialist_visit",
-      "stage": "referral"
+      "test": "specialist_visit"
      },
      {
       "id": "discharge_spec",
@@ -4278,8 +4044,7 @@
       "kind": "step",
       "label": "CT chest",
       "test": "chest_ct",
-      "when": "spec_visit",
-      "stage": "diagnosis"
+      "when": "spec_visit"
      },
      {
       "id": "discharge_ct",
@@ -4292,11 +4057,7 @@
       "id": "sample_choice",
       "kind": "decision",
       "label": "Choose sampling method",
-      "when": "ct",
-      "options": [
-       "bronch",
-       "ttnb"
-      ]
+      "when": "ct"
      },
      {
       "id": "bronch",
@@ -4307,15 +4068,13 @@
        "max": 0,
        "true": "nondiagnostic",
        "fallback": "ttnb"
-      },
-      "stage": "diagnosis"
+      }
      },
      {
       "id": "ttnb",
       "kind": "step",
       "label": "Needle biopsy",
-      "test": "ttnb",
-      "stage": "diagnosis"
+      "test": "ttnb"
      },
      {
       "id": "sampling_done",
@@ -4333,23 +4092,20 @@
       "kind": "step",
       "label": "PET-CT",
       "test": "pet_ct",
-      "when": "bronch is not False and ttnb is not False",
-      "stage": "diagnosis"
+      "when": "bronch is not False and ttnb is not False"
      },
      {
       "id": "mdt",
       "kind": "step",
       "label": "Tumour board",
-      "test": "tumour_board",
-      "stage": "treatment_start"
+      "test": "tumour_board"
      },
      {
       "id": "book_treat",
       "kind": "step",
       "label": "Waiting for treatment slot",
       "test": "treatment_booking",
-      "when": "bronch or ttnb or (pet and bronch is not False and ttnb is not False)",
-      "stage": "treatment_start"
+      "when": "bronch or ttnb or (pet and bronch is not False and ttnb is not False)"
      },
      {
       "id": "discharge_mdt",

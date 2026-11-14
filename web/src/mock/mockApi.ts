@@ -1,6 +1,7 @@
 import type { Api } from '../api/client'
 import { ApiError } from '../api/client'
 import type { FlowData, Flowchart, Job, Problem, Project, Run, RunRequest, Template, World } from '../api/types'
+import { defaultShares } from '../lib/policy'
 import templates from './fixtures/templates.json'
 import mockMetrics from './fixtures/mock_metrics.json'
 
@@ -72,7 +73,7 @@ const publicRun = (r: MockRun): Run => {
 export function checkProblems(fc: Flowchart): Problem[] {
   const out: Problem[] = []
   for (const [pid, pt] of Object.entries(fc.decision_policy.points)) {
-    const tables = [{ name: 'default', probs: pt.default }, ...(pt.rules ?? []).map((r, i) => ({ name: `rule ${i + 1}`, probs: r.probs }))]
+    const tables = [{ name: 'default', probs: defaultShares(pt) }, ...(pt.rules ?? []).map((r, i) => ({ name: `rule ${i + 1}`, probs: r.probs }))]
     for (const t of tables) {
       if (!t.probs) continue
       const s = Object.values(t.probs).reduce((a, b) => a + b, 0)
@@ -108,7 +109,7 @@ export const mock: Api = {
   getWorld: async (p) => { project(p); return wait(db.worlds[p]) },
   listFlowcharts: async (p) => {
     project(p)
-    return wait(Object.entries(db.flowcharts[p]).map(([id, vs]) => ({ id, name: vs[vs.length - 1].name, latest_version: vs.length, versions: vs.map((v) => v.version) })))
+    return wait(Object.entries(db.flowcharts[p]).map(([id, vs]) => ({ id, name: vs[vs.length - 1].name, latest_version: vs.length, versions: vs.map((v) => v.version), locked: [...new Set((db.runs[p] ?? []).filter((r) => r.flowchart.id === id).map((r) => r.flowchart.version))] })))
   },
   getFlowchart: async (p, f, v) => {
     project(p)

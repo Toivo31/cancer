@@ -3,7 +3,7 @@ import type { Flowchart } from '../api/types'
 import templates from '../mock/fixtures/templates.json'
 import { allValid, applyDraft, draftFrom, isDirty } from './decisionDraft'
 
-const fc = (templates as unknown as { id: string; flowcharts: Flowchart[] }[]).find((t) => t.id === 'finland_scenario')!.flowcharts.find((f) => f.id === 'baseline')!
+const fc = (templates as unknown as { id: string; flowcharts: Flowchart[] }[]).find((t) => t.id === 'finland_lung')!.flowcharts.find((f) => f.id === 'baseline')!
 
 describe('decisions draft', () => {
   it('starts clean and valid for a shipped flowchart', () => {
@@ -39,5 +39,25 @@ describe('decisions draft', () => {
     const e = draftFrom(fc)
     e.points[1].rows.push({ when: ' ', vals: ['50', '50'] })
     expect(allValid(e)).toBe(false)
+  })
+  it('edits the older rule form in place (mix, fixed choices)', () => {
+    const old: Flowchart = JSON.parse(JSON.stringify(fc))
+    old.decision_policy = { backend: 'rule', mode: 'argmax', points: {
+      first_contact: { mix: { nurse_visit: 0.5, gp_visit: 0.5 }, source: 'KHALIFE2025' },
+      sample_choice: { rules: [{ when: "location == 'central'", choose: 'bronch' }], mix: { ttnb: 0.65, bronch: 0.35 }, source: 'assumption' },
+    } }
+    const base = draftFrom(old)
+    expect(base.points[1].legacy).toBe(true)
+    expect(base.points[1].rows[1].fixed).toBe(true)
+    expect(base.points[1].rows[1].vals).toEqual(['100', '0'])
+    const d = draftFrom(old)
+    d.points[1].rows[0].vals = ['40', '60']
+    const doc = applyDraft(old, base, d)
+    const pt = doc.decision_policy.points.sample_choice
+    expect(Object.keys(pt.mix!)).toEqual(['ttnb', 'bronch']) // the order the document listed
+    expect(pt.mix).toEqual({ ttnb: 0.6, bronch: 0.4 })
+    expect(pt.rules).toEqual([{ when: "location == 'central'", choose: 'bronch' }])
+    expect(pt.default).toBeUndefined()
+    expect(doc.decision_policy.points.first_contact).toEqual(old.decision_policy.points.first_contact)
   })
 })

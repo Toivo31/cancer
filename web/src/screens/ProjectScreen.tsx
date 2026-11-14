@@ -86,7 +86,7 @@ export function ProjectScreen({ pid, route }: { pid: string; route: Route }) {
           {list.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
         </select>
         <select className="field" aria-label="Version" value={curVer} onChange={(e) => nav({ v: e.target.value })}>
-          {cur.versions.slice().reverse().map((v) => <option key={v} value={v}>version {v}{v === cur.latest_version ? ' (latest)' : ''}</option>)}
+          {cur.versions.slice().reverse().map((v) => <option key={v} value={v}>version {v}{v === cur.latest_version ? ' (latest)' : ''}{cur.locked.includes(v) ? ' · has runs' : ''}</option>)}
         </select>
         <div className="tabs" role="tablist">
           <button role="tab" aria-selected={tab === 'flowchart'} className={`tab ${tab === 'flowchart' ? 'on' : ''}`} onClick={() => nav({ tab: null })}>Flowchart</button>

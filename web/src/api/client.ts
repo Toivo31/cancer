@@ -68,7 +68,7 @@ export function normaliseMetrics(m: unknown): RunMetrics | null {
   const flat = (o.mean && typeof o.mean === 'object' ? o.mean : o) as Obj
   return {
     ...flat,
-    on_time_share: num(flat.on_time_share) ?? num(flat.share_within_target),
+    on_time_share: num(flat.on_time_share) ?? num(flat.on_time) ?? num(flat.share_within_target),
     median_days: num(flat.median_days) ?? num(flat.median_days_to_treatment),
     missed_cancers: num(flat.missed_cancers),
     n_patients: num(flat.n_patients) ?? num(flat.n),
@@ -87,7 +87,7 @@ export function normaliseRun(r: Obj): Run {
     n: Number(r.n ?? 0),
     seeds: (r.seeds as number[]) ?? [],
     created_at: (r.created_at ?? r.created) as string | undefined,
-    metrics: normaliseMetrics(r.metrics),
+    metrics: normaliseMetrics(r.headline ?? r.metrics),
     error: (r.error as string | null) ?? null,
   }
 }
@@ -105,7 +105,7 @@ export const http: Api = {
   createProject: (name, template) => req('POST', '/projects', { name, ...(template ? { template } : {}) }),
   getProject: (id) => req('GET', `/projects/${id}`),
   deleteProject: (id) => req('DELETE', `/projects/${id}`),
-  getWorld: (p) => req('GET', `/projects/${p}/world`),
+  getWorld: async (p) => { const r = await req<Obj>('GET', `/projects/${p}/world`); return (r.world ?? r) as World },
   listFlowcharts: async (p) => {
     const r = await req<unknown>('GET', `/projects/${p}/flowcharts`)
     const list = (Array.isArray(r) ? r : ((r as Obj).flowcharts as unknown[]) ?? []) as Obj[]
@@ -114,7 +114,8 @@ export const http: Api = {
       const versions = Array.isArray(f.versions)
         ? (f.versions as unknown[]).map((v) => Number(typeof v === 'object' && v ? (v as Obj).version : v))
         : Array.from({ length: latest }, (_, i) => i + 1)
-      return { id: String(f.id), name: String(f.name ?? (f.latest as Obj | undefined)?.name ?? f.id), latest_version: latest, versions }
+      const locked = Array.isArray(f.versions) ? (f.versions as Obj[]).filter((v) => typeof v === 'object' && v && v.locked).map((v) => Number(v.version)) : []
+      return { id: String(f.id), name: String(f.name ?? (f.latest as Obj | undefined)?.name ?? f.id), latest_version: latest, versions, locked }
     })
   },
   getFlowchart: (p, f, v) => req('GET', `/projects/${p}/flowcharts/${f}/versions/${v}`),

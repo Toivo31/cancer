@@ -16,9 +16,9 @@ ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "web" / "src" / "mock" / "fixtures" / "templates.json"
 
 TEMPLATES = [
-    ("norway_check", "stokstad", "Norway check",
+    ("norway_check", "stokstad", "Norway check (Stokstad 2019)",
      "Stokstad et al. 2019, St Olavs Hospital: 100 stage I-II lung cancer patients, clock from referral to treatment, 42-day target."),
-    ("finland_scenario", "finland_lung", "Finnish scenario",
+    ("finland_lung", "finland_lung", "Finnish lung cancer pathway (synthetic)",
      "Synthetic Finnish lung pathway in one wellbeing services county, clock from first contact to treatment, 90-day provisional target."),
 ]
 
@@ -43,7 +43,7 @@ def world_doc(s: dict, new_id: str, name: str) -> dict:
     return w
 
 
-def stub_points(policy: dict, nodes: list[dict]) -> dict:
+def stub_points(policy: dict, nodes: list[dict], options: dict) -> dict:
     """Migrate engine policy (mix / rules / default) to the stub's tables (spec 02)."""
     by_id = {n["id"]: n for n in nodes}
     points = {}
@@ -51,7 +51,7 @@ def stub_points(policy: dict, nodes: list[dict]) -> dict:
         node = by_id.get(pid)
         if not node or node["kind"] != "decision":
             continue
-        opts = [e for e in node["options"]]
+        opts = list(options[pid])
         entry: dict = {}
         if "mix" in pol:
             entry["default"] = dict(pol["mix"])
@@ -71,7 +71,7 @@ def stub_points(policy: dict, nodes: list[dict]) -> dict:
 
 
 def flowchart_doc(world_id: str, fid: str, fc: dict, tests: dict) -> dict:
-    nodes, edges = [], []
+    nodes, edges, options = [], [], {}
     for n in fc["nodes"]:
         kind = n.get("kind", "step")
         if kind == "choice":
@@ -82,12 +82,9 @@ def flowchart_doc(world_id: str, fid: str, fc: dict, tests: dict) -> dict:
         for k in ("test", "when", "outcome", "milestone", "retry", "availability", "fast_track"):
             if n.get(k):
                 node[k] = n[k]
-        stage = n.get("stage") or (tests.get(n.get("test"), {}).get("stage") if n.get("test") else None)
-        if stage:
-            node["stage"] = stage
-        if kind == "decision":
-            node["options"] = list(n.get("options", []))
         nodes.append(node)
+        if kind == "decision":
+            options[n["id"]] = list(n.get("options", []))
         for s in n.get("after", []):
             edges.append({"from": s, "to": n["id"], "type": "required"})
         for s in n.get("after_any", []):
@@ -99,7 +96,7 @@ def flowchart_doc(world_id: str, fid: str, fc: dict, tests: dict) -> dict:
     doc = {
         "schema_version": 1, "id": fid, "version": 1, "parent_version": None, "world_id": world_id,
         "name": fc.get("description") or fid, "nodes": nodes, "edges": edges,
-        "decision_policy": {"backend": "stub", "mode": "sample", "points": stub_points(fc.get("policy"), nodes)},
+        "decision_policy": {"backend": "stub", "mode": "sample", "points": stub_points(fc.get("policy"), nodes, options)},
         "test_overrides": fc.get("test_overrides", {}), "resource_overrides": fc.get("resource_overrides", {}),
         "edits_from_parent": [],
     }
@@ -118,7 +115,7 @@ def main() -> int:
     bundle = json.loads((ROOT / "demo" / "data" / "demo_bundle.json").read_text())
     metrics = {}
     for sc in bundle["scenarios"]:
-        tid = {"stokstad": "norway_check", "finland_lung": "finland_scenario"}.get(sc["id"])
+        tid = {"stokstad": "norway_check", "finland_lung": "finland_lung"}.get(sc["id"])
         for v in [sc["baseline"], *sc["variants"]]:
             m = v["metrics"]
             metrics[f"{tid}/{m['flowchart']}"] = {k: m.get(k) for k in ("n", "share_within_target", "median_days_to_treatment", "missed_cancers")}

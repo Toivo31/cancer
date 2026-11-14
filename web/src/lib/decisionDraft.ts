@@ -1,9 +1,9 @@
 import type { Flowchart, FlowNode, StubPoint } from '../api/types'
 import { fractions, fromPercent, normalisePct, parsePct, rowOk, sumPct, toPercent } from './probs'
 
-export interface RowDraft { when: string | null; vals: string[] }
-export interface PointDraft { id: string; options: string[]; unset: boolean; source: string; rows: RowDraft[] }
-export interface Draft { mode: string; points: PointDraft[] }
+export interface RowDraft { when: string | null; vals: string[]; /** a fixed choice from an older document: shown, not editable */ fixed?: boolean }
+export interface PointDraft { id: string; options: string[]; unset: boolean; source: string; legacy: boolean; rows: RowDraft[] }
+export interface Draft { mode: string; /** the older 'rule' backend samples its own shares; the mode switch does not apply */ ruleBackend: boolean; points: PointDraft[] }
 
 export function optionsOf(fc: Flowchart, n: FlowNode): string[] {
   if (n.options?.length) return n.options
@@ -21,13 +21,19 @@ export function draftFrom(fc: Flowchart): Draft {
   const points: PointDraft[] = fc.nodes.filter((n) => n.kind === 'decision').map((n) => {
     const options = optionsOf(fc, n)
     const pt: StubPoint | undefined = fc.decision_policy.points[n.id]
-    const unset = !pt || !pt.default
+    // two stored forms: tables (default + rules with probs) and the older rule form (mix + rules that choose)
+    const legacy = !!pt && (!!pt.mix || (pt.rules ?? []).some((r) => r.choose !== undefined && !r.probs) || (typeof pt.default === 'string'))
+    const onehot = (o: string) => Object.fromEntries(options.map((x) => [x, x === o ? 1 : 0]))
+    const base: Record<string, number> | undefined = !pt ? undefined
+      : pt.mix ?? (pt.default && typeof pt.default === 'object' ? pt.default : undefined)
+        ?? (typeof pt.default === 'string' ? onehot(pt.default) : pt.prefer?.length ? onehot(pt.prefer[0]) : undefined)
+    const unset = !base
     return {
-      id: n.id, options, unset, source: pt?.source ?? (unset ? '' : 'assumption'),
-      rows: [rowFrom(options, pt?.default, null), ...(pt?.rules ?? []).map((r) => rowFrom(options, r.probs, r.when))],
+      id: n.id, options, unset, legacy, source: pt?.source ?? (unset ? '' : 'assumption'),
+      rows: [rowFrom(options, base, null), ...(pt?.rules ?? []).map((r): RowDraft => ({ ...rowFrom(options, r.probs ?? (r.choose ? onehot(r.choose) : undefined), r.when), fixed: !r.probs }))],
     }
   })
-  return { mode: String(fc.decision_policy.mode ?? 'sample'), points }
+  return { mode: String(fc.decision_policy.mode ?? 'sample'), ruleBackend: fc.decision_policy.backend === 'rule', points }
 }
 
 export const rowNumbers = (r: RowDraft) => r.vals.map(parsePct)
@@ -39,7 +45,7 @@ export function pointChanged(a: PointDraft, b: PointDraft): boolean {
 }
 
 export function isDirty(initial: Draft, now: Draft): boolean {
-  return initial.mode !== now.mode || now.points.some((p, i) => pointChanged(initial.points[i], p))
+  return (!now.ruleBackend && initial.mode !== now.mode) || now.points.some((p, i) => pointChanged(initial.points[i], p))
 }
 
 export function allValid(d: Draft): boolean {
@@ -49,14 +55,21 @@ export function allValid(d: Draft): boolean {
 /** The flowchart document with the draft's tables stored in `decision_policy` (unchanged points are left byte-for-byte). */
 export function applyDraft(fc: Flowchart, initial: Draft, now: Draft): Flowchart {
   const doc: Flowchart = JSON.parse(JSON.stringify(fc))
-  doc.decision_policy.mode = now.mode
+  if (!now.ruleBackend && now.mode !== initial.mode) doc.decision_policy.mode = now.mode
   now.points.forEach((p, i) => {
     const changed = pointChanged(initial.points[i], p)
     if (!changed) return
-    const toProbs = (r: RowDraft) => fractions(p.options, rowNumbers(r).map((v) => v ?? 0))
+    const toProbs = (r: RowDraft, order = p.options) => fractions(order, order.map((o) => rowNumbers(r)[p.options.indexOf(o)] ?? 0))
     const [def, ...rules] = p.rows
     const old = fc.decision_policy.points[p.id]
     const src = old?.source && !old.source.startsWith('user edit') ? `user edit (was ${old.source})` : old?.source ?? 'user edit'
+    if (p.legacy) {
+      // keep the older form: edit the shares in place, in the order the document listed them (the draw walks that order)
+      const order = [...Object.keys(old?.mix ?? {}).filter((o) => p.options.includes(o)), ...p.options.filter((o) => !(old?.mix ?? {})[o])]
+      doc.decision_policy.points[p.id] = { ...(old ?? {}), mix: toProbs(def, order), source: src }
+      delete doc.decision_policy.points[p.id].default
+      return
+    }
     doc.decision_policy.points[p.id] = {
       ...(old ?? {}),
       default: toProbs(def),

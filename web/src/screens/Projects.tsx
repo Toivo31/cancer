@@ -9,6 +9,7 @@ export function Projects() {
   const [templates, setTemplates] = useState<Template[]>([])
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState<string | null>(null)
+  const [name, setName] = useState('')
 
   const load = useCallback(() => {
     api.listProjects().then(setProjects).catch((e) => setError(e.message))
@@ -19,7 +20,7 @@ export function Projects() {
   async function create(t: Template) {
     setBusy(t.id); setError(null)
     try {
-      const p = await api.createProject(t.name, t.id)
+      const p = await api.createProject(name.trim() || t.name, t.id)
       go(`p/${p.id}`)
     } catch (e) { setError((e as Error).message); setBusy(null) }
   }
@@ -37,6 +38,10 @@ export function Projects() {
       {error && <div className="error" role="alert">{error}</div>}
 
       <h2 className="label section-title">Start from a template</h2>
+      <div className="form-row" style={{ marginBottom: 12 }}>
+        <label className="dim" htmlFor="pname">Project name</label>
+        <input id="pname" className="field" style={{ width: 300 }} value={name} onChange={(e) => setName(e.target.value)} placeholder="Same as the template" />
+      </div>
       <div className="grid">
         {templates.map((t) => (
           <div key={t.id} className="card tile" data-testid={`template-${t.id}`}>

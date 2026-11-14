@@ -31,12 +31,18 @@ export interface FlowEdge {
 
 export interface StubRule {
   when: string
-  probs: Record<string, number>
+  probs?: Record<string, number>
+  /** older 'rule' backend: always pick this option when the condition holds */
+  choose?: string
 }
 export interface StubPoint {
-  default?: Record<string, number>
+  default?: Record<string, number> | string
+  /** older 'rule' backend: shares sampled by the policy */
+  mix?: Record<string, number>
+  prefer?: string[]
   rules?: StubRule[]
   source?: string
+  note?: string
   backend?: string
 }
 export interface DecisionPolicy {
@@ -93,6 +99,8 @@ export interface FlowchartSummary {
   latest_version: number
   /** All version numbers, ascending. Filled in by the client when the service only gives the latest. */
   versions: number[]
+  /** versions that have been used in a run (immutable) */
+  locked: number[]
 }
 
 export interface Problem {

@@ -5,8 +5,8 @@ describe('mock service', () => {
   beforeEach(() => resetMock())
   it('creates a project from a template and saves a new version', async () => {
     const t = await mock.templates()
-    expect(t.map((x) => x.id)).toContain('finland_scenario')
-    const p = await mock.createProject('Test', 'finland_scenario')
+    expect(t.map((x) => x.id)).toContain('finland_lung')
+    const p = await mock.createProject('Test', 'finland_lung')
     const list = await mock.listFlowcharts(p.id)
     const base = list.find((f) => f.id === 'baseline')!
     expect(base.versions).toEqual([1])
@@ -16,10 +16,10 @@ describe('mock service', () => {
     const v2 = await mock.saveFlowchart(p.id, 'baseline', edited)
     expect(v2.version).toBe(2)
     expect(v2.parent_version).toBe(1)
-    expect((await mock.getFlowchart(p.id, 'baseline', 1)).decision_policy.points.first_contact.default!.gp_visit).toBe(0.5)
+    expect((await mock.getFlowchart(p.id, 'baseline', 1)).decision_policy.points.first_contact.default).toEqual({ nurse_visit: 0.5, gp_visit: 0.5 })
   })
   it('refuses a version whose probabilities do not add to 1', async () => {
-    const p = await mock.createProject('Test', 'finland_scenario')
+    const p = await mock.createProject('Test', 'finland_lung')
     const v1 = await mock.getFlowchart(p.id, 'baseline', 1)
     v1.decision_policy.points.first_contact.default = { nurse_visit: 0.7, gp_visit: 0.4 }
     await expect(mock.saveFlowchart(p.id, 'baseline', v1)).rejects.toMatchObject({ status: 422 })

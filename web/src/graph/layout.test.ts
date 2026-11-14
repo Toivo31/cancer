@@ -12,7 +12,7 @@ describe('auto layout', () => {
     expect(overlaps(boxes)).toEqual([])
   })
   it('reads like text: a step is right of what it waits for, or on a later row', () => {
-    const fc = all.find(([n]) => n === 'finland_scenario/baseline')![1]
+    const fc = all.find(([n]) => n === 'finland_lung/baseline')![1]
     const { boxes } = layoutFlowchart(fc.nodes, fc.edges)
     for (const e of fc.edges) {
       const a = boxes[e.from], b = boxes[e.to]

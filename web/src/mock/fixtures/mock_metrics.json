@@ -29,43 +29,43 @@
   "median_days_to_treatment": 36.9833,
   "missed_cancers": 0.0
  },
- "finland_scenario/baseline": {
+ "finland_lung/baseline": {
   "n": 16176.5,
   "share_within_target": 0.1754,
   "median_days_to_treatment": 102.31,
   "missed_cancers": 27.5
  },
- "finland_scenario/baseline_optimised": {
+ "finland_lung/baseline_optimised": {
   "n": 16176.5,
   "share_within_target": 0.3311,
   "median_days_to_treatment": 94.08,
   "missed_cancers": 27.5
  },
- "finland_scenario/direct_ct": {
+ "finland_lung/direct_ct": {
   "n": 16176.5,
   "share_within_target": 0.2041,
   "median_days_to_treatment": 101.855,
   "missed_cancers": 26.5
  },
- "finland_scenario/bundled_workup": {
+ "finland_lung/bundled_workup": {
   "n": 16176.5,
   "share_within_target": 0.5371,
   "median_days_to_treatment": 82.525,
   "missed_cancers": 27.5
  },
- "finland_scenario/fast_track_nonspecific": {
+ "finland_lung/fast_track_nonspecific": {
   "n": 16176.5,
   "share_within_target": 0.3683,
   "median_days_to_treatment": 94.615,
   "missed_cancers": 29.0
  },
- "finland_scenario/baseline_plus_capacity": {
+ "finland_lung/baseline_plus_capacity": {
   "n": 16176.5,
   "share_within_target": 0.3085,
   "median_days_to_treatment": 96.725,
   "missed_cancers": 27.5
  },
- "finland_scenario/urgent_booking": {
+ "finland_lung/urgent_booking": {
   "n": 16176.5,
   "share_within_target": 0.6147,
   "median_days_to_treatment": 80.01,
