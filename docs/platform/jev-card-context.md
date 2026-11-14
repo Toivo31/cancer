@@ -3,7 +3,7 @@
 For whoever builds the JEV. One page. Status: **field names fixed, 14 Nov.** They follow the card
 contract (`card/1`, `patient_engine/card.py`) and the reveal handle (`patient_engine/reveal.py`),
 both merged on `overnight/sim`. What is not built yet is the step that puts them into a request
-(the simulator adapter, WP-C1-8); `episode` and the per-result `t_days` come with it. Any change
+(the simulator adapter, WP-C1-8); `episode` and the per-result `t_days` come with it. The record-based builder (WP-C8-4) is below. Any change
 will be posted on the agent channel.
 
 ## The rule that shapes everything
@@ -67,11 +67,38 @@ format, `catalogue/_examples/tiny/` for a small example, `catalogue/lung-primary
 one (being built now). A JEV should read the catalogue once to know every possible variable,
 test, output, type and unit, so its input layout is fixed even when a patient has few results.
 
+## Built from a patient record (encounter loop)
+
+In the encounter loop the simulator builds the context from the patient's **record**
+(`patient_engine/record.py`, `record/1`) with `jev.record_context.context_from_record(record, role=,
+now_days=, catalogue=)`; `jev.adapter.build_context(view)` uses it whenever the view carries a record.
+Same keys as above, plus these (new names marked; nothing above was renamed):
+
+| Key | Meaning |
+|---|---|
+| `role` (new) | `nurse`, `gp` or `specialist`: who is deciding. Null at steps with no role |
+| `encounters_so_far` (new) | Number of visits (encounters) in the record |
+| `found` (new) | Latest revealed value of each variable asked or examined (`{"cough_3wk": true, "weight_loss": false}`), from the encounters |
+| `actions` (new) | Ids of the actions already taken, oldest first (orders, bookings, treatments), so a repeat can be recognised |
+| `notes` | Now the clinicians' encounter notes: `{id: "n1", kind: "gp_note", text, t_days}` (`kind` is `<role>_note`) |
+| `observations` | As above; `attempt` counts from 1; `t_days` is when the result arrived |
+| `presenting` | `reported` only (the record keeps no free text); `text` is absent |
+| `history` | One entry per result: `step` and `test` are the test id; `result` is the yes/no reading through the test's `positive_when` when the catalogue is passed, otherwise `null` |
+| `group`, `fast_track`, `attributes` | Kept for old JEVs. `group` is whatever the engine's view has (absent when the record is all there is) |
+
+A request example: `jev/examples/decide_request_record.json` (decision point `gp_encounter`, options are
+actions such as `order_chest_xray`, `treat_antibiotics`, `refer_urgent`). The envelope does not change.
+`patient_engine/record_text.py` (`render(record, catalogue, care)`) turns a record into one readable line per
+entry for the demo. The request builder has the I1 test the section below promises:
+`tests/test_jev_record_context.py` builds a record from a card with a co-existing illness and checks that
+no condition id or hidden field name reaches the context (a clinician's note may use a diagnosis word
+the clinician wrote; the test treats notes as the clinician's own prose).
+
 ## What is never in a request
 
 Condition names as facts, `hidden.*`, `caused_by`, the error plan, results of tests not yet done,
 notes whose facts are not yet revealed. The type separation is tested
-(`tests/test_pe_contract.py::test_i1_*`); the request builder will get the same kind of test.
+(`tests/test_pe_contract.py::test_i1_*`); the record-based request builder has the same kind of test (`tests/test_jev_record_context.py`).
 
 ## Coming next (depends on a decision Tuomas is making now)
 

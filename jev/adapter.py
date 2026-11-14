@@ -13,14 +13,32 @@ from .contract import (QUESTION_NEXT_STEP, BackendInfo, ContractError, DecisionB
 MODES = ("sample", "argmax")
 
 
-def build_context(view) -> dict:
-    """Context JSON from a ``PatientView``: revealed information only."""
-    return {
+def build_context(view, catalogue=None) -> dict:
+    """Context JSON from a ``PatientView``: revealed information only.
+
+    When the view carries a non-empty ``record`` (a ``patient_engine.record.Record``), the record's
+    keys are added (``jev.record_context``); the view's own ``group``, ``age``, ``t_days``,
+    ``fast_track``, ``attributes`` and non-empty ``history`` stay as they are.
+    """
+    ctx = {
         "group": view.group, "age": view.age, "t_days": float(view.t_now),
         "fast_track": bool(view.priority),
         "attributes": dict(view.attributes),
         "history": [{"step": n, "test": t, "result": r, "t_days": tt} for n, t, r, tt in view.history],
     }
+    record = getattr(view, "record", None)
+    if record is not None and getattr(record, "entries", None):
+        from .record_context import context_from_record
+        role = getattr(view, "role", None) or next((e.role for e in reversed(record.entries) if e.role), None)
+        extra = context_from_record(record, role=role, now_days=view.t_now, catalogue=catalogue)
+        for k in ("age", "t_days", "fast_track", "attributes"):
+            extra.pop(k, None)
+        if ctx["history"]:
+            extra.pop("history", None)
+        if ctx["age"] is None:
+            ctx["age"] = record.background.get("age")
+        ctx.update(extra)
+    return ctx
 
 
 class OptionCatalogue:
