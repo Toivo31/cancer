@@ -405,7 +405,7 @@ class Simulation:
                     continue
                 pr.cause[nid] = cause
                 changed = True
-                if st != "forced" and n.code is not None and not eval(n.code, {"__builtins__": {}}, self.names(pr)):
+                if st != "forced" and n.code is not None and not n.code(self.names(pr)):
                     self.skip(pr, nid, t)
                     continue
                 if n.kind == "choice":

@@ -9,6 +9,7 @@ from pathlib import Path
 import yaml
 
 from . import dists
+from .expr import Expr, ExprError, parse as parse_expr
 
 STAGES = ("detection", "referral", "diagnosis", "treatment_start")
 NODE_KINDS = ("step", "choice", "milestone", "exit")
@@ -33,7 +34,7 @@ class Node:
     fast_track: bool = False
     stage: str | None = None
     label: str | None = None
-    code: object = None  # compiled guard
+    code: Expr | None = None  # parsed guard (pathway_sim.expr), callable on a names dict
 
     def __post_init__(self):
         if self.kind == "decision":   # document name for a choice node (spec 01); the engine uses "choice"
@@ -129,10 +130,11 @@ def parse_flowchart(fid: str, d: dict) -> Flowchart:
                      test_overrides=copy.deepcopy(d.get("test_overrides") or {}))
 
 
-def compile_guard(expr: str, where: str):
+def compile_guard(expr: str, where: str) -> Expr:
+    """Parse a guard with the safe evaluator (pathway_sim/expr.py); ValueError if it is not allowed."""
     try:
-        return compile(expr, f"<guard {where}>", "eval")
-    except SyntaxError as e:
+        return parse_expr(expr)
+    except ExprError as e:
         raise ValueError(f"bad guard in {where}: {expr!r}: {e}") from e
 
 
@@ -169,7 +171,7 @@ def validate_flowchart(sc: Scenario, fc: Flowchart) -> None:
                 raise ValueError(f"{where}: unknown retry fallback {fb!r}")
         n.code = compile_guard(n.when, where) if n.when else None
         if n.code is not None:
-            unknown = set(n.code.co_names) - known_names
+            unknown = n.code.names - known_names
             if unknown:
                 raise ValueError(f"{where}: guard {n.when!r} reads unknown names {sorted(unknown)}")
     for cid, cfg in (fc.policy or {}).items():
@@ -179,7 +181,7 @@ def validate_flowchart(sc: Scenario, fc: Flowchart) -> None:
         named = set((cfg.get("mix") or {}).keys()) | set(cfg.get("prefer") or [])
         named |= {r["choose"] for r in cfg.get("rules") or []}
         for r in cfg.get("rules") or []:
-            unknown = set(compile_guard(r["when"], f"{fc.id}/policy/{cid}").co_names) - known_names
+            unknown = compile_guard(r["when"], f"{fc.id}/policy/{cid}").names - known_names
             if unknown:
                 raise ValueError(f"{sc.id}/{fc.id}: policy rule for {cid!r} reads unknown names {sorted(unknown)}")
         if cfg.get("default"):
