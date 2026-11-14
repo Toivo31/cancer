@@ -5,7 +5,8 @@
     python demo/export_jev.py --refresh-recorded origin/main
                                                    # copy the model owner's recorded outputs into demo/data/jev_recorded.json
     python demo/export_jev.py --record URL         # score every preset once on a live endpoint and keep the answers
-                                                   # (URL like http://127.0.0.1:8771/api/decision; it costs GPU time)
+                                                   # (URL like https://cancer123--birch-decision-1138-demo.us-east.modal.run/api/decision;
+                                                   # it costs GPU time; one call per live-only preset; exits 1 if any is missing)
 
 What goes into the bundle, and where each part comes from:
 
@@ -44,6 +45,19 @@ SCENARIO = ROOT / "scenarios" / "finland_encounter.yaml"
 EXAMPLE_KEY = "cancer_as_infection"
 GATEWAY_MAX_CHOICES = 8          # decision_api/hosted.py: the public gateway refuses a question with more choices
 NATIVE_MAX_CHOICES = 16          # decision_api/runtime/decision_model/inference_schema.py (Question.choices, Node.actions)
+#: the public gateway's protocol and limits, as the page needs them (decision_api/hosted.py and HOSTED_API.md on main).
+#: The page reads these instead of typing numbers: its own guard stays inside the gateway's limits, and its messages
+#: quote them.
+GATEWAY = {
+    "per_minute": 6, "per_hour": 120, "outstanding": 3,       # submissions per process; accepted jobs not yet finished
+    "window_seconds": 60, "hour_seconds": 3600,
+    "retry_after_seconds": 60,                                 # Retry-After on a busy answer (not readable cross-origin)
+    "poll_seconds": 1, "overall_seconds": 660,                 # poll a 202 job once a second; allow 660 s in all
+    "max_body": 32000, "max_context": 12000,                   # JSON size of the request; context characters
+    "statuses": {"202": "pending", "429": "busy", "404": "expired", "422": "refused", "413": "refused", "503": "unavailable"},
+    "cors": "Access-Control-Allow-Origin: * (CORSMiddleware, GET and POST, Content-Type); no credentials",
+    "source": "decision_api/hosted.py and decision_api/HOSTED_API.md (on main)",
+}
 #: the eight GP actions offered in the live request (of the node's full list); every action the table gives weight to
 #: at the chosen visit is kept, the rest are common next steps
 GP_SUBSET = ["advice_return", "follow_up", "order_blood_count", "order_chest_xray", "order_chest_ct",
@@ -326,6 +340,7 @@ def model_card(rec: dict | None) -> dict:
         "max_choices_native": NATIVE_MAX_CHOICES,
         "max_choices_gateway": GATEWAY_MAX_CHOICES,
         "max_questions_gateway": 4,
+        "gateway": GATEWAY,
         "sanity": {"correct": s.get("new_correct"), "total": s.get("total"), "previous_correct": s.get("old_correct"),
                    "datasets": sorted({r.get("dataset") for r in s.get("records", []) if r.get("dataset")})} if s else None,
         "selection": v.get("selection"),
@@ -362,26 +377,43 @@ def call(base: str, route: str, body: dict, timeout_s: float = 660.0) -> dict:
 
 
 def record_presets(base: str, items: list[dict], allow_non_model: bool) -> dict:
+    """Score each live-only preset once on ``base``. Stores model answers only (unless ``allow_non_model``).
+
+    One POST per preset, sequential, never retried; a busy, refused or unavailable gateway stops the run (no hammering).
+    Returns the stored file with ``failed`` (preset keys not stored) added for the caller's exit code."""
     old = read_json(PRESET_OUTPUTS) or {"format": "jev-preset-outputs/1", "outputs": {}}
-    for p in items:
-        if p["key"] == "reasoning" and not p.get("record_live"):
-            continue                       # the owner's recording is used; rerun it from the page if wanted
+    failed: list[str] = []
+    todo = [p for p in items if not (p["key"] == "reasoning" and not p.get("record_live"))]   # the owner's recording is used
+    for i, p in enumerate(todo):
         print(f"scoring {p['key']} on {base}{p['route']} ...", flush=True)
         try:
             out = call(base, p["route"], p["request"])
+        except urllib.error.HTTPError as e:
+            detail = e.read().decode("utf-8", "replace")[:300]
+            print(f"  failed: HTTP {e.code} {detail}; nothing stored for {p['key']}")
+            failed.append(p["key"])
+            if e.code in (429, 503, 404):
+                rest = [q["key"] for q in todo[i + 1:]]
+                failed += rest
+                print(f"  stopping: the gateway is busy or unavailable; not sending {rest or 'more'}")
+                break
+            continue
         except (urllib.error.URLError, TimeoutError, OSError) as e:
             print(f"  failed: {e}; nothing stored for {p['key']}")
+            failed.append(p["key"])
             continue
         dec = out.get("decision", out)
-        mode = (dec.get("backend") or {}).get("mode")
+        be = dec.get("backend") or {}
+        mode = be.get("mode")
         if mode != "model" and not allow_non_model:
             print(f"  backend mode is {mode!r}, not 'model': not stored (use --allow-non-model to keep it, labelled)")
+            failed.append(p["key"])
             continue
         old["outputs"][p["key"]] = {"recorded_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
                                     "endpoint": base, "route": p["route"], "request": p["request"], "response": out}
-        print(f"  stored ({mode})")
+        print(f"  stored ({mode}, step {be.get('step')}, weights {str(be.get('checkpoint_sha256'))[:12]})")
     PRESET_OUTPUTS.write_text(json.dumps(old, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
-    return old
+    return {**old, "failed": failed}
 
 
 # ------------------------------------------------------------------------------------------------ main
@@ -414,12 +446,16 @@ def main(argv=None) -> int:
     if a.refresh_recorded:
         refresh_recorded(a.refresh_recorded)
     data = build(skip_gp=a.skip_gp)
+    failed: list[str] = []
     if a.record:
-        record_presets(a.record, data["presets"], a.allow_non_model)
+        failed = record_presets(a.record, data["presets"], a.allow_non_model)["failed"]
         data = build(skip_gp=a.skip_gp)
     Path(a.out).write_text("window.JEV_DATA = " + json.dumps(data, separators=(",", ":"), ensure_ascii=False) + ";\n", encoding="utf-8")
     print(f"wrote {a.out}: {len(data['presets'])} presets"
           + ("" if any(p["key"] == "gp_visit" for p in data["presets"]) else " (no GP visit: encounter bundle missing or --skip-gp)"))
+    if failed:
+        print(f"not recorded: {', '.join(failed)} (their cards keep saying 'no recorded output')")
+        return 1
     return 0
 
 

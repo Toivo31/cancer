@@ -59,14 +59,17 @@
   })();
 
   // ================================================================================================ endpoint
+  // Default: the team's hosted gateway. It allows calls from any page (CORS "*", no credentials), so a page opened from
+  // disk or from a static host can score live with no install. Loading the page sends nothing; only a button does.
+  var G = M.gateway || {};
   var mode = document.getElementById("ep-mode"), url = document.getElementById("ep-url"), status = document.getElementById("ep-status");
-  var MODES = [["recorded", "Recordings only (no network)"], ["hosted", "Team's hosted gateway (live, GPU)"], ["same", "This server's /api/decision (python demo/serve_jev.py)"], ["custom", "Another endpoint…"]];
+  var MODES = [["hosted", "Team's hosted gateway (live, no install)"], ["recorded", "Recordings only (no network)"], ["same", "This server's /api/decision (python demo/serve_jev.py)"], ["custom", "Another endpoint…"]];
   MODES.forEach(function (m) { var o = el("option", null, m[1]); o.value = m[0]; mode.appendChild(o); });
   (function initMode() {
     var a = param("api");
     if (a === "hosted" || a === "same" || a === "recorded") mode.value = a;
     else if (a) { mode.value = "custom"; url.value = a; }
-    else mode.value = "recorded";
+    else mode.value = "hosted";
   })();
   function base() {
     if (mode.value === "hosted") return HOSTED_API;
@@ -74,46 +77,88 @@
     if (mode.value === "custom") return url.value.trim().replace(/\/+$/, "") || null;
     return null;
   }
+
+  // ---- the page's own guard, inside the gateway's limits (numbers from the bundle: decision_api/hosted.py) ----------
+  var sent = [], busyUntil = 0;
+  function secs(n) { return n * 1000; }
+  function outstanding() { var n = 0; Object.keys(results).forEach(function (k) { Object.keys(results[k]).forEach(function (v) { var s = results[k][v].status; if (s === "sending" || s === "pending") n++; }); }); return n; }
+  function blocked() {
+    var now = Date.now();
+    sent = sent.filter(function (t) { return now - t < secs(G.hour_seconds); });
+    var minute = sent.filter(function (t) { return now - t < secs(G.window_seconds); });
+    if (now < busyUntil) return "The gateway said it is busy. Buttons come back in " + Math.ceil((busyUntil - now) / 1000) + " s; nothing is resent automatically.";
+    if (outstanding() >= G.outstanding) return "Wait for a running call to finish: the gateway takes at most " + G.outstanding + " jobs at once, on one GPU.";
+    if (minute.length >= G.per_minute) return "This page has sent " + minute.length + " calls in the last minute, the gateway's limit. Next call possible in " + Math.ceil((secs(G.window_seconds) - (now - minute[0])) / 1000) + " s.";
+    if (sent.length >= G.per_hour) return "This page has reached the gateway's hourly limit (" + G.per_hour + " calls).";
+    return null;
+  }
+  var reTimer = null;
+  function scheduleRefresh() {   // re-enable buttons when a limit window passes (no network: a local timer only)
+    if (reTimer) return;
+    reTimer = setInterval(function () { showStatus(); if (!blocked()) { clearInterval(reTimer); reTimer = null; if (current) render(current); } }, 1000);
+  }
   function showStatus() {
     url.hidden = mode.value !== "custom";
-    var b = base();
-    if (mode.value === "recorded") status.innerHTML = "Only <b>recorded</b> outputs are shown. Pick an endpoint to score examples live; a live call starts only when you press a button.";
+    var b = base(), why = b && blocked();
+    if (mode.value === "recorded") status.innerHTML = "Only <b>recorded</b> outputs are shown and nothing is sent. Choose the hosted gateway to score examples live.";
     else if (!b && mode.value === "same") status.innerHTML = "<b>Needs a server:</b> open this page through <code>python demo/serve_jev.py</code> (it serves this folder and the decision proxy on one origin).";
     else if (!b) status.innerHTML = "Enter the base URL of a decision API (ends in <code>/api/decision</code>).";
-    else status.innerHTML = "Live calls go to <code>" + esc(b) + "</code>. Each press is one call; a cold model can take minutes. The label on every answer comes from the answer itself.";
+    else if (why) status.innerHTML = "<b>Paused:</b> " + esc(why);
+    else status.innerHTML = (mode.value === "hosted" ? "<b>Live, no install.</b> Each button press sends one call to the team's gateway, which runs the deployed model on one GPU. If it has been idle, the first call waits for a cold start (minutes). Shared limit: " + G.per_minute + " calls a minute. Synthetic text only." : "Live calls go to <code>" + esc(b) + "</code>. Each press is one call.") + " The label on every answer comes from the answer itself.";
   }
   mode.addEventListener("change", function () { showStatus(); if (current) render(current); });
   url.addEventListener("change", function () { showStatus(); if (current) render(current); });
   showStatus();
 
   // ================================================================================================ live calls
+  // States: sending (POST in flight) → pending (job accepted, polled once a second) → done | error | busy.
+  // Never resent: an error leaves the card without an answer and says why. No health polling; no scores substituted.
   function live(key, variant, route, body) {
     var b = base(); if (!b) return;
+    var why = blocked(); if (why) { showStatus(); scheduleRefresh(); return; }
     results[key] = results[key] || {};
-    var r = results[key][variant] = { status: "pending", started: Date.now(), endpoint: b + route };
-    var p = current; render(p);
-    var tick = setInterval(function () { if (current === p && r.status === "pending") { var s = document.getElementById("pend-" + key + "-" + variant); if (s) s.textContent = Math.round((Date.now() - r.started) / 1000) + " s"; } }, 1000);
-    function done(ok, payload) {
+    var r = results[key][variant] = { status: "sending", started: Date.now(), endpoint: b + route };
+    sent.push(r.started);
+    var p = current; render(p); showStatus();
+    var tick = setInterval(function () {
+      if (current !== p || (r.status !== "pending" && r.status !== "sending")) return;
+      var s = document.getElementById("pend-" + key + "-" + variant); if (s) s.textContent = Math.round((Date.now() - r.started) / 1000) + " s";
+      var bar = document.getElementById("pbar-" + key + "-" + variant); if (bar) bar.style.width = Math.min(100, (Date.now() - r.started) / secs(G.overall_seconds) * 100) + "%";
+    }, 1000);
+    function done(state, payload) {
       clearInterval(tick);
-      r.status = ok ? "done" : "error"; r.at = new Date().toISOString();
-      if (ok) r.response = payload; else r.error = payload;
+      r.status = state; r.at = new Date().toISOString();
+      if (state === "done") r.response = payload; else r.error = payload;
+      if (state === "busy") { busyUntil = Date.now() + secs(G.retry_after_seconds); scheduleRefresh(); }
+      showStatus();
       if (current === p) render(p);
     }
     function poll(statusUrl) {
-      if (Date.now() - r.started > 660000) return done(false, "No answer after eleven minutes. The job may still finish on the server; it was not resubmitted.");
+      if (Date.now() - r.started > secs(G.overall_seconds)) return done("error", "No answer after " + Math.round(G.overall_seconds / G.window_seconds) + " minutes. The job may still finish on the gateway; it was not resent. Press again later to send a new call.");
       setTimeout(function () {
-        fetch(b + statusUrl).then(handle).catch(function (e) { done(false, "Polling failed: " + e.message); });
-      }, 1000);
+        // a failed check is not a failed job: keep checking (a check never resends the request) until the time allowed
+        fetch(b + statusUrl).then(function (res) { r.interrupted = false; return handle(res); })
+          .catch(function () { if (!r.interrupted) { r.interrupted = true; if (current === p) render(p); } poll(statusUrl); });
+      }, secs(G.poll_seconds));
     }
     function handle(res) {
       return res.json().catch(function () { return {}; }).then(function (j) {
-        if (res.status === 202 && j.status_url) return poll(j.status_url);
-        if (!res.ok) return done(false, "HTTP " + res.status + ": " + (j.detail || res.statusText) + ". Nothing was substituted.");
-        done(true, j);
+        var kind = (G.statuses || {})[String(res.status)];
+        if (res.status === 202 && j.status_url) {
+          if (r.status !== "pending") { r.status = "pending"; r.accepted = Date.now(); if (current === p) render(p); }
+          return poll(j.status_url);
+        }
+        if (res.ok) return done("done", j);
+        var d = esc(j.detail || res.statusText || "");
+        if (kind === "busy") return done("busy", "<b>The shared gateway is busy</b> (" + d + "). It accepts " + G.per_minute + " calls a minute and " + G.outstanding + " at once for everyone using it. Nothing was resent; the buttons come back in about a minute.");
+        if (kind === "expired") return done("error", "<b>The gateway no longer has this job</b> (" + d + "). It may have restarted. Nothing was resent; press again to send a new call.");
+        if (kind === "refused") return done("error", "<b>The gateway refused this request</b> as outside the public demo's limits (" + d + "). The context may be too long or have too many answers.");
+        if (kind === "unavailable") return done("error", "<b>The model is unavailable right now</b> (" + d + "). No scores were substituted.");
+        done("error", "<b>HTTP " + res.status + "</b>: " + d + ". Nothing was substituted.");
       });
     }
     fetch(b + route, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })
-      .then(handle).catch(function (e) { done(false, "Could not reach " + b + route + " (" + e.message + "). Nothing was substituted."); });
+      .then(handle).catch(function (e) { done("error", "<b>Could not reach</b> " + esc(b + route) + " (" + esc(e.message) + "): offline, blocked by a network filter, or the gateway is down. Nothing was substituted."); });
   }
 
   // ================================================================================================ output pieces
@@ -154,18 +199,30 @@
   }
   function empty(msg) { return html("div", "jev-empty", msg); }
   function runButton(p, variant, label, route, body) {
-    var b = base(), btn = el("button", "btn btn--secondary jev-run", label || ("Score live" + (b ? "" : " (pick an endpoint above)")));
+    var b = base(), btn = el("button", "btn btn--secondary jev-run", label || ("Score live" + (b ? "" : " (choose an endpoint above)")));
+    btn.type = "button";
     if (!b) { btn.disabled = true; btn.title = "Choose an endpoint in the bar above"; }
+    else if (blocked()) { btn.disabled = true; btn.title = blocked(); }
     var r = results[p.key] && results[p.key][variant];
-    if (r && r.status === "pending") { btn.disabled = true; btn.textContent = "Waiting for the model…"; }
+    if (r && (r.status === "pending" || r.status === "sending")) { btn.disabled = true; btn.textContent = "Waiting for the model…"; }
     btn.addEventListener("click", function () { live(p.key, variant, route || p.route, body || p.request); });
     return btn;
   }
   function liveState(p, variant) {
     var r = results[p.key] && results[p.key][variant];
     if (!r) return null;
-    if (r.status === "pending") return html("div", "jev-empty", "<b>Waiting</b> for " + esc(r.endpoint) + " · <span id=\"pend-" + esc(p.key) + "-" + esc(variant) + "\">0 s</span>. A cold model can take several minutes.");
-    if (r.status === "error") return html("div", "jev-err", esc(r.error));
+    var id = esc(p.key) + "-" + esc(variant), t = Math.round((Date.now() - r.started) / 1000) + " s";
+    if (r.status === "sending" || r.status === "pending") {
+      var box = el("div", "jev-wait");
+      box.appendChild(html("div", "jev-wait__head", "<span class=\"jev-wait__dot\"></span><b>" + (r.status === "sending" ? "Sending to the gateway" : "Job accepted, waiting for the model") + "</b> · <span id=\"pend-" + id + "\">" + t + "</span>"));
+      box.appendChild(html("div", "jev-wait__track", "<i id=\"pbar-" + id + "\"></i>"));
+      box.appendChild(html("div", "jev-note", r.status === "sending"
+        ? "The request is on its way. If the gateway was asleep, it can take a moment to answer at all."
+        : (r.interrupted ? "<b>Connection interrupted; still checking the job.</b> " : "") + "The model runs on one GPU that sleeps when idle. A warm call answers in seconds; a cold start takes several minutes (the page waits up to " + Math.round(G.overall_seconds / G.window_seconds) + " minutes). The bar is time waited, not progress. The page checks this job once a second and does not resend it; leaving the page does not cancel it."));
+      return box;
+    }
+    if (r.status === "busy") return html("div", "jev-err jev-busy", r.error);
+    if (r.status === "error") return html("div", "jev-err", r.error);
     return null;
   }
   function liveDecision(p, variant) {
@@ -181,7 +238,7 @@
   P.forEach(function (p) {
     var b = el("button", "jev-preset"); b.type = "button"; b.setAttribute("role", "tab"); b.id = "tab-" + p.key;
     b.appendChild(el("span", "jev-tag", p.tag)); b.appendChild(el("span", "jev-tt", p.title));
-    var has = p.recorded || p.recorded_preset, st = el("span", "jev-st" + (has ? " has" : ""), p.own ? "needs a live endpoint" : has ? "recorded model output" : p.gp ? "simulator node · live only" : "live only");
+    var has = p.recorded || p.recorded_preset, st = el("span", "jev-st" + (has ? " has" : ""), p.own ? "your text · live call" : has ? "recorded model output" : p.gp ? "simulator node · score live" : "score live");
     b.appendChild(st);
     b.addEventListener("click", function () { select(p.key, true); });
     nav.appendChild(b);
@@ -247,7 +304,7 @@
     var ld = liveDecision(p, "main"), st = liveState(p, "main");
     if (ld) c.appendChild(scoreBlock(ld, q, "live", results[p.key].main.endpoint));
     else if (p.recorded_preset) c.appendChild(scoreBlock(p.recorded_preset.response.decision || p.recorded_preset.response, q, "recorded", "recorded with export_jev.py --record on " + when(p.recorded_preset.recorded_at)));
-    else c.appendChild(empty("<b>No recorded model output for this example yet.</b> Score it live with an endpoint (bar above). Nothing on this page is scored offline, and no score is made up."));
+    else if (!st) c.appendChild(empty(base() ? "<b>No recording for this example yet.</b> Press <b>Score live</b> and the deployed model answers it now; a cold start can take minutes. Nothing on this page is scored offline, and no score is made up." : "<b>No recording for this example yet.</b> Choose the hosted gateway in the bar above to score it live. Nothing on this page is scored offline, and no score is made up."));
     if (st) c.appendChild(st);
     c.appendChild(runButton(p, "main"));
     var dec = ld || (p.recorded_preset && (p.recorded_preset.response.decision || p.recorded_preset.response));
@@ -341,7 +398,7 @@
       });
       c.appendChild(pair);
     });
-    if (!any) c.appendChild(empty("<b>No recorded model output for this example yet.</b> Score it live (bar above). Then reverse the order, or remove the largest answer, and see what moves."));
+    if (!any) c.appendChild(empty("<b>No recording for this example yet.</b> " + (base() ? "Press <b>Score live</b>" : "Choose the hosted gateway in the bar above and score it live") + ", then reverse the order, or remove the largest answer, and see what moves."));
     // symmetry check once both orders have answers
     var a = liveDecision(p, "main"), b = liveDecision(p, "reversed");
     if (a && b && a.backend && b.backend && a.backend.mode === "model" && b.backend.mode === "model") {
@@ -384,9 +441,10 @@
       if (qd) c3.appendChild(bars(qd.choices, qd.proposed_action_id));
       var rf = results[p.key].main.response.refinement;
       if (rf && rf.context) { var d = el("details", "jev-fold"); d.appendChild(el("summary", null, "Context after the reasoning step")); d.appendChild(el("div", "jev-ctx", rf.context)); c3.appendChild(d); }
-    } else if (!st) c3.appendChild(empty(base() ? "Write a context, a question and the answers, then score." : "<b>Free text needs a live endpoint.</b> Pick one in the bar above. Nothing is scored offline, and nothing is made up."));
+    } else if (!st) c3.appendChild(empty(base() ? "Write a context, a question and the answers, then score." : "<b>Free text needs a live call.</b> Choose the hosted gateway in the bar above. Nothing is scored offline, and nothing is made up."));
     if (st) c3.appendChild(st);
-    var btn = el("button", "btn btn--secondary jev-run", "Score live"); if (!base()) btn.disabled = true;
+    var btn = el("button", "btn btn--secondary jev-run", "Score live"); btn.type = "button"; if (!base() || blocked()) btn.disabled = true;
+    var rr = results[p.key] && results[p.key].main; if (rr && (rr.status === "pending" || rr.status === "sending")) { btn.disabled = true; btn.textContent = "Waiting for the model…"; }
     var msg = el("div", "jev-note");
     btn.addEventListener("click", function () {
       p.ctx = ta.value; p.q = qi.value; p.a = ai.value; p.ref = cb.checked;
@@ -394,6 +452,7 @@
       if (!ta.value.trim() || !qi.value.trim()) { msg.textContent = "Write a context and a question."; return; }
       if (answers.length < 2 || answers.length > maxA) { msg.textContent = "Give between two and " + maxA + " answers, one per line."; return; }
       var req = { context: ta.value.trim(), case_id: "demo-jev-own", questions: [{ id: "q", text: qi.value.trim(), choices: answers.map(function (t, i) { return { id: "a" + (i + 1), text: t }; }) }] };
+      if (req.context.length > G.max_context || JSON.stringify(req).length > G.max_body) { msg.textContent = "Too long for the public demo: at most " + G.max_context + " characters of context and " + G.max_body + " bytes in all."; return; }
       if (cb.checked) live(p.key, "main", "/reason", { request: req, reasoning: { enabled: true, max_tokens: 128, max_rounds: 3, max_tool_calls: 0 } });
       else live(p.key, "main", "/score", req);
     });
