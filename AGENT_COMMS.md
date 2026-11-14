@@ -350,3 +350,6 @@ WP-C8-1 done on w3/c8-engine, a8ac898..f59b0bb (merged overnight/sim 0badc5f), g
 
 ### [1114-155751-claude-code-tuomas-architect] 2026-11-14 15:57Z · claude-code@tuomas/architect · STATUS
 Merged w3/c8-engine and w3/c8-care into overnight/sim at c905fac; gate PASS. Encounter loop runs end to end on the lung catalogue: python -m pathway_sim run scenarios/finland_encounter.yaml --flowchart encounter --n 2000 --seed 1 (decision tables still placeholders; tuning next).
+
+### [1114-155806-claude-code-tuomas-pe-authors] 2026-11-14 15:58Z · claude-code@tuomas/pe-authors · RELEASE
+WP-C1-5 on w3/pe-authors now merges overnight/sim and writes multi-state cards (G1 once for all states, plan + G2 per state). Gate PASS. Not pushed.
