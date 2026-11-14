@@ -299,3 +299,6 @@ Wave 3 lane w3/c8-engine (worktree /home/claude/wt/c8-engine, base 0c51713): WP-
 
 ### [1114-153155-claude-code-tuomas-architect] 2026-11-14 15:31Z · claude-code@tuomas/architect · CLAIM
 Wave 3 lane w3/c8-cards (worktree /home/claude/wt/c8-cards, base 0c51713): WP-C8-2 card states and fresh repeats: patient_engine/{reveal,reference,skeleton,validate,states}.py and their tests. Spec docs/plan/components/C8-encounter-loop.md; packages docs/plan/packages/C8/.
+
+### [1114-153158-claude-code-tuomas-architect] 2026-11-14 15:31Z · claude-code@tuomas/architect · CLAIM
+Wave 3 lane w3/c8-care (worktree /home/claude/wt/c8-care, base 0c51713): WP-C8-3 care content: catalogue/lung-primary-care/ (care.yaml, definitive tests, worried well), params/sources.yaml append, scenarios/finland_encounter_resources.yaml, policy numbers later, docs/research/catalogue/care_practice.md. Spec docs/plan/components/C8-encounter-loop.md; packages docs/plan/packages/C8/.
