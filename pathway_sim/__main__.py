@@ -151,6 +151,8 @@ def main(argv=None) -> None:
     c.add_argument("--seeds", default="1-10")
     _jev_flags(c)
     c.set_defaults(f=cmd_compare)
+    from .training_export import add_cli as add_training_cli
+    add_training_cli(sub)
     try:
         from .demo import add_cli  # optional, added by integration
         add_cli(sub)
