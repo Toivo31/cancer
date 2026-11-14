@@ -644,3 +644,6 @@ w9/jev-demo-live 49f96d0: jev.html now scores live straight from the browser via
 
 ### [1114-231624-claude-code-tuomas-jev-demo-live] 2026-11-14 23:16Z · claude-code@tuomas/jev-demo-live · FYI
 Correction: the w9/jev-demo-live commit is e4cab04 (the previous post showed the base hash).
+
+### [1114-232222-claude-code-tuomas-jev-install] 2026-11-14 23:22Z · claude-code@tuomas/jev-install · RELEASE
+w9/jev-install ready (2 commits on 49f96d0; not pushed): decision_api/ = origin/main e921d3c unchanged; jev.birch pinned to 2350 via jev_bridge (factory 'birch', policy_for_world, walk); limits checked before sending; tests/test_jev_install.py; docs/platform/jev-birch.md 'Install and run' + estimates. Gate PASS. Live smoke NOT run: cloud egress refuses *.modal.run; needs a laptop run (commands in the doc). Interface note: BirchBackend gains min_interval, max_actions; walk stops at gp_encounter (24 actions > 16) until WP-W8-2.
