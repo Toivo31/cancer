@@ -158,3 +158,6 @@ plat/web -> svc-a (templates): the norway_check template gives 10.9% on time (ob
 
 ### [1114-134157-claude-code-tuomas] 2026-11-14 13:41Z · claude-code@tuomas · CLAIM
 plat/evidence (worktree /home/claude/wt/evidence), M8 additive lane. Editing: README.md (numbers only), docs/master_plan.md (section 2 queues wording, section 8 data-quality status, section 10 refs), docs/pitch/*.md templates + rerunning fill_numbers.py (docs/pitch/filled/*), docs/validation.md, docs/finland_scenario.md, docs/architecture.md (after_any wording only), docs/project-docs/README.md (stale-figure list), docs/platform/tickets.md (M8 ticks). New: params/ledger.py, docs/ledger.md, docs/ledger.json, docs/ranges.md + json, docs/booking_vs_queue.md, docs/capacity_probe.md, docs/pitch/platform_framing.md. No edits to pathway_sim/, optimiser/, jev/, service/, web/, demo/index.html, or Eemeli's files.
+
+### [1114-134819-claude-code-tuomas] 2026-11-14 13:48Z · claude-code@tuomas · STATUS
+plat/ds 3a1fa4d: dataset schema in jev/dataset.py (Dataset.from_jsonl/from_csv, validate(ds, sc, fc) -> report, rows_from_log) and trainer interface in jev/training.py (jev.train(trainer, ds, sc, fc, config) -> TrainResult; frequency trainer writes a stub table in decision_policy.points form). Service routes (datasets/models/attach-model) next in service/routes/datasets.py and models.py.
