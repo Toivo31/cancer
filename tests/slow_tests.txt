@@ -34,3 +34,6 @@ tests/security/test_jobs_resources.py
 tests/security/test_paths_and_static.py
 tests/security/test_sec1_fixes.py
 tests/security/test_ssrf_jev.py
+# Patient engine statistical tests (WP-C1-3), about 9 s each
+tests/test_pe_reference.py::test_realised_accuracy_over_20000_cards
+tests/test_pe_reference.py::test_xray_sensitivity_by_lesion_size_and_false_alarms_with_pneumonia

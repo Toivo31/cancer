@@ -600,13 +600,10 @@ def test_reference_cards_have_no_errors(tiny):
         generate_reference = reference.generate_reference
     except (ImportError, AttributeError):
         pytest.skip("patient_engine.reference is built in parallel (WP-C1-3) and is not available yet")
-    try:
-        from patient_engine.skeleton import design_library, make_skeleton
-        design = design_library(tiny, None, 0.1, 7)
-        skeletons = [make_skeleton(tiny, i, design, 7) for i in range(200)]
-        cards = [generate_reference(tiny, s, 7) for s in skeletons]
-    except (ImportError, AttributeError, TypeError) as e:
-        pytest.skip(f"cannot drive the reference generator with the documented signatures: {e!r}")
+    from patient_engine.skeleton import design_library
+    skeletons = design_library(tiny, None, 0.1, 7)[:200]   # design_library returns the skeletons themselves
+    assert len(skeletons) >= 100
+    cards = [generate_reference(tiny, s, 7) for s in skeletons]
     for card in cards:
         errs = [p for p in validate_card(card, tiny) if p.severity == ERROR]
         assert not errs, (card.id, [str(p) for p in errs])

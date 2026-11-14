@@ -143,8 +143,12 @@ def report_text(test: Test, status: str, values: Mapping[str, Value]) -> str:
     """A short template report, marked synthetic."""
     if status == "non_diagnostic":
         return f"{test.label} (synthetic report): no usable result (non-diagnostic); repeat if still indicated."
-    parts = [f"{o.id.replace('_', ' ')} {_show(values[o.id], o.unit)}" for o in test.outputs
-             if values.get(o.id) is not None]
+    def part(o):
+        name, v = o.id.replace('_', ' '), values[o.id]
+        if isinstance(v, bool):                     # "no nodule seen" reads as a negation; "nodule seen no" did not
+            return name if v else f"no {name}"
+        return f"{name} {_show(v, o.unit)}"
+    parts = [part(o) for o in test.outputs if values.get(o.id) is not None]
     return f"{test.label} (synthetic report): " + "; ".join(parts) + "."
 
 

@@ -55,7 +55,7 @@ __all__ = ["validate_card", "repair_prompt", "has_errors"]
 #: value is accepted (rule 6), beyond which a ``wrong`` one is required, and beyond which a measured
 #: value is implausible when nothing was planned (rule 7).
 CORRECT_SD = 3.0
-WRONG_SD = 2.0
+WRONG_SD = 1.9   # generator calls a value wrong at |z| >= 1.96 (skeleton.OUTCOME_Z); 1.9 leaves room for rounding to 0.1
 IMPLAUSIBLE_SD = 5.0
 
 #: Phrases that say "nothing abnormal" in a report; checked only for outputs named ``abnormal*`` (rule 9).
@@ -405,7 +405,9 @@ class _Checker:
                 return None
             if outcome == "correct" and abs(value - truth) > CORRECT_SD * sd:
                 return f"planned correct, but {value} is more than {CORRECT_SD:g} x {sd:g} away from the true {truth}"
-            if outcome == "wrong" and abs(value - truth) <= WRONG_SD * sd:
+            var = self.cat.variables.get(out.measures)
+            at_bound = var is not None and value in tuple(b for b in (getattr(var, "range", None) or ()) if b is not None)
+            if outcome == "wrong" and abs(value - truth) <= WRONG_SD * sd and not at_bound:   # a wrong value clamped to the range is fine
                 return f"planned wrong, but {value} is within {WRONG_SD:g} x {sd:g} of the true {truth}"
         elif out.type == "categorical":
             if outcome == "correct" and value != truth:
