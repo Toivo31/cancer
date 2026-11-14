@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useApi } from '../ApiContext'
 import type { ApplyResult, Comparison, CompareValue, Flowchart, Optimisation, Run, World } from '../api/types'
 import { KIND_LABEL, toggleChange } from '../lib/optimise'
+import { DiffDialog } from './DiffDialog'
 
 const pct = (v?: number | null) => (v == null ? '–' : `${(v * 100).toFixed(1)}%`)
 const num1 = (v?: number | null) => (v == null ? '–' : v.toFixed(1))
@@ -27,6 +28,7 @@ export function OptimisePanel({ pid, flowchart, world, onOpen, onRunsChanged }: 
   const [err, setErr] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [applied, setApplied] = useState<ApplyResult | null>(null)
+  const [showDiff, setShowDiff] = useState(false)
   const [runs, setRuns] = useState<{ before: Run | null; after: Run | null }>({ before: null, after: null })
   const [cmp, setCmp] = useState<Comparison | null>(null)
   const [cmpErr, setCmpErr] = useState<string | null>(null)
@@ -233,9 +235,11 @@ export function OptimisePanel({ pid, flowchart, world, onOpen, onRunsChanged }: 
           {cmpErr && <div className="error">{cmpErr}</div>}
           {cmp && <CompareTable cmp={cmp} />}
           <div className="form-row" style={{ marginTop: 10 }}>
+            <button className="btn small" onClick={() => setShowDiff(true)} data-testid="show-diff">Show what changed</button>
             <button className="btn small" onClick={() => onOpen(applied.flowchart.id, applied.flowchart.version, applied.run_id ?? null)}>Open the new version</button>
             <button className="btn small" onClick={() => onOpen(applied.based_on.id, applied.based_on.version, applied.baseline_run_id ?? null)}>Open the old one</button>
           </div>
+          {showDiff && <DiffDialog pid={pid} a={{ fid: applied.based_on.id, version: applied.based_on.version, label: `Before (v${applied.based_on.version})` }} b={{ fid: applied.flowchart.id, version: applied.flowchart.version, label: `After (v${applied.flowchart.version})` }} onClose={() => setShowDiff(false)} />}
         </section>
       )}
     </>

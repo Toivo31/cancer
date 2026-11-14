@@ -20,6 +20,7 @@ import { DecisionsTable } from './DecisionsTable'
 import { RunPanel } from './RunPanel'
 import { OptimisePanel } from './OptimisePanel'
 import { EditPanel } from './EditPanel'
+import { DiffDialog } from './DiffDialog'
 
 type Tab = 'flowchart' | 'decisions'
 
@@ -150,6 +151,7 @@ export function ProjectScreen({ pid, route }: { pid: string; route: Route }) {
   const adj = useMemo(() => adjacency(fc?.edges ?? []), [fc])
   const [patientIdx, setPatientIdx] = useState<number | null>(null)
   const [panelOpen, setPanelOpen] = useState(true)
+  const [compareWith, setCompareWith] = useState<number | null>(null)
   const [sideTab, setSideTab] = useState<'run' | 'time' | 'patient' | 'optimise'>('run')
   useEffect(() => { setPatientIdx(null) }, [flow])
   const pickPatient = useCallback((idx: number | null) => { setPatientIdx(idx); if (idx !== null) setSideTab('patient') }, [])
@@ -186,6 +188,12 @@ export function ProjectScreen({ pid, route }: { pid: string; route: Route }) {
         <select className="field" aria-label="Version" value={curVer} onChange={(e) => nav({ v: e.target.value, run: null })}>
           {cur.versions.slice().reverse().map((v) => <option key={v} value={v}>version {v}{v === cur.latest_version ? ' (latest)' : ''}{cur.locked.includes(v) ? ' · has runs' : ''}</option>)}
         </select>
+        {cur.versions.length > 1 && (
+          <select className="field" aria-label="Compare with another version" value="" onChange={(e) => e.target.value && setCompareWith(Number(e.target.value))} title="Draw this version next to another one and mark what changed" style={{ maxWidth: 150 }}>
+            <option value="">Compare with…</option>
+            {cur.versions.filter((v) => v !== curVer).reverse().map((v) => <option key={v} value={v}>version {v}</option>)}
+          </select>
+        )}
         <div className="tabs" role="tablist">
           <button role="tab" aria-selected={tab === 'flowchart'} className={`tab ${tab === 'flowchart' ? 'on' : ''}`} onClick={() => nav({ tab: null })}>Flowchart</button>
           <button role="tab" aria-selected={tab === 'decisions'} className={`tab ${tab === 'decisions' ? 'on' : ''}`} onClick={() => nav({ tab: 'decisions' })}>Decisions{dirty ? ' •' : ''}</button>
@@ -278,6 +286,11 @@ export function ProjectScreen({ pid, route }: { pid: string; route: Route }) {
             )}
           </div>
         </>
+      )}
+      {compareWith !== null && (
+        <DiffDialog pid={pid} onClose={() => setCompareWith(null)}
+          a={{ fid: cur.id, version: Math.min(compareWith, curVer), label: `Version ${Math.min(compareWith, curVer)}` }}
+          b={{ fid: cur.id, version: Math.max(compareWith, curVer), label: `Version ${Math.max(compareWith, curVer)}` }} />
       )}
     </>
   )

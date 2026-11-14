@@ -24,7 +24,7 @@ describe('optimise panel', () => {
     const api = {
       kind: 'mock', listOptimisations: async () => [],
       startOptimisation: vi.fn(async () => ({ ...done, status: 'queued', changes: undefined })),
-      getOptimisation: vi.fn(async () => done),
+      getOptimisation: vi.fn(async () => done), getFlowchart: vi.fn(async () => fc), compareRuns: vi.fn(async () => new Promise(() => {})), getRun: vi.fn(async () => new Promise(() => {})),
       applyOptimisation: vi.fn(async () => ({ flowchart: { id: fc.id, version: 2 }, based_on: { id: fc.id, version: 1 }, accepted: [0] })),
     } as unknown as Api
     render(<ApiCtx.Provider value={api}><OptimisePanel pid="p" flowchart={fc} world={null} onOpen={() => {}} onRunsChanged={() => {}} /></ApiCtx.Provider>)
@@ -37,5 +37,9 @@ describe('optimise panel', () => {
     fireEvent.click(screen.getByTestId('apply-changes'))
     await waitFor(() => expect(api.applyOptimisation).toHaveBeenCalled())
     expect(api.applyOptimisation).toHaveBeenCalledWith('p', 'o_1', expect.objectContaining({ accept: [0], rerun: true }))
+    fireEvent.click(await screen.findByTestId('show-diff'))
+    expect(await screen.findByTestId('diff-view')).toBeTruthy()
+    expect(api.getFlowchart).toHaveBeenCalledWith('p', fc.id, 1)
+    expect(api.getFlowchart).toHaveBeenCalledWith('p', fc.id, 2)
   })
 })
