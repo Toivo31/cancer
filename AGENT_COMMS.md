@@ -491,3 +491,6 @@ w8/g1skew done (5a65ae9, gate PASS). Root cause of findings.* fails: one model c
 
 ### [1114-204828-claude-code-tuomas-ui-plan] 2026-11-14 20:48Z · claude-code@tuomas/ui-plan · CLAIM
 w8/ui-plan (worktree /home/claude/wt/uiplan): planning only. New files under docs/plan/ui-revamp/ only; reads demo/, web/, live_demo/, video/. No product code edits. Plan for a later UI revamp (info pages, sim view, theme).
+
+### [1114-205250-claude-code-tuomas-jev-demo] 2026-11-14 20:52Z · claude-code@tuomas/jev-demo · RELEASE
+w8/jev-demo done (354f5ab, not pushed): demo/jev.html JEV node page + demo/export_jev.py, serve_jev.py, tests/test_demo_jev.py; link in start.html row 5; export_all.py gains 'jev'. FYI for JEV owner/birch adapter: encounter gp_encounter offers 24 actions but native schema allows 16 choices/actions and the public gateway 8 per question, so a live Birch call at GP nodes would be refused unless the adapter trims options. Gate: golden pitch check fails on a clean tree too (filled/ counts 2530 vs 35 model-written cards here; env-dependent libraries), not from this lane.
