@@ -75,22 +75,37 @@ class DecisionRequest:
 
 @dataclass
 class DecisionResponse:
+    """``record_note`` and ``assessment`` (optional, decision D49): the decider's own words, which the
+    simulator appends to the patient record as an ``assessment`` entry that later decisions read.
+    ``assessment`` keys: ``working_diagnosis`` (text), ``differential`` (list of text), ``plan`` (text),
+    ``confidence`` (0..1). ``explanation`` stays a free comment that is logged but not put in the record."""
     request_id: str
     probs: dict[str, float]
     explanation: str | None = None
+    record_note: str | None = None
+    assessment: dict | None = None
 
     def to_dict(self) -> dict:
         d = {"request_id": self.request_id, "probs": self.probs}
         if self.explanation is not None:
             d["explanation"] = self.explanation
+        if self.record_note is not None:
+            d["record_note"] = self.record_note
+        if self.assessment is not None:
+            d["assessment"] = self.assessment
         return d
 
     @classmethod
     def from_dict(cls, d: dict) -> "DecisionResponse":
         if not isinstance(d, dict) or "request_id" not in d or not isinstance(d.get("probs"), dict):
             raise ContractError("a response needs 'request_id' and a 'probs' object")
+        note, assess = d.get("record_note"), d.get("assessment")
+        if note is not None and not isinstance(note, str):
+            raise ContractError("record_note must be text")
+        if assess is not None and not isinstance(assess, dict):
+            raise ContractError("assessment must be an object")
         return cls(request_id=str(d["request_id"]), probs={str(k): v for k, v in d["probs"].items()},
-                   explanation=d.get("explanation"))
+                   explanation=d.get("explanation"), record_note=note, assessment=assess)
 
 
 @dataclass
@@ -156,7 +171,8 @@ def check_responses(requests: list[DecisionRequest], responses: list[DecisionRes
     for q, r in zip(requests, responses):
         if r.request_id != q.request_id:
             raise ContractError(f"response order broken: expected {q.request_id!r}, got {r.request_id!r}")
-        out.append(DecisionResponse(r.request_id, check_probs(r.probs, q.option_ids, q.request_id), r.explanation))
+        out.append(DecisionResponse(r.request_id, check_probs(r.probs, q.option_ids, q.request_id), r.explanation,
+                                    r.record_note, r.assessment))
     return out
 
 

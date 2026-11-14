@@ -223,12 +223,16 @@ def test_texts_are_short_and_synthetic(tiny):
         for atts in card.observations["all_active"].values():
             for a in atts:
                 assert "synthetic" in a.report and len(a.report) < 200
-        assert [n.kind for n in card.notes] == ["patient_account", "gp_note"]
+        # two notes per state since C8 (WP-C8-2): the cards now have a state per resolved illness
+        assert [n.kind for n in card.notes] == ["patient_account", "gp_note"] * len(card.states)
+        assert [n.state for n in card.notes] == [s for s in card.states for _ in range(2)]
+        assert len({n.id for n in card.notes}) == len(card.notes)
         assert all("Synthetic" in n.text for n in card.notes)
-        truth = card.hidden.findings["all_active"]
-        pres = card.presenting["all_active"]
-        assert all(truth[v].value is True for v in pres.reported)
-        assert card.notes[0].mentions == pres.reported
+        for j, state in enumerate(card.states):
+            truth = card.hidden.findings[state]
+            pres = card.presenting[state]
+            assert all(truth[v].value is True for v in pres.reported)
+            assert card.notes[2 * j].mentions == pres.reported
 
 
 # ---------------------------------------------------------------- accuracy (statistical)

@@ -37,24 +37,28 @@ M1-9 (GP judgement as a decision; now C3 E4 and C4 J4), M3-7, M3-8, M3-9, M4-1 t
 M5-9, M6-5, M6-6, M7-1, M7-3, M7-4 (written, never run), M7-6 web part, M8-1 to M8-6 (in
 progress on `plat/evidence`). See `components/C6-platform.md` for how they are regrouped.
 
-## Running now
+## Running now (14 Nov, 17:00 UTC)
 
-| Lane | Branch | Doing |
+Waves 2 and 3. Merged into `overnight/sim`, gate green (`scripts/gate.sh`): patient-engine contracts,
+LLM client, both catalogue research notes, the lung catalogue, reference generator, validator,
+library/cohort/reveal handle, test gate, security fixes (F16, F3, F5, F6, F7), record/1 and care/1
+contracts, record to JEV request (WP-C8-4), card states and unlimited fresh repeats (WP-C8-2).
+
+| Lane | Package | State |
 |---|---|---|
-| – | – | No lane is running |
+| `w3/c8-engine` | WP-C8-1 encounter loop in the simulator (Opus) | running |
+| `w3/c8-care` | WP-C8-3 care content, definitive and group tests, costs, capacity, worried well | running |
+| `w3/pe-authors` | WP-C1-5 model-written cards | built; fixing multi-state support before merge |
 
 ## Next (in order)
 
-| # | What | Who | Track |
-|---|---|---|---|
-| 1 | Merge the two running lanes; record first-wave decisions in `docs/decisions.md` (partly done: D32 to D38) | integrator | both |
-| 2 | `WP-INFRA-1`: `slow` markers, `tests/contracts/`, one gate command, golden checks | one builder | both |
-| 3 | Triage the security review into fixes | architect, then one builder | platform; anything exploitable on the hosted demo is submission track |
-| 4 | **Spec the Sunday slice** of the patient engine (C1 P1 to P10) and the first catalogue (C2 K1, K2 plus symptoms and bloodwork) | spec agents (Tuomas starts them, or tells the architect to) | platform, then submission |
-| 5 | **Build the slice**: P1, P2, P3, P8 in parallel; then P4 to P6; then P7, P9, P10 | builders | platform, then submission |
-| 6 | **Generate a first library** of about 300 cards and its audit | whoever has the endpoint and key | submission |
-| 6b | After the submission: C3 E7 (states, treatment, episodes), E4 and C4 J4 (all decisions as nodes), C5 O1 spike, C3 E8 spike | | platform |
-| 7 | Submission polish: the demo path, pitch numbers, video numbers; freeze Sunday 06:00 | Tuomas, Eemeli, their agents | submission |
+| # | What | When |
+|---|---|---|
+| 1 | Merge c8-care, then c8-engine; run the loop on the lung library; first outcome table | as they finish |
+| 2 | Wave 4: tune nurse/GP decision tables to plausible Finnish rates; patient record and loop results in the demo (flow page and web app); audit G4 (WP-C1-7); pitch numbers for the second finding | after 1 |
+| 3 | Independent review of the loop (I1, numbers, what a judge would challenge) | before 01:00 UTC |
+| 4 | 01:00 UTC checkpoint: if the loop is not green, show cards and records next to the calibrated model only | 01:00 UTC |
+| 5 | Freeze 04:00 UTC (06:00 Helsinki); everything goes into the submission (D45) | |
 
 ## Waiting for a human
 

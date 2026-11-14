@@ -399,7 +399,13 @@ def test_reveal_refuses_what_the_card_does_not_offer():
 
 
 def test_other_states_raise_the_same_error_for_every_card():
-    """Probing '<illness>_resolved' must not tell whether the patient has the illness."""
+    """Probing '<illness>_resolved' must not tell whether the patient has the illness.
+
+    Intentional change (WP-C8-2): the handle used to refuse every state but ``all_active``. It now serves the
+    states a card has (see tests/test_pe_reveal_states.py), so this test keeps the part that still holds:
+    for cards that lack a state, and for names no card has, the refusal is one and the same message. The
+    cards here are the single-state fixtures (none has a resolved state), and the refusal must not depend on
+    the card or on the reason."""
     cat = tiny_catalogue()
     messages = set()
     for primary in ("lung_cancer", "pneumonia", "healthy"):
