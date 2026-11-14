@@ -164,7 +164,7 @@ def chain_route(p):
     if r.get("second_look"):
         return "second look after negative film"
     if r.get("represent"):
-        return "re-presentation" + (" (no film)" if "cxr" not in p.t_done else " (after negative film)")
+        return "re-presentation" + (" (no film)" if r.get("cxr") is None else " (after negative film)")
     return "?"
 
 

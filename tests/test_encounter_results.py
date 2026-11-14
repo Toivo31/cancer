@@ -20,14 +20,15 @@ def tuned():
 
 
 def test_tuned_run_key_numbers(tuned):
-    # observed 2026-11-14 (n=1500, seed 1, no warm-up): referred 0.218, GP 4.54, episodes 2.4, tests 1.4, 562 EUR
+    # observed 2026-11-14 after w7/loop (n=1500, seed 1, no warm-up): referred 0.114, GP 4.25, episodes 1.9,
+    # tests 1.6, 491 EUR, 19 cancers, 0.947 treated. Before w7/loop: referred 0.218, GP 4.54, episodes 2.4.
     assert tuned["n"] == 1500
-    assert 0.15 <= tuned["referral_share"] <= 0.30
-    assert 3.5 <= tuned["gp_encounters_per_patient"] <= 5.5
-    assert 1.9 <= tuned["episodes_per_patient"] <= 3.0
-    assert 1.0 <= tuned["tests_per_patient"] <= 1.9
-    assert 430 <= tuned["cost_per_patient_eur"] <= 700
-    assert tuned["cancers"] >= 10 and tuned["cancer_treated_share"] >= 0.6
+    assert 0.08 <= tuned["referral_share"] <= 0.16
+    assert 3.5 <= tuned["gp_encounters_per_patient"] <= 5.0
+    assert 1.6 <= tuned["episodes_per_patient"] <= 2.2
+    assert 1.2 <= tuned["tests_per_patient"] <= 2.0
+    assert 400 <= tuned["cost_per_patient_eur"] <= 600
+    assert tuned["cancers"] >= 10 and tuned["cancer_treated_share"] >= 0.75
 
 
 def test_tuned_values_are_recorded_with_old_values():

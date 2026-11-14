@@ -303,3 +303,39 @@ def test_cli_runs_encounter_world(capsys, tmp_path):
     assert "patients 40" in text and "group" in text
     d = json.loads(out.read_text())
     assert d["run"]["patients"][0]["record"]["entries"]
+
+
+# ---------------------------------------------------------------------------- C8 rule 9 (w7/loop)
+
+def test_referral_letter_delays_hospital_entry(base_world):
+    """Rule 9: with hospital.referral_letter the referral reaches the hospital after the chain's letter wait; the
+    referral clock (t_referral) stops when it is sent, as the chain's referral_in. Without it: at once."""
+    assert base_world.hospital.get("referral_letter") == "gp_referral_letter"
+    w = variant(base_world, prevalence={"lung_cancer": 0.5, "viral_self_limiting": 0.5})
+    log = run_encounter(w, 40, 6, policy=Script(refer_now))
+    waits = []
+    for p in log.patients:
+        ref = next(e for e in p.record.mechanical() if e.kind == "referral")
+        hosp = next(e for e in p.record.mechanical() if e.kind == "hospital")
+        sent = p.t_referral - p.patient.arrival
+        assert sent >= ref.t_days - 1e-9 and hosp.t_days >= sent - 1e-9
+        waits.append(sent - ref.t_days)
+    assert max(waits) > 0.5 and all(x < 60 for x in waits)
+    w2 = variant(base_world, prevalence={"lung_cancer": 0.5, "viral_self_limiting": 0.5},
+                 hospital={k: v for k, v in base_world.hospital.items() if k != "referral_letter"})
+    log2 = run_encounter(w2, 40, 6, policy=Script(refer_now))
+    for p in log2.patients:
+        ref = next(e for e in p.record.mechanical() if e.kind == "referral")
+        assert p.t_referral - p.patient.arrival == pytest.approx(ref.t_days, abs=1e-6)
+
+
+def test_generated_library_is_cached_on_disk(base_world, tmp_path, monkeypatch):
+    import pathway_sim.encounter as enc
+    monkeypatch.setattr(enc, "_CACHE_ROOT", tmp_path)
+    monkeypatch.setattr(enc, "_LIBRARIES", {})
+    w = variant(base_world)
+    a = world_library(w)
+    assert len(list(tmp_path.glob("encounter_ref_*/manifest.json"))) == 1
+    monkeypatch.setattr(enc, "_LIBRARIES", {})
+    b = world_library(w)                                     # read back from the cache: same content, same id
+    assert a.id == b.id and len(a) == len(b)

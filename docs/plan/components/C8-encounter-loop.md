@@ -81,6 +81,16 @@ Rules:
 8. **Outputs per patient**: time to referral, to diagnosis, to treatment; number of encounters by
    role; tests ordered and their cost; treatments given and whether they matched the truth; episodes;
    outcome. Aggregated by patient group (age band, sex, smoking, region).
+9. **Referral letter (w7/loop).** A `refer` decision does not put the patient into the hospital part at
+   once: the GP first writes and sends the letter. The wait is the hospital scenario's own letter step,
+   named by the world setting `hospital.referral_letter` (in `finland_encounter.yaml`: the chain's
+   `gp_referral_letter`, median 3 d, p90 7, assumption). The record keeps the `referral` entry at the
+   decision; the referral clock (`t_referral`) stops when the letter is sent, which is what the chain's
+   `referral_in` measures. Without the setting the patient enters at once (old behaviour). Reason: the
+   hospital sub-flowchart starts at `referral_in`, so the loop skipped the letter step and its referral
+   times were 3 days short of the chain's by construction. Test: `test_referral_letter_delays_hospital_entry`.
+   Generated reference libraries are also cached under `runs/libraries/` (content-addressed; same library id),
+   which changes no result.
 
 ## Work packages (wave 3, in `docs/plan/packages/C8/`)
 
