@@ -71,6 +71,8 @@ def test_validate_against_flowchart():
     assert StubBackend({"sample_choice": {"default": {"bronch": 1, "ttnb": 1},
                                           "rules": [{"when": "cxrr", "probs": {"bronch": 1}}]}}).validate_against(fc, sc)
     assert not StubBackend(jev.table_from_policy(fc)).validate_against(fc, sc)
+    off = StubBackend({"sample_choice": {"default": {"bronch": 0.5, "ttnb": 0.4}}}).validate_against(fc, sc)
+    assert any("sum to 0.9" in p for p in off)               # hardcoded rows must sum to 1, no silent fix
 
 
 def _scenarios():

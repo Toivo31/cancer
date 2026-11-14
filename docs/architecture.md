@@ -21,7 +21,8 @@ build_flow(run log) ──► flow document (docs/platform/flow-format.md); demo
 |---|---|---|
 | `pathway_sim/` | core | event engine, scenario loader, patient generator, policies, metrics, CLI |
 | `optimiser/` | optimiser | revealed-information yield estimates, flowchart edits, accept-by-rerun search |
-| `decision_model/` | decision model | Jev-type correction model + dot-product baseline; implements `Policy` |
+| `decision_model/` | decision model | Jev-type correction model + dot-product baseline; implements `Policy`; reachable through the JEV contract as `jev.LocalBackend` |
+| `jev/` | JEV interface | decision contract, `BackendPolicy` adapter, stub backend with probability tables, HTTP client and stub server, local and rule backends (spec `docs/platform/specs/02-jev-interface.md`) |
 | `scenarios/` | core + params | scenario YAML (`stokstad_observed`, `stokstad_optimal`, `finland_lung`) |
 | `params/` | params | sourced parameter tables (`sources.yaml`, `*.yaml`), each number traceable |
 | `demo/` | demo | static dashboard `index.html` + `data/demo_bundle.json`; flowchart simulation page `flow.html` (+ `flow.js`, `flow.css`, `data/flow_bundle.js` from `export_flow.py`; `pathway_sim/flow.py` builds the data) |
@@ -99,7 +100,7 @@ flowcharts:
 
 Node fields:
 - `id` (unique), `test` (id in `tests`, optional for pure logic nodes)
-- `kind`: `step` (default) | `choice` | `milestone` | `exit`
+- `kind`: `step` (default) | `choice` | `milestone` | `exit`. `decision` is the platform document's name for `choice` and is accepted wherever `choice` is (normalised to `choice` when loaded)
 - `after`: all of these must be done (if one is skipped, this node is skipped too);
   `after_any`: at least one must be done (skipped when all are skipped);
   `after_optional`: wait for these only if they run (done or skipped both satisfy it)
@@ -113,7 +114,7 @@ Node fields:
 - `availability` on a choice node: `{option: {p_available, weekdays}}` restricts the offer.
 - `test_overrides` / `resource_overrides` on a flowchart change a test or resource for that
   flowchart only (e.g. a faster PET-CT scanner).
-- `choice` nodes: the `Policy` picks one of `options`; the others are skipped.
+- `choice` nodes: the `Policy` gives a probability per option and the engine picks one (see Policy); the others are skipped.
 - `exit` nodes end the pathway: `outcome` in `treatment | discharged | diagnosis_only`.
   The first exit reached ends the patient.
 - `milestone: diagnosis` marks time to diagnosis; `exit outcome: treatment` marks time to treatment.
@@ -154,12 +155,54 @@ class Patient:
 ```python
 class Policy(Protocol):
     def choose(self, view: PatientView, options: list[str]) -> dict[str, float]:
-        """Probability per option id. The simulator takes the argmax."""
+        """Probability per option id."""
 ```
 `PatientView` holds only revealed information: `group`, `age`, `history`
-(list of `(node_id, test_id, result, t)`), and `t_now`. Never the condition.
+(list of `(node_id, test_id, result, t)`), `t_now`, revealed `attributes`, `priority`, the `offered`
+options and the queue state `option_leads`. Never the condition.
 `RulePolicy` (core) uses per-choice-node rules from YAML (`policy: {sample: {prefer: bronch}}`)
 or uniform priority order.
+
+**How the engine turns probabilities into a choice** (`Simulation.pick_option`). A policy may carry
+three optional attributes; the engine reads them with `getattr` and never imports `jev`:
+
+| Attribute | Meaning | Default |
+|---|---|---|
+| `decision_mode` | `"argmax"`: highest probability, ties to the earlier option. `"sample"`: inverse CDF over the offered options in the node's option order, driven by the common-random-number draw `uniform(seed, patient_id, "mix", node_id)`; the same patient facing the same probabilities at the same decision point chooses the same option in every flowchart variant | `"argmax"` |
+| `backend_name` | recorded in the run log | policy class name |
+| `model_id` | recorded in the run log | `None` |
+
+Each entry of a patient's `choices` log carries `node, t, chosen, offered, probs, mode, backend, model`.
+Rule-based policies return one-hot probabilities, so both modes give the same choice for them.
+
+## JEV: decision backends (`jev/`)
+
+Decision points ask a backend: context and options in, a probability per option out. The contract
+(JSON for `POST /v1/decide`, in-process dataclasses, validation: probabilities cover exactly the
+offered ids, are non-negative and sum to 1 within 1e-6) is specified in
+`docs/platform/specs/02-jev-interface.md`; examples are in `jev/examples/`.
+
+- `jev.BackendPolicy(backend, mode="sample"|"argmax", scenario, flowchart)` adapts any backend to
+  `Policy`: builds the request from the `PatientView` (revealed information only, option metadata and
+  `lead_days` from the world's test catalogue and the queue), validates the response, sets `decision_mode`.
+- Backends: `StubBackend` (hardcoded and conditional probability tables), `HttpBackend` (keep-alive,
+  2 s timeout, one retry, response cache on the model's declared `context_fields`, `on_error` `fail` or
+  `fallback_stub` with a count), `LocalBackend` (wraps a `Policy`, e.g. `decision_model.ModelPolicy`),
+  `RuleBackend` (today's `RulePolicy`), `RoutingBackend` (a different backend per decision point).
+- Stub table, stored as the flowchart's `decision_policy` (`{"backend", "mode", "points": {point: {"default": {option: p}, "rules": [{"when": cond, "probs": {...}}]}}}`):
+  first matching rule wins, else `default`; probabilities are restricted to the offered options and
+  renormalised; a point without a usable row gets uniform probabilities and a `missing_probabilities`
+  warning in `backend.summary()`. Conditions use the same names as guards (`group`, `age`, `t`,
+  revealed attributes, step results) and no `eval`.
+- Migration: a scenario's `policy` block (`mix`, `rules` with `choose`, `prefer`, `default`) is turned into
+  a stub table by `jev.migrate_flowchart`, which also reorders a node's `options` to follow its `mix`;
+  every shipped scenario then reproduces its rule-policy run exactly (`tests/test_jev_stub.py`).
+  The YAML key `policy` stays the source for shipped scenarios; the optimiser still edits it.
+- Use: `fc, pol = jev.prepare(scenario, flowchart, backend="stub"|"rule"|"http://host:port", mode=..., sets=...)`
+  then `simulate(scenario, fc, patients, policy=pol, seed)`; run the returned `fc`.
+  CLI: `python -m pathway_sim run ... --jev stub|rule|URL --decision-mode sample|argmax --set point.option=p`.
+- `python -m jev.stub_server` serves a stub over the HTTP contract; `tests/test_jev_contract.py --jev-url URL`
+  tests any JEV address.
 
 ## RunLog JSON
 

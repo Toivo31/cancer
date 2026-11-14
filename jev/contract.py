@@ -13,6 +13,7 @@ Context field names (used by ``BackendInfo.context_fields`` and the response cac
 
 from __future__ import annotations
 
+import numbers
 from dataclasses import dataclass, field
 from typing import Protocol, runtime_checkable
 
@@ -132,7 +133,7 @@ def check_probs(probs: dict, option_ids: list[str], where: str = "") -> dict[str
     out: dict[str, float] = {}
     for o in option_ids:
         v = probs[o]
-        if isinstance(v, bool) or not isinstance(v, (int, float)) or v != v or v < 0 or v in (float("inf"),):
+        if isinstance(v, bool) or not isinstance(v, numbers.Real) or v != v or v < 0 or v == float("inf"):
             raise ContractError(f"{tag}probability for {o!r} is not a non-negative number: {v!r}")
         out[o] = float(v)
     total = sum(out.values())

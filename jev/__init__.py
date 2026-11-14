@@ -21,3 +21,12 @@ from .migrate import migrate_flowchart, table_from_policy
 from .stub import StubBackend, StubTableError
 
 __all__ += ["StubBackend", "StubTableError", "migrate_flowchart", "prepare", "set_probability", "table_from_policy"]
+
+from .http import HttpBackend
+from .routing import RoutingBackend
+
+__all__ += ["HttpBackend", "RoutingBackend"]
+
+from .local import LocalBackend, RuleBackend, view_from_request
+
+__all__ += ["LocalBackend", "RuleBackend", "view_from_request"]

@@ -16,7 +16,7 @@ MODES = ("sample", "argmax")
 def build_context(view) -> dict:
     """Context JSON from a ``PatientView``: revealed information only."""
     return {
-        "group": view.group, "age": view.age, "t_days": round(float(view.t_now), 4),
+        "group": view.group, "age": view.age, "t_days": float(view.t_now),
         "fast_track": bool(view.priority),
         "attributes": dict(view.attributes),
         "history": [{"step": n, "test": t, "result": r, "t_days": tt} for n, t, r, tt in view.history],
@@ -75,16 +75,18 @@ class BackendPolicy:
         self.question_type = question_type
         self.catalogue = OptionCatalogue(scenario, flowchart)
         self._info: BackendInfo = backend.info()
+        self._cur: BackendInfo = self._info
+        self._routed = callable(getattr(backend, "info_for", None))
         self.last_explanation: str | None = None
 
     # attributes the engine reads for the run log
     @property
     def backend_name(self) -> str:
-        return self._info.name
+        return self._cur.name
 
     @property
     def model_id(self) -> str:
-        return self._info.model
+        return self._cur.model
 
     def request_for(self, view, options: list[str]) -> DecisionRequest:
         leads = getattr(view, "option_leads", None) or {}
@@ -94,6 +96,8 @@ class BackendPolicy:
             question_type=self.question_type)
 
     def choose(self, view, options: list[str]) -> dict[str, float]:
+        if self._routed:                       # log which backend answered this decision point
+            self._cur = self.backend.info_for(view.node)
         req = self.request_for(view, options)
         resp = check_responses([req], self.backend.decide([req]))[0]
         self.last_explanation = resp.explanation
