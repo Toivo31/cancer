@@ -31,7 +31,7 @@ PAD-UFES-20 training examples. **Do not add uploads** or fabricate patient image
 
 Include the precomputed examples in `decision_api/web/precomputed.json` so the
 demo works instantly without cloud credentials or a GPU. They contain recorded
-checkpoint1138 outputs, not guessed scores. Use `api.precomputed(id)` and label
+checkpoint2350 outputs, not guessed scores. Use `api.precomputed(id)` and label
 these results **Saved example**, with their recorded timestamp. Use the bundled
 synthetic pathway case as the default workflow example. It is a configurable
 integration example, not a validated cancer protocol.

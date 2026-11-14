@@ -14,7 +14,7 @@ def create_app(api=None):
     from fastapi.responses import JSONResponse, FileResponse
     from fastapi.staticfiles import StaticFiles
     api = api or __import__('decision_api.server', fromlist=['from_environment']).from_environment()
-    app = FastAPI(title='Birch team decision API', description='No Modal account or API key needed. POST returns a job; poll GET /api/decision/jobs/{id}. Generated evidence summaries and relative candidate scores require review.')
+    app = FastAPI(title='Birch team decision API', description='No Modal account or API key needed. Quick calls return a result; longer calls return a job to poll at GET /api/decision/jobs/{id}. Generated evidence summaries and relative candidate scores require review.')
     app.add_middleware(CORSMiddleware,allow_origins=['*'],allow_methods=['GET','POST'],allow_headers=['Content-Type'])
     jobs={};lock=threading.Lock();starts=[];pool=ThreadPoolExecutor(max_workers=1)
 
@@ -73,7 +73,13 @@ def create_app(api=None):
         local=request.method=='GET' and (route=='/examples' or (route.startswith('/examples/') and route.endswith('/decision')))
         local=local or route=='/refine-preview'
         if local:
-            try:return JSONResponse(api.call(request.method,route,body))
+            try:
+                result=api.call(request.method,route,body)
+                if route=='/examples' and isinstance(result,dict):
+                    from urllib.parse import urljoin
+                    for photo in result.get('photos',{}).get('examples',[]):
+                        photo['url']=urljoin(str(request.base_url),photo['url'])
+                return JSONResponse(result)
             except (APIError,ValueError,TypeError,KeyError) as e:return JSONResponse({'detail':str(e)},getattr(e,'status',422))
         allowed=(request.method=='GET' and (route=='/health' or route.startswith('/decisions/'))) or (request.method=='POST' and (route in ('/reason','/score','/pathway') or (route.startswith('/samples/') and route.endswith('/score')) or (route.startswith('/decisions/') and route.endswith('/review'))))
         if not allowed:return JSONResponse({'detail':'Unknown decision API route'},404)
@@ -86,8 +92,16 @@ def create_app(api=None):
             if active>=3 or len(starts)>=120 or sum(now-t<60 for t in starts)>=6:
                 return JSONResponse({'detail':'Demo busy; wait before submitting another request'},429,headers={'Retry-After':'60'})
             identifier=uuid.uuid4().hex;jobs[identifier]={'created':now};starts.append(now)
-        pool.submit(run,identifier,request.method,route,body)
-        return pending(identifier)
+        future=pool.submit(run,identifier,request.method,route,body)
+        # Return quick cached results directly; retain job polling for long calls.
+        # Shielding keeps an accepted request alive when this short wait ends.
+        import asyncio
+        try:
+            await asyncio.wait_for(asyncio.shield(asyncio.wrap_future(future)),timeout=.5)
+            with lock:record=jobs[identifier]
+            return JSONResponse(record['result'],record['http_status'])
+        except asyncio.TimeoutError:
+            return pending(identifier)
     # Publish concrete paths and a copyable payload instead of a catch-all route.
     from fastapi.openapi.utils import get_openapi
     def schema():

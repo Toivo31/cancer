@@ -64,3 +64,29 @@ class TensorSharingTests(unittest.TestCase):
         self.assertEqual(output['tokens_used'],3)
         self.assertIsInstance(full.language_model.lm_head,nn.Identity)
         with self.assertRaises(ValueError):runner.generate([],max_new_tokens=17)
+
+    def test_generation_cache_reuses_only_identical_prompt_and_budget(self):
+        from torch import nn
+        full=self.make_full();reference=capture_unadapted_branch(full,last_n=1)
+        full.language_model.original_head=reference.vocabulary_head
+        full.language_model.lm_head=nn.Identity()
+        calls=[];original=full.language_model.generate
+        def generate(**kwargs):calls.append(1);return original(**kwargs)
+        full.language_model.generate=generate
+        import torch
+        class Tokenizer:
+            pad_token_id=0;eos_token_id=1
+            def apply_chat_template(self,*args,**kwargs):return 'prompt'
+            def __call__(self,*args,**kwargs):return dict(input_ids=torch.tensor([[2,3]]))
+            def decode(self,*args,**kwargs):return '{"summary":"Visible facts only."}'
+        runner=SharedNemotronGenerator(full,Tokenizer(),reference,lock=threading.Lock())
+        messages=[dict(role='user',content='patient A source version1')]
+        first=runner.generate(messages,max_new_tokens=3)
+        again=runner.generate(messages,max_new_tokens=3)
+        self.assertEqual((first['tokens_generated'],again['tokens_generated']),(3,0))
+        self.assertTrue(again['cache_hit']);self.assertEqual(len(calls),1)
+        runner.generate([dict(role='user',content='patient A source version2')],max_new_tokens=3)
+        runner.generate(messages,max_new_tokens=2)
+        self.assertEqual(len(calls),3)
+        self.assertIsInstance(full.language_model.lm_head,nn.Identity)
+

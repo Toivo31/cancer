@@ -32,6 +32,14 @@ job and returns the completed result. A custom request file can be passed with
 `--request visible-case.json`; tools are disabled for custom patients because
 the bundled synthetic record is unrelated to them.
 
+For the quickest webpage integration, embed the working interface (saved examples
+load by default; no upload UI and no automatic GPU call):
+
+```html
+<iframe title="Decision review" loading="lazy" style="width:100%;height:1000px;border:0"
+  src="https://cancer123--birch-decision-1138-demo.us-east.modal.run/decision"></iframe>
+```
+
 For a webpage, use the SDK from this repo:
 
 ```js
@@ -71,7 +79,7 @@ All paths below start with `/api/decision`:
 | POST | `/decisions/{id}/review` | Separate human correction/acceptance |
 | GET | `/jobs/{id}` | Poll an accepted job |
 
-Live operations return HTTP202 with `{delivery:"pending", job_id, status_url}`.
+Quick live operations can return HTTP200 directly. Longer operations return HTTP202 with `{delivery:"pending", job_id, status_url}`.
 Poll `GET /api/decision` + `status_url` about once per second. Completion returns
 HTTP200 and the normal endpoint result; failure returns its HTTP error/detail.
 Do not replay a POST while its job is pending. Cold loading can take several
@@ -100,9 +108,17 @@ executed. Only visible tool results can enter the final scoring context.
 The teammate's `jev.birch.BirchBackend` on `overnight/sim` expects synchronous
 responses from a localhost proxy and deliberately rejects raw Modal URLs.
 Keep its URL at `http://127.0.0.1:8771`: the updated secretless local proxy waits
-for the hosted job and returns its usual decision object. No `jev/` files need
-changing. Set `BirchBackend(timeout=660)` for cold starts (its older default is
-160seconds). Keep the existing call budget/cache/visible-record checks. This
+for the hosted job and returns its usual decision object. The older adapter defaults to step1138 in its metadata and does not separate its cache by checkpoint. Use the included bridge without changing
+teammate-owned `jev/` files:
+
+```python
+from decision_api.jev_bridge import backend, policy
+model = backend()  # localhost8771, checkpoint2350, timeout660
+# Or: model_policy = policy(world, max_calls=20)
+```
+
+The bridge separates the cache by checkpoint/hash, rejects cached1138 results, and verifies live step/hash before accepting scores. If using `BirchBackend` directly, set checkpoint2350 and timeout660 and use a new checkpoint-specific cache directory.
+Its older defaults are checkpoint1138 and timeout160seconds. Keep the existing call budget/cache/visible-record checks. This
 migration does not alter simulator state or bulk-run model scoring.
 
 ## Owner deployment
@@ -114,7 +130,40 @@ migration does not alter simulator state or bulk-run model scoring.
 Only the owner needs Modal credentials and the existing `birch-inference`
 secret. `runtime/decision_model/` is an isolated inference source snapshot,
 with the reference branch enabled; it does not overwrite teammate model code or
-any training working tree. Checkpoint1138 remains pinned and checksum-verified.
+any training working tree. Checkpoint2350 remains pinned and checksum-verified.
 The inference URL remains authenticated. The public gateway has no image upload
 route and keeps the API key server-side. Overnight pausing remains with the
 team; no schedule has been installed.
+
+
+## Checkpoint selection
+
+Live scoring now pins `birch07-refine-v3/checkpoint-00002350`, with trainable SHA256
+`22570c201a9e3d25dcdf7aa904770a568328e034ccb5ac89623784707a7323e8`.
+The legacy app/URL name contains1138 for compatibility; use response
+`backend.step` and `checkpoint_sha256` for the actual identity. The default saved examples and native reasoning recording have been refreshed with actual2350 outputs. Original1138 recordings are retained in `web/precomputed-1138.json` and `web/precomputed-reasoning-1138.json`; never relabel them as2350. The2366 experimental reasoning
+pilot was considered but its paired raw check fell from29/40 to25/40;2350 was
+chosen for this demo. This small screen does not prove general model quality.
+
+
+Deployment checks and limitations: [validation/README.md](validation/README.md), with the recorded2350 provenance and GPU report in `validation/step2350.json`.
+
+
+## Efficient inference
+
+Reasoning stays off by default. When enabled, a bounded64-entry in-memory cache
+reuses deterministic pretrained-head outputs only for an identical complete
+message history and remaining token budget. Actual patient tools execute again;
+changed source results invalidate the generated summary. `tokens_used` charges
+the output budget even on a cache hit; `tokens_generated` reports actual new
+model tokens, and `generation_cache_hits` identifies reuse in the UI/trace.
+
+The classifier continues to reuse bounded context/candidate embeddings while
+creating a new decision and audit record. Registered IDs for the three fixed
+images are reused, avoiding duplicate file writes and preparation round trips.
+The gateway returns completed fast calls directly instead of forcing a job poll.
+
+An experimental batching path changed some relative scores by up to0.0127 in
+the synthetic checks. It was removed; production retains the original independent
+encoding shapes. Fresh-context generation and scale-to-zero cold starts still
+have their original model-compute/startup costs.

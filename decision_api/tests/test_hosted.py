@@ -8,14 +8,19 @@ class HostedTests(unittest.TestCase):
     def test_job_polls_without_replaying_inference_and_public_metadata(self):
         from fastapi.testclient import TestClient
         from decision_api.hosted import create_app
+        import threading
+        ready=threading.Event()
         class Fake:
             def __init__(self):self.calls=[]
             def call(self,method,route,body=None):
-                self.calls.append((method,route,body));return {'answer':route}
+                self.calls.append((method,route,body))
+                if route=='/reason':ready.wait(5)
+                return {'answer':route}
         api=Fake();client=TestClient(create_app(api))
         self.assertEqual(client.get('/api/decision/examples').json(),{'answer':'/examples'})
         result=client.post('/api/decision/reason',json={'example_id':'pathway'});
         self.assertEqual(result.status_code,202)
+        ready.set()
         url='/api/decision'+result.json()['status_url']
         for _ in range(100):
             result=client.get(url)
@@ -25,6 +30,9 @@ class HostedTests(unittest.TestCase):
         self.assertEqual(sum(route=='/reason' for _,route,_ in api.calls),1)
         self.assertEqual(client.get(url).json(),result.json())
         self.assertEqual(client.post('/api/decision/score',json={'context':'x'*12001}).status_code,422)
+        fast=client.post('/api/decision/score',json={'context':'Visible'})
+        self.assertEqual(fast.status_code,200);self.assertEqual(fast.json(),{'answer':'/score'})
+        self.assertEqual(sum(route=='/score' for _,route,_ in api.calls),1)
         self.assertEqual(client.post('/api/decision/unknown',json={}).status_code,404)
         self.assertEqual(client.get('/decision-assets/client.js').status_code,200)
         self.assertEqual(client.options('/api/decision/reason',headers={'Origin':'https://demo.example','Access-Control-Request-Method':'POST','Access-Control-Request-Headers':'content-type'}).headers['access-control-allow-origin'],'*')

@@ -42,6 +42,7 @@ class DecisionAPI:
         self.mode, self.base_url, self.api_key = mode, base_url.rstrip('/'), api_key.strip()
         self.opener = opener or build_opener(NoRedirect())
         self.fixture = None
+        self._prepared_samples = {}
         if mode == 'fixture':
             from .fixture import Fixture
             self.fixture = Fixture()
@@ -90,6 +91,13 @@ class DecisionAPI:
                 raise APIError(503, 'Model unavailable or still starting. Retry shortly; no substitute scores generated.') from None
         raise APIError(503,'Model result wait timed out; do not automatically resubmit the request')
 
+    def prepare_sample(self,sample):
+        if self.fixture:return self.fixture.prepare(sample)
+        identifier=sample['id']
+        if identifier not in self._prepared_samples:
+            self._prepared_samples[identifier]=self.remote('/demo/samples/'+identifier+'/prepare',{})
+        return dict(self._prepared_samples[identifier])
+
     def reasoning_call(self, body, *, preview=False):
         from .reasoning import refine,settings,PatientTools,DemoGenerator
         if not isinstance(body,dict) or set(body)-{'request','example_id','patient','as_of_step','reasoning'}:
@@ -116,7 +124,7 @@ class DecisionAPI:
         if cfg['enabled'] and not preview and self.fixture is None and not catalog['reasoning']['live_available']:
             raise APIError(503,'Live shared-base refinement is not enabled yet; use the labelled tool preview or turn reasoning off')
         if sample and not preview:
-            asset=self.fixture.prepare(sample) if self.fixture else self.remote('/demo/samples/'+sample['id']+'/prepare',{})
+            asset=self.prepare_sample(sample)
             request['image_ids']=[asset['id']]
         step=body.get('as_of_step',request.get('case',{}).get('step',1))
         patient=body.get('patient','sim:demo-record')
@@ -159,7 +167,7 @@ class DecisionAPI:
             if not isinstance(body, dict) or set(body)-{'context', 'case_id', 'questions'}:
                 raise APIError(422, 'Photo examples accept only context, case_id and questions')
             example = next(s for s in self.examples()['photos']['examples'] if s['id'] == sample[1])
-            asset = self.fixture.prepare(example) if self.fixture else self.remote('/demo/samples/'+sample[1]+'/prepare', {})
+            asset = self.prepare_sample(example)
             payload = dict(self.examples()['score'], context=asset['context'], image_ids=[asset['id']], case_id='demo-'+sample[1])
             payload.update(body)
             return self.fixture.score(payload) if self.fixture else self.remote('/v1/score', payload)

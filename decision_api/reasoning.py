@@ -95,7 +95,7 @@ def refine(request, *, options=None, tools=None, generator=None):
     context = base_context(original)
     if not isinstance(context,str) or not context.strip(): raise ValueError('Visible context required')
     result = dict(enabled=options['enabled'], mode='disabled', original_context=context, context=context,
-                  tokens_used=0, rounds_used=0, tool_calls_used=0, trace=[], source_ids=[],
+                  tokens_used=0, tokens_generated=0, generation_cache_hits=0, rounds_used=0, tool_calls_used=0, trace=[], source_ids=[],
                   budget={k:options[k] for k in ('max_tokens','max_rounds','max_tool_calls','max_context_chars')},
                   stop_reason='disabled', includes_question=False)
     if not options['enabled']: return dict(request=original,refinement=result)
@@ -120,8 +120,11 @@ def refine(request, *, options=None, tools=None, generator=None):
         response=generator.generate(messages,max_new_tokens=remaining)
         used=response['tokens_used']
         if type(used) is not int or not 0<=used<=remaining: raise ValueError('Generator exceeded token budget')
-        result['tokens_used']+=used;result['rounds_used']+=1
-        event=dict(round=index+1,tokens_used=used)
+        generated=response.get('tokens_generated',used)
+        if type(generated) is not int or not 0<=generated<=used:raise ValueError('Invalid generated token accounting')
+        hit=response.get('cache_hit',False) is True
+        result['tokens_used']+=used;result['tokens_generated']+=generated;result['generation_cache_hits']+=int(hit);result['rounds_used']+=1
+        event=dict(round=index+1,tokens_used=used,tokens_generated=generated,generation_cache_hit=hit)
         try: action=json.loads(response['text'])
         except (ValueError,TypeError): action=None
         if not isinstance(action,dict):

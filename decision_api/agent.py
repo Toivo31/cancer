@@ -12,7 +12,7 @@ def call(route, payload=None, *, base_url=TEAM_URL, timeout=660):
     method='GET' if payload is None else 'POST'
     while True:
         remaining=deadline-time.monotonic()
-        if remaining<=0:raise TimeoutError('Accepted job still pending; do not automatically resubmit inference')
+        if remaining<=0:raise TimeoutError(f'Job {route} may still be pending; poll that job before submitting inference again')
         request=Request(base_url.rstrip('/')+'/api/decision'+route,
             data=None if payload is None else json.dumps(payload).encode(),
             headers={'Content-Type':'application/json'},method=method)

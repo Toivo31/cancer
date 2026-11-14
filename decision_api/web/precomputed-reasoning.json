@@ -1,17 +1,17 @@
 {
   "delivery": "precomputed",
-  "recorded_at": "2026-11-14T17:49:00Z",
-  "description": "Actual Modal checkpoint1138 native pretrained-head refinement, not scripted. Synthetic records only. Generated summary makes an unsupported action recommendation; not clinical validation.",
+  "recorded_at": "2026-11-14T18:11:59.216687+00:00",
+  "description": "Actual Modal checkpoint2350 native pretrained-head refinement with synthetic records. Generated text is fallible, not a source record.",
   "decision": {
-    "id": "d41bd43c587a44779af052f896e4dd20",
-    "created_at": "2026-11-14T17:48:52.222736+00:00",
+    "id": "fdae54fdef214f53bb979a8cabd51798",
+    "created_at": "2026-11-14T18:11:57.145786+00:00",
     "case_id": "sanity-synthetic-pathway",
     "backend": {
       "model": "nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-BF16",
       "revision": "fb0ee0bc6b3f70342afd8d84cb80dbadbaa8a1fe",
-      "training_identity": "0874771d4646ff78946d85e5f8195eceb2daa76957cb2008b5c380ecdc85f75e",
-      "step": 1138,
-      "checkpoint_sha256": "43ff62d125eef476fffbd32aaf43ee9130a5ec7212c973592aa91625b3e883a5",
+      "training_identity": "003086694525587bde55201db3713f64f434df916492669a2836b871cc7d089d",
+      "step": 2350,
+      "checkpoint_sha256": "22570c201a9e3d25dcdf7aa904770a568328e034ccb5ac89623784707a7323e8",
       "quantization": "nf4-experts-merged-adapters",
       "mode": "model"
     },
@@ -26,27 +26,27 @@
           {
             "id": "review",
             "text": "Review the available history with the clinician",
-            "score": 0.40891924500465393
+            "score": 0.28804075717926025
           },
           {
             "id": "complete-intake",
             "text": "Request the missing intake information",
-            "score": 0.5910807251930237
+            "score": 0.7119592428207397
           }
         ],
         "proposed_action_id": "complete-intake",
-        "score_margin": 0.18216148018836975
+        "score_margin": 0.4239184856414795
       }
     ],
     "cache": {
       "enabled": true,
       "context_hits": 0,
-      "candidate_hits": 0,
+      "candidate_hits": 2,
       "candidate_count": 2,
-      "bytes": 196608,
+      "bytes": 327680,
       "max_bytes": 67108864
     },
-    "latency_ms": 6298.152,
+    "latency_ms": 3538.262,
     "pathway": {
       "workflow_id": "synthetic-intake",
       "workflow_version": "1",

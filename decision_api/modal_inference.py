@@ -1,7 +1,7 @@
 """Separate, scale-to-zero inference for the explicitly selected HF checkpoint.
 
-Stage weights on CPU: python -m modal run deploy/modal_inference.py
-Deploy API + /demo:   python -m modal deploy deploy/modal_inference.py
+Stage weights on CPU: python -m modal run decision_api/modal_inference.py
+Deploy API + /decision: python -m modal deploy decision_api/modal_inference.py
 No training instance, source, checkpoint or timer is modified.
 """
 import os
@@ -10,12 +10,13 @@ import modal
 
 ROOT = Path(__file__).resolve().parents[1]
 BUCKET = 'Toivo31/project-birch-03'
-PREFIX = 'birch04-run-v1/checkpoint-00001138'
+STEP = 2350
+PREFIX = 'birch07-refine-v3/checkpoint-00002350'
 MODEL = 'nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-BF16'
 REVISION = 'fb0ee0bc6b3f70342afd8d84cb80dbadbaa8a1fe'
-STATE_SHA256 = '18af7a9b7b979cf98a11fc9f8012e3a1cc04707d77e9dbb389a172da0d2d7ff7'
-WEIGHTS_SHA256 = '43ff62d125eef476fffbd32aaf43ee9130a5ec7212c973592aa91625b3e883a5'
-CHECKPOINT = Path('/weights/checkpoint-00001138')
+STATE_SHA256 = 'f5951fb2c51e6a437dde6717e467fd38aa5b164afba524ee65d2db225cb6baab'
+WEIGHTS_SHA256 = '22570c201a9e3d25dcdf7aa904770a568328e034ccb5ac89623784707a7323e8'
+CHECKPOINT = Path('/weights/checkpoint-00002350')
 app = modal.App('birch-decision-1138')
 weights = modal.Volume.from_name('birch-inference-weights', create_if_missing=True)
 data = modal.Volume.from_name('birch-inference-reviews', create_if_missing=True)
@@ -59,7 +60,7 @@ def verify_checkpoint(path):
         if actual != digest:
             raise ValueError('Pinned checkpoint content mismatch: '+name)
     state = json.loads((path/'state.json').read_text())
-    if (state['state']['step'] != 1138 or state['config']['model'] != MODEL
+    if (state['state']['step'] != STEP or state['config']['model'] != MODEL
             or state['config']['revision'] != REVISION):
         raise ValueError('Unexpected checkpoint identity')
 
@@ -77,7 +78,7 @@ def stage_weights():
     snapshot_download(MODEL, revision=REVISION, max_workers=8,
                       allow_patterns=['*.safetensors', '*.json', '*.py', '*.jinja', '*.model', '*.txt', '*.tiktoken'])
     weights.commit()
-    print('Pinned base and checkpoint 1138 staged and verified; no GPU allocated.')
+    print(f'Pinned base and checkpoint {STEP} staged and verified; no GPU allocated.')
 
 
 @app.cls(image=image, secrets=[secret], volumes={'/weights': weights, '/data': data},
@@ -100,7 +101,7 @@ class Inference:
         model = load_nf4_predictor(CHECKPOINT, enable_refinement=True)
         record = json.loads((CHECKPOINT/'state.json').read_text())
         metadata = dict(model=MODEL, revision=REVISION, training_identity=record['identity'],
-                        step=1138, checkpoint_sha256=WEIGHTS_SHA256,
+                        step=STEP, checkpoint_sha256=WEIGHTS_SHA256,
                         quantization='nf4-experts-merged-adapters')
         self.predictor = CachedPredictor(model, metadata, cache_bytes=64*1024**2)
         self.predictor.predict('Synthetic integration warmup.', [dict(
@@ -108,7 +109,7 @@ class Inference:
             choices=['Review available history', 'Request missing information'])])
         torch.cuda.synchronize()
         torch.cuda.empty_cache()
-        print('Live checkpoint 1138 loaded and warmed; creating GPU snapshot for future cold starts.')
+        print(f'Live checkpoint {STEP} loaded and warmed; creating GPU snapshot for future cold starts.')
 
     @modal.enter()
     def open_store(self):
@@ -122,7 +123,7 @@ class Inference:
             shutil.copyfile(snapshot, self.local_db)
         self.store = DecisionStore(self.local_db)
         self.service = DecisionService(self.predictor, self.store, ImageStore('/data/images'))
-        print('Live checkpoint 1138 ready; fixture fallback is disabled.')
+        print(f'Live checkpoint {STEP} ready; fixture fallback is disabled.')
 
     @modal.method()
     def warmup(self):
@@ -153,8 +154,35 @@ class Inference:
             assert tail_ids==[id(layer) for layer in encoder_of(generator.full).layers[-7:]]
             assert head is generator.full.language_model.lm_head
             assert prefix_ids==[id(p) for layer in encoder_of(generator.full).layers[:-7] for p in layer.parameters()]
-            return dict(refinement=refined['refinement'],generation_seconds=elapsed,classifier_before=before,classifier_after=after,max_score_error=error,shared_prefix=True,decision_branch_restored=True,allocated_gib=torch.cuda.memory_allocated()/1024**3,peak_gib=torch.cuda.max_memory_allocated()/1024**3)
+            return dict(checkpoint=self.predictor.metadata,refinement=refined['refinement'],generation_seconds=elapsed,classifier_before=before,classifier_after=after,max_score_error=error,shared_prefix=True,decision_branch_restored=True,allocated_gib=torch.cuda.memory_allocated()/1024**3,peak_gib=torch.cuda.max_memory_allocated()/1024**3)
         finally:self.predictor.limit=limit
+
+    @modal.method()
+    def performance(self):
+        import time, torch
+        from decision_api.reasoning import refine, PatientTools
+        previous_limit=self.predictor.limit
+        context='Synthetic performance check: changing skin lesion, no diagnosis.'
+        questions=[dict(question='What information is available for review?',choices=['Available history','Missing test results'])]
+        def timed():
+            torch.cuda.synchronize();start=time.perf_counter()
+            result=self.predictor.predict(context,questions)
+            torch.cuda.synchronize()
+            return dict(seconds=time.perf_counter()-start,probabilities=result['probabilities'],cache=result['cache'])
+        self.predictor.cache.clear();self.predictor.bytes=0
+        first=timed();cached=timed()
+        assert first['probabilities']==cached['probabilities']
+        request=dict(context=context,questions=[dict(id='next',text=questions[0]['question'],choices=[dict(id='history',text=questions[0]['choices'][0]),dict(id='tests',text=questions[0]['choices'][1])])])
+        generator=self.predictor.model.base_generator;generator.response_cache.clear()
+        generations=[]
+        for _ in range(2):
+            start=time.perf_counter()
+            result=refine(request,options=dict(enabled=True,max_tokens=128,additional_prompt='Retrieve available history, then give a short evidence summary.'),tools=PatientTools('sim:demo-record'),generator=generator)['refinement']
+            generations.append(dict(seconds=time.perf_counter()-start,refinement=result))
+        assert generations[0]['refinement']['context']==generations[1]['refinement']['context']
+        assert generations[1]['refinement']['generation_cache_hits']>0
+        assert generations[1]['refinement']['tool_calls_used']==generations[0]['refinement']['tool_calls_used']
+        return dict(checkpoint=self.predictor.metadata,first_score=first,cached_score=cached,generation=generations,peak_gib=torch.cuda.max_memory_allocated()/1024**3)
 
     def persist(self):
         import sqlite3
