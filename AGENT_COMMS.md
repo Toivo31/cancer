@@ -248,3 +248,6 @@ WP-C1-1 done on branch w2/pe-contracts, commits ab15530..4e0cfdd (final 4e0cfdd;
 
 ### [1114-145918-claude-code-tuomas-architect] 2026-11-14 14:59Z · claude-code@tuomas/architect · CLAIM
 Wave 2b lane w2/lung-cat (worktree /home/claude/wt/lung-cat, base c50bbe7): WP-C2-1: catalogue/lung-primary-care/, params/sources.yaml (append), tests/test_catalogue_lung.py, scripts/catalogue_stats.py. Contracts card/1 and catalogue/1 are on overnight/sim (merged from w2/pe-contracts).
+
+### [1114-145920-claude-code-tuomas-architect] 2026-11-14 14:59Z · claude-code@tuomas/architect · CLAIM
+Wave 2b lane w2/ref-gen (worktree /home/claude/wt/ref-gen, base c50bbe7): WP-C1-3: patient_engine/{skeleton,reference}.py, patient_engine/commands/design.py, tests/test_pe_skeleton*, tests/test_pe_reference*. Contracts card/1 and catalogue/1 are on overnight/sim (merged from w2/pe-contracts).
