@@ -25,13 +25,15 @@ Calibrated scenario used downstream: `scenarios/generated/stokstad_calibrated.ya
 
 ## Result
 
+**Read with the Robustness section below: the first grid's ranges are the narrow corner of a wider band.**
+
 11 of 192 grid points reproduce the observed pathway (share 0.40 ± 0.04, median 46.5 ± 2.5 d).
 
 | Flowchart | Published | Simulated (11 accepted sets) | Verdict |
 |---|---|---|---|
 | Observed (calibrated) | 40%, median 46.5 d | 36–43%, median ~46 d | fitted |
 | PET-CT ≤ 7 days only | 48% (95% CI 39–58), n.s. | **55–67%** (median 62%) | over-predicts |
-| Authors' optimal pathway | 80% (95% CI 72–87) | **78–86%** (median 83%) | **matches** |
+| Authors' optimal pathway | 80% (95% CI 72–87) | **78–86%** (median 83%) on this first grid; **62–86%** (median 75%) on the extended grid, see Robustness | consistent |
 | Sampling procedures, optimal / observed | 92 / 112 = 0.82 | 0.80 / 0.98 = 0.82 | matches |
 
 Seed-averaged check on the best fit (50 × 100 patients): observed 40.6%, faster PET 59.4%,
