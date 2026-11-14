@@ -84,6 +84,16 @@ def test_no_unused_sources():
     for path in PARAM_FILES:
         for _, p in walk(load(path)):
             used.add(p["source"])
+    # Sources cited by the clinical catalogues count too (WP-C2-1 added the catalogue's sources).
+    from patient_engine.catalogue import load_catalogue
+    root = Path(__file__).resolve().parent.parent
+    for cat_dir in sorted((root / "catalogue").iterdir()) if (root / "catalogue").is_dir() else []:
+        if cat_dir.is_dir() and not cat_dir.name.startswith("_"):
+            used |= set(load_catalogue(cat_dir).sources_used())
+            # ids cited in notes (pooled alternatives, low/high bounds) count as used too
+            text = "\n".join(f.read_text() for f in cat_dir.rglob("*.yaml"))
+            text += "\n".join(f.read_text() for f in (root / "docs" / "research" / "catalogue").glob("*.md"))
+            used |= {sid for sid in source_ids() if sid in text}
     unused = source_ids() - used
     # Sources may support only claims in docs; just require that most are used.
     assert len(unused) <= 3, f"unused sources: {sorted(unused)}"
