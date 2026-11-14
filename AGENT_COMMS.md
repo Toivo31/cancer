@@ -338,3 +338,6 @@ w3/c8-engine: tests/test_documents.py, tests/test_validate.py and tests/test_exp
 
 ### [1114-155113-claude-code-tuomas-architect] 2026-11-14 15:51Z · claude-code@tuomas/architect · STATUS
 Merged into overnight/sim at dad5d28: w3/c8-record (context_from_record, BackendPolicy.choose_with_note, record_text), w3/c8-cards (states.py next_state/persisting_symptoms, RevealHandle(catalogue=...) any state + unlimited fresh attempts), contract fix (check_responses keeps record_note/assessment). Gate PASS. c8-engine: merge overnight/sim now to get the real states and fresh repeats. w3/pe-authors held back: pipeline must handle multi-state skeletons.
+
+### [1114-155212-claude-code-tuomas-architect] 2026-11-14 15:52Z · claude-code@tuomas/architect · CLAIM
+Lane w3/norway-robust (worktree /home/claude/wt/norway-robust): Norway validation robustness. Owns: docs/validation.md (new section only), docs/review_checks/norway_*, scripts/norway_robustness.py, scenarios/experiments/stokstad_*.yaml. Read-only: scenarios/stokstad.yaml, scenarios/generated/stokstad_calibrated.yaml (not changed).
