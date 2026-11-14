@@ -112,6 +112,24 @@ def guardrails(m: dict, base: dict, cfg: Config) -> list[str]:
     return bad
 
 
+def records_reading(c: Edit, fc: Flowchart) -> str:
+    """One plain line on what ``predicted_days_saved`` means for this kind of change."""
+    from .edits import label
+    d = round(c.score, 1)
+    if c.kind in ("detach", "relax"):
+        other = c.other.split("/")[-1] if c.other else ""
+        what = label(fc, other).lower() if other in fc.nodes else other
+        return (f"In the records, the step '{label(fc, c.target).lower()}' was held back by {what}: "
+                f"on average {d} days per patient on the critical path")
+    if c.kind == "standardise":
+        return (f"In the records, patients for whom '{label(fc, c.other).lower()}' was chosen left the pathway "
+                f"sooner; spread over everyone else that is about {d} days per patient (a biased, unadjusted comparison)")
+    if c.kind == "fast_track":
+        return (f"In the records, patients spent on average {round(2 * c.score, 1)} days in appointment queues after "
+                f"'{label(fc, c.target).lower()}'; half of that is counted as the possible saving")
+    return ""
+
+
 def _gains(m: dict, cur_m: dict) -> list[float]:
     return [a - b for a, b in zip(m["cohort_objectives"], cur_m["cohort_objectives"])]
 
@@ -178,7 +196,8 @@ def search(sc: Scenario, start: Flowchart | str, cfg: Config | None = None, log=
             c.evidence = {"predicted_days_saved": round(c.score, 2),
                           "train_on_time_before": cur_m["share_within_target"], "train_on_time_after": m["share_within_target"],
                           "train_median_before": cur_m["median_days_to_treatment"], "train_median_after": m["median_days_to_treatment"],
-                          "accepted_together_with": [x.plain for x in cs if x is not c]}
+                          "accepted_together_with": [x.plain for x in cs if x is not c],
+                          "records_reading": records_reading(c, cur)}
             steps.append(c)
         log(f"step {step + 1}: accept {' + '.join(f'{c.kind}({c.target}, {c.other})' for c in cs)} -> on-time "
             f"{m['share_within_target']:.3f}, median {m['median_days_to_treatment']} d  [{' + '.join(c.plain for c in cs)}]")

@@ -204,7 +204,9 @@ def why_text(step: dict) -> dict:
     ev = step.get("evidence") or {}
     d = ev.get("predicted_days_saved")
     kind = step["kind"]
-    if kind in ("detach", "relax"):
+    if ev.get("records_reading"):
+        read = ev["records_reading"] + "."
+    elif kind in ("detach", "relax"):
         read = f"In the clinic records, patients waited on average {d} days for this step while it held back on an earlier one" if d else ""
     else:
         read = f"The clinic records point to about {d} days of average waiting at this point" if d else ""
