@@ -2,6 +2,7 @@
 
 Four entries: Modal, Nemotron, Gemini API, Verda. Everything below is from the repo (`decision_api/`, `note_reader/`, `technique_classifier/`, `video/`). Items marked **[VERIFY]** need a teammate to confirm before they go in the submission form; **[BUILD]** is work that would make the entry stronger.
 
+Live site: https://cancer123--equal-care-pathways-web.us-east.modal.run/
 Video: https://vimeo.com/1246920559/41ca86218a?share=copy&fl=sv&fe=ci
 
 ## One sentence for the judges
@@ -12,7 +13,7 @@ Equal Care Pathways is a transparent framework for automating cancer care: clini
 
 **What we have** (`decision_api/modal_inference.py`, `HOSTED_API.md`)
 - Native inference of a fine-tuned Nemotron 3.5 Super VL (120B, A12B) on one Modal GPU (RTX PRO 6000, 320 GB RAM), weights on a Modal Volume, GPU memory snapshots enabled for fast cold start.
-- A public, credential-free gateway on Modal in front of it (job queue, polling, rate limits), so a judge can open one URL: `https://cancer123--birch-decision-1138-demo.us-east.modal.run/decision`.
+- A public, credential-free site on Modal, so a judge opens one URL: **https://cancer123--equal-care-pathways-web.us-east.modal.run/**. It has three parts: the pathway animation (saved synthetic routes), the **Decision studio** (live inference on Modal with our trained Nemotron decision head: text, a prepared photo, or your own question) and a discussion section. Behind it, a gateway (job queue, polling, rate limits) fronts the model.
 - Measured on the live checkpoint (`validation/performance2350.json`): first score 3.4 s, cached score 0.2 s; a tool-using evidence summary about 22 s (84 tokens, one tool call); 78 GiB GPU memory.
 
 **Honest gaps** (the criteria name Sandboxes, training and scaling out)
@@ -41,12 +42,17 @@ Equal Care Pathways is a transparent framework for automating cancer care: clini
 ## Gemini API (open challenge: problem, integration, what is innovative, why Gemini)
 
 **What we have (honest)**
-- Gemini made the video's narration (Gemini text-to-speech) and the still images. Google DeepMind confirmed in #google-deepmind that any use of Gemini counts.
-- It is not part of the product itself.
+- The submission video is made with the Gemini API: the narration is Gemini text-to-speech (`gemini-2.5-pro-preview-tts`, voice Orus, with a style prompt for a natural presenter), generated line by line from a script file (`video/generated/script_v3.json`, `tts.py`). Early drafts also used Gemini image generation (`gemini-3-pro-image`) for stills; those were cut from the final white cut.
+- Around that: word-level timing from Whisper, a timeline builder that re-syncs every scene to any new recording, and a renderer. Changing a script line regenerates the voice and the whole timeline in one command, which is why the video could be revised dozens of times in one night.
+- Google DeepMind confirmed in #google-deepmind that any use of Gemini counts.
+- It is not part of the decision model or the note reader. Do not claim otherwise.
+- **[VERIFY]** If the team records its own voice, the final video no longer contains Gemini output. Decide before submitting.
 
-**To win**
-- **[BUILD]** Use Gemini inside the product, for example to generate the synthetic patient notes for the patient engine (the plan already has an LLM writing patient cards), and describe that pipeline.
-- Otherwise enter with a short, factual paragraph and claim nothing more.
+**Why Gemini matters here:** a small team could produce and revise a narrated explainer in hours instead of days, with a repeatable pipeline. This is a production use, not a product feature; say so plainly.
+
+**To win (optional)**
+- **[BUILD]** Use Gemini inside the product, for example to write the synthetic patient notes for the patient engine, and describe that pipeline.
+- Or keep the Gemini voice in the final video and enter with the honest paragraph above.
 
 ## Verda (25% ambition, 25% fit, 25% working prototype and documentation, 25% path to scale)
 
