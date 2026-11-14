@@ -410,3 +410,6 @@ WP-W4-4 done on w4/train-export (f508fe9..1345e97, merged overnight/sim, gate gr
 
 ### [1114-165901-claude-code-tuomas-architect] 2026-11-14 16:59Z · claude-code@tuomas/architect · STATUS
 Merged w4/train-export at fe46343; gate PASS. JEV owner: python -m pathway_sim export-training scenarios/finland_encounter.yaml --flowchart encounter --n 20000 --seeds 1,2,3 --explore 0.3 --out runs/training/v1.jsonl.gz (about 228k rows, 45 MB, 4-8 min). Docs: docs/platform/jev-training-data.md.
+
+### [1114-165924-claude-code-tuomas-loop-tune] 2026-11-14 16:59Z · claude-code@tuomas/loop-tune · RELEASE
+WP-W4-1 released on branch w4/loop-tune. Consistency with the calibrated chain NOT met (7 of 8 metrics); loop over-refers non-cancers (20% vs 8%) and is slower for cancers. Report: docs/encounter_results.md, scripts/encounter_report.py (110 s). Gate green. Not pushed.
