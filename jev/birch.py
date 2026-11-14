@@ -21,6 +21,8 @@ the record so the log shows who proposed what.
 
 from __future__ import annotations
 
+import re
+
 import hashlib
 import http.client
 import json
@@ -92,7 +94,26 @@ def _payload_text(payload: dict):
     yield from walk(payload, "$")
 
 
-def check_visible(payload: dict, forbidden_values: frozenset | set = frozenset()) -> None:
+def public_phrases(catalogue, care=None) -> frozenset:
+    """Labels the record legitimately shows (test, output, variable and action labels). A condition
+    word inside one of these (\"Spirometry with reversibility (definitive for COPD, asthma)\") is public
+    catalogue text, not a leak, so the id check ignores it."""
+    out = set()
+    for t in getattr(catalogue, "tests", {}).values():
+        out.add(getattr(t, "label", "") or "")
+        out.add(t.id.replace("_", " "))
+        for o in getattr(t, "outputs", ()):
+            out.add(getattr(o, "label", "") or "")
+            out.add(o.id.replace("_", " "))                 # record_text falls back to the output id
+    for v in getattr(catalogue, "variables", {}).values():
+        out.add(getattr(v, "label", "") or "")
+    for a in getattr(care, "actions", {}).values() if care is not None else ():
+        out.add(getattr(a, "label", "") or "")
+    return frozenset(x for x in out if x)
+
+
+def check_visible(payload: dict, forbidden_values: frozenset | set = frozenset(),
+                  public: frozenset | set = frozenset()) -> None:
     """Refuse a payload with hidden-side names, future evidence, or a forbidden id (invariant I1).
 
     Keys are checked at every level against :data:`FORBIDDEN_KEYS`. ``forbidden_values`` (the catalogue's
@@ -110,9 +131,13 @@ def check_visible(payload: dict, forbidden_values: frozenset | set = frozenset()
             raise BirchVisibilityError(f"evidence {e.get('source_id')!r} is not available at step {step}")
     if forbidden_values:
         texts = [case.get("context", "")] + [e.get("text", "") for e in case.get("evidence", [])]
+        phrases = sorted(public, key=len, reverse=True)
         for t in texts:
+            t = t.lower()
+            for ph in phrases:                      # public catalogue labels may name a condition
+                t = t.replace(ph.lower(), " ")
             for bad in forbidden_values:
-                if bad in t:
+                if re.search(r"(?<![a-z0-9_])" + re.escape(bad.lower()) + r"(?![a-z0-9_])", t):
                     raise BirchVisibilityError(f"condition id {bad!r} in the text sent to the model")
 
 
@@ -251,6 +276,7 @@ class BirchBackend:
         self.cache_dir = Path(cache_dir) if cache_dir else None
         self.include_assessments, self.allow_non_model = include_assessments, allow_non_model
         self.forbidden_values = frozenset(forbidden_values)
+        self.public_phrases: frozenset = frozenset()
         self.checkpoint = checkpoint
         if not 1 <= int(concurrency) <= MAX_CONCURRENCY:
             raise ValueError(f"concurrency must be between 1 and {MAX_CONCURRENCY}")
@@ -299,7 +325,7 @@ class BirchBackend:
                 self.single_option += 1
             return DecisionResponse(req.request_id, {ids[0]: 1.0}, "single option, model not asked")
         payload = map_request(req, self.include_assessments)
-        check_visible(payload, self.forbidden_values)
+        check_visible(payload, self.forbidden_values, self.public_phrases)
         body = json.dumps(payload, ensure_ascii=False).encode()
         if len(body) > MAX_BODY_BYTES:
             raise BirchError(f"{req.request_id}: request is {len(body)} bytes; the proxy accepts less than 512 KiB")
@@ -445,6 +471,8 @@ class BirchPolicy(BackendPolicy):
         self.vocab, self.care = catalogue, care
         if catalogue is not None and not backend.forbidden_values:
             backend.forbidden_values = frozenset(getattr(catalogue, "conditions", {}))
+        if catalogue is not None and not backend.public_phrases:
+            backend.public_phrases = public_phrases(catalogue, care)
 
     def request_for(self, view, options: list[str]) -> DecisionRequest:
         req = super().request_for(view, options)
@@ -505,4 +533,5 @@ def backend_from_config(cfg: dict) -> BirchBackend:
 def policy_for_world(world, url: str | None = None, **kw) -> BirchPolicy:
     """A Birch policy for an encounter world (``pathway_sim.encounter.load_world``), labels from its care model."""
     be = BirchBackend(url or DEFAULT_URL, forbidden_values=frozenset(world.catalogue.conditions), **kw)
+    be.public_phrases = public_phrases(world.catalogue, getattr(world, "care", None))
     return BirchPolicy(be, catalogue=world.catalogue, care=world.care)
