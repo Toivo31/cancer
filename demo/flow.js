@@ -616,7 +616,7 @@ function aboutCard() {
   const V = S.panes.map(p => p.V);
   let h = `<div class="card"><h3>What you are looking at</h3>
     <p>Each dot is one simulated patient, starting on day 0 at first contact. Dots wait (amber) and are served (blue) at the steps; treated patients land on the right of the last step, mint if in time.</p>
-    <p>Left: the pathway as it runs today. Right: the same patients with the change. Numbers on the graph count every simulated patient (${fmt(S.panes[0].P.F.totals.n)}); the moving dots are a sample of ${S.panes[0].P.F.cohort.size}, and so are the live counters above each graph. The clock is days since each patient's own first contact.</p>`;
+    <p>Left: the pathway as it runs today. Right: the same patients with the change. Numbers on the graph count every simulated patient (${fmt(S.panes[0].P.F.totals.n)}); the moving dots are a sample of ${S.panes[0].P.F.cohort.size}, and so are the live counters above each graph. The clock is days since each patient's own first contact.</p>${S.panes[0].P.F.cohort.strata.other ? `<p>The sample has ${S.panes[0].P.F.cohort.strata.cancer} patients with cancer and ${S.panes[0].P.F.cohort.strata.other} without, so that some reach treatment; in the full run only ${pct(S.panes[0].P.F.totals.n_cancer / S.panes[0].P.F.totals.n, 1)} have cancer.</p>` : ''}`;
   V.forEach((v, i) => { if (v.note) h += `<p><b style="color:${i ? C.mint : C.coral}">${esc(v.label)}.</b> ${esc(v.note)}</p>`; });
   const ch = V[1].changes && V[1].changes.length ? V[1].changes : null;
   if (ch) h += `<p><b>Changes in the right pathway</b><br>${ch.map(esc).join('<br>')}</p>`;
@@ -691,6 +691,7 @@ function init() {
     else if (e.key === 'ArrowLeft') { S.t = Math.max(0, S.t - S.H / 100); }
   });
   $('#legend').innerHTML = `<span><i style="background:${C.amber}"></i>waiting</span><span><i style="background:${C.blue}"></i>being served</span><span><i style="background:${C.mint}"></i>treated in time</span><span><i style="background:#7B8FA3"></i>treated late</span><span><i style="border:1.5px solid ${C.red}"></i>cancer sent home</span>`;
+  document.addEventListener('click', e => { if (e.target.closest && e.target.closest('button')) e.target.closest('button').blur(); });
   window.addEventListener('resize', () => S.panes.forEach(pa => { fit(pa); drawPane(pa, S.t); }));
   if (!S.playing) $('#play').textContent = 'Play';
   requestAnimationFrame(frame);
