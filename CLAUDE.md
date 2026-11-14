@@ -4,6 +4,7 @@ Junction 2026 entry for the AstraZeneca challenge "Equal Care Across Finland".
 
 - `docs/master_plan.md`: the master plan for the decision model and pathway optimiser (goal, evidence, architecture, simulator, judging criteria, open questions). Read it before working on the simulator, optimiser or demo.
 - `docs/plan/README.md`: the planning framework (vision, architecture, components, execution rules for agents, status). Start here for anything on the simulator, patient engine, decision layer, optimiser or platform.
+- `docs/evidence_research.md`: evidence not yet in `params/`, including possible conflicts with current values (lung-specific Finnish diagnosis→treatment 65–69 days vs the 37 used now; lung-specific delay→mortality meta-analysis is null). Worth reading before changing parameters, calibration targets or survival claims in the pitch.
 - `docs/technique_classifier.md`: the technique classifier.
 
 When a decision in the plan changes, update `docs/master_plan.md` in the same change so the team's agents stay in sync.
