@@ -168,7 +168,23 @@ Code is on branch `overnight/sim`; how to run it is in `README.md`. Provisional 
 - **Decision model** (`decision_model/README.md`):
   - On a task where the right answer depends on the set of options, the correction model beats a parameter-matched dot-product model: 84.5 against 78.3 percent accuracy.
   - The "half the compute for a second question" claim was *not* reproduced at our model sizes. Only the context embedding is cached, so a second question costs 76 to 91 percent of the first.
-  - The model does not yet see revealed attributes such as tumour location. It is not yet used in the demo loop.
+  - *Update 14 Nov, wave 2:* the model now runs inside the simulator at the sampling-method choice. It is trained from a random-exploration log on revealed outcomes only (reward = usable result − days/30, a value judgement, D25).
+    - On the Norwegian scenario it rediscovers the location rule (central → bronchoscopy, peripheral → needle biopsy) and ties with it.
+    - On Finland it first sent most patients to the shortest-looking queue and overloaded it (on time 21% → 1–3%). Once it can see queue state, it matches the rule.
+    - Insight for the pitch: a model that optimises each patient separately harms the shared system unless it can see the queues.
+    - Dot-product and correction models show no difference yet, because no scenario varies which options are on offer. The engine now supports that (`availability`, D26), and the comparison-dependent experiment (open question 12) is running.
+- **Wave 2 optimiser** (D22 to D24):
+  - A change must help in each of two training cohorts.
+  - No presentation group may get slower or less often on time.
+  - A two-step lookahead lets it accept pairs of changes that only help together.
+  - Norway: the same four changes as before; held-out 60% → 88%, selection optimism 1.7 points.
+  - Finland: only "fast track every suspected-cancer referral from referral handling onwards" survives; held-out within 90 days 18% → 57%. "GP first instead of nurse first" now fails: it gives more missed cancers and is not better in every cohort.
+- **Sensitivity** (`docs/sensitivity.md`):
+  - Norway: reorder beats observed in 80 of 80 joint draws of the unsourced parameters, with a gain of +32 to +48 points.
+  - Finland: the direction holds but the size is uncertain by about 10 points.
+  - Reordering alone, against a capacity-matched control, gives about +20 points. It turns negative if CT or PET-CT is one slot short.
+  - The Finnish equity gap comes entirely from our detection assumptions, not from Finnish data. Claim it only as "in our synthetic county, under these assumptions".
+- **External check** (`docs/external_checks.md`): the UK rapid-CT pattern is reproduced. Moving the CT earlier cut X-ray to CT result from 29 to 9 days, but X-ray to tumour board decision stayed at 61 days.
 - **Evidence corrections** found by the pitch track are marked *corrected 14 Nov* in sections 2 and 7 above. The full list is in `docs/pitch/evidence_brief.md`.
 
 ## 11. Risks

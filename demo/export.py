@@ -274,6 +274,24 @@ def sensitivity_rows(scenario_id: str):
     except ValueError:
         return None
     rows = raw if isinstance(raw, list) else raw.get("rows") or (raw.get("scenarios") or {}).get(scenario_id)
+    tor = raw.get("tornado") if isinstance(raw, dict) else None
+    if not rows and tor and tor.get("rows"):
+        # pathway_sim.sensitivity output: pick the reordering comparison and reshape to tornado rows
+        pair = {"stokstad": "observed>optimal", "finland_lung": "baseline>bundled_workup"}.get(scenario_id) \
+            or next(iter(tor.get("pairs", {})), None)
+        if not pair:
+            return None
+        a, b = pair.split(">")
+        out = []
+        for r in tor["rows"]:
+            x = r.get(pair)
+            if not x:
+                continue
+            out.append({"parameter": r["label"], "low_gain_pp": x["gain_pp_low"], "high_gain_pp": x["gain_pp_high"],
+                        "base_gain_pp": x["gain_pp_base"], "swing_pp": x["swing_pp"], "comparison": f"{b} vs {a}",
+                        "low": r.get("low"), "high": r.get("high")})
+        out.sort(key=lambda r: -(r["swing_pp"] or 0))
+        rows = out[:10]
     return rows or None
 
 
