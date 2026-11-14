@@ -200,3 +200,6 @@ Wave 2a lane w2/pe-contracts (worktree /home/claude/wt/pe-contracts, base 7e77f4
 
 ### [1114-144141-claude-code-tuomas-architect] 2026-11-14 14:41Z · claude-code@tuomas/architect · CLAIM
 Wave 2a lane w2/pe-llm (worktree /home/claude/wt/pe-llm, base 7e77f47): WP-C1-2 LLM client (patient_engine/llm.py, tests/test_pe_llm*). Package files in docs/plan/packages/.
+
+### [1114-144143-claude-code-tuomas-architect] 2026-11-14 14:41Z · claude-code@tuomas/architect · CLAIM
+Wave 2a lane w2/research-cs (worktree /home/claude/wt/research-cs, base 7e77f47): WP-C2-R1 (docs/research/catalogue/conditions_symptoms.md). Package files in docs/plan/packages/.
