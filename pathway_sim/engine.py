@@ -167,6 +167,12 @@ class Simulation:
     def __init__(self, sc: Scenario, fc: Flowchart, patients: list[Patient], policy: Policy | None, seed: int):
         self.sc, self.fc, self.patients, self.seed = sc, fc, patients, seed
         self.policy = policy or RulePolicy(fc.policy, seed)
+        # how probabilities become a choice (spec 02, F2); legacy policies keep today's argmax
+        self.decision_mode = getattr(self.policy, "decision_mode", "argmax")
+        if self.decision_mode not in ("sample", "argmax"):
+            raise ValueError(f"decision mode must be 'sample' or 'argmax', not {self.decision_mode!r}")
+        self.backend_name = getattr(self.policy, "backend_name", type(self.policy).__name__)
+        self.model_id = getattr(self.policy, "model_id", None)
         self.resources = {k: dict(v) for k, v in sc.resources.items()}
         for rid, ov in fc.resource_overrides.items():
             self.resources[rid] = {**self.resources[rid], **ov}
@@ -185,6 +191,8 @@ class Simulation:
                 self.batches[rid] = _Batch(rid, spec)
         self.heap: list = []
         self.seq = 0
+        self.progress = None          # optional callback(done, total), set by simulate(progress=...)
+        self.progress_every = 200
 
     def _topo(self) -> list[str]:
         fc = self.fc
@@ -216,6 +224,7 @@ class Simulation:
         runs = {p.id: PatientRun(p) for p in self.patients}
         for p in self.patients:
             self.push(p.arrival, "arrive", p.id)
+        done = 0
         while self.heap:
             t, _, kind, pid, node, attempt = heapq.heappop(self.heap)
             pr = runs[pid]
@@ -229,6 +238,12 @@ class Simulation:
                 self.on_done(pr, node, attempt, t)
             elif kind == "exit":
                 self.exit(pr, node, t)
+            if self.progress is not None and pr.outcome is not None:   # this patient just finished
+                done += 1
+                if done % self.progress_every == 0:
+                    self.progress(done, len(runs))
+        if self.progress is not None:
+            self.progress(len(runs), len(runs))
         # utilisation over the arrival window (excludes warm-up and the drain tail after the last arrival)
         horizon = max(pr.patient.arrival for pr in runs.values()) if runs else 0.0
         resources = {}
@@ -287,6 +302,29 @@ class Simulation:
             if ok:
                 out.append(o)
         return out or list(n.options)
+
+    def pick_option(self, pr: PatientRun, n: Node, offered: list[str], probs: dict) -> str:
+        """Choose among ``offered`` from ``probs``.
+
+        ``argmax``: highest probability, ties broken by option order. ``sample``: inverse CDF over the
+        offered options in the node's option order, driven by the common-random-number draw
+        ``uniform(seed, patient, "mix", node)``, so the same patient facing the same probabilities at
+        the same decision point makes the same choice in every flowchart variant."""
+        if self.decision_mode == "argmax":
+            return max(offered, key=lambda o: (probs.get(o, 0.0), -n.options.index(o)))
+        w = [max(0.0, float(probs.get(o, 0.0))) for o in offered]
+        total = sum(w)
+        if total <= 0.0:
+            return offered[0]
+        u, acc, last = uniform(self.seed, pr.patient.id, "mix", n.id), 0.0, offered[0]
+        for o, x in zip(offered, w):
+            if x <= 0.0:
+                continue
+            last = o
+            acc += x / total
+            if u < acc:
+                return o
+        return last
 
     def ready_cause(self, pr: PatientRun, n: Node) -> tuple[bool, bool, str | None]:
         """(ready, dead, cause). Option nodes also need their choice to have picked them;
@@ -382,10 +420,12 @@ class Simulation:
                 if n.kind == "choice":
                     offered = self.offered(pr, n, t)
                     probs = self.policy.choose(self.view(pr, nid, t, offered), offered)
-                    pick = max(offered, key=lambda o: (probs.get(o, 0.0), -n.options.index(o)))
+                    pick = self.pick_option(pr, n, offered, probs)
                     pr.choices.append({"node": nid, "t": round(t - pr.patient.arrival, 4), "chosen": pick,
                                        "offered": offered,
-                                       "probs": {k: round(float(v), 4) for k, v in probs.items()}})
+                                       "probs": {k: round(float(v), 4) for k, v in probs.items()},
+                                       "mode": self.decision_mode, "backend": self.backend_name,
+                                       "model": self.model_id})
                     for o in n.options:
                         if o == pick:
                             pr.status[o] = "enabled"
@@ -498,8 +538,13 @@ def mark_critical(pr: PatientRun, fc: Flowchart) -> list[str]:
 
 
 def simulate(sc: Scenario, fc: Flowchart | str, patients: list[Patient], policy: Policy | None = None,
-             seed: int = 0) -> RunLog:
-    """Run ``patients`` through flowchart ``fc``. Deterministic in (patients, seed, policy)."""
+             seed: int = 0, progress=None, progress_every: int = 200) -> RunLog:
+    """Run ``patients`` through flowchart ``fc``. Deterministic in (patients, seed, policy).
+
+    ``progress(done, total)`` is called every ``progress_every`` finished patients and once at the end;
+    it may raise to abort the run. It never changes the result."""
     if isinstance(fc, str):
         fc = sc.flowcharts[fc]
-    return Simulation(sc, fc, patients, policy, seed).run()
+    sim = Simulation(sc, fc, patients, policy, seed)
+    sim.progress, sim.progress_every = progress, max(1, int(progress_every))
+    return sim.run()

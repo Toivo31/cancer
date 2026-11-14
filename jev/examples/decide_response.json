@@ -1,0 +1,4 @@
+{
+  "model": "stub@1",
+  "responses": [{"request_id": "p1042:sample_method", "probs": {"bronch": 0.2, "ttnb": 0.8}}]
+}

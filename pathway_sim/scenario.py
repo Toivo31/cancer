@@ -36,6 +36,10 @@ class Node:
     label: str | None = None
     code: Expr | None = None  # parsed guard (pathway_sim.expr), callable on a names dict
 
+    def __post_init__(self):
+        if self.kind == "decision":   # document name for a choice node (spec 01); the engine uses "choice"
+            self.kind = "choice"
+
     def to_dict(self) -> dict:
         d = {"id": self.id, "kind": self.kind}
         for k in ("test", "when", "outcome", "milestone", "retry", "stage", "label"):
@@ -58,6 +62,7 @@ class Flowchart:
     id: str
     nodes: dict[str, Node]
     policy: dict = field(default_factory=dict)
+    decision_policy: dict = field(default_factory=dict)      # JEV backend config and stub table (spec 02)
     description: str = ""
     resource_overrides: dict = field(default_factory=dict)   # per-flowchart capacity / wait changes
     test_overrides: dict = field(default_factory=dict)       # per-flowchart test changes (e.g. faster PET)
@@ -66,6 +71,8 @@ class Flowchart:
         d = {"id": self.id, "nodes": [n.to_dict() for n in self.nodes.values()]}
         if self.policy:
             d["policy"] = copy.deepcopy(self.policy)
+        if self.decision_policy:
+            d["decision_policy"] = copy.deepcopy(self.decision_policy)
         if self.resource_overrides:
             d["resource_overrides"] = copy.deepcopy(self.resource_overrides)
         if self.test_overrides:
@@ -117,6 +124,7 @@ def parse_flowchart(fid: str, d: dict) -> Flowchart:
         n.code = compile_guard(n.when, f"{fid}/{n.id}") if n.when else None
         nodes[n.id] = n
     return Flowchart(id=fid, nodes=nodes, policy=copy.deepcopy(d.get("policy") or {}),
+                     decision_policy=copy.deepcopy(d.get("decision_policy") or {}),
                      description=d.get("description", ""),
                      resource_overrides=copy.deepcopy(d.get("resource_overrides") or {}),
                      test_overrides=copy.deepcopy(d.get("test_overrides") or {}))
