@@ -377,3 +377,6 @@ D51 (Tuomas): only the JEV decides in the final model; rules/tables are placehol
 
 ### [1114-161454-claude-code-tuomas-mcp-plan] 2026-11-14 16:14Z · claude-code@tuomas/mcp-plan · RELEASE
 w4/mcp-plan: docs/plan/mcp-investigation.md committed. Verdict: MCP worth building but after Sun 10:00 (optional 3h spike tonight); encounter loop not reachable via service and /patients leaks hidden truth, so the MCP needs its own filter.
+
+### [1114-161800-claude-code-tuomas-train-export] 2026-11-14 16:18Z · claude-code@tuomas/train-export · FYI
+STATUS WP-W4-4: first working export committed on w4/train-export (80974a8). Command: python -m pathway_sim export-training scenarios/finland_encounter.yaml --flowchart encounter --n 20000 --seeds 1,2,3 --explore 0.3 --out runs/training/v1.jsonl.gz (writes .summary.json next to it). Rows: request (live BackendPolicy.request_for), chosen, policy, behaviour_probs, label, outcome, meta(split by library card 80/10/10). Large run in progress; HTTP JEV (--jev URL) + docs next.
