@@ -1,0 +1,323 @@
+{
+ "9b9a785f36a0005e": {
+  "text": "Visit 3. Woman, 64, former smoker. Cough for 7 weeks. Tired, lost 6 kg since summer. Chest X-ray 4 weeks ago: no clear finding. Likely post-viral cough. Advised rest.",
+  "verdict": {
+   "text_id": "9b9a785f36a0005e",
+   "source_type": "clinical_note",
+   "taxonomy": "clinical_notes",
+   "flags": [
+    {
+     "technique_id": "red_flag_without_action",
+     "span": {
+      "start": 35,
+      "end": 84,
+      "text": "Cough for 7 weeks. Tired, lost 6 kg since summer."
+     },
+     "confidence": 0.9,
+     "explanation": "Persistent cough with substantial weight loss needs a documented next step, especially in an older former smoker. Despite the chest X-ray showing no clear finding, no further test, referral, or review is recorded.",
+     "evidence": [
+      {
+       "type": "missing_event",
+       "detail": "No further investigation, referral, or follow-up event is documented after the ongoing cough and weight loss; only rest is advised.",
+       "url": null
+      }
+     ],
+     "name": "Red flag without action (trigger rule)"
+    },
+    {
+     "technique_id": "dismissive_no_safety_net",
+     "span": {
+      "start": 128,
+      "end": 166,
+      "text": "Likely post-viral cough. Advised rest."
+     },
+     "confidence": 0.8,
+     "explanation": "The ongoing symptoms are attributed to a post-viral cough and managed with rest alone. There is no review date or advice about what to do if the cough or weight loss persists or worsens.",
+     "evidence": [
+      {
+       "type": "text_pattern",
+       "detail": "A reassuring working diagnosis is followed only by advice to rest.",
+       "url": null
+      },
+      {
+       "type": "missing_event",
+       "detail": "No follow-up arrangement or safety-net instructions are recorded.",
+       "url": null
+      }
+     ],
+     "name": "Dismissive reassurance without a safety net"
+    }
+   ],
+   "summary": "Persistent cough and weight loss lack a documented next step, and the post-viral plan provides no safety-net advice.",
+   "abstain": false,
+   "coordination": null
+  },
+  "dropped": [],
+  "next": {
+   "route": "Fast lane: urgent CT and referral",
+   "urgent": true,
+   "why": [
+    "a warning sign is recorded without the expected test",
+    "reassurance without a follow-up plan"
+   ],
+   "panels": [
+    {
+     "question": "Which test finds a lung cancer, if there is one?",
+     "options": [
+      {
+       "label": "Chest X-ray (again)",
+       "p": 0.77,
+       "detail": "finds 77-80% of lung cancers",
+       "source": "Bradley et al. 2019, systematic review"
+      },
+      {
+       "label": "Direct CT",
+       "p": 0.97,
+       "detail": "finds 97%",
+       "source": "simulator assumption"
+      }
+     ],
+     "pick": "Direct CT"
+    },
+    {
+     "question": "If CT shows a central tumour: which biopsy?",
+     "options": [
+      {
+       "label": "Bronchoscopy",
+       "p": 0.94,
+       "detail": "94% diagnosed, about 14 days",
+       "source": "our simulator, 161 synthetic cases"
+      },
+      {
+       "label": "Needle biopsy",
+       "p": 0.68,
+       "detail": "68% diagnosed, about 22 days",
+       "source": "our simulator, 150 synthetic cases"
+      }
+     ],
+     "pick": "Bronchoscopy"
+    }
+   ],
+   "note": "Decision support. A clinician confirms every step."
+  },
+  "model": "kimi-k3-1-pro",
+  "seconds": 30.0
+ },
+ "1999d28a9b33e738": {
+  "text": "Man, 58. Abdominal pain and tiredness for 5 weeks, likely related to BMI 38. Advised weight loss and more exercise. No tests ordered.",
+  "verdict": {
+   "text_id": "1999d28a9b33e738",
+   "source_type": "clinical_note",
+   "taxonomy": "clinical_notes",
+   "flags": [
+    {
+     "technique_id": "diagnostic_overshadowing",
+     "span": {
+      "start": 9,
+      "end": 76,
+      "text": "Abdominal pain and tiredness for 5 weeks, likely related to BMI 38."
+     },
+     "confidence": 0.96,
+     "explanation": "New abdominal pain and tiredness are attributed to the patient's weight without other causes being considered or tested.",
+     "evidence": [
+      {
+       "type": "text_pattern",
+       "detail": "The symptoms are directly linked to BMI 38, followed only by weight-loss and exercise advice.",
+       "url": null
+      },
+      {
+       "type": "missing_event",
+       "detail": "The note explicitly states that no tests were ordered.",
+       "url": null
+      }
+     ],
+     "name": "Diagnostic overshadowing"
+    }
+   ],
+   "summary": "The note attributes new persistent symptoms to weight without investigation, which is worth reviewing for diagnostic overshadowing.",
+   "abstain": false,
+   "coordination": null
+  },
+  "dropped": [],
+  "next": {
+   "route": "Second look: review the note with the patient",
+   "urgent": false,
+   "why": [
+    "the symptom is explained by something already known about the patient"
+   ],
+   "panels": [],
+   "note": "Decision support. A clinician confirms every step."
+  },
+  "model": "kimi-k3-1-pro",
+  "seconds": 16.1
+ },
+ "9997a917fe00288f": {
+  "text": "Woman, 71. Frequent attender, again insists something is wrong with her chest. Says she gets breathless on stairs. Reassured, probably nothing. No follow-up booked.",
+  "verdict": {
+   "text_id": "9997a917fe00288f",
+   "source_type": "clinical_note",
+   "taxonomy": "clinical_notes",
+   "flags": [
+    {
+     "technique_id": "stigmatising_language",
+     "span": {
+      "start": 11,
+      "end": 28,
+      "text": "Frequent attender"
+     },
+     "confidence": 0.98,
+     "explanation": "The note labels the patient as a \u201cfrequent attender\u201d and says she \u201cinsists,\u201d portraying her as difficult or untrustworthy rather than describing her symptoms neutrally.",
+     "evidence": [
+      {
+       "type": "text_pattern",
+       "detail": "Stigmatising labels and wording are used instead of neutral observations.",
+       "url": null
+      }
+     ],
+     "name": "Stigmatising language"
+    },
+    {
+     "technique_id": "dismissive_no_safety_net",
+     "span": {
+      "start": 115,
+      "end": 142,
+      "text": "Reassured, probably nothing"
+     },
+     "confidence": 0.99,
+     "explanation": "Her exertional breathlessness is played down without a recorded test, follow-up, or advice about what to do if it persists or worsens.",
+     "evidence": [
+      {
+       "type": "text_pattern",
+       "detail": "The reassurance phrase \u201cprobably nothing\u201d minimises the symptom.",
+       "url": null
+      },
+      {
+       "type": "missing_event",
+       "detail": "The note states \u201cNo follow-up booked\u201d and records no safety-net instructions or testing.",
+       "url": null
+      }
+     ],
+     "name": "Dismissive reassurance without a safety net"
+    }
+   ],
+   "summary": "The note uses stigmatising language and dismisses exertional breathlessness without follow-up or safety-net advice.",
+   "abstain": false,
+   "coordination": null
+  },
+  "dropped": [],
+  "next": {
+   "route": "Fast lane: urgent CT and referral",
+   "urgent": true,
+   "why": [
+    "reassurance without a follow-up plan",
+    "wording that can make the next reader take the complaint less seriously"
+   ],
+   "panels": [
+    {
+     "question": "Which test finds a lung cancer, if there is one?",
+     "options": [
+      {
+       "label": "Chest X-ray (again)",
+       "p": 0.77,
+       "detail": "finds 77-80% of lung cancers",
+       "source": "Bradley et al. 2019, systematic review"
+      },
+      {
+       "label": "Direct CT",
+       "p": 0.97,
+       "detail": "finds 97%",
+       "source": "simulator assumption"
+      }
+     ],
+     "pick": "Direct CT"
+    },
+    {
+     "question": "If CT shows a central tumour: which biopsy?",
+     "options": [
+      {
+       "label": "Bronchoscopy",
+       "p": 0.94,
+       "detail": "94% diagnosed, about 14 days",
+       "source": "our simulator, 161 synthetic cases"
+      },
+      {
+       "label": "Needle biopsy",
+       "p": 0.68,
+       "detail": "68% diagnosed, about 22 days",
+       "source": "our simulator, 150 synthetic cases"
+      }
+     ],
+     "pick": "Bronchoscopy"
+    }
+   ],
+   "note": "Decision support. A clinician confirms every step."
+  },
+  "model": "kimi-k3-1-pro",
+  "seconds": 22.7
+ },
+ "9f47df4b7d2745ba": {
+  "text": "Man, 67. Hb 98, ferritin low. Feels tired. Iron tablets started. No colonoscopy referral. Control in 3 months.",
+  "verdict": {
+   "text_id": "9f47df4b7d2745ba",
+   "source_type": "clinical_note",
+   "taxonomy": "clinical_notes",
+   "flags": [
+    {
+     "technique_id": "red_flag_without_action",
+     "span": {
+      "start": 9,
+      "end": 29,
+      "text": "Hb 98, ferritin low."
+     },
+     "confidence": 0.97,
+     "explanation": "This man has iron-deficiency anaemia, which can be a warning sign of bleeding in the bowel. Iron is started, but the note explicitly records no colonoscopy referral and only a review in three months.",
+     "evidence": [
+      {
+       "type": "missing_event",
+       "detail": "The note states 'No colonoscopy referral' and records no alternative bowel investigation or documented reason for omitting it.",
+       "url": null
+      }
+     ],
+     "name": "Red flag without action (trigger rule)"
+    }
+   ],
+   "summary": "Iron-deficiency anaemia in a 67-year-old man is recorded without the expected bowel investigation or referral.",
+   "abstain": false,
+   "coordination": null
+  },
+  "dropped": [],
+  "next": {
+   "route": "Second look: review the note with the patient",
+   "urgent": false,
+   "why": [
+    "a warning sign is recorded without the expected test"
+   ],
+   "panels": [],
+   "note": "Decision support. A clinician confirms every step."
+  },
+  "model": "kimi-k3-1-pro",
+  "seconds": 12.9
+ },
+ "a79e30a847880447": {
+  "text": "Man, 69, smoker. Coughed blood twice this week, cough 4 weeks. Chest CT ordered today, urgent referral to pulmonology sent. Patient told to call if bleeding increases. Review in 1 week.",
+  "verdict": {
+   "text_id": "a79e30a847880447",
+   "source_type": "clinical_note",
+   "taxonomy": "clinical_notes",
+   "flags": [],
+   "summary": "Haemoptysis is addressed with a chest CT, urgent pulmonology referral, safety-net advice, and a one-week review.",
+   "abstain": false,
+   "coordination": null
+  },
+  "dropped": [],
+  "next": {
+   "route": "No change suggested",
+   "urgent": false,
+   "why": [],
+   "panels": [],
+   "note": "Decision support. A clinician confirms every step."
+  },
+  "model": "kimi-k3-1-pro",
+  "seconds": 3.7
+ }
+}

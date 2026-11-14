@@ -1,0 +1,32 @@
+[
+  {
+    "id": "weight_loss_visit3",
+    "title": "Visit 3: cough and weight loss",
+    "group": "vague symptoms",
+    "text": "Visit 3. Woman, 64, former smoker. Cough for 7 weeks. Tired, lost 6 kg since summer. Chest X-ray 4 weeks ago: no clear finding. Likely post-viral cough. Advised rest."
+  },
+  {
+    "id": "bmi_overshadowing",
+    "title": "Abdominal pain attributed to weight",
+    "group": "vague symptoms",
+    "text": "Man, 58. Abdominal pain and tiredness for 5 weeks, likely related to BMI 38. Advised weight loss and more exercise. No tests ordered."
+  },
+  {
+    "id": "frequent_attender",
+    "title": "Frequent attender, reassured",
+    "group": "vague symptoms",
+    "text": "Woman, 71. Frequent attender, again insists something is wrong with her chest. Says she gets breathless on stairs. Reassured, probably nothing. No follow-up booked."
+  },
+  {
+    "id": "anaemia_no_referral",
+    "title": "Iron-deficiency anaemia, iron started",
+    "group": "vague symptoms",
+    "text": "Man, 67. Hb 98, ferritin low. Feels tired. Iron tablets started. No colonoscopy referral. Control in 3 months."
+  },
+  {
+    "id": "good_note_control",
+    "title": "Control: a note with a clear plan",
+    "group": "alarm symptoms",
+    "text": "Man, 69, smoker. Coughed blood twice this week, cough 4 weeks. Chest CT ordered today, urgent referral to pulmonology sent. Patient told to call if bleeding increases. Review in 1 week."
+  }
+]

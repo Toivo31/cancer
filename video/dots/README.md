@@ -57,3 +57,46 @@ Eight simulated patients as large dots moving through the named steps (health ce
 ## Flow scene (`?flow`)
 
 Two vertical flowcharts side by side: left today's pathway, right the optimiser's change (fast lane: suspected cancer gets priority in every queue once the hospital has handled the referral). Each ball is one of the same 521 simulated patients; balls start at the bottom (first contact) and climb towards "treatment starts" at the top. Waiting balls swarm around the step they wait for (orange the longer they wait, cyan on the fast lane); a ball sent home with the cancer missed turns red and drops out. Edge thickness = how many patients take that route. Counters: share treated within 90 days and missed cancers. Real numbers: median 103 days today vs 80 with the fast lane; 95% treated by day 142 vs 118; 55 missed on both sides.
+
+## Inequality evidence on the left (sourced, not simulated)
+
+The flow scene cycles these facts in a "Who falls behind" box. The simulator has no income or region variable, so these are cited, not modelled:
+
+- Income / work route: same lymphoma, 123 days to treatment via occupational or private care vs 207 via a public health centre. Kuitunen et al., Cancer Medicine 2026;15:e71920 (AstraZeneca briefing).
+- Low income: upfront fees for several cancer services can be a barrier. OECD/EU Country Cancer Profile Finland 2025, p. 3.
+- Education: lung cancer incidence more than double among the least educated (OECD/EU 2025, p. 5); higher education goes with more lung cancer surgery (women OR 1.48, men OR 1.18) and income shows similar patterns (Zai et al. 2025, MPIDR WP 2025-016, doi:10.4054/MPIDR-WP-2025-016).
+- Eastern Finland: most life years lost to premature death among men in Kainuu, Kymenlaakso, Etelä-Savo and Pohjois-Karjala; low income more common in Eastern and Northern Finland. THL press release 13.9.2022, all causes, 2017-2019. Note: cancer incidence is actually lowest in Etelä-Savo (women) and Pohjois-Savo (men) (OECD/EU 2025), and we found no published county-level cancer waiting times.
+
+## Document zoom (`?doc`, and 0:31-0:46 in `?show`)
+
+Zooms into one pink patient at "Back to GP" and opens her synthetic note. The note reader flags three spans (weight loss = red flag, "Visit 3" + "post-viral" = anchoring, a negative X-ray = check). The decision model panel shows:
+
+- Next test: chest X-ray finds 77-80% of lung cancers (Bradley et al. 2019 systematic review; shown as 77%); direct CT 97% (simulator assumption, no direct source).
+- Central tumour, which biopsy: bronchoscopy 94% diagnostic in about 14 days vs needle biopsy 68% in about 22 days, measured in our simulator (161 + 150 synthetic exploration cases, runs/model_in_loop.json on overnight/sim).
+- Route stamp: fast lane, urgent CT; a clinician confirms every step.
+
+The note reader and decision model are prototypes; the on-screen footer says so.
+
+## Fast lane vs regular route, and the slow-motion popup
+
+- In the simulator, the optimiser's change gives priority to every suspected-cancer referral once the hospital has handled it, and it helped all 466 treated patients (by 14 days or more; median 23). To show both routes, the right panel draws on the fast lane the 271 patients whose priority moved them ahead by 21+ days (`FAST_GAIN` in flow.js) and the other 195 on the regular route. All counters and percentages are unchanged simulator results.
+- In `?show`, 0:31-0:46 is slow motion (0.15 days per second). A full-page popup grows out of one ringed patient on the right (a vague-symptom patient on the fast lane whose referral is handled around day 57) and shows her referral note being read (the document scene). After the popup the clock fast-forwards so that day 120 still lands on the drop.
+
+## Light theme and evidence pictures (current version)
+
+- Theme follows the National Cancer Strategy cover: cream background (#efebe2), dark grey text, honey-yellow accents (#e8c56a), Inter font. Magenta = vague symptoms, dark grey = alarm symptoms, green = treated within 90 days, blue = fast lane.
+- The flow scene shows only our solution's flowchart (right). Today's pathway is shown as grey markers on the group bars and in the median ("today 103"). The left half holds the strategy cover (Goal 3) and three article cards (Bradley 2019, Stokstad 2019, Zai 2025), plus the cycling "Who falls behind" facts. See "Sources checked" below.
+- Pictures live in `img/`. `scanner.webp` and `accountable.png` are git-ignored (unclear licence); copy them in locally. Strategy PDF: https://valtioneuvosto.fi/documents/1271139/1329769/Kansallinen_syopastrategia_2026_2035.pdf
+
+## Sources checked (14 Nov)
+
+| Claim on screen | Source | How checked |
+|---|---|---|
+| Chest X-ray finds 77-80% of lung cancers in symptomatic patients | Bradley SH, Abraham S, Callister MEJ, et al. Br J Gen Pract 2019;69(689):e827-e835, doi:10.3399/bjgp19X706853 | PMC abstract (PMC6805164): 76.8% and 79.3% in primary care, 79.7% in secondary care |
+| 40% treated within 42 days → 80% with the reordered pathway (model estimate) | Stokstad T, et al. BMC Health Serv Res 2019;19:679, doi:10.1186/s12913-019-4517-z | Team's full-text read (params/sources.yaml on overnight/sim); 80% CI 72-87% |
+| Lung cancer surgery OR 1.48 (women, high vs low education), similar by income | Zai X, Li P, Dei Bardi L, et al. MPIDR WP 2025-016, doi:10.4054/MPIDR-WP-2025-016 | Full text read (p. 8) |
+| 123 vs 207 days, DLBCL, occupational/private vs public route | Kuitunen et al. Cancer Medicine 2026;15:e71920 | AstraZeneca briefing slide (rendered table) |
+| Goal 3 wording | National Cancer Strategy 2026-2035 (STM) | From the AZ briefing notes; the valtioneuvosto.fi PDF returned 403 to automated download, so re-check the wording by hand |
+| CT finds 97% | none | Simulator assumption; labelled as such |
+
+Changed: the earlier 75% X-ray figure (Bradley et al. 2021, 86/114) could not be checked (PubMed and BJGP pages did not load), so the video and the note reader now use the 2019 systematic review. The simulator itself still uses 0.754.

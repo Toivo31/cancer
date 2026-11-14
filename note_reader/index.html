@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Note Reader</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=DotGothic16&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #070808; --ink: #e9efe6; --dim: #8d978c; --line: #232826;
+    --paper: #ece8da; --paper-ink: #1b201b; --bar: rgba(170,210,170,.28);
+    --green: #b8ffcf; --cyan: #78dcff; --red: #ff5a50; --amber: #ffb347; --pink: #ff78be;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.45 "Courier Prime", monospace; }
+  .wrap { max-width: 1280px; margin: 0 auto; padding: 24px 16px 48px; }
+  h1, h2, .dot { font-family: "DotGothic16", monospace; font-weight: 400; letter-spacing: .02em; }
+  h1 { margin: 0; font-size: 28px; color: var(--green); text-shadow: 0 0 10px rgba(184,255,207,.35); }
+  .sub { color: var(--dim); margin: 4px 0 20px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+  @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+  h2 { font-size: 16px; color: var(--cyan); margin: 0 0 10px; }
+  .examples { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  .examples button, .go { font: inherit; font-size: 14px; color: var(--ink); background: #121514; border: 1px solid var(--line);
+    padding: 6px 10px; cursor: pointer; }
+  .examples button:hover, .examples button.on { border-color: var(--cyan); color: var(--cyan); }
+  textarea { width: 100%; min-height: 120px; font: inherit; color: var(--paper-ink); background: var(--paper);
+    border: 0; padding: 12px; resize: vertical; }
+  .row { display: flex; align-items: center; gap: 14px; margin: 10px 0 18px; flex-wrap: wrap; }
+  .go { background: var(--green); color: #041007; border-color: var(--green); font-family: "DotGothic16", monospace; font-size: 16px; padding: 8px 18px; }
+  .go:disabled { opacity: .5; cursor: wait; }
+  label { color: var(--dim); font-size: 14px; }
+  .paper { position: relative; background: var(--paper); color: var(--paper-ink); padding: 18px 34px; font-size: 18px; line-height: 2.1;
+    background-image: repeating-linear-gradient(var(--paper) 0 38px, var(--bar) 38px 76px); min-height: 140px; }
+  .paper::before, .paper::after { content: ""; position: absolute; top: 0; bottom: 0; width: 12px;
+    background: radial-gradient(circle, var(--bg) 4px, transparent 5px) 0 0 / 12px 24px repeat-y; }
+  .paper::before { left: 8px; } .paper::after { right: 8px; }
+  .paper .head { font-family: "DotGothic16", monospace; font-size: 14px; display: flex; justify-content: space-between; line-height: 1.6; margin-bottom: 4px; }
+  mark { background: transparent; color: inherit; padding: 1px 2px; border: 2px solid var(--c); border-radius: 2px; }
+  .flags { margin-top: 14px; display: grid; gap: 10px; }
+  .flag { border-left: 4px solid var(--c); padding: 6px 10px; background: #0e1110; }
+  .flag .t { font-family: "DotGothic16", monospace; color: var(--c); }
+  .flag .conf { color: var(--dim); font-size: 13px; float: right; }
+  .flag .ev { color: var(--dim); font-size: 13px; margin-top: 2px; }
+  .none { color: var(--green); }
+  .status { color: var(--dim); font-size: 14px; }
+  .q { color: #c8d0c6; margin: 16px 0 8px; }
+  .opt { margin: 6px 0 14px; }
+  .opt .lab { display: flex; justify-content: space-between; }
+  .bar { height: 22px; background: rgba(255,255,255,.07); margin-top: 4px; position: relative; }
+  .bar i { display: block; height: 100%; width: 0; background: #9aa09a; transition: width 1s ease-out; }
+  .opt.pick .bar i { background: var(--green); }
+  .opt .pct { font-family: "DotGothic16", monospace; font-size: 20px; }
+  .opt.pick .pct { color: var(--green); }
+  .opt .src { color: var(--dim); font-size: 13px; }
+  .pickt { color: var(--green); font-family: "DotGothic16", monospace; font-size: 13px; margin-left: 8px; }
+  .stamp { display: inline-block; margin-top: 10px; border: 3px solid var(--cyan); color: var(--cyan); padding: 8px 14px;
+    font-family: "DotGothic16", monospace; font-size: 20px; transform: rotate(-2deg); }
+  .stamp.calm { border-color: var(--dim); color: var(--dim); }
+  .why { color: #c8d0c6; font-size: 14px; margin-top: 10px; }
+  footer { margin-top: 32px; color: var(--dim); font-size: 13px; border-top: 1px solid var(--line); padding-top: 12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>NOTE READER</h1>
+  <div class="sub">Reads a patient note, flags reasoning shortcuts and missed warning signs, and estimates the next step. Synthetic notes only.</div>
+  <div class="grid">
+    <section>
+      <h2>1 · PATIENT NOTE</h2>
+      <div class="examples" id="examples"></div>
+      <textarea id="text" spellcheck="false" placeholder="Paste a synthetic note, or pick an example above."></textarea>
+      <div class="row">
+        <button class="go" id="go">READ NOTE</button>
+        <label><input type="checkbox" id="stored"> use stored result (instant)</label>
+        <span class="status" id="status"></span>
+      </div>
+      <h2>2 · WHAT THE NOTE READER FLAGS</h2>
+      <div class="paper" id="paper"><div class="head"><span>PATIENT RECORD · HEALTH CENTRE</span><span>synthetic</span></div><span id="noteview" style="color:#7a7f78">The note appears here, with flagged words marked.</span></div>
+      <div class="flags" id="flags"></div>
+    </section>
+    <section>
+      <h2>3 · NEXT STEP</h2>
+      <div id="next" class="status">Read a note to see the suggested next step.</div>
+    </section>
+  </div>
+  <footer>
+    Flags come from an LLM (<span id="model">model</span>) reading the note against our taxonomy (technique_classifier/taxonomies/clinical_notes.yaml).
+    Every flagged quote is checked against the original text; quotes not found in the note are dropped.
+    Next-step percentages: chest X-ray sensitivity from Bradley et al. 2019 (systematic review, 77-80%); CT sensitivity is a simulator assumption; biopsy yields are measured in our pathway simulator on synthetic cases.
+    Prototype decision support: a flag means "worth a second look", and a clinician confirms every step.
+  </footer>
+</div>
+<script>
+"use strict";
+const COLORS = {
+  red_flag_without_action: "var(--red)", diagnostic_overshadowing: "var(--pink)", anchoring_premature_closure: "var(--amber)",
+  stigmatising_language: "#c79bff", dismissive_no_safety_net: "var(--cyan)",
+};
+const $ = id => document.getElementById(id);
+const esc = s => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+let examples = [];
+
+fetch("/api/examples").then(r => r.json()).then(ex => {
+  examples = ex;
+  ex.forEach((e, i) => {
+    const b = document.createElement("button");
+    b.textContent = e.title; b.title = e.group;
+    b.onclick = () => { document.querySelectorAll(".examples button").forEach(x => x.classList.remove("on")); b.classList.add("on"); $("text").value = e.text; };
+    $("examples").appendChild(b);
+    if (i === 0) b.click();
+  });
+});
+
+$("go").onclick = async () => {
+  const text = $("text").value.trim(); if (!text) return;
+  $("go").disabled = true; $("flags").innerHTML = ""; $("next").innerHTML = "";
+  $("noteview").textContent = text; $("noteview").style.color = "";
+  const t0 = Date.now();
+  const tick = setInterval(() => { $("status").textContent = "reading… " + ((Date.now() - t0) / 1000).toFixed(0) + " s"; }, 250);
+  try {
+    const r = await fetch("/api/read", { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text, stored: $("stored").checked }) });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error || r.status);
+    render(d);
+    $("status").textContent = d.precomputed ? "stored result" + (d.error ? " (live call failed)" : "") : `read in ${d.seconds} s`;
+  } catch (e) {
+    $("status").textContent = "error: " + e.message;
+  } finally { clearInterval(tick); $("go").disabled = false; }
+};
+
+function render(d) {
+  const text = d.text, flags = d.verdict.flags.slice().sort((a, b) => a.span.start - b.span.start);
+  $("model").textContent = d.model || "LLM";
+  // note with marks (non-overlapping, in order)
+  let html = "", pos = 0;
+  for (const f of flags) {
+    if (f.span.start < pos) continue;
+    html += esc(text.slice(pos, f.span.start));
+    html += `<mark style="--c:${COLORS[f.technique_id] || "var(--amber)"}" title="${esc(f.name)}">${esc(text.slice(f.span.start, f.span.end))}</mark>`;
+    pos = f.span.end;
+  }
+  html += esc(text.slice(pos));
+  $("noteview").innerHTML = html;
+  $("flags").innerHTML = flags.length ? flags.map(f => `
+    <div class="flag" style="--c:${COLORS[f.technique_id] || "var(--amber)"}">
+      <span class="conf">confidence ${Math.round(100 * f.confidence)}%</span>
+      <div class="t">${esc(f.name.toUpperCase())}</div>
+      <div>${esc(f.explanation)}</div>
+      ${f.evidence.map(e => `<div class="ev">· ${esc(e.detail)}</div>`).join("")}
+    </div>`).join("") : `<div class="none">No flags: nothing in this note needs a second look.</div>`;
+  if (d.dropped && d.dropped.length) $("flags").innerHTML += `<div class="ev status">${d.dropped.length} suggestion(s) dropped: quote not found in the note.</div>`;
+
+  // next step
+  const n = d.next;
+  let h = "";
+  n.panels.forEach(p => {
+    h += `<div class="q">${esc(p.question)}</div>`;
+    p.options.forEach(o => {
+      const pick = o.label === p.pick;
+      h += `<div class="opt ${pick ? "pick" : ""}"><div class="lab"><span>${esc(o.label)}${pick ? '<span class="pickt">◀ SUGGESTED</span>' : ""}</span>
+        <span class="pct">${Math.round(100 * o.p)}%</span></div>
+        <div class="bar"><i data-w="${100 * o.p}"></i></div><div class="src">${esc(o.detail)} · ${esc(o.source)}</div></div>`;
+    });
+  });
+  h += `<div class="stamp ${n.urgent ? "" : "calm"}">ROUTE: ${esc(n.route.toUpperCase())}</div>`;
+  if (n.why.length) h += `<div class="why">Why: ${esc(n.why.join("; "))}.</div>`;
+  h += `<div class="why">${esc(n.note)}</div>`;
+  $("next").className = ""; $("next").innerHTML = h;
+  requestAnimationFrame(() => document.querySelectorAll(".bar i").forEach(i => { i.style.width = i.dataset.w + "%"; }));
+}
+</script>
+</body>
+</html>

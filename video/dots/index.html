@@ -5,12 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Pathway Dots</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=DotGothic16&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-  :root { --bg: #050607; --ink: #e9efe6; --dim: #7d877c; --hot: #ffb347; --ok: #b8ffcf; }
+  :root { --bg: #fbfaf7; --ink: #2d2d2a; --dim: #6b6b66; --hot: #c87d00; --ok: #1e8755; --honey: #e8c56a; }
   html, body { margin: 0; height: 100%; background: var(--bg); overflow: hidden; }
   canvas { display: block; width: 100vw; height: 100vh; }
-  #help { position: fixed; right: 16px; bottom: 12px; font: 13px/1.5 "Courier Prime", monospace; color: var(--dim);
+  #help { position: fixed; right: 16px; bottom: 12px; font: 13px/1.5 "Inter", sans-serif; color: var(--dim);
           background: rgba(0,0,0,.6); padding: 10px 14px; border: 1px solid #222; white-space: pre; }
   .hidden { display: none; }
 </style>
@@ -23,7 +23,7 @@
 n  Finland / Norway     g  colour by symptom group
 l  step labels          + −  speed
 h  hide this help and the UI for recording</div>
-<script src="dots_data.js?v=8"></script>
+<script src="dots_data.js?v=18"></script>
 <script>
 "use strict";
 // One dot = one simulated lung cancer patient (exported by export_dots.py from the pathway simulator).
@@ -168,12 +168,12 @@ const shown = {};   // displayed positions per lane slot: key -> Float32Array
 let snap = true;
 
 function dotColor(c, group) {
-  if (c === "on") return "rgba(184,255,207,0.95)";
-  if (c === "late") return "rgba(140,150,140,0.55)";
-  if (c === "gone") return "rgba(255,90,80,0.7)";
+  if (c === "on") return "rgba(30,135,85,0.95)";
+  if (c === "late") return "rgba(160,160,155,0.55)";
+  if (c === "gone") return "rgba(200,45,35,0.7)";
   if (st.groups) return group === "non_specific" ? `rgba(120,200,255,${0.75 + 0.25 * c})` : `rgba(255,220,120,${0.75 + 0.25 * c})`;
   // heat: white -> orange with waiting time
-  const r = 235 + 20 * c, gg = 240 - 120 * c, b = 230 - 190 * c;
+  const r = 70 + 150 * c, gg = 70 + 60 * c, b = 66 - 50 * c;
   return `rgba(${r | 0},${gg | 0},${b | 0},${0.8 + 0.2 * c})`;
 }
 
@@ -191,40 +191,40 @@ function drawLane(variant, slot, g, target, dt, laneCount) {
   }
   // stage zones
   const nx = nodeX(variant, g), zw = variant._zw;
-  ctx.font = `${Math.round(H * 0.022)}px "Courier Prime", monospace`;
+  ctx.font = `${Math.round(H * 0.022)}px "Inter", sans-serif`;
   ctx.textAlign = "center"; ctx.textBaseline = "top";
   variant.stages.forEach((s, si) => {
     const x = g.left + zw * si;
-    ctx.strokeStyle = "rgba(255,255,255,0.07)"; ctx.lineWidth = 1;
+    ctx.strokeStyle = "rgba(0,0,0,0.07)"; ctx.lineWidth = 1;
     if (si) { ctx.beginPath(); ctx.moveTo(x, g.pileTop); ctx.lineTo(x, g.y0 + g.h * 0.22); ctx.stroke(); }
-    ctx.fillStyle = "rgba(233,239,230,0.75)";
+    ctx.fillStyle = "rgba(45,45,42,0.75)";
     ctx.fillText(s.label.toUpperCase(), x + zw / 2, g.y0 + g.h * 0.2);
   });
   // baseline and step ticks
-  ctx.strokeStyle = "rgba(233,239,230,0.25)"; ctx.lineWidth = 1.2;
+  ctx.strokeStyle = "rgba(45,45,42,0.25)"; ctx.lineWidth = 1.2;
   ctx.beginPath(); ctx.moveTo(g.left, g.y0); ctx.lineTo(g.finishL, g.y0); ctx.stroke();
   for (const id in nx) { ctx.beginPath(); ctx.moveTo(nx[id], g.y0 - 3); ctx.lineTo(nx[id], g.y0 + 3); ctx.stroke(); }
   // finish area
   const fw = g.right - g.finishL;
-  ctx.strokeStyle = "rgba(184,255,207,0.35)";
+  ctx.strokeStyle = "rgba(30,135,85,0.35)";
   ctx.beginPath(); ctx.moveTo(g.finishL, g.pileTop); ctx.lineTo(g.finishL, g.y0 + g.h * 0.22); ctx.stroke();
-  ctx.fillStyle = "rgba(184,255,207,0.85)";
+  ctx.fillStyle = "rgba(30,135,85,0.85)";
   ctx.fillText("TREATED BY DAY " + target, g.finishL + fw * 0.24, g.y0 + g.h * 0.2);
-  ctx.fillStyle = "rgba(160,170,160,0.75)";
+  ctx.fillStyle = "rgba(105,105,100,0.75)";
   ctx.fillText("LATER", g.finishL + fw * 0.74, g.y0 + g.h * 0.2);
-  if (L.fin.gone.length) { ctx.fillStyle = "rgba(255,110,100,0.8)"; ctx.font = `${Math.round(H * 0.015)}px "Courier Prime", monospace`;
+  if (L.fin.gone.length) { ctx.fillStyle = "rgba(200,45,35,0.8)"; ctx.font = `${Math.round(H * 0.015)}px "Inter", sans-serif`;
     ctx.fillText("NOT DIAGNOSED: " + L.fin.gone.length, g.finishL + fw * 0.74, g.y0 + g.h * 0.2 + H * 0.03); }
   // labels for the biggest piles
   if (st.labels) {
-    ctx.font = `${Math.round(H * 0.016)}px "Courier Prime", monospace`; ctx.textBaseline = "bottom";
+    ctx.font = `${Math.round(H * 0.016)}px "Inter", sans-serif`; ctx.textBaseline = "bottom";
     const byId = Object.fromEntries(variant.nodes.map(nn => [nn.id, nn.label]));
     L.pileInfo.sort((a, b) => b.m - a.m).slice(0, 3).forEach(pi => {
-      ctx.fillStyle = "rgba(255,179,71,0.9)";
+      ctx.fillStyle = "rgba(200,125,0,0.9)";
       ctx.fillText(byId[pi.node] + " · " + pi.m, pi.x, pi.top - 8);
     });
   }
   // dots (additive glow)
-  ctx.globalCompositeOperation = "lighter";
+  ctx.globalCompositeOperation = "source-over";
   for (let i = 0; i < n; i++) {
     if (!L.pos[i]) continue;
     const x = S[2 * i], y = S[2 * i + 1];
@@ -232,7 +232,7 @@ function drawLane(variant, slot, g, target, dt, laneCount) {
     ctx.fillStyle = dotColor(c, variant.patients[i].g);
     ctx.beginPath(); ctx.arc(x, y, typeof c === "string" ? L.finR : dotR, 0, Math.PI * 2); ctx.fill();
     if (typeof c === "number" && c > 0.35) {
-      ctx.fillStyle = `rgba(255,140,40,${0.10 * c})`;
+      ctx.fillStyle = `rgba(225,150,20,${0.10 * c})`;
       ctx.beginPath(); ctx.arc(x, y, dotR * 3, 0, Math.PI * 2); ctx.fill();
     }
   }
@@ -240,17 +240,17 @@ function drawLane(variant, slot, g, target, dt, laneCount) {
   // lane headline: share treated within target (counts only once a dot reaches treatment)
   const share = Math.round(100 * L.onCount / L.n);
   ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
-  ctx.fillStyle = "rgba(233,239,230,0.9)";
-  ctx.font = `${Math.round(H * (laneCount === 1 ? 0.026 : 0.022))}px "Courier Prime", monospace`;
+  ctx.fillStyle = "rgba(45,45,42,0.9)";
+  ctx.font = `${Math.round(H * (laneCount === 1 ? 0.026 : 0.022))}px "Inter", sans-serif`;
   ctx.fillText(variant.label, g.left, g.pileTop + H * 0.01);
   ctx.textAlign = "right";
-  ctx.font = `${Math.round(H * (laneCount === 1 ? 0.09 : 0.06))}px "DotGothic16", monospace`;
-  ctx.fillStyle = "rgba(184,255,207,0.95)";
-  ctx.shadowColor = "rgba(184,255,207,0.6)"; ctx.shadowBlur = 18;
+  ctx.font = `600 ${Math.round(H * (laneCount === 1 ? 0.09 : 0.06))}px "Inter", sans-serif`;
+  ctx.fillStyle = "rgba(30,135,85,0.95)";
+  ctx.shadowColor = "rgba(30,135,85,0.6)"; ctx.shadowBlur = 0;
   ctx.fillText(share + "%", g.right, g.pileTop + H * (laneCount === 1 ? 0.07 : 0.045));
   ctx.shadowBlur = 0;
-  ctx.font = `${Math.round(H * 0.015)}px "Courier Prime", monospace`;
-  ctx.fillStyle = "rgba(160,170,160,0.9)";
+  ctx.font = `${Math.round(H * 0.015)}px "Inter", sans-serif`;
+  ctx.fillStyle = "rgba(105,105,100,0.9)";
   ctx.fillText("treated within " + target + " days", g.right, g.pileTop + H * (laneCount === 1 ? 0.095 : 0.065));
 }
 
@@ -261,23 +261,23 @@ function snapLane(S, L) {
 function drawHeader(sc) {
   if (!st.ui) return;
   ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
-  ctx.font = `${Math.round(H * 0.03)}px "DotGothic16", monospace`;
-  ctx.fillStyle = "rgba(233,239,230,0.95)";
+  ctx.font = `600 ${Math.round(H * 0.03)}px "Inter", sans-serif`;
+  ctx.fillStyle = "rgba(45,45,42,0.95)";
   ctx.fillText(sc.title.toUpperCase(), W * 0.04, H * 0.065);
-  ctx.font = `${Math.round(H * 0.018)}px "Courier Prime", monospace`;
-  ctx.fillStyle = "rgba(160,170,160,0.9)";
+  ctx.font = `${Math.round(H * 0.018)}px "Inter", sans-serif`;
+  ctx.fillStyle = "rgba(105,105,100,0.9)";
   const tag = sc.synthetic ? "SIMULATED PATIENTS · SYNTHETIC DATA · " : "PATHWAY REBUILT FROM STOKSTAD ET AL. 2019 · ";
   ctx.fillText(tag + "ONE DOT = ONE LUNG CANCER PATIENT · PILES = WAITING", W * 0.04, H * 0.1);
 }
 
 function drawClock(target) {
   ctx.textAlign = "right"; ctx.textBaseline = "alphabetic";
-  ctx.font = `${Math.round(H * 0.05)}px "DotGothic16", monospace`;
+  ctx.font = `600 ${Math.round(H * 0.05)}px "Inter", sans-serif`;
   const over = st.day >= target;
-  ctx.fillStyle = over ? "rgba(255,179,71,0.95)" : "rgba(233,239,230,0.95)";
+  ctx.fillStyle = over ? "rgba(200,125,0,0.95)" : "rgba(45,45,42,0.95)";
   ctx.fillText("DAY " + String(Math.floor(st.day)).padStart(3, "0"), W * 0.97, H * 0.075);
-  ctx.font = `${Math.round(H * 0.018)}px "Courier Prime", monospace`;
-  ctx.fillStyle = "rgba(160,170,160,0.9)";
+  ctx.font = `${Math.round(H * 0.018)}px "Inter", sans-serif`;
+  ctx.fillStyle = "rgba(105,105,100,0.9)";
   ctx.fillText("since first contact · target " + target + " days", W * 0.97, H * 0.105);
 }
 
@@ -286,10 +286,45 @@ let last = performance.now();
 function frame(now) {
   const dt = Math.min(0.1, (now - last) / 1000); last = now;
   if (st.playing) st.day = Math.min(st.endDay, st.day + dt * st.speed);
-  ctx.fillStyle = "#050607"; ctx.fillRect(0, 0, W, H);
-  const mode = SHOW.active ? SHOW.update() : (qs.has("race") ? "race" : qs.has("flow") ? "flow" : "lanes");
-  if (mode === "card" || mode === "race" || mode === "flow") {
-    if (mode === "card") SHOW.drawCard(); else if (mode === "race") RACE.draw(st.day); else FLOW.draw(st.day, dt);
+  ctx.fillStyle = "#fbfaf7"; ctx.fillRect(0, 0, W, H);
+  const mode = SHOW.active ? SHOW.update() : (qs.has("race") ? "race" : qs.has("flow") ? "flow" : qs.has("doc") ? "doc" : "lanes");
+  if (mode === "card" || mode === "race" || mode === "flow" || mode === "doc" || mode === "zoom" || mode === "pop") {
+    if (mode === "card") SHOW.drawCard();
+    else if (mode === "race") RACE.draw(st.day);
+    else if (mode === "flow") FLOW.draw(st.day, dt);
+    else if (mode === "doc") ZOOM.draw(SHOW.active ? SHOW.docT : (performance.now() / 1000) % 14);
+    else if (mode === "pop") {
+      // slow motion: the flow keeps running underneath; a popup grows out of the focused ball and fills the page
+      FLOW.draw(st.day, dt);
+      const T0 = SHOW.popT, D = SHOW.popDur, open = Math.min(1, T0 / 0.7), close = Math.min(1, Math.max(0, (D - T0) / 0.6));
+      const g = ease(Math.min(open, close));
+      ctx.fillStyle = `rgba(251,250,247,${0.82 * g})`; ctx.fillRect(0, 0, W, H);
+      const [bx, by] = FLOW.focusXY || [W * 0.73, H * 0.6];
+      const fx = W * 0.025, fy = H * 0.03, fw = W * 0.95, fh = H * 0.94;
+      const rx = bx + (fx - bx) * g, ry = by + (fy - by) * g, rw = fw * g, rh = fh * g;
+      if (rw > 4) {
+        ctx.save();
+        ctx.fillStyle = "#ffffff"; ctx.fillRect(rx, ry, rw, rh);
+        ctx.strokeStyle = "rgba(25,95,165,0.8)"; ctx.lineWidth = 2; ctx.strokeRect(rx, ry, rw, rh);
+        ctx.beginPath(); ctx.rect(rx, ry, rw, rh); ctx.clip();
+        ctx.translate(rx, ry); ctx.scale(rw / W, rh / H);
+        if (g > 0.6) ZOOM.draw(Math.max(0, T0 - 0.7) * 1.3);
+        ctx.restore();
+        // header strip: which event this is
+        if (g > 0.9) {
+          ctx.font = `600 ${Math.round(H * 0.017)}px "Inter", sans-serif`; ctx.textAlign = "left"; ctx.textBaseline = "top";
+          ctx.fillStyle = "rgba(25,95,165,0.95)";
+          ctx.fillText(`SLOW MOTION · DAY ${Math.floor(st.day)} · ONE PATIENT · HER REFERRAL IS READ AT THE HOSPITAL`, fx + 14, fy + 10);
+        }
+      }
+    }
+    else {
+      // zoom into (z > 0) or out of the flow scene towards the "Back to GP" swarm on the left
+      const z = SHOW.z, fx = W * 0.27 - 0.3 * W * 0.4, fy = H * 0.86 - (H * 0.56) * 4 / 12, sc = 1 + 7 * z * z;
+      ctx.save(); ctx.translate(fx, fy); ctx.scale(sc, sc); ctx.translate(-fx, -fy);
+      FLOW.draw(st.day, dt); ctx.restore();
+      ctx.fillStyle = `rgba(251,250,247,${Math.min(1, z * 1.3)})`; ctx.fillRect(0, 0, W, H);
+    }
     if (SHOW.active) SHOW.drawSubs();
     snap = true; requestAnimationFrame(frame); return;
   }
@@ -326,9 +361,10 @@ window.addEventListener("keydown", (e) => {
 });
 
 </script>
-<script src="race.js?v=8"></script>
-<script src="flow.js?v=8"></script>
-<script src="show.js?v=8"></script>
+<script src="race.js?v=18"></script>
+<script src="flow.js?v=18"></script>
+<script src="zoom.js?v=18"></script>
+<script src="show.js?v=18"></script>
 <script>
 resize();
 requestAnimationFrame(frame);
