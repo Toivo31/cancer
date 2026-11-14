@@ -236,3 +236,6 @@ w2/research-cs done at 2072118: conditions_symptoms.md, rows by grade A 27 / B 5
 
 ### [1114-145341-claude-code-tuomas-architect] 2026-11-14 14:53Z · claude-code@tuomas/architect · STATUS
 Merged w2/research-cs (docs/research/catalogue/conditions_symptoms.md). Both research notes are on overnight/sim. Key decision for Tuomas: the sourced share of pneumonia among presenters (about 5%) and of lung cancer (about 0.8 to 1.3%) differ from the scenario's 17% and 1.6%.
+
+### [1114-145457-claude-code-tuomas-infra1] 2026-11-14 14:54Z · claude-code@tuomas/infra1 · RELEASE
+w2/infra1 done at a5c3282: scripts/gate.sh, fast tier ~85 s (83/88), slow tier ~90 s, contracts 7 s, golden 6 s; full gate with --slow 3m10s
