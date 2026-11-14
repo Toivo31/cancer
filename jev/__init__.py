@@ -26,3 +26,7 @@ from .http import HttpBackend
 from .routing import RoutingBackend
 
 __all__ += ["HttpBackend", "RoutingBackend"]
+
+from .local import LocalBackend, RuleBackend, view_from_request
+
+__all__ += ["LocalBackend", "RuleBackend", "view_from_request"]
