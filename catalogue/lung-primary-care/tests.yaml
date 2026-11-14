@@ -1,0 +1,442 @@
+# Tests: what each reveals (outputs, each measuring one variable), how accurately, how long, what it costs, what it risks.
+# Process steps (referral letters, triage, tumour board, booking) and clinician judgements (order imaging? refer?) are not tests;
+# they stay in the flowchart. Carried unchanged from params/test_accuracy.yaml and scenarios/finland_lung.yaml where sourced.
+# Costs exist only where the scenario had a placeholder; no Finnish price list was found.
+- id: history
+  label: "Structured history"
+  category: history
+  outputs:
+    - {id: cough, type: binary, measures: cough, sensitivity: {value: 0.85, source: assumption, grade: assumption, note: "Modelling choice from the research note: 0.85 for a present symptom asked about in a structured history (recall and omission). No published rate was found."}, specificity: {value: 0.97, source: assumption, grade: assumption, note: "Assumed: a symptom the patient does not have is rarely reported. Not sourced."}}
+    - {id: haemoptysis, type: binary, measures: haemoptysis, sensitivity: {value: 0.85, source: assumption, grade: assumption, note: "As for the first symptom (assumption, research note section 9)."}, specificity: {value: 0.97, source: assumption, grade: assumption, note: "As for the first symptom (assumption)."}}
+    - {id: dyspnoea, type: binary, measures: dyspnoea, sensitivity: {value: 0.85, source: assumption, grade: assumption, note: "As for the first symptom (assumption, research note section 9)."}, specificity: {value: 0.97, source: assumption, grade: assumption, note: "As for the first symptom (assumption)."}}
+    - {id: chest_pain, type: binary, measures: chest_pain, sensitivity: {value: 0.85, source: assumption, grade: assumption, note: "As for the first symptom (assumption, research note section 9)."}, specificity: {value: 0.97, source: assumption, grade: assumption, note: "As for the first symptom (assumption)."}}
+    - {id: weight_loss, type: binary, measures: weight_loss, sensitivity: {value: 0.85, source: assumption, grade: assumption, note: "As for the first symptom (assumption, research note section 9)."}, specificity: {value: 0.97, source: assumption, grade: assumption, note: "As for the first symptom (assumption)."}}
+    - {id: fatigue, type: binary, measures: fatigue, sensitivity: {value: 0.85, source: assumption, grade: assumption, note: "As for the first symptom (assumption, research note section 9)."}, specificity: {value: 0.97, source: assumption, grade: assumption, note: "As for the first symptom (assumption)."}}
+    - {id: appetite_loss, type: binary, measures: appetite_loss, sensitivity: {value: 0.85, source: assumption, grade: assumption, note: "As for the first symptom (assumption, research note section 9)."}, specificity: {value: 0.97, source: assumption, grade: assumption, note: "As for the first symptom (assumption)."}}
+    - {id: fever, type: binary, measures: fever, sensitivity: {value: 0.85, source: assumption, grade: assumption, note: "As for the first symptom (assumption, research note section 9)."}, specificity: {value: 0.97, source: assumption, grade: assumption, note: "As for the first symptom (assumption)."}}
+    - {id: hoarseness, type: binary, measures: hoarseness, sensitivity: {value: 0.85, source: assumption, grade: assumption, note: "As for the first symptom (assumption, research note section 9)."}, specificity: {value: 0.97, source: assumption, grade: assumption, note: "As for the first symptom (assumption)."}}
+    - {id: recurrent_chest_infection, type: binary, measures: recurrent_chest_infection, sensitivity: {value: 0.85, source: assumption, grade: assumption, note: "As for the first symptom (assumption, research note section 9)."}, specificity: {value: 0.97, source: assumption, grade: assumption, note: "As for the first symptom (assumption)."}}
+    - {id: wheeze, type: binary, measures: wheeze, sensitivity: {value: 0.85, source: assumption, grade: assumption, note: "As for the first symptom (assumption, research note section 9)."}, specificity: {value: 0.97, source: assumption, grade: assumption, note: "As for the first symptom (assumption)."}}
+  positive_when: "haemoptysis or hoarseness or (cough and dyspnoea) or weight_loss"
+  timing:
+    service_days:
+      value: 0.04
+      source: assumption
+      grade: assumption
+      note: "Scenario value for a nurse or GP visit (scenarios/finland_lung.yaml, assumption)."
+  resource_kind: gp_appt
+  invasive: false
+  note: >-
+    Reveals symptoms. Whether the clinician orders imaging is a decision node, not part of this test.
+    positive_when is an alarm-symptom reading for the adapter (haemoptysis, hoarseness, weight loss,
+    or cough with breathlessness), loosely after NICE NG12; a modelling choice, not a rule from the
+    page.
+
+- id: examination
+  label: "Physical examination"
+  category: examination
+  outputs:
+    - {id: finger_clubbing, type: binary, measures: finger_clubbing, sensitivity: {value: 0.6, source: assumption, grade: assumption, note: "Modelling choice from the research note: 0.60 for a physical sign that is looked for (examiner variation). Not sourced."}, specificity: {value: 0.95, source: assumption, grade: assumption, note: "Assumed; not sourced."}}
+    - {id: abnormal_chest_sounds, type: binary, measures: abnormal_chest_sounds, sensitivity: {value: 0.6, source: assumption, grade: assumption, note: "As for the first sign (assumption)."}, specificity: {value: 0.9, source: assumption, grade: assumption, note: "Assumed lower because examiners disagree on chest sounds (rales specificity 0.39 to 0.61 across examiners in the Wipf data on the METLAY_UW page, which is for pneumonia); 0.90 is a placeholder."}}
+    - {id: neck_nodes, type: binary, measures: neck_nodes, sensitivity: {value: 0.6, source: assumption, grade: assumption, note: "As for the first sign (assumption)."}, specificity: {value: 0.95, source: assumption, grade: assumption, note: "Assumed; not sourced."}}
+    - {id: ankle_oedema, type: binary, measures: ankle_oedema, sensitivity: {value: 0.6, source: assumption, grade: assumption, note: "As for the first sign (assumption)."}, specificity: {value: 0.95, source: assumption, grade: assumption, note: "Assumed; not sourced."}}
+  positive_when: "finger_clubbing or neck_nodes or abnormal_chest_sounds"
+  timing:
+    service_days: {value: 0.04, source: assumption, grade: assumption, note: "Scenario value for a visit (assumption)."}
+  resource_kind: gp_appt
+  invasive: false
+  note: >-
+    Reveals signs. positive_when follows the NICE NG12 list of reasons to consider a chest X-ray
+    (clubbing, neck nodes, chest signs); a modelling choice for the adapter.
+
+- id: blood_count
+  label: "Blood count (haemoglobin, platelets)"
+  category: bloodwork
+  outputs:
+    - {id: hb, type: continuous, measures: hb_true, unit: "g/L"}
+    - {id: platelets, type: continuous, measures: platelets_true, unit: "10^9/L"}
+  positive_when: "platelets > 400 or hb < 110"
+  timing:
+    report_days:
+      dist: lognormal
+      median: 0.5
+      p90: 1.5
+      source: assumption
+      grade: assumption
+      note: "Same-day or next-day result for primary care blood tests; not sourced."
+  resource_kind: lab
+  invasive: false
+  note: >-
+    Analytical error is not modelled (no error_sd): the result equals the true value. positive_when:
+    thrombocytosis above 400 (BAILEY2017 definition) or haemoglobin below 110 g/L (the lower of the
+    CHEN2021 anaemia thresholds, 110 women / 120 men; sex-specific reading is not expressible).
+
+- id: crp
+  label: "C-reactive protein"
+  category: bloodwork
+  outputs:
+    - {id: crp, type: continuous, measures: crp_true, unit: "mg/L"}
+  positive_when: "crp >= 50"
+  timing:
+    report_days:
+      dist: lognormal
+      median: 0.5
+      p90: 1.5
+      source: assumption
+      grade: assumption
+      note: "Same-day or next-day result for primary care blood tests; not sourced."
+  resource_kind: lab
+  invasive: false
+  note: >-
+    Analytical error not modelled. Pneumonia prediction by CRP: PPV 0.47, NPV 0.84, AUC 0.69
+    (GRAFFELMAN2007, 129 Leiden primary-care adults with lower respiratory infection, 26 with
+    pneumonia, secondary summary; the best model included CRP); MINNAARD2016 has no CRP-alone
+    cut-offs. The threshold 50 mg/L in positive_when is a placeholder for the adapter, not sourced.
+
+- id: chemistry
+  label: "Chemistry (calcium, alkaline phosphatase, LDH)"
+  category: bloodwork
+  outputs:
+    - {id: calcium, type: continuous, measures: calcium_true, unit: "mmol/L"}
+    - {id: alp, type: continuous, measures: alp_true, unit: "U/L"}
+    - {id: ldh, type: continuous, measures: ldh_true, unit: "U/L"}
+  positive_when: "calcium > 2.62 or alp > 125"
+  timing:
+    report_days:
+      dist: lognormal
+      median: 0.5
+      p90: 1.5
+      source: assumption
+      grade: assumption
+      note: "Same-day or next-day result for primary care blood tests; not sourced."
+  resource_kind: lab
+  invasive: false
+  note: >-
+    Analytical error not modelled. positive_when: corrected calcium above 2.62 mmol/L (CHAN2020
+    hypercalcaemia) or ALP above 125 U/L (upper end of the range stated in YE2025). ALP alone detects
+    bone metastasis poorly (sensitivity 0.413, specificity 0.771 in SCIREP2017; 0.221 / 0.900 at 110
+    U/L in YE2025). LDH is not in positive_when: no threshold was sourced.
+
+- id: chest_xray
+  label: "Chest X-ray"
+  category: imaging
+  outputs:
+    - {id: abnormal, type: binary, measures: lung_lesion, sensitivity: {value: 0.754, source: BRADLEY2021, grade: B, note: "Cancers diagnosed within 1 year among symptomatic over-50s in Leeds (self-referred): 86 of 114 had a positive film (params/test_accuracy.yaml). About one in five missed (HSSIB2021 0.20; systematic review BRADLEY2019 0.768, 0.793, 0.797 in its three low-bias studies), so high 0.80. The raise with lesion size is an assumption (research note: missed cancers averaged 14.3 mm, LI2008); the by-levels are scaled so the mean over the cancer size mix (stage I median 20 mm, others median 30 mm) equals 0.754. It also applies to benign nodules, which are small (median 8 mm), so the scenario's 0.90 positive rate for benign nodules is not carried.", high: 0.8, by: {lesion_size_mm: {"..10": {value: 0.47, source: assumption, grade: assumption, note: "Assumed rise with size, scaled so that the mean over the cancer size mix equals 0.754 (raw 0.5, 0.7, 0.85)."}, "10..20": {value: 0.66, source: assumption, grade: assumption, note: "As above (raw 0.7)."}, "20..": {value: 0.81, source: assumption, grade: assumption, note: "As above (raw 0.85)."}}}}, specificity: {value: 0.902, source: BRADLEY2021, grade: B, note: "Same Leeds cohort (params/test_accuracy.yaml); negative predictive value 0.997 at one year, positive predictive value 0.0902. For patients without a lesion the false-positive rate depends on the condition (by-levels carried from the scenario).", by: {condition: {pneumonia: {value: 0.8, source: assumption, grade: assumption, note: "1 - the scenario's chest_xray p_positive (0.2) for the matching scenario condition (assumption); the scenario chose these so that the overall positive predictive value stays near 9% (BRADLEY2021 0.0902)."}, copd_exacerbation: {value: 0.88, source: assumption, grade: assumption, note: "1 - the scenario's chest_xray p_positive (0.12) for the matching scenario condition (assumption); the scenario chose these so that the overall positive predictive value stays near 9% (BRADLEY2021 0.0902)."}, asthma: {value: 0.95, source: assumption, grade: assumption, note: "1 - the scenario's chest_xray p_positive (0.05) for the matching scenario condition (assumption); the scenario chose these so that the overall positive predictive value stays near 9% (BRADLEY2021 0.0902)."}, heart_failure: {value: 0.95, source: assumption, grade: assumption, note: "1 - the scenario's chest_xray p_positive (0.05) for the matching scenario condition (assumption); the scenario chose these so that the overall positive predictive value stays near 9% (BRADLEY2021 0.0902)."}, reflux_postinfectious_cough: {value: 0.95, source: assumption, grade: assumption, note: "1 - the scenario's chest_xray p_positive (0.05) for the matching scenario condition (assumption); the scenario chose these so that the overall positive predictive value stays near 9% (BRADLEY2021 0.0902)."}, no_disease_found: {value: 0.95, source: assumption, grade: assumption, note: "1 - the scenario's chest_xray p_positive (0.05) for the matching scenario condition (assumption); the scenario chose these so that the overall positive predictive value stays near 9% (BRADLEY2021 0.0902)."}, viral_self_limiting: {value: 0.98, source: assumption, grade: assumption, note: "1 - the scenario's chest_xray p_positive (0.02) for the matching scenario condition (assumption); the scenario chose these so that the overall positive predictive value stays near 9% (BRADLEY2021 0.0902)."}}}}}
+    - {id: consolidation, type: binary, measures: consolidation, sensitivity: {value: 0.85, source: assumption, grade: assumption, note: "No source for the sensitivity of the film for consolidation; GRACE used the radiograph as the reference for pneumonia (VANVUGT2012). Placeholder."}, specificity: {value: 0.95, source: assumption, grade: assumption, note: "Placeholder; not sourced."}}
+  positive_when: abnormal
+  timing:
+    service_days: {value: 0.04, source: assumption, grade: assumption, note: "Scenario value (assumption)."}
+    report_days:
+      dist: lognormal
+      median: 1.5
+      p90: 4
+      source: assumption
+      grade: assumption
+      note: "Scenario value (scenarios/finland_lung.yaml): median 1.5, p90 4 days."
+  resource_kind: xray
+  cost_eur: {value: 40, source: assumption, grade: assumption, note: "Scenario placeholder; no Finnish price list was found."}
+  invasive: false
+  note: >-
+    True in positive_when means abnormal or suspicious for malignancy, as in the scenario. Within the
+    first year after a negative film 0.35% of people still develop a cancer diagnosis (BRADLEY2021,
+    params/test_accuracy.yaml).
+
+- id: chest_ct
+  label: "CT of the chest"
+  category: imaging
+  outputs:
+    - {id: lesion_seen, type: binary, measures: lung_lesion, sensitivity: {value: 0.95, source: assumption, grade: assumption, note: "The scenario's diagnostic CT value (0.95, assumption; params/test_accuracy.yaml diagnostic_ct_chest). WEIRMCCALL2020 (0.948) is used below for the malignancy reading."}, specificity: {value: 0.98, source: assumption, grade: assumption, note: "Assumed: CT rarely reports a lesion that is not there. Not sourced."}}
+    - {id: suspicious_for_malignancy, type: binary, measures: lesion_malignant, only_if: lesion_seen, sensitivity: {value: 0.948, source: WEIRMCCALL2020, grade: B, note: "Proxy: 23 studies, 2,514 solitary pulmonary nodules, dynamic contrast-enhanced CT, malignant versus benign (WEIRMCCALL2020); not detection in a chest-symptom population. The paper's Key Points give 0.951 and 0.738, slightly different from the Results text used here. The scenario used 0.95 (assumption), so the sourced value is used. Read through a summarising tool; re-check against the page.", low: 0.915, high: 0.969}, specificity: {value: 0.755, source: WEIRMCCALL2020, grade: B, note: "Proxy: 23 studies, 2,514 solitary pulmonary nodules, dynamic contrast-enhanced CT, malignant versus benign (WEIRMCCALL2020); not detection in a chest-symptom population. The paper's Key Points give 0.951 and 0.738, slightly different from the Results text used here. The scenario used about 0.80 (assumption); the sourced 0.755 is used (95% interval 0.694 to 0.806). For nodules that are benign, which is where this applies. Read through a summarising tool; re-check against the page.", low: 0.694, high: 0.806}}
+    - {id: nodes_enlarged, type: binary, measures: mediastinal_nodes, only_if: lesion_seen, sensitivity: {value: 0.55, source: GELBERG2014, grade: B, note: "Mediastinal staging by CT, ACCP 2013 guideline via the Gelberg review (SILVESTRI2013); nodal disease prevalence about 30%; studies differ in population, so do not compare modalities directly. Negative predictive value 0.83 (params/test_accuracy.yaml)."}, specificity: {value: 0.81, source: GELBERG2014, grade: B, note: "Same source."}}
+    - {id: size_mm, type: size_mm, measures: lesion_size_mm, only_if: lesion_seen, error_sd: {value: 2.0, source: assumption, grade: assumption, note: "Measurement error of a few millimetres; not sourced."}}
+    - {id: location, type: categorical, measures: lesion_location, only_if: lesion_seen, accuracy: {value: 0.98, source: assumption, grade: assumption, note: "The scenario lets CT reveal the location without error; 0.98 leaves room for a rare error."}}
+  positive_when: suspicious_for_malignancy
+  timing:
+    service_days: {value: 0.04, source: assumption, grade: assumption, note: "Scenario value (assumption)."}
+    report_days:
+      dist: lognormal
+      median: 3
+      p90: 7
+      source: PIRHA_PATH
+      grade: C
+      note: >-
+        Pirkanmaa: lung and upper abdomen CT usually reported within a week of referral processing
+        (params/finland.yaml, p90 7); median 3 is the scenario's assumption.
+  resource_kind: ct_scanner
+  cost_eur:
+    value: 250
+    source: assumption
+    grade: assumption
+    note: "Scenario placeholder; no Finnish price list was found."
+  invasive: false
+  note: >-
+    Scenario p_positive for non-cancer conditions on CT (pneumonia 0.15, benign nodule 0.65, others
+    0.01-0.02) is not carried: the malignancy reading applies only where a lesion is seen, and its
+    specificity is the sourced 0.755.
+
+- id: low_dose_ct
+  label: "Low-dose CT of the chest"
+  category: imaging
+  outputs:
+    - {id: suspicious_nodule, type: binary, measures: lesion_malignant, sensitivity: {value: 0.846, source: HOREWEG2014, grade: B, note: "NELSON interim analysis, high-risk smokers aged 50-75, first three rounds plus two years of follow-up. Screening population, not symptomatic patients; secondary (news summary) (params/test_accuracy.yaml)."}, specificity: {value: 0.986, source: HOREWEG2014, grade: B, note: "Same. Positive predictive value 0.404 and negative predictive value 0.998 in the same analysis (depend on prevalence, so not inputs)."}}
+  positive_when: suspicious_nodule
+  timing:
+    service_days: {value: 0.04, source: assumption, grade: assumption, note: "Same as a chest CT (assumption)."}
+    report_days:
+      dist: lognormal
+      median: 3
+      p90: 7
+      source: assumption
+      grade: assumption
+      note: "Same as the chest CT report (assumption)."
+  resource_kind: ct_scanner
+  invasive: false
+  note: >-
+    A screening test, not part of the Finnish symptomatic pathway; values carried only. Accuracy
+    applies to a population with a different disease prevalence than symptomatic presenters.
+
+- id: pet_ct
+  label: "PET-CT"
+  category: imaging
+  outputs:
+    - {id: fdg_avid, type: binary, measures: lesion_malignant, sensitivity: {value: 0.968, source: GOULD2001, grade: B, note: "FDG-PET (stand-alone, not PET-CT), 40 studies, 1,474 pulmonary lesions, operating point reflecting current practice (params/test_accuracy.yaml). Pooled-versus-carried: the PET-CT-specific meta-analysis LI2018 (21 studies, 1,557 patients, solitary nodules) gives 0.89 (0.87-0.91), grade A; kept as the low bound.", low: 0.89}, specificity: {value: 0.778, source: GOULD2001, grade: B, note: "Same operating point; false positives from inflammation and infection. LI2018 PET-CT: 0.70 (0.66-0.73), kept as the low bound. Condition by-levels for people without a malignant lesion are carried from the scenario.", low: 0.7, by: {condition: {pneumonia: {value: 0.7, source: assumption, grade: assumption, note: "1 - the scenario's pet_ct p_positive (0.3) for the matching scenario condition (assumption), for patients without a malignant lesion."}, copd_exacerbation: {value: 0.9, source: assumption, grade: assumption, note: "1 - the scenario's pet_ct p_positive (0.1) for the matching scenario condition (assumption), for patients without a malignant lesion."}, asthma: {value: 0.95, source: assumption, grade: assumption, note: "1 - the scenario's pet_ct p_positive (0.05) for the matching scenario condition (assumption), for patients without a malignant lesion."}, heart_failure: {value: 0.95, source: assumption, grade: assumption, note: "1 - the scenario's pet_ct p_positive (0.05) for the matching scenario condition (assumption), for patients without a malignant lesion."}, reflux_postinfectious_cough: {value: 0.95, source: assumption, grade: assumption, note: "1 - the scenario's pet_ct p_positive (0.05) for the matching scenario condition (assumption), for patients without a malignant lesion."}, no_disease_found: {value: 0.95, source: assumption, grade: assumption, note: "1 - the scenario's pet_ct p_positive (0.05) for the matching scenario condition (assumption), for patients without a malignant lesion."}, viral_self_limiting: {value: 0.98, source: assumption, grade: assumption, note: "1 - the scenario's pet_ct p_positive (0.02) for the matching scenario condition (assumption), for patients without a malignant lesion."}}}}}
+    - {id: nodes_avid, type: binary, measures: mediastinal_nodes, sensitivity: {value: 0.8, source: GELBERG2014, grade: B, note: "Mediastinal staging by PET (ACCP 2013 via the Gelberg review); nodal prevalence about 28%; NPV 0.91 (params/test_accuracy.yaml)."}, specificity: {value: 0.88, source: GELBERG2014, grade: B, note: "Same source."}}
+  positive_when: fdg_avid
+  timing:
+    service_days: {value: 0.06, source: assumption, grade: assumption, note: "Scenario value (assumption)."}
+    report_days:
+      dist: lognormal
+      median: 2.5
+      p90: 4
+      source: STOKSTAD2019
+      grade: B
+      note: >-
+        Report-only time of 2.5 days (Norway, St Olav's, stage I-II); p90 4 is the scenario's choice.
+        Referral to report took 20.5 days (range 7-49) there, but that includes waiting, which belongs
+        to the world, not the test.
+  resource_kind: pet_scanner
+  cost_eur:
+    value: 1500
+    source: assumption
+    grade: assumption
+    note: "Scenario placeholder; no Finnish price list was found."
+  invasive: false
+  note: >-
+    In the Norwegian stage I-II cohort PET-CT changed the treatment plan in 2% (0.02) and triggered
+    further work-up in about 12% (STOKSTAD2019, params/test_accuracy.yaml); the format has no field
+    for that downstream effect.
+
+- id: brain_mri
+  label: "MRI of the brain (staging)"
+  category: imaging
+  outputs:
+    - {id: brain_mets_seen, type: binary, measures: brain_metastasis, sensitivity: {value: 0.95, source: assumption, grade: assumption, note: "Research note section 9: clinical MRI is the reference standard in practice; no figure was found (BROCKELSBY_PRENDECKI says the CT versus MRI difference is relatively modest)."}, specificity: {value: 0.95, source: assumption, grade: assumption, note: "As above; not sourced."}}
+  positive_when: brain_mets_seen
+  timing:
+    service_days: {value: 0.06, source: assumption, grade: assumption, note: "As for PET-CT (assumption)."}
+    report_days: {dist: lognormal, median: 3, p90: 7, source: assumption, grade: assumption, note: "As for CT (assumption)."}
+  resource_kind: mri
+  invasive: false
+  requires: [chest_ct]
+
+- id: spirometry
+  label: Spirometry
+  category: function
+  outputs:
+    - {id: airflow_obstruction, type: binary, measures: airflow_obstruction, sensitivity: {value: 1.0, source: assumption, grade: assumption, note: "Full spirometry is the reference test for airflow obstruction (research note); the uncertainty sits in the true variable, not in the measurement."}, specificity: {value: 1.0, source: assumption, grade: assumption, note: "As above."}}
+    - {id: fev1_pct, type: continuous, measures: fev1_pct_predicted, unit: "% predicted"}
+  positive_when: airflow_obstruction
+  timing:
+    service_days: {value: 0.04, source: assumption, grade: assumption, note: "Assumed the length of a visit; not sourced."}
+  resource_kind: gp_appt
+  invasive: false
+  note: >-
+    Proxy accuracy for a handheld device only: pre-bronchodilator microspirometry FEV1/FEV6 below 0.73
+    against full spirometry, sensitivity 0.932 (0.833 to 0.981), specificity 0.850, 104 Dutch
+    primary-care subjects (VANDENBEMT2014).
+
+- id: bronchoscopy
+  label: "Bronchoscopy with biopsy"
+  category: endoscopy
+  outputs:
+    - {id: malignant_cells, type: binary, measures: lesion_malignant, sensitivity: {value: 0.88, source: RIVERA2013, grade: A, note: "Flexible bronchoscopy, central or endobronchial lesions (ACCP 2013, params/test_accuracy.yaml). Peripheral lesions: 0.63 when larger than 2 cm and 0.34 when 2 cm or smaller (by-levels; the bands here are below 20 mm and 20 mm or more). Radial EBUS yield 0.73 and electromagnetic navigation 0.71 for peripheral lesions (guideline: emerging technology) are not modelled. The scenario expressed these as non-diagnostic rates (central 0.12, peripheral 0.45, from RIVERA2013); they are 1 minus the sensitivities, so they are not carried a second time as `nondiagnostic`.", by: {lesion_location: {peripheral: {by: {lesion_size_mm: {"..20": {value: 0.34, source: RIVERA2013, grade: A, note: "Peripheral lesions 2 cm or smaller."}, "20..": {value: 0.63, source: RIVERA2013, grade: A, note: "Peripheral lesions larger than 2 cm."}}}}}}}, specificity: {value: 1.0, source: assumption, grade: assumption, note: "A positive tissue sample is taken as true cancer; not sourced (params/test_accuracy.yaml)."}}
+  positive_when: malignant_cells
+  timing:
+    service_days: {value: 0.06, source: assumption, grade: assumption, note: "Scenario value (assumption)."}
+    report_days:
+      dist: lognormal
+      median: 4
+      p90: 7
+      source: PIRHA_PATH
+      grade: C
+      note: >-
+        Pirkanmaa: bronchoscopy results 3-5 days after the procedure (params/finland.yaml); p90 7 is
+        the scenario's. As in the scenario this includes the pathology reading, so ordering
+        histology_report as well would count it twice.
+  resource_kind: bronchoscopy
+  cost_eur:
+    value: 1200
+    source: assumption
+    grade: assumption
+    note: "Scenario placeholder; no Finnish price list was found."
+  invasive: true
+  harm:
+    pneumothorax:
+      value: 0.01
+      source: assumption
+      grade: assumption
+      note: >-
+        No transbronchial-biopsy-specific figure was found; STAHL2015 gives 0.0007-0.0016 for
+        fibreoptic bronchoscopy generally. 0.01 is the scenario's upper-bound assumption
+        (params/test_accuracy.yaml).
+    bleeding_over_50ml:
+      value: 0.0012
+      source: STAHL2015
+      grade: C
+      note: >-
+        5 of 4,273 in a retrospective academic centre (0.17% in a Greek study); prospective data 0.7%
+        and 2% with trainee operators. Whole-procedure review, not specific to lung cancer biopsy.
+        Read through a summarising tool; re-check against the page.
+  requires: [chest_ct]
+  note: >-
+    Complications overall range from under 0.1% to 11% across studies (STAHL2015, narrative review).
+    nondiagnostic is left out on purpose, see the sensitivity note.
+
+- id: ebus_tbna
+  label: "EBUS needle sampling of mediastinal nodes"
+  category: endoscopy
+  outputs:
+    - {id: nodes_malignant, type: binary, measures: mediastinal_nodes, sensitivity: {value: 0.89, source: GELBERG2014, grade: A, note: "ACCP 2013 value (params/test_accuracy.yaml); meta-analyses 0.88 and 0.93, and 0.94 when patients are selected by PET/CT-positive nodes. Pooled-versus-carried: 0.76 when not pre-selected by imaging (ALMEIDA2012) is kept as the low bound. Negative predictive value 0.91.", low: 0.76}, specificity: {value: 1.0, source: GELBERG2014, grade: B, note: "The reviewers note 100% could not be verified without a follow-up test; use about 0.99 in sensitivity runs (low).", low: 0.99}}
+  positive_when: nodes_malignant
+  timing:
+    service_days: {value: 0.06, source: assumption, grade: assumption, note: "As bronchoscopy (assumption)."}
+    report_days:
+      dist: lognormal
+      median: 4
+      p90: 7
+      source: assumption
+      grade: assumption
+      note: "As bronchoscopy (assumption); no EBUS-specific time sourced."
+  resource_kind: bronchoscopy
+  invasive: true
+  harm:
+    infectious_complication:
+      value: 0.0019
+      source: AHMETOGLU2023
+      grade: C
+      note: >-
+        Japanese nationwide survey 0.19% of 7,345 cases; literature range 0.16 to 0.54% (secondary:
+        read in the introduction of a case report). Prospective Spanish multicentre cohort (SERRA2023,
+        370 patients): 4.05% overall, 5.71% with risk factors, 0.8% without; used as the high bound
+        (active follow-up, definition not checked). Read through a summarising tool; re-check against
+        the page.
+      low: 0.0016
+      high: 0.0405
+  requires: [chest_ct]
+
+- id: ct_guided_biopsy
+  label: "CT-guided needle biopsy"
+  category: tissue
+  outputs:
+    - {id: malignant_cells, type: binary, measures: lesion_malignant, sensitivity: {value: 0.9, source: RIVERA2013, grade: A, note: "Pooled sensitivity of transthoracic needle aspiration or biopsy, with a trend to lower sensitivity for lesions under 2 cm (params/test_accuracy.yaml). Single-centre UZUN2017 reports 0.973 (optimistic), kept as the high bound.", high: 0.973}, specificity: {value: 1.0, source: UZUN2017, grade: B, note: "442 CT-guided fine-needle aspirations in Ankara 2011-2015: sensitivity 0.973, specificity 1.0, accuracy 97.6%."}}
+  nondiagnostic:
+    value: 0.027
+    source: UZUN2017
+    grade: B
+    note: >-
+      Single-centre CT-guided fine-needle aspiration, 12 of 432 (accuracy 97.6%); optimistic for a
+      general hospital, sensitivity analysis up to 0.10 (params/test_accuracy.yaml). The scenario used
+      0.08 for peripheral and 0.35 for central lesions (both assumptions): the sourced 0.027 replaces
+      0.08, and 0.35 for central (hard to reach) lesions is carried.
+    high: 0.1
+    by:
+      lesion_location:
+        central:
+          value: 0.35
+          source: assumption
+          grade: assumption
+          note: "Scenario assumption: central lesions are hard to reach with a needle."
+  positive_when: malignant_cells
+  timing:
+    service_days: {value: 0.06, source: assumption, grade: assumption, note: "Scenario value (assumption)."}
+    report_days:
+      dist: lognormal
+      median: 4.5
+      p90: 9
+      source: STOKSTAD2019
+      grade: B
+      note: >-
+        Median 4.5 days from tissue sampling to pathology report, range 0-14 (Norway, stage I-II); p90
+        9 is the scenario's. As in the scenario this includes the pathology reading.
+  resource_kind: ttnb_slot
+  cost_eur:
+    value: 900
+    source: assumption
+    grade: assumption
+    note: "Scenario placeholder; no Finnish price list was found."
+  invasive: true
+  harm:
+    pneumothorax:
+      value: 0.15
+      source: WIENER2011
+      grade: B
+      note: >-
+        About 15% in a US population-based sample of biopsies of nodules (secondary summary).
+        Pooled-versus-carried: the meta-analysis HUO2020 (36 studies, 23,104 patients, CT-guided lung
+        biopsy) gives 0.259 (spread across studies 0.043 to 0.524); kept as the high bound.
+        Single-centre UZUN2017: 0.19.
+      high: 0.259
+    chest_tube:
+      value: 0.066
+      source: WIENER2011
+      grade: B
+      note: >-
+        Needing a chest tube (secondary summary). HUO2020 pooled chest drain insertion 0.069 (0 to
+        0.15), kept as the high bound. UZUN2017: 0.029.
+      high: 0.069
+  requires: [chest_ct]
+  note: >-
+    Risk factors for pneumothorax in HUO2020 (bulla odds ratio 6.13, emphysema 3.33) are not modelled.
+
+- id: sputum_cytology
+  label: "Sputum cytology"
+  category: tissue
+  outputs:
+    - {id: malignant_cells, type: binary, measures: lesion_malignant, sensitivity: {value: 0.66, source: RIVERA2013, grade: A, note: "Pooled sensitivity of sputum cytology for lung cancer (ACCP 2013 abstract). The true yield is higher for central tumours; the abstract gives no split."}, specificity: {value: 0.99, source: RIVERA2013, grade: A, note: "Same source."}}
+  positive_when: malignant_cells
+  timing:
+    service_days: {value: 0.01, source: assumption, grade: assumption, note: "A sample, not a visit; not sourced."}
+    report_days:
+      dist: lognormal
+      median: 4.5
+      p90: 9
+      source: assumption
+      grade: assumption
+      note: "Borrowed from histology (STOKSTAD2019 median 4.5 days); not sourced for cytology."
+  resource_kind: lab
+  invasive: false
+
+- id: histology_report
+  label: "Histology report (cell type)"
+  category: tissue
+  outputs:
+    - {id: histology, type: categorical, measures: histology_group, accuracy: {value: 0.95, source: assumption, grade: assumption, note: "Subtyping on a small biopsy is occasionally wrong or reported as not otherwise specified; no figure sourced."}}
+  positive_when: "histology is not None"
+  timing:
+    report_days:
+      dist: lognormal
+      median: 4.5
+      p90: 9
+      source: STOKSTAD2019
+      grade: B
+      note: >-
+        Median 4.5 days from tissue sampling to pathology report, range 0-14 (Norway, stage I-II,
+        carried); p90 9 is the scenario's.
+  resource_kind: pathology
+  invasive: false
+  note: >-
+    Reads a sample obtained by bronchoscopy, EBUS or needle biopsy; whether the sample caught the
+    cancer is the sampling test's sensitivity. The histology is null when the tissue is not malignant,
+    so positive_when means a cancer was typed. Molecular panels (turnaround 4 working days in-house in
+    Copenhagen, PATHOLOGIST2024; 45% actionable alterations in advanced NSCLC, Tampere,
+    HORMALAINEN2025) are not modelled: the pathway does not use marker status.
