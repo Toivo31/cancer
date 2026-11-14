@@ -25,6 +25,16 @@ export LLM_MODEL="${LLM_MODEL:-gemini-3.8-flash}"
 KEEP_AWAKE=""; command -v caffeinate >/dev/null 2>&1 && KEEP_AWAKE="caffeinate -i"
 mkdir -p runs/gen_logs
 
+report_line() {   # one line from a generation report: DONE or PARTIAL, with accepted / discarded / failed counts
+  $PY - "$1" <<'PYEOF'
+import json, sys
+r = json.load(open(sys.argv[1]))
+state = "PARTIAL (rerun: resume)" if r.get("partial") else ("done, WITH FAILED CARDS" if r.get("failed") else "done")
+print(f"{state}  accepted {r.get('accepted')}/{r.get('requested')}, discarded {r.get('discarded')}, failed {r.get('failed')}, "
+      f"not completed {r.get('not_completed')}, stop {r.get('stop_reason')}")
+PYEOF
+}
+
 need_key() {
   if [ -z "${LLM_API_KEY:-}" ]; then
     echo 'LLM_API_KEY is not set in this terminal. Run:  export LLM_API_KEY="your key"   and try again.' >&2
@@ -59,7 +69,12 @@ case "$MODE" in
     for s in $SEEDS; do
       OUT=libraries/gemini_v2_s${s}_${N}
       if [ -f "$OUT/manifest.json" ] && ! grep -q '"partial": true' "$OUT.work/generation_report.json" 2>/dev/null; then
-        echo "seed $s: finished"; continue
+        echo "seed $s: finished  $(report_line "$OUT.work/generation_report.json")"
+        if ! grep -q '"failed": 0' "$OUT.work/generation_report.json"; then
+          echo "  some cards failed (endpoint errors) and are not in the library; resume does not retry them. To retry"
+          echo "  from the cache (answered calls are free): mkdir -p runs/old_libraries && mv $OUT runs/old_libraries/ && bash $0 resume"
+        fi
+        continue
       fi
       if pgrep -f "patient_engine generate.*--seed $s " >/dev/null 2>&1; then echo "seed $s: still running"; continue; fi
       RES=""; [ -e "$OUT" ] && RES="--resume"
@@ -71,10 +86,13 @@ case "$MODE" in
   status)
     for s in $SEEDS; do
       OUT=libraries/gemini_v2_s${s}_${N}
-      if [ -f "$OUT.work/generation_report.json" ]; then
-        echo "seed $s: done  $(grep -E '"accepted"|"discarded"|"failed"' "$OUT.work/generation_report.json" | tr -d ' \n')"
+      if pgrep -f "patient_engine generate.*--seed $s " >/dev/null 2>&1; then
+        echo "seed $s: running  $(tail -n 1 runs/gen_logs/v2_s$s*.log 2>/dev/null | tail -n 1)"
+      elif [ -f "$OUT.work/generation_report.json" ]; then
+        # review w8: a partial library or failed cards (endpoint errors) must not read as "done"
+        echo "seed $s: $(report_line "$OUT.work/generation_report.json")"
       else
-        echo "seed $s: $(tail -n 1 runs/gen_logs/v2_s$s*.log 2>/dev/null | tail -n 1)"
+        echo "seed $s: not running, no report  $(tail -n 1 runs/gen_logs/v2_s$s*.log 2>/dev/null | tail -n 1)"
       fi
     done
     ;;
