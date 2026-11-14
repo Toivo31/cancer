@@ -44,7 +44,8 @@ def requests(lung, design):
     out = []
     for i in range(design.n):
         sk = make_skeleton(lung, i, design, 7)
-        g1 = fake.complete_json(**authors.g1_request(sk), key=str(i))
+        g1, probs = authors.g1_accept(sk, fake.complete_json(**authors.g1_request(sk), key=str(i)))
+        assert probs == []
         for st in sk.states:
             plan = settle_error_plan(lung, sk, authors.findings_of(g1, st), st)[st]
             out.append((sk, st, g1, plan, authors.g2_request(sk, g1, plan, st)))

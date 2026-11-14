@@ -25,7 +25,7 @@ def lung():
 def setup(lung):
     design = make_design(lung, {k: 2 for k in lung.conditions})
     fake = reference_fake_client(lung, design, 3)
-    authors = Authors(lung, "g2@1")                     # the g2@1 tests below; g2@2 has its own fixture
+    authors = Authors(lung, "g2@1", "g1@1")                     # the g2@1 tests below; g2@2 has its own fixture
     sk = next(k for k in (make_skeleton(lung, i, design, 3) for i in range(design.n)) if len(k.states) == 1)
     g1 = fake.complete_json(**authors.g1_request(sk), key="x")
     plan = settle_error_plan(lung, sk, authors.findings_of(g1))["all_active"]
@@ -155,7 +155,7 @@ def test_repair_user_contains_request_answer_and_problems(setup):
 
 def test_g1_prompt_lists_every_state_and_g2_is_asked_per_state(multi, lung):
     design, sk = multi
-    authors = Authors(lung, "g2@1")
+    authors = Authors(lung, "g2@1", "g1@1")
     req = authors.g1_request(sk)
     for st in sk.states:
         assert f"- {st}:" in req["user"]
@@ -171,7 +171,7 @@ def test_g1_prompt_lists_every_state_and_g2_is_asked_per_state(multi, lung):
 
 def test_assemble_multi_state_notes_and_plan(multi, lung):
     design, sk = multi
-    authors = Authors(lung, "g2@1")
+    authors = Authors(lung, "g2@1", "g1@1")
     fake = reference_fake_client(lung, design, 3)
     g1 = fake.complete_json(**authors.g1_request(sk), key="a")
     g2, plans = {}, {}

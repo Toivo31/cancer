@@ -40,3 +40,4 @@ tests/test_pe_reference.py::test_xray_sensitivity_by_lesion_size_and_false_alarm
 
 # WP-W4-3: audit baseline and skew tests on 1 000 reference cards (about 1 minute)
 tests/test_pe_audit_1000.py
+tests/test_pe_g1_profile.py::test_g1v2_library_passes_the_findings_audit_and_a_mode_author_fails_it

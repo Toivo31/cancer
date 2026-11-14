@@ -137,14 +137,14 @@ def generate_card(authors: Authors, sk: Skeleton, client, results_client=None, c
 
     try:
         req1 = authors.g1_request(sk)
-        g1: Any = ask(client, req1, "g1", cfg.g1_temperature)
+        raw1: Any = ask(client, req1, "g1", cfg.g1_temperature)     # the author's own answer (echoed in a repair)
         g2: dict[str, Any] = {}
         reqs: dict[str, dict] = {}
         plans: dict[str, Any] = {}
         for rep in range(cfg.max_repairs + 1):
             r1: list[Problem] = []
             r2: dict[str, list[Problem]] = {}
-            p1 = authors.g1_problems(g1, states)
+            g1, p1 = authors.g1_accept(sk, raw1)      # g1@2: the engine's findings joined to presenting and account
             if p1:
                 r1 = p1
             else:
@@ -183,8 +183,8 @@ def generate_card(authors: Authors, sk: Skeleton, client, results_client=None, c
                 return CardOutcome(sk.id, "discarded", None, rep, "errors remain after the last repair",
                                    [str(p) for p in allp[:20]])
             if r1:
-                g1 = ask(client, req1, f"g1:r{rep + 1}", cfg.g1_temperature,
-                         authors.repair_user("g1", req1["user"], g1, authors.repair_text("g1", sk.id, r1)))
+                raw1 = ask(client, req1, f"g1:r{rep + 1}", cfg.g1_temperature,
+                           authors.repair_user("g1", req1["user"], raw1, authors.repair_text("g1", sk.id, r1)))
                 g2, plans = {}, {}
             else:
                 for st, ps in r2.items():
@@ -228,14 +228,15 @@ def _prepare_out(out_dir: Path, work: Path, resume: bool) -> None:
 def generate_library_with_report(catalogue: Catalogue, design: Design, seed: int, client, *,
                                  budget: Budget | None = None, out_dir, results_client=None,
                                  config: GenerationConfig | None = None, work_dir=None, resume: bool = False,
-                                 results_prompt: str | None = None,
+                                 results_prompt: str | None = None, patient_prompt: str | None = None,
                                  progress: Callable[[CardOutcome, int, int], None] | None = None
                                  ) -> tuple[LibraryManifest, GenerationReport]:
     """Generate the cards of ``design`` and store them as a library in ``out_dir``. See the module docstring.
 
     ``budget`` replaces the client's own budget (and the results client's) when given. ``results_client``
     is G2's client when G2 uses another model or temperature (it should share the budget and log).
-    ``results_prompt`` picks the result-author version (default ``PROMPT_VERSIONS["results"]``, g2@2)."""
+    ``results_prompt`` picks the result-author version (default ``PROMPT_VERSIONS["results"]``, g2@2), and
+    ``patient_prompt`` the patient-author version (default ``PROMPT_VERSIONS["patient"]``, g1@2)."""
     cfg = config or GenerationConfig()
     out_dir = Path(out_dir)
     work = Path(work_dir) if work_dir else _work_dir(out_dir)
@@ -245,7 +246,7 @@ def generate_library_with_report(catalogue: Catalogue, design: Design, seed: int
         client.budget = budget
         if results_client is not None:
             results_client.budget = budget
-    authors = Authors(catalogue, results_prompt)
+    authors = Authors(catalogue, results_prompt, patient_prompt)
     t0 = time.monotonic()
     stop = threading.Event()
     lock = threading.Lock()
@@ -359,6 +360,13 @@ def reference_fake_client(catalogue: Catalogue, design: Design, seed: int, *,
             for i, st in enumerate(c["states"]):
                 ans["states"][st] = {"findings": c["hidden"]["findings"][st], "presenting": c["presenting"][st],
                                      "account": {"text": c["notes"][2 * i]["text"], "mentions": c["notes"][2 * i]["mentions"]}}
+                block = schema["properties"]["states"].get("properties", {}).get(st, {}).get("properties")
+                voice_only = "findings" not in block if block else "\nVARIABLES\n" not in user
+                if voice_only:                              # g1@2: the engine draws the findings; the author writes voice only
+                    del ans["states"][st]["findings"]
+                    visible = {v for v, x in catalogue.variables.items() if x.kind in ("symptom", "sign")}
+                    ans["states"][st]["account"]["mentions"] = [m for m in ans["states"][st]["account"]["mentions"]
+                                                                if m in visible]
         else:
             role = "g2"
             st = _STATE_RX.search(user).group(1)
@@ -412,14 +420,14 @@ def _fake_g2v2(catalogue: Catalogue, user: str) -> dict:
 
 
 def estimate_cost(catalogue: Catalogue, design: Design, seed: int, sample: int = 30,
-                  results_prompt: str | None = None) -> dict:
+                  results_prompt: str | None = None, patient_prompt: str | None = None) -> dict:
     """Prompt and answer sizes for ``sample`` cards through the reference fake (no model call). Tokens are
     characters / 4. Answers of a real model are longer than the reference's template texts: count about
     1.5 times the output figure."""
     answers: list[int] = []
     fake = reference_fake_client(catalogue, design, seed, transform=lambda role, cid, ans, user: (
         answers.append(len(json.dumps(ans))) or ans))
-    authors = Authors(catalogue, results_prompt)
+    authors = Authors(catalogue, results_prompt, patient_prompt)
     n = min(sample, design.n)
     for i in range(n):
         generate_card(authors, make_skeleton(catalogue, i, design, seed), fake)

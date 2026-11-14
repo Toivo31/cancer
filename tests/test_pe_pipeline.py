@@ -134,7 +134,7 @@ def test_broken_g1_repair_asks_g2_again_with_the_new_findings(tiny):
         return ans
 
     fake = reference_fake_client(tiny, design, 1, transform=break_g1)
-    out = generate_card(Authors(tiny), make_skeleton(tiny, 0, design, 1), fake)
+    out = generate_card(Authors(tiny, patient_prompt="g1@1"), make_skeleton(tiny, 0, design, 1), fake)   # G1 writes findings
     assert out.status == "accepted" and out.repairs == 1
     roles = ["g1" if "patient author" in s else "g2" for s, _ in fake.calls]
     assert roles[:2] == ["g1", "g1"] and set(roles[2:]) == {"g2"}      # the broken G1 never reaches G2
