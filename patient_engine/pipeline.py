@@ -45,7 +45,7 @@ from pathlib import Path
 from typing import Any, Callable, Mapping
 
 from .authors import PROMPT_VERSIONS, Authors
-from .card import INITIAL_STATE, LibraryManifest
+from .card import LibraryManifest
 from .catalogue import Catalogue
 from .library import LibraryError, load_library, write_library
 from .llm import (Budget, BudgetExceeded, FakeLLMClient, LLMError, LLMHTTPError, LLMOutputError)
@@ -117,14 +117,14 @@ def _promote(problems: list[Problem]) -> list[Problem]:
 
 def generate_card(authors: Authors, sk: Skeleton, client, results_client=None, cfg: GenerationConfig | None = None
                   ) -> CardOutcome:
-    """One card through G1, the plan, G2, validation and at most ``cfg.max_repairs`` repairs.
+    """One card through G1 (every state, one call), the settled plan per state, G2 (one call per state),
+    validation and at most ``cfg.max_repairs`` repairs. A repair round re-asks only the author that failed
+    (G1 re-asks all of G2: the findings, hence the plans, changed; G2 re-asks the states with problems).
     ``BudgetExceeded`` is returned as status ``budget`` and endpoint failures as ``failed``; neither raises."""
     cfg = cfg or GenerationConfig()
     cat = authors.cat
     rclient = results_client or client
-    if sk.states != (INITIAL_STATE,):
-        raise NotImplementedError(f"card {sk.id}: only the {INITIAL_STATE!r} state is generated for now, got {sk.states}")
-    state = INITIAL_STATE
+    states = tuple(sk.states)
     models = client.model if rclient.model == client.model else f"{client.model}+{rclient.model}"
 
     def ask(c, req: dict, tag: str, temperature, user: str | None = None) -> dict:
@@ -134,53 +134,59 @@ def generate_card(authors: Authors, sk: Skeleton, client, results_client=None, c
         return c.complete_json(**r, key=f"{sk.id}:{tag}", temperature=temperature)
 
     try:
-        req1 = authors.g1_request(sk, state)
+        req1 = authors.g1_request(sk)
         g1: Any = ask(client, req1, "g1", cfg.g1_temperature)
-        g2: Any = None
-        req2: dict | None = None
-        plan = None
+        g2: dict[str, Any] = {}
+        reqs: dict[str, dict] = {}
+        plans: dict[str, Any] = {}
         for rep in range(cfg.max_repairs + 1):
-            route: dict[str, list[Problem]] = {}
-            warnings: list[Problem] = []
-            p1 = authors.g1_problems(g1)
+            r1: list[Problem] = []
+            r2: dict[str, list[Problem]] = {}
+            p1 = authors.g1_problems(g1, states)
             if p1:
-                route["g1"] = p1
+                r1 = p1
             else:
-                if g2 is None:
-                    plan = settle_error_plan(cat, sk, authors.findings_of(g1), state)[state]
-                    req2 = authors.g2_request(sk, g1, plan, state)
-                    g2 = ask(rclient, req2, "g2", cfg.g2_temperature)
-                p2 = authors.g2_problems(g2)
-                if p2:
-                    route["g2"] = p2
-                else:
+                for st in states:
+                    if st not in g2:
+                        plans[st] = settle_error_plan(cat, sk, authors.findings_of(g1, st), st)[st]
+                        reqs[st] = authors.g2_request(sk, g1, plans[st], st)
+                        g2[st] = ask(rclient, reqs[st], f"g2:{st}", cfg.g2_temperature)
+                for st in states:
+                    ps = authors.g2_problems(g2[st])
+                    if ps:
+                        r2[st] = ps
+                if not r2:
                     prov = {"library": None, "catalogue_id": cat.id, "catalogue_hash": cat.version_hash,
                             "generator": "llm", "model": models, "prompts": dict(PROMPT_VERSIONS),
                             "error_source": "guided", "validation": {}}
-                    card = authors.assemble(sk, g1, g2, plan, prov, state)
+                    card = authors.assemble(sk, g1, g2, plans, prov)
                     found = _promote(validate_card(card, cat))
                     errs = [p for p in found if p.severity == ERROR]
                     warnings = [p for p in found if p.severity != ERROR]
                     if not errs:
                         card["provenance"]["validation"] = {
-                            "ok": True, "repairs": rep,
+                            "ok": True, "repairs": rep, "states": len(states),
                             "warnings": [{"code": p.code, "path": p.path} for p in warnings[:10]]}
                         return CardOutcome(sk.id, "accepted", card, rep)
                     for p in errs:
-                        route.setdefault(authors.route(p), []).append(p)
+                        role, st = authors.route(p, states)
+                        if role == "g1":
+                            r1.append(p)
+                        else:
+                            for target in ([st] if st else states):
+                                r2.setdefault(target, []).append(p)
             if rep == cfg.max_repairs:
-                allp = [p for ps in route.values() for p in ps]
+                allp = [*r1, *(p for ps in r2.values() for p in ps)]
                 return CardOutcome(sk.id, "discarded", None, rep, "errors remain after the last repair",
                                    [str(p) for p in allp[:20]])
-            role = "g1" if "g1" in route else "g2"
-            text = repair_prompt({"id": sk.id}, route[role])
-            if role == "g1":
+            if r1:
                 g1 = ask(client, req1, f"g1:r{rep + 1}", cfg.g1_temperature,
-                         authors.repair_user("g1", req1["user"], g1, text))
-                g2 = None
+                         authors.repair_user("g1", req1["user"], g1, repair_prompt({"id": sk.id}, r1)))
+                g2, plans = {}, {}
             else:
-                g2 = ask(rclient, req2, f"g2:r{rep + 1}", cfg.g2_temperature,
-                         authors.repair_user("g2", req2["user"], g2, text))
+                for st, ps in r2.items():
+                    g2[st] = ask(rclient, reqs[st], f"g2:{st}:r{rep + 1}", cfg.g2_temperature,
+                                 authors.repair_user("g2", reqs[st]["user"], g2[st], repair_prompt({"id": sk.id}, ps)))
     except BudgetExceeded as e:
         return CardOutcome(sk.id, "budget", reason=str(e))
     except LLMOutputError as e:
@@ -310,13 +316,14 @@ def generate_library(catalogue: Catalogue, design: Design, seed: int, client, *,
 # ============================================================================ offline stand-in for the model
 
 _ID_RX = re.compile(r"Card id: (\S+)")
+_STATE_RX = re.compile(r"State: (\S+)")
 
 
 def reference_fake_client(catalogue: Catalogue, design: Design, seed: int, *,
                           transform: Callable[[str, str, dict, str], dict] | None = None, **client_kw) -> FakeLLMClient:
     """A ``FakeLLMClient`` that answers G1 and G2 from the reference generator, so the whole pipeline runs
-    offline. The G1 answer is the reference card's findings, presenting and account; G2 gets the same
-    card's observations and GP note (they follow the plan G2's prompt carries, because the findings are
+    offline. The G1 answer is the reference card's findings, presenting and account of every state; G2 gets the same
+    card's observations and GP note of the state in its prompt (they follow the plan G2's prompt carries, because the findings are
     the same). ``transform(role, card_id, answer)`` may change an answer (tests use it to break cards);
     ``role`` is ``g1`` or ``g2``; ``user`` is the prompt, in which a pipeline repair round contains
     ``"failed validation"``."""
@@ -338,22 +345,25 @@ def reference_fake_client(catalogue: Catalogue, design: Design, seed: int, *,
             raise LLMError("reference fake: no card id in the prompt")
         cid = m.group(1)
         c = reference_json(cid)
-        s = INITIAL_STATE
-        if "findings" in schema["properties"]:
+        if "states" in schema["properties"]:
             role = "g1"
-            ans = {"findings": c["hidden"]["findings"][s], "presenting": c["presenting"][s],
-                   "account": {"text": c["notes"][0]["text"], "mentions": c["notes"][0]["mentions"]}}
+            ans = {"states": {}}
+            for i, st in enumerate(c["states"]):
+                ans["states"][st] = {"findings": c["hidden"]["findings"][st], "presenting": c["presenting"][st],
+                                     "account": {"text": c["notes"][2 * i]["text"], "mentions": c["notes"][2 * i]["mentions"]}}
         else:
             role = "g2"
-            ans = {"observations": c["observations"][s],
-                   "gp_note": {"text": c["notes"][1]["text"], "mentions": c["notes"][1]["mentions"]}}
+            st = _STATE_RX.search(user).group(1)
+            i = c["states"].index(st)
+            ans = {"observations": c["observations"][st],
+                   "gp_note": {"text": c["notes"][2 * i + 1]["text"], "mentions": c["notes"][2 * i + 1]["mentions"]}}
         ans = json.loads(json.dumps(ans))
         return transform(role, cid, ans, user) if transform else ans
 
     return FakeLLMClient(fn, **client_kw)
 
 
-def estimate_cost(catalogue: Catalogue, design: Design, seed: int, sample: int = 3) -> dict:
+def estimate_cost(catalogue: Catalogue, design: Design, seed: int, sample: int = 30) -> dict:
     """Prompt and answer sizes for ``sample`` cards through the reference fake (no model call). Tokens are
     characters / 4. Answers of a real model are longer than the reference's template texts: count about
     1.5 times the output figure."""

@@ -56,7 +56,8 @@ def test_50_lung_cards_offline_all_valid_and_loadable(lung, tmp_path):
     manifest, rep = generate_library_with_report(lung, design, 1, fake, out_dir=tmp_path / "L")
     lib = load_library(tmp_path / "L", lung)
     assert len(lib) == 50 and manifest.n_cards == 50 and not rep.partial
-    assert rep.accepted == 50 and rep.discarded == 0 and rep.calls == 100 and rep.repairs == {"0": 50}
+    assert rep.accepted == 50 and rep.discarded == 0 and rep.calls == 50 + sum(len(c.states) for c in lib.cards) and rep.repairs == {"0": 50}
+    assert any(len(c.states) > 1 for c in lib.cards)           # multi-state cards are written too
     for c in lib.cards:
         from patient_engine.card import card_to_json
         j = card_to_json(c)
@@ -126,16 +127,17 @@ def test_broken_g1_repair_asks_g2_again_with_the_new_findings(tiny):
 
     def break_g1(role, cid, ans, user):
         if role == "g1" and "failed validation" not in user:
-            false_symptoms = [v for v, f in ans["findings"].items()
+            blk = ans["states"]["all_active"]
+            false_symptoms = [v for v, f in blk["findings"].items()
                               if tiny.variables[v].kind == "symptom" and f["value"] is False]
-            ans["presenting"]["reported"].append(false_symptoms[0])
+            blk["presenting"]["reported"].append(false_symptoms[0])
         return ans
 
     fake = reference_fake_client(tiny, design, 1, transform=break_g1)
     out = generate_card(Authors(tiny), make_skeleton(tiny, 0, design, 1), fake)
     assert out.status == "accepted" and out.repairs == 1
     roles = ["g1" if "patient author" in s else "g2" for s, _ in fake.calls]
-    assert roles == ["g1", "g1", "g2"]            # the broken G1 never reaches G2
+    assert roles[:2] == ["g1", "g1"] and set(roles[2:]) == {"g2"}      # the broken G1 never reaches G2
 
 
 def always_break_g2_for(card_index):
@@ -157,7 +159,9 @@ def test_three_broken_answers_discard_the_card_and_log_it(tiny, tmp_path):
     assert len(lines) == 1 and lines[0]["card_id"].endswith(":000002") and lines[0]["repairs"] == 2
     assert any("card_plan_mismatch" in p for p in lines[0]["problems"])
     assert not any(c.id.endswith(":000002") for c in load_library(tmp_path / "L").cards)
-    assert rep.calls == 3 * 2 + 1 + 3             # three good cards, one G1 and three G2 answers for the bad one
+    states = {c.id: len(c.states) for c in load_library(tmp_path / "L").cards}
+    bad_states = len(make_skeleton(tiny, 2, design, 1).states)
+    assert rep.calls == sum(1 + n for n in states.values()) + 1 + 3 * bad_states   # G1 once, every G2 state asked 3 times
 
 
 def test_all_cards_discarded_raises_and_writes_report(tiny, tmp_path):
@@ -208,8 +212,8 @@ def test_budget_stops_cleanly_with_a_partial_library_and_resume_finishes(tiny, t
     fake = reference_fake_client(tiny, design, 1, cache_dir=work / "cache")
     manifest, rep = generate_library_with_report(tiny, design, 1, fake, budget=Budget(max_calls=5),
                                                  out_dir=tmp_path / "L", work_dir=work, config=cfg)
-    assert rep.partial and rep.stop_reason == "budget" and rep.accepted == 2 and rep.not_completed == 6
-    assert len(load_library(tmp_path / "L")) == 2
+    assert rep.partial and rep.stop_reason == "budget" and 1 <= rep.accepted <= 3 and rep.accepted + rep.not_completed == 8
+    assert len(load_library(tmp_path / "L")) == rep.accepted
     saved = json.loads((work / "generation_report.json").read_text())
     assert saved["partial"] is True and saved["library_id"] == manifest.id
 
@@ -220,7 +224,8 @@ def test_budget_stops_cleanly_with_a_partial_library_and_resume_finishes(tiny, t
     m2, rep2 = generate_library_with_report(tiny, design, 1, fake2, out_dir=tmp_path / "L", work_dir=work,
                                             config=cfg, resume=True)
     assert not rep2.partial and rep2.accepted == 8
-    assert len(fake2.calls) == 11                              # 16 calls in all; the 5 answered before the stop are cached
+    total = sum(1 + len(make_skeleton(tiny, i, design, 1).states) for i in range(8))
+    assert len(fake2.calls) == total - 5                       # the 5 answered before the stop are cached
     assert len(load_library(tmp_path / "L")) == 8
     with pytest.raises(GenerationError):                       # a complete library is never replaced
         generate_library(tiny, design, 1, fake2, out_dir=tmp_path / "L", work_dir=work, resume=True)
@@ -237,13 +242,17 @@ def test_budget_with_concurrency_never_loses_a_finished_card(tiny, tmp_path):
 
 # ---------------------------------------------------------------- key, cost, CLI
 
+def reference_schema(authors, user):
+    return {"properties": {"states": {}}}
+
+
 def reference_stub(tiny, design, seed):
     fake = reference_fake_client(tiny, design, seed)
     authors = Authors(tiny)
 
     def echo(body):
         system, user = body["messages"][0]["content"], body["messages"][-1]["content"]
-        schema = authors.g1_schema if "patient author" in system else authors.g2_schema
+        schema = reference_schema(authors, user) if "patient author" in system else authors.g2_schema
         return fake._fn(system, user, schema)
     return echo
 
@@ -270,10 +279,10 @@ def test_no_api_key_in_files_logs_or_exceptions(tiny, tmp_path, stub_factory_fix
         bad.close()
 
 
-def test_estimate_cost_reports_two_calls_per_card(lung):
+def test_estimate_cost_counts_one_g1_call_and_one_g2_call_per_state(lung):
     design = make_design(lung, {k: 3 for k in lung.conditions})
     e = estimate_cost(lung, design, 1, sample=2)
-    assert e["calls_per_card"] == 2 and e["input_tokens_per_card"] > 1000 and e["total_calls"] == 60
+    assert 2 <= e["calls_per_card"] <= 5 and e["input_tokens_per_card"] > 1000 and e["total_calls"] == round(30 * e["calls_per_card"])
 
 
 def test_cli_fake_and_partial_exit_code(tmp_path, capsys):
@@ -295,3 +304,21 @@ def test_cli_without_endpoint_says_so_without_traceback(tmp_path, monkeypatch, c
     monkeypatch.delenv("LLM_MODEL", raising=False)
     assert main(["generate", "--catalogue", TINY, "--n", "4", "--out", str(tmp_path / "L")]) == 1
     assert "LLM_BASE_URL" in capsys.readouterr().err
+
+
+def test_a_broken_resolved_state_repairs_only_that_states_g2(lung):
+    design = make_design(lung, {k: 6 for k in lung.conditions})
+    sk = next(k for k in (make_skeleton(lung, i, design, 1) for i in range(design.n)) if len(k.states) > 1)
+    later = sk.states[1]
+
+    def break_later_once(role, cid, ans, user):
+        if role == "g2" and f"State: {later} " in user and "failed validation" not in user:
+            a, k = first_ok_binary(ans["observations"])
+            a["values"][k] = not a["values"][k]
+        return ans
+
+    fake = reference_fake_client(lung, design, 1, transform=break_later_once)
+    out = generate_card(Authors(lung), sk, fake)
+    assert out.status == "accepted" and out.repairs == 1
+    assert len(fake.calls) == 1 + len(sk.states) + 1
+    assert f"State: {later} " in fake.calls[-1][1] and "failed validation" in fake.calls[-1][1]

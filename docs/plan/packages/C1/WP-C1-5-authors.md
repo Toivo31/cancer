@@ -58,4 +58,13 @@ tokens (G2 is most of it: schema, 16 tests x 3 attempts of plan) and about 4k ou
 - Cards run one per thread (not `LLMClient.map`) so a budget stop leaves whole cards. Partial flag lives in `<out>.work/generation_report.json`, because `LibraryManifest` has no field for it.
 - `presenting.reported` must be true symptom findings (checked, repaired, not silently fixed). Temperatures default to unset (reasoning models reject them).
 
-**Not done**: states other than `all_active` (raises NotImplementedError); G4 audit; `free` error mode; real endpoint never exercised (json_schema mode and server quirks untested); findings-from-engine fallback if G1 drifts too typical.
+**Not done**: G4 audit; `free` error mode; real endpoint never exercised (json_schema mode and server quirks untested); findings-from-engine fallback if G1 drifts too typical.
+
+**Update: multi-state cards (merged `overnight/sim`, C8-2).** G1 writes the patient for all states of the skeleton in one call
+(`states.<state>.{findings, presenting, account}`; the prompt explains that a resolved illness's own findings are gone and no new
+symptom appears). The plan is settled per state with `settle_error_plan(cat, sk, findings_of_state, state)`. G2 is called once per state
+(one call for all states would reach 4 states x 4k output tokens for a two-illness card, over the 16k output limit). A G1 repair re-asks every
+G2 state; a G2 repair re-asks only the states with problems. Notes are `n1,n2` (account, GP note) for the first state, `n3,n4` for the next.
+Cost per card (lung design, measured by `--estimate` over 30 skeletons): 1 + (number of states) calls, see the estimate output for the mean
+(about 2.7 calls, 19k input and 7k output tokens per card; 300 cards about 800 calls, 6M in, 2M out, before repairs). The G1 and G2 prompts
+changed in place (still `g1@1`/`g2@1`; nothing had been generated with the earlier wording).

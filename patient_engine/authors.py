@@ -19,22 +19,27 @@ revealed side will read, so the prompts tell them not to name the diagnosis, and
 
 What each author returns (the shapes are JSON Schemas derived from ``card_schema(catalogue)``)::
 
-    G1  {"findings": {variable id: {"value", "caused_by"}},
-         "presenting": {"reported": [variable id], "text": str},
-         "account": {"text": str, "mentions": [variable id]}}
+    G1  {"states": {state: {"findings": {variable id: {"value", "caused_by"}},
+                            "presenting": {"reported": [variable id], "text": str},
+                            "account": {"text": str, "mentions": [variable id]}}}}      one call, every state
     G2  {"observations": {test id: [{"status", "values", "report"}]},
-         "gp_note": {"text": str, "mentions": [test id | test.output id]}}
+         "gp_note": {"text": str, "mentions": [test id | test.output id]}}              one call per state
 
 The skeleton fixes the background, the conditions and their attributes and the error plan; the
 authors never write those. Prompts are data files in ``patient_engine/prompts/`` (see its README).
 
-States. Every method takes a ``state``; the Sunday slice uses only ``all_active``. A second state
-needs a prompt note for it (``STATE_NOTES``) and a pipeline that carries findings from state to state.
+States (C8). A card has the states of its skeleton (``all_active`` and one ``<illness>_resolved`` per ordinary
+illness, ``all_resolved`` with two). G1 writes the whole patient for every state in one answer, so a resolved
+state is written next to the first and stays consistent with it. The error plan is settled per state from
+that state's findings. G2 is called once per state (a card with two illnesses has four states and one call
+for all of them would not fit the output limit). Notes are ``n1, n2`` for the first state, ``n3, n4`` for the
+second and so on: account then GP note.
 """
 
 from __future__ import annotations
 
 import json
+import re
 import string
 from functools import lru_cache
 from pathlib import Path
@@ -46,7 +51,8 @@ from .card import CARD_FORMAT, INITIAL_STATE, NOTE_KINDS, Finding
 from .catalogue import Catalogue, Leaf, Test, TestOutput, Variable
 from .problems import Problem
 from .schema import card_schema, schema_problems
-from .skeleton import Skeleton, common_facts, plan_to_json, settle_attempt
+from .skeleton import Skeleton, common_facts, illness_ids, plan_to_json, settle_attempt
+from .states import resolved_in_state
 
 PROMPT_DIR = Path(__file__).with_name("prompts")
 
@@ -54,9 +60,15 @@ PROMPT_DIR = Path(__file__).with_name("prompts")
 PROMPT_VERSIONS = {"patient": "g1@1", "results": "g2@1"}
 _STEMS = {"g1@1": "g1_patient.v1", "g2@1": "g2_results.v1"}
 
-STATE_NOTES = {INITIAL_STATE: "every condition of the patient is active at first contact"}
-
-ACCOUNT_NOTE_ID, GP_NOTE_ID = "n1", "n2"
+def state_note(cat: Catalogue, sk: Skeleton, state: str) -> str:
+    """What a state means for this patient, in words for the prompt."""
+    resolved = resolved_in_state(state, illness_ids(cat, sk))
+    if not resolved:
+        return "every condition of the patient is active; this is the state at first contact"
+    gone = ", ".join(cat.conditions[c].label for c in sorted(resolved))
+    left = ", ".join(cat.conditions[c].label for c in sk.condition_ids if c not in resolved) or "none"
+    return (f"after treatment has resolved: {gone}; still active: {left}. Findings that only the resolved illness "
+            f"explained are gone; everything else is as before; no new symptom appears")
 
 
 @lru_cache(maxsize=None)
@@ -200,52 +212,64 @@ class Authors:
         variables = list(catalogue.variables)
         note_ids = [*variables, *catalogue.tests, *(f"{t.id}.{o.id}" for t in catalogue.tests.values()
                                                      for o in t.outputs)]
-        text = {"type": "string", "minLength": 10}
-        self.g1_schema: dict = {
-            "type": "object", "required": ["findings", "presenting", "account"], "additionalProperties": False,
-            "properties": {
-                "findings": self._defs["findings"],
-                "presenting": {"type": "object", "required": ["reported", "text"], "additionalProperties": False,
-                               "properties": {"reported": {"type": "array", "uniqueItems": True,
-                                                           "items": {"enum": variables}},
-                                              "text": text}},
-                "account": {"type": "object", "required": ["text", "mentions"], "additionalProperties": False,
-                            "properties": {"text": text,
-                                           "mentions": {"type": "array", "uniqueItems": True,
-                                                        "items": {"enum": variables}}}},
-            },
-        }
+        self._text = {"type": "string", "minLength": 10}
+        self._variables, self._note_ids = variables, note_ids
+        self._g1_cache: dict[tuple, dict] = {}
         self.g2_schema: dict = {
             "type": "object", "required": ["observations", "gp_note"], "additionalProperties": False,
             "properties": {
                 "observations": self._defs["observations"],
                 "gp_note": {"type": "object", "required": ["text", "mentions"], "additionalProperties": False,
-                            "properties": {"text": text,
+                            "properties": {"text": self._text,
                                            "mentions": {"type": "array", "uniqueItems": True,
                                                         "items": {"enum": note_ids}}}},
             },
             "$defs": {k: v for k, v in self._defs.items() if k.startswith("attempt__")},
         }
 
+    def g1_schema_for(self, states: Sequence[str]) -> dict:
+        """The G1 answer schema for a card with these states."""
+        key = tuple(states)
+        if key not in self._g1_cache:
+            text, variables = self._text, self._variables
+            block = {
+                "type": "object", "required": ["findings", "presenting", "account"], "additionalProperties": False,
+                "properties": {
+                    "findings": self._defs["findings"],
+                    "presenting": {"type": "object", "required": ["reported", "text"], "additionalProperties": False,
+                                   "properties": {"reported": {"type": "array", "uniqueItems": True,
+                                                               "items": {"enum": variables}}, "text": text}},
+                    "account": {"type": "object", "required": ["text", "mentions"], "additionalProperties": False,
+                                "properties": {"text": text, "mentions": {"type": "array", "uniqueItems": True,
+                                                                          "items": {"enum": variables}}}}}}
+            self._g1_cache[key] = {
+                "type": "object", "required": ["states"], "additionalProperties": False,
+                "properties": {"states": {"type": "object", "required": list(key), "additionalProperties": False,
+                                          "properties": {st: block for st in key}}}}
+        return self._g1_cache[key]
+
     # ------------------------------------------------------------------ requests
 
-    def g1_request(self, sk: Skeleton, state: str = INITIAL_STATE) -> dict:
-        """``dict(system, user, schema)`` for the patient author. Reads the skeleton and the catalogue only."""
+    def g1_request(self, sk: Skeleton) -> dict:
+        """``dict(system, user, schema)`` for the patient author (every state of the card in one answer).
+        Reads the skeleton and the catalogue only."""
         cat = self.cat
         variables = "\n".join(_variable_line(cat, sk, v) for v in cat.variables.values())
+        states = "\n".join(f"- {st}: {state_note(cat, sk, st)}" for st in sk.states)
         user = fill(load_prompt(PROMPT_VERSIONS["patient"], "user"),
-                    card_id=sk.id, state=state, state_note=STATE_NOTES.get(state, state),
+                    card_id=sk.id, states=states,
                     background=_background_text(sk.background), conditions=_conditions_text(cat, sk),
                     brief=sk.brief, n_variables=str(len(cat.variables)), variables=variables)
-        return {"system": load_prompt(PROMPT_VERSIONS["patient"], "system"), "user": user, "schema": self.g1_schema}
+        return {"system": load_prompt(PROMPT_VERSIONS["patient"], "system"), "user": user,
+                "schema": self.g1_schema_for(sk.states)}
 
     def g2_request(self, sk: Skeleton, g1: Mapping[str, Any], plan: Mapping[str, Sequence], state: str = INITIAL_STATE
                    ) -> dict:
-        """``dict(system, user, schema)`` for the result author. ``g1`` is the patient author's (valid) answer,
-        ``plan`` the settled error plan of the state (``settle_error_plan(...)[state]``)."""
+        """``dict(system, user, schema)`` for the result author of one ``state``. ``g1`` is the patient author's
+        (valid) answer, ``plan`` the settled error plan of that state (``settle_error_plan(...)[state]``)."""
         cat = self.cat
-        findings = g1["findings"]
-        values = self.findings_of(g1)
+        findings = g1["states"][state]["findings"]
+        values = self.findings_of(g1, state)
         blocks = []
         for t in cat.tests.values():
             lines = [f"### {t.id}: {t.label} ({t.category}); write {t.max_attempts} attempt(s)", "Outputs:"]
@@ -256,29 +280,32 @@ class Authors:
                 lines.append(_plan_line(k, t, p, suggested))
             blocks.append("\n".join(lines))
         user = fill(load_prompt(PROMPT_VERSIONS["results"], "user"),
-                    card_id=sk.id, state=state, state_note=STATE_NOTES.get(state, state),
+                    card_id=sk.id, state=state, state_note=state_note(cat, sk, state),
                     background=_background_text(sk.background), conditions=_conditions_text(cat, sk), brief=sk.brief,
                     findings=_findings_text(cat, findings), tests="\n\n".join(blocks))
         return {"system": load_prompt(PROMPT_VERSIONS["results"], "system"), "user": user, "schema": self.g2_schema}
 
     # ------------------------------------------------------------------ answers
 
-    def findings_of(self, g1: Mapping[str, Any]) -> dict[str, Any]:
-        """Variable id -> true value from a (schema-valid) G1 answer, ready for ``settle_error_plan``."""
-        f = g1["findings"]
+    def findings_of(self, g1: Mapping[str, Any], state: str = INITIAL_STATE) -> dict[str, Any]:
+        """Variable id -> true value in ``state`` from a (schema-valid) G1 answer, ready for ``settle_error_plan``."""
+        f = g1["states"][state]["findings"]
         return {vid: f[vid]["value"] for vid in self.cat.variables}
 
-    def g1_problems(self, g1: Any) -> list[Problem]:
-        """Schema problems of a G1 answer, plus: ``presenting.reported`` may name only true findings."""
-        probs = schema_problems(g1, self.g1_schema)
+    def g1_problems(self, g1: Any, states: Sequence[str] = (INITIAL_STATE,)) -> list[Problem]:
+        """Schema problems of a G1 answer, plus: ``presenting.reported`` may name only true symptom findings."""
+        probs = schema_problems(g1, self.g1_schema_for(states))
         if probs:
             return probs
         out = []
-        for i, vid in enumerate(g1["presenting"]["reported"]):
-            v = self.cat.variables[vid]
-            if g1["findings"][vid]["value"] in (None, False) or v.kind != "symptom":
-                out.append(Problem("card_schema", f"{vid} is reported by the patient but is not a true symptom finding",
-                                   f"presenting.reported[{i}]", "report only symptom variables whose finding value is true"))
+        for st in states:
+            blk = g1["states"][st]
+            for i, vid in enumerate(blk["presenting"]["reported"]):
+                v = self.cat.variables[vid]
+                if blk["findings"][vid]["value"] in (None, False) or v.kind != "symptom":
+                    out.append(Problem("card_schema", f"{vid} is reported by the patient but is not a true symptom finding",
+                                       f"presenting.{st}.reported[{i}]",
+                                       "report only symptom variables whose finding value is true"))
         return out
 
     def g2_problems(self, g2: Any) -> list[Problem]:
@@ -286,54 +313,64 @@ class Authors:
 
     # ------------------------------------------------------------------ the card
 
-    def assemble(self, sk: Skeleton, g1: Mapping[str, Any], g2: Mapping[str, Any],
-                 plan: Mapping[str, Sequence], provenance: Mapping[str, Any], state: str = INITIAL_STATE) -> dict:
-        """A ``card/1`` dict from the skeleton (background, conditions, error plan) and the two answers.
-        Not validated: run ``validate_card`` on it."""
+    def assemble(self, sk: Skeleton, g1: Mapping[str, Any], g2: Mapping[str, Mapping[str, Any]],
+                 plans: Mapping[str, Mapping[str, Sequence]], provenance: Mapping[str, Any]) -> dict:
+        """A ``card/1`` dict from the skeleton (background, conditions) and the answers: ``g2`` and ``plans`` map
+        each state to its G2 answer and settled plan. Not validated: run ``validate_card`` on it."""
+        notes = []
+        for i, st in enumerate(sk.states):
+            blk = g1["states"][st]
+            notes.append({"id": f"n{2 * i + 1}", "kind": "patient_account", "state": st, "text": blk["account"]["text"],
+                          "mentions": list(blk["account"]["mentions"])})
+            notes.append({"id": f"n{2 * i + 2}", "kind": "gp_note", "state": st, "text": g2[st]["gp_note"]["text"],
+                          "mentions": list(g2[st]["gp_note"]["mentions"])})
         return {
             "format": CARD_FORMAT,
             "id": sk.id,
             "background": dict(sk.background),
             "states": list(sk.states),
-            "presenting": {state: {"reported": list(g1["presenting"]["reported"]), "text": g1["presenting"]["text"]}},
+            "presenting": {st: {"reported": list(g1["states"][st]["presenting"]["reported"]),
+                                "text": g1["states"][st]["presenting"]["text"]} for st in sk.states},
             "hidden": {
                 "conditions": [{"id": c, "role": role, "attributes": dict(a)} for c, role, a in sk.conditions],
-                "findings": {state: {vid: {"value": g1["findings"][vid]["value"],
-                                           "caused_by": list(g1["findings"][vid]["caused_by"])}
-                                     for vid in self.cat.variables}},
-                "error_plan": plan_to_json({state: plan}),
+                "findings": {st: {vid: {"value": g1["states"][st]["findings"][vid]["value"],
+                                        "caused_by": list(g1["states"][st]["findings"][vid]["caused_by"])}
+                                  for vid in self.cat.variables} for st in sk.states},
+                "error_plan": plan_to_json({st: plans[st] for st in sk.states}),
             },
-            "observations": {state: json.loads(json.dumps(g2["observations"]))},
-            "notes": [
-                {"id": ACCOUNT_NOTE_ID, "kind": "patient_account", "state": state, "text": g1["account"]["text"],
-                 "mentions": list(g1["account"]["mentions"])},
-                {"id": GP_NOTE_ID, "kind": "gp_note", "state": state, "text": g2["gp_note"]["text"],
-                 "mentions": list(g2["gp_note"]["mentions"])},
-            ],
+            "observations": {st: json.loads(json.dumps(g2[st]["observations"])) for st in sk.states},
+            "notes": notes,
             "provenance": dict(provenance),
         }
 
     # ------------------------------------------------------------------ repair
 
     @staticmethod
-    def route(problem: Problem) -> str:
-        """Which author a problem of an assembled card belongs to: ``g1`` or ``g2``. The assembled paths are
-        ``hidden.findings...``, ``presenting...`` and ``notes[0]`` (G1) against ``observations...``,
-        ``hidden.error_plan...`` and ``notes[1]`` (G2). Anything else is G2's (the skeleton parts are not
-        written by a model, so a problem there is a pipeline bug and a repair will not fix it)."""
+    def route(problem: Problem, states: Sequence[str] = (INITIAL_STATE,)) -> tuple[str, str | None]:
+        """Which author a problem of an assembled card belongs to: ``("g1", None)`` or ``("g2", state)`` (state
+        None when the path names none: all of G2's calls are redone). G1 owns ``hidden.findings``, ``presenting``
+        and the patient accounts (even note positions); G2 owns ``observations``, ``hidden.error_plan`` and the
+        GP notes. Anything else is G2's (the skeleton parts are not model-written, so a problem there is a
+        pipeline bug that a repair will not fix)."""
         p = problem.path or ""
-        if p.startswith(("hidden.findings", "presenting", "findings", "account", f"notes[{0}]")):
-            return "g1"
-        return "g2"
+        m = re.match(r"notes\[(\d+)\]", p)
+        if m:
+            i = int(m.group(1))
+            return ("g1", None) if i % 2 == 0 else ("g2", states[min(i // 2, len(states) - 1)])
+        if p.startswith(("hidden.findings", "presenting", "states")):
+            return "g1", None
+        m = re.match(r"(?:observations|hidden\.error_plan)\.([a-z_]+)", p)
+        return "g2", (m.group(1) if m and m.group(1) in states else None)
 
     def repair_user(self, role: str, original_user: str, previous: Mapping[str, Any], text: str) -> str:
         """The user message for a repair call: the original request, the author's own answer, the problems."""
-        shape = ("`findings`, `presenting` and `account`" if role == "g1" else "`observations` and `gp_note`")
-        mapping = ("Paths starting `hidden.findings.<state>` refer to your `findings`, `presenting.<state>` to your "
-                   "`presenting`, `notes[0]` to your `account`."
+        shape = ("`states` (each with `findings`, `presenting` and `account`)" if role == "g1"
+                 else "`observations` and `gp_note`")
+        mapping = ("Paths starting `hidden.findings.<state>` refer to `states.<state>.findings`, `presenting.<state>` to "
+                   "`states.<state>.presenting`, `notes[0]`, `notes[2]`... to the `account` of the first, second... state."
                    if role == "g1" else
-                   "Paths starting `observations.<state>` refer to your `observations`, `notes[1]` to your `gp_note`, "
-                   "`hidden.error_plan` is the plan above.")
+                   "Paths starting `observations.<state>` refer to your `observations`, an odd `notes[i]` to your "
+                   "`gp_note`, `hidden.error_plan` is the plan above.")
         return (f"{original_user}\n\n---\nYour previous answer:\n{json.dumps(previous, sort_keys=True)}\n\n"
                 f"The card assembled from your answer was checked. You write only {shape}, not a whole card; "
                 f"return those parts again, corrected. {mapping}\n{text}")

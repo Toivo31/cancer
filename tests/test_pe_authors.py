@@ -26,11 +26,21 @@ def setup(lung):
     design = make_design(lung, {k: 2 for k in lung.conditions})
     fake = reference_fake_client(lung, design, 3)
     authors = Authors(lung)
-    sk = make_skeleton(lung, 4, design, 3)
+    sk = next(k for k in (make_skeleton(lung, i, design, 3) for i in range(design.n)) if len(k.states) == 1)
     g1 = fake.complete_json(**authors.g1_request(sk), key="x")
     plan = settle_error_plan(lung, sk, authors.findings_of(g1))["all_active"]
     g2 = fake.complete_json(**authors.g2_request(sk, g1, plan), key="y")
     return authors, sk, g1, g2, plan, fake
+
+
+@pytest.fixture(scope="module")
+def multi(lung):
+    design = make_design(lung, {k: 6 for k in lung.conditions})
+    for i in range(design.n):
+        sk = make_skeleton(lung, i, design, 3)
+        if len(sk.states) > 1:
+            return design, sk
+    raise AssertionError("no multi-state skeleton in the design")
 
 
 def test_prompt_files_exist_for_every_version():
@@ -72,7 +82,7 @@ def test_g2_prompt_carries_findings_and_plan(setup, lung):
     for t in lung.tests.values():
         assert f"### {t.id}:" in user
         assert len(re.findall(rf"\n  attempt \d+: ", user.split(f"### {t.id}:")[1].split("###")[0])) == t.max_attempts
-    for vid, f in g1["findings"].items():
+    for vid, f in g1["states"]["all_active"]["findings"].items():
         assert f"- {vid}: " in user
     assert "miss" in user or "false_alarm" in user or "correct" in user
     assert "synthetic report" not in user.lower()
@@ -81,7 +91,8 @@ def test_g2_prompt_carries_findings_and_plan(setup, lung):
 def test_g2_prompt_changes_with_the_findings(setup, lung):
     authors, sk, g1, _, plan, _ = setup
     other = json.loads(json.dumps(g1))
-    other["findings"]["cough"]["value"] = not other["findings"]["cough"]["value"]
+    f = other["states"]["all_active"]["findings"]["cough"]
+    f["value"] = not f["value"]
     plan2 = settle_error_plan(lung, sk, authors.findings_of(other))["all_active"]
     assert authors.g2_request(sk, other, plan2)["user"] != authors.g2_request(sk, g1, plan)["user"]
 
@@ -95,22 +106,23 @@ def test_reference_answers_satisfy_the_author_schemas(setup):
 def test_g1_problems_flag_a_reported_symptom_that_is_not_true(setup, lung):
     authors, _, g1, *_ = setup
     bad = json.loads(json.dumps(g1))
-    false_symptom = next(v for v, f in bad["findings"].items()
+    blk = bad["states"]["all_active"]
+    false_symptom = next(v for v, f in blk["findings"].items()
                          if lung.variables[v].kind == "symptom" and f["value"] is False)
-    bad["presenting"]["reported"].append(false_symptom)
+    blk["presenting"]["reported"].append(false_symptom)
     probs = authors.g1_problems(bad)
-    assert probs and "not a true symptom" in probs[0].message and probs[0].path.startswith("presenting.reported")
+    assert probs and "not a true symptom" in probs[0].message and probs[0].path.startswith("presenting.all_active.reported")
 
 
 def test_schema_problems_for_missing_parts(setup):
     authors, _, g1, g2, *_ = setup
-    assert authors.g1_problems({"findings": g1["findings"]})
+    assert authors.g1_problems({"states": {}})
     assert authors.g2_problems({"observations": {}})
 
 
 def test_assemble_keeps_the_skeleton_and_plan(setup, lung):
     authors, sk, g1, g2, plan, _ = setup
-    card = authors.assemble(sk, g1, g2, plan, {"library": None, "catalogue_id": lung.id, "catalogue_hash": "h",
+    card = authors.assemble(sk, g1, {"all_active": g2}, {"all_active": plan}, {"library": None, "catalogue_id": lung.id, "catalogue_hash": "h",
                                                "generator": "llm", "model": "m", "prompts": {}, "error_source": "guided",
                                                "validation": {}})
     assert card["id"] == sk.id and card["background"] == sk.background
@@ -122,12 +134,16 @@ def test_assemble_keeps_the_skeleton_and_plan(setup, lung):
 def test_route_sends_problems_to_the_author_that_wrote_them():
     def p(path):
         return Problem("card_schema", "x", path)
-    assert Authors.route(p("hidden.findings.all_active.cough.value")) == "g1"
-    assert Authors.route(p("presenting.all_active.text")) == "g1"
-    assert Authors.route(p("notes[0].text")) == "g1"
-    assert Authors.route(p("observations.all_active.chest_xray[0].values.abnormal")) == "g2"
-    assert Authors.route(p("notes[1].text")) == "g2"
-    assert Authors.route(p(None)) == "g2"
+    st = ("all_active", "tb_resolved")
+    assert Authors.route(p("hidden.findings.all_active.cough.value"), st) == ("g1", None)
+    assert Authors.route(p("presenting.all_active.text"), st) == ("g1", None)
+    assert Authors.route(p("notes[0].text"), st) == ("g1", None)
+    assert Authors.route(p("notes[2].text"), st) == ("g1", None)
+    assert Authors.route(p("observations.all_active.chest_xray[0].values.abnormal"), st) == ("g2", "all_active")
+    assert Authors.route(p("observations.tb_resolved.chest_xray[0]"), st) == ("g2", "tb_resolved")
+    assert Authors.route(p("notes[1].text"), st) == ("g2", "all_active")
+    assert Authors.route(p("notes[3].text"), st) == ("g2", "tb_resolved")
+    assert Authors.route(p(None), st) == ("g2", None)
 
 
 def test_repair_user_contains_request_answer_and_problems(setup):
@@ -135,3 +151,36 @@ def test_repair_user_contains_request_answer_and_problems(setup):
     req = authors.g1_request(sk)
     text = authors.repair_user("g1", req["user"], g1, "- presenting: bad")
     assert req["user"] in text and "Your previous answer" in text and "- presenting: bad" in text
+
+
+def test_g1_prompt_lists_every_state_and_g2_is_asked_per_state(multi, lung):
+    design, sk = multi
+    authors = Authors(lung)
+    req = authors.g1_request(sk)
+    for st in sk.states:
+        assert f"- {st}:" in req["user"]
+    assert set(req["schema"]["properties"]["states"]["required"]) == set(sk.states)
+    fake = reference_fake_client(lung, design, 3)
+    g1 = fake.complete_json(**req, key="a")
+    assert authors.g1_problems(g1, sk.states) == []
+    later = sk.states[1]
+    plan = settle_error_plan(lung, sk, authors.findings_of(g1, later), later)[later]
+    user = authors.g2_request(sk, g1, plan, later)["user"]
+    assert f"State: {later}" in user and "resolved" in user
+
+
+def test_assemble_multi_state_notes_and_plan(multi, lung):
+    design, sk = multi
+    authors = Authors(lung)
+    fake = reference_fake_client(lung, design, 3)
+    g1 = fake.complete_json(**authors.g1_request(sk), key="a")
+    g2, plans = {}, {}
+    for st in sk.states:
+        plans[st] = settle_error_plan(lung, sk, authors.findings_of(g1, st), st)[st]
+        g2[st] = fake.complete_json(**authors.g2_request(sk, g1, plans[st], st), key=st)
+    card = authors.assemble(sk, g1, g2, plans, {"library": None, "catalogue_id": lung.id, "catalogue_hash": "h",
+                            "generator": "llm", "model": "m", "prompts": {}, "error_source": "guided", "validation": {}})
+    assert card["states"] == list(sk.states)
+    assert [n["id"] for n in card["notes"]] == [f"n{i + 1}" for i in range(2 * len(sk.states))]
+    assert [n["state"] for n in card["notes"]][::2] == list(sk.states)
+    assert set(card["hidden"]["error_plan"]) == set(sk.states)
