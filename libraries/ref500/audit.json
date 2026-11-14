@@ -1,6 +1,6 @@
 {
   "format": "audit/1",
-  "library_id": "L_8a99f4d9d9fa9c5f",
+  "library_id": "L_a295975981893d2b",
   "catalogue_id": "lung_primary_care",
   "catalogue_hash": "436ff728b7179a74c7cb4732a2f6a49108481ff9a43cc43b9633e87e72508094",
   "generator": "llm",
@@ -9136,7 +9136,7 @@
           "hedge_right": 0.0,
           "hedge_gap_pp_within_strata": 0.0,
           "z": 0.0,
-          "log_length_diff_within_strata": 0.003,
+          "log_length_diff_within_strata": 0.002,
           "nb_bacc_report": 0.555,
           "nb_bacc_values_only": 0.555,
           "nb_excess_bacc": 0.0,
@@ -9167,5 +9167,5 @@
     "Correlation between repeated attempts of one test on one card: attempts are treated as independent, so a model-written library whose repeats agree too closely has intervals that are too narrow.",
     "Free text (notes, reports) beyond the validator's leak rule and the report_wording check (hedging words, length, a bag-of-words classifier on binary results)."
   ],
-  "seconds": 2.88
+  "seconds": 3.11
 }

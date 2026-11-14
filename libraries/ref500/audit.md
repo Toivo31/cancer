@@ -1,6 +1,6 @@
 # Library audit: PASS
 
-Library `L_8a99f4d9d9fa9c5f` (500 cards, generator `llm`, model `fake`, error source `guided`), catalogue `lung_primary_care` (`436ff728b717`).
+Library `L_a295975981893d2b` (500 cards, generator `llm`, model `fake`, error source `guided`), catalogue `lung_primary_care` (`436ff728b717`).
 
 States: all_active 500, asthma_resolved 42, benign_nodule_resolved 42, copd_exacerbation_resolved 67, heart_failure_resolved 42, pneumonia_resolved 44, reflux_postinfectious_cough_resolved 42, tuberculosis_resolved 42, viral_self_limiting_resolved 41. Accuracy and non-diagnostic checks use every state (all_active and the resolved states pooled as `resolved`); frequency checks use `all_active` of single-illness cards.
 
@@ -58,4 +58,4 @@ Tolerance: a cell fails when it is outside the 4.2-sigma interval and more than 
 - Correlation between repeated attempts of one test on one card: attempts are treated as independent, so a model-written library whose repeats agree too closely has intervals that are too narrow.
 - Free text (notes, reports) beyond the validator's leak rule and the report_wording check (hedging words, length, a bag-of-words classifier on binary results).
 
-Computed in 2.88 s. Full cells (expected, observed, interval) are in `audit.json`.
+Computed in 3.11 s. Full cells (expected, observed, interval) are in `audit.json`.

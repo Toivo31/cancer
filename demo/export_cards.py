@@ -7,7 +7,7 @@ Writes demo/data/cards_bundle.js (`window.CARDS_DATA = {...};`):
               (a language model, or the offline template generator, model "fake"), cards per condition. Counted
               from the manifests when the script runs, so libraries that arrive later are counted by a rerun.
   example     one model-written patient (the first lung-cancer card of the model-written library with the most
-              cards, preferring libraries made with results prompt g2@2 when any exist), read with the patient_engine API:
+              cards, preferring libraries whose results prompt is in reveal.SAFE_RESULTS_PROMPTS, i.e. g2@3, when any exist), read with the patient_engine API:
                 what the decider sees (RevealHandle.visible: background, complaint in the patient's words, the history taken; no test report, see SHOW_TESTS) next to the template wording of the same facts (the style of libraries/ref500),
                 and the hidden side (true conditions), which the decision model never sees.
 
@@ -31,7 +31,8 @@ from patient_engine.reveal import RevealHandle  # noqa: E402
 
 CATALOGUES = {"lung_primary_care": "catalogue/lung-primary-care"}
 SHOW_TESTS = ("history",)   # only the history is shown: the review found test-report wording in results prompt g2@1 gives away false alarms
-PREFERRED_RESULTS_PROMPT = "g2@2"   # libraries made with this results prompt are preferred when present
+from patient_engine.reveal import SAFE_RESULTS_PROMPTS   # noqa: E402
+PREFERRED_RESULTS_PROMPTS = frozenset(SAFE_RESULTS_PROMPTS)   # one source of truth: whose report text is served (D65: g2@3)
 
 
 def lower_first(s: str) -> str:
@@ -89,7 +90,7 @@ def example(lib_name: str, rows: list[dict]) -> dict | None:
 def build() -> dict:
     rows = library_rows(ROOT / "libraries")
     model_rows = [r for r in rows if r["wording"] == "model"]
-    pref = [r for r in model_rows if r.get("results_prompt") == PREFERRED_RESULTS_PROMPT]
+    pref = [r for r in model_rows if r.get("results_prompt") in PREFERRED_RESULTS_PROMPTS]
     pick = max(pref or model_rows, key=lambda r: r["cards"]) if model_rows else None
     out = {
         "format": "cards-bundle/1",

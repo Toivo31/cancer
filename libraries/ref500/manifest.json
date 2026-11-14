@@ -14,19 +14,19 @@
   },
   "catalogue_hash": "436ff728b7179a74c7cb4732a2f6a49108481ff9a43cc43b9633e87e72508094",
   "catalogue_id": "lung_primary_care",
-  "created": "2026-11-14T21:08:19Z",
+  "created": "2026-11-14T21:39:41Z",
   "error_source": "guided",
   "file": {
-    "bytes": 990207,
+    "bytes": 1338829,
     "name": "cards.jsonl.gz",
-    "sha256": "1d98c316634c9a18d2e804b3e2971364cd681c38b438655b556c592c7239a492"
+    "sha256": "fb3d5c150f74de64b7289550195b09258a16d102c6b329c3f712fd32aa242acb"
   },
   "format": "library/1",
   "generator": "llm",
-  "id": "L_8a99f4d9d9fa9c5f",
+  "id": "L_a295975981893d2b",
   "model": "fake",
   "prompts": {
     "patient": "g1@2",
-    "results": "g2@2"
+    "results": "g2@3"
   }
 }

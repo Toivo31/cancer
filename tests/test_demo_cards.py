@@ -44,3 +44,13 @@ def test_export_counts_libraries_and_splits_hidden_side(tmp_path):
 def test_committed_bundle_parses():
     d = load(DEMO / "data" / "cards_bundle.js")
     assert d["format"] == "cards-bundle/1" and d["libraries"]
+
+
+def test_example_prefers_libraries_whose_report_text_is_served():
+    """D65: the example card comes from a library made with a safe results prompt (g2@3), never one picked for g2@2."""
+    import importlib.util
+    from patient_engine.reveal import SAFE_RESULTS_PROMPTS
+    spec = importlib.util.spec_from_file_location("export_cards", Path(__file__).resolve().parents[1] / "demo" / "export_cards.py")
+    m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+    assert set(m.PREFERRED_RESULTS_PROMPTS) == set(SAFE_RESULTS_PROMPTS)
+    assert "g2@2" not in m.PREFERRED_RESULTS_PROMPTS
