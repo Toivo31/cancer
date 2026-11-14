@@ -1,0 +1,42 @@
+# Alternative to a VPS: Fly.io (one machine, one volume). Not tested from this session (no Fly account here).
+#   fly launch --no-deploy --copy-config --config deploy/fly.toml --dockerfile Dockerfile   (pick a unique app name)
+#   fly volumes create pathway_data --size 3 --region arn
+#   fly secrets set PATHWAY_ACCESS_TOKEN="$(openssl rand -hex 24)"
+#   fly deploy --config deploy/fly.toml --ha=false
+# Keep to exactly one machine: jobs are child processes and SQLite lives on that machine's volume.
+app = "pathway-platform-CHANGE-ME"
+primary_region = "arn"
+
+[build]
+  dockerfile = "../Dockerfile"
+
+[env]
+  PATHWAY_PUBLIC_READ = "1"
+  PATHWAY_MAX_JOBS = "2"
+  FORWARDED_ALLOW_IPS = "*"        # Fly's proxy is the only way in
+
+[mounts]
+  source = "pathway_data"
+  destination = "/data"
+
+[http_service]
+  internal_port = 8000
+  force_https = true
+  auto_stop_machines = "off"
+  auto_start_machines = false
+  min_machines_running = 1
+  [http_service.concurrency]
+    type = "requests"
+    soft_limit = 50
+    hard_limit = 100
+
+[[http_service.checks]]
+  method = "GET"
+  path = "/api/health"
+  interval = "30s"
+  timeout = "5s"
+  grace_period = "20s"
+
+[[vm]]
+  size = "shared-cpu-2x"
+  memory = "2gb"

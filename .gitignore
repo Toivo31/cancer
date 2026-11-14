@@ -9,3 +9,16 @@ __pycache__/
 # IDE
 .idea/
 .DS_Store
+
+# Web app
+web/node_modules/
+web/dist/
+web/*.tsbuildinfo
+
+# Service data (SQLite and result blobs)
+data/
+web/shots/
+
+# Deployment secrets
+deploy/*.env
+!deploy/platform.env.example

@@ -1,0 +1,150 @@
+# Source registry. Every `source:` in the other params/*.yaml files must be `assumption` or an id below.
+# access: full_text = we read the paper/report text itself (possibly a mirror copy);
+#         abstract  = abstract only; secondary = we saw it only via another document or a news summary.
+- id: STOKSTAD2019
+  citation: "Stokstad T, et al. Reasons for prolonged time for diagnostic workup for stage I-II lung cancer and estimated effect of applying an optimized pathway for diagnostic procedures. BMC Health Services Research 2019;19:679."
+  url: https://doi.org/10.1186/s12913-019-4517-z
+  year: 2019
+  supports: [stokstad per-step waits, delay-reason counts, observed vs optimal pathway timeliness, treatment split]
+  accessed: 2026-11-14
+  access: full_text   # read via a library mirror copy of the full text (d-nb.info/1203944322/34); publisher hosts were blocked
+- id: IHE2026
+  citation: "IHE. IHE Cancer Dashboard Finland (April 2026). Stockholm: Swedish Institute for Health Economics."
+  url: https://ihe.se/app/uploads/2026/04/IHE-Cancer-Dashboard-Finland_.pdf
+  year: 2026
+  supports: [Finnish lung pathway waits (citing Khalife 2025), CT in primary care <10%, CT scanner density, stage at diagnosis, survival, registry time to treatment]
+  accessed: 2026-11-14
+  access: full_text   # first 100k of 130k characters read
+- id: KHALIFE2025
+  citation: "Khalife G, Warisa J, Bodtger U, Isaksson J, Neumann K, Hardardottir H, et al. Comparative study of lung cancer care and survival outcomes across the Nordic countries. Acta Oncologica 2025;64:734-741."
+  url: https://doi.org/10.2340/1651-226X.2025.42778
+  year: 2025
+  supports: [Finnish waits per step, share of patients meeting a doctor at first contact, CT in primary care, THL primary care waits, stage I share]
+  accessed: 2026-11-14
+  access: full_text   # via University of Turku repository copy; survey of 42 specialists plus two workshops, not registry data
+- id: MATTILA2025
+  citation: "Mattila S. Keuhkosyovan diagnostinen viive Satakunnassa koronapandemian aikana (Lung cancer diagnostic delay in Satakunta during the COVID-19 pandemic). Advanced studies thesis, University of Turku, 2025."
+  url: https://www.utupub.fi/handle/10024/180618
+  year: 2025
+  supports: [Satakunta first visit to referral about 2 weeks, referral to diagnosis just under 2 months, n=131]
+  accessed: 2026-11-14
+  access: abstract
+- id: YLE_MOT2025
+  citation: "Yle (MOT programme), news article 23 Oct 2025, reporting an unpublished MOT study of lung cancer diagnostic delay in Finland, Sweden and Denmark."
+  url: https://yle.fi/a/74-20251023
+  year: 2025
+  supports: [symptom onset to treatment about 155 days in Finland, split patient/primary/specialised]
+  accessed: 2026-11-14
+  access: secondary   # journalist analysis, unpublished; use only as context
+- id: HELSINKI2025_NEWS
+  citation: "University of Helsinki news item: Miksi Suomessa keuhkosyopaan kuollaan aiemmin kuin Pohjoismaissa? (reporting the Khalife et al. survey)."
+  url: https://www.helsinki.fi/fi/uutiset/terveys/miksi-suomessa-keuhkosyopaan-kuollaan-aiemmin-kuin-pohjoismaissa
+  year: 2025
+  supports: [40-60% of Finnish patients see a nurse at first visit, 42 specialists surveyed 2023-2024]
+  accessed: 2026-11-14
+  access: secondary
+- id: BRADLEY2021
+  citation: "Bradley SH, Hatton NLF, Aslam R, et al. Estimating lung cancer risk from chest X-ray and symptoms: a prospective cohort study. Br J Gen Pract 2021;71(705):e280-e286."
+  url: https://bjgp.org/content/71/705/e280
+  year: 2021
+  supports: [lung cancer prevalence among symptomatic self-referred CXR patients over 50, CXR sensitivity/specificity/PPV/NPV, haemoptysis PPV]
+  accessed: 2026-11-14
+  access: full_text
+- id: BRADLEY2019
+  citation: "Bradley SH, Abraham S, Callister MEJ, et al. Sensitivity of chest X-ray for detecting lung cancer in people presenting with symptoms: a systematic review. Br J Gen Pract 2019;69(689):e827-e835."
+  url: https://eprints.whiterose.ac.uk/id/eprint/146374/
+  year: 2019
+  supports: [CXR sensitivity 77-80% in symptomatic patients]
+  accessed: 2026-11-14
+  access: abstract
+- id: HSSIB2021
+  citation: "HSIB (now HSSIB). Missed detection of lung cancer on chest X-rays of patients being seen in primary care. Investigation report R5323, 14 October 2021."
+  url: https://hssib.org.uk/patient-safety-investigations/missed-detection-of-lung-cancer-on-chest-x-rays-of-patients-being-seen-in-primary-care/investigation-report
+  year: 2021
+  supports: [about one in five lung cancers missed on chest X-ray]
+  accessed: 2026-11-14
+  access: full_text   # first 100k of 217k characters read; the one-in-five figure itself cites Bradley 2019
+- id: KOO2023
+  citation: "Koo MM, Mounce LTA, Rafiq M, Callister MEJ, Singh H, Abel GA, Lyratzopoulos G. Guideline concordance for timely chest imaging after new presentations of dyspnoea or haemoptysis in primary care: a retrospective cohort study. Thorax 2023 (doi 10.1136/thorax-2022-219509)."
+  url: https://doi.org/10.1136/thorax-2022-219509
+  year: 2023
+  supports: [12-month lung cancer risk after new dyspnoea or haemoptysis in English primary care, diagnostic intervals]
+  accessed: 2026-11-14
+  access: full_text
+- id: SEWELL2020
+  citation: "Sewell B, Jones M, Gray H, et al. Rapid cancer diagnosis for patients with vague symptoms: a cost-effectiveness study. Br J Gen Pract 2020;70(692):e186-e192."
+  url: https://bjgp.org/content/70/692/e186
+  year: 2020
+  supports: [non-specific symptom patients wait a median 34 days longer than alarm-symptom patients (cited from earlier research in the introduction), rapid diagnostic centre timings, 12% cancer conversion]
+  accessed: 2026-11-14
+  access: full_text   # the 34-day figure is a secondary citation inside this paper; its original source was not identified
+- id: RIVERA2013
+  citation: "Rivera MP, Mehta AC, Wahidi MM. Establishing the diagnosis of lung cancer: Diagnosis and management of lung cancer, 3rd ed: ACCP evidence-based clinical practice guidelines. Chest 2013;143(5 Suppl):e142S-e165S."
+  url: https://pubmed.ncbi.nlm.nih.gov/23649436/
+  year: 2013
+  supports: [bronchoscopy sensitivity central vs peripheral, radial EBUS, EMN, transthoracic needle sensitivity]
+  accessed: 2026-11-14
+  access: abstract
+- id: SILVESTRI2013
+  citation: "Silvestri GA, Gonzalez AV, Jantz MA, et al. Methods for staging non-small cell lung cancer: ACCP evidence-based clinical practice guidelines. Chest 2013;143(5 Suppl):e211S-e250S."
+  url: https://pubmed.ncbi.nlm.nih.gov/23649440/
+  year: 2013
+  supports: [CT, PET and EBUS-TBNA mediastinal staging accuracy (values taken from GELBERG2014)]
+  accessed: 2026-11-14
+  access: secondary   # PubMed page blocked by a captcha; numbers read in Gelberg 2014
+- id: GELBERG2014
+  citation: "Gelberg J, Grondin S, Tremblay A. Mediastinal staging for lung cancer. Can Respir J 2014;21(3):159-161. doi:10.1155/2014/890108."
+  url: https://pmc.ncbi.nlm.nih.gov/articles/PMC4128458
+  year: 2014
+  supports: [mediastinal staging sensitivity/specificity/NPV for CT, PET, EBUS-TBNA from the ACCP 2013 guideline]
+  accessed: 2026-11-14
+  access: full_text
+- id: ALMEIDA2012
+  citation: "Almeida FA. Bronchoscopy and endobronchial ultrasound for diagnosis and staging of lung cancer. Cleve Clin J Med 2012."
+  url: https://www.mdedge.com/ccjm/article/95807/bronchoscopy-and-endobronchial-ultrasound-diagnosis-and-staging-lung-cancer/page/0/1
+  year: 2012
+  supports: [EBUS-TBNA pooled sensitivity 88-93%, higher when selected by PET/CT, lower in unselected patients]
+  accessed: 2026-11-14
+  access: full_text   # narrative review citing meta-analyses by reference number only
+- id: GOULD2001
+  citation: "Gould MK, et al. Accuracy of positron emission tomography for diagnosis of pulmonary nodules and mass lesions: a meta-analysis. JAMA 2001 (22 Feb issue)."
+  url: https://www.qxmd.com/r/11180735
+  year: 2001
+  supports: [FDG-PET sensitivity and specificity for malignant focal pulmonary lesions]
+  accessed: 2026-11-14
+  access: abstract   # stand-alone PET, not PET-CT; the author list was not shown on the page we read
+- id: HOREWEG2014
+  citation: "Horeweg N, et al. NELSON trial prespecified interim analysis of low-dose CT screening performance. Lancet Oncology 2014."
+  url: https://www.news-medical.net/news/20141119/CT-screening-highly-sensitive-specific-for-lung-cancer-detection.aspx
+  year: 2014
+  supports: [LDCT sensitivity 84.6%, specificity 98.6%, PPV 40.4%, NPV 99.8% in screening of high-risk smokers]
+  accessed: 2026-11-14
+  access: secondary   # news summary of the paper; screening population, not symptomatic patients
+- id: WIENER2011
+  citation: "Wiener RS, et al. Study of complications after transthoracic needle lung biopsy of pulmonary nodules. Ann Intern Med, 2 Aug 2011 issue (title paraphrased; volume/pages not verified)."
+  url: https://www.healthday.com/healthpro-news/pulmonology/pneumothorax-common-after-transthoracic-needle-biopsy-655390.html
+  year: 2011
+  supports: [pneumothorax after TTNB about 15%, chest tube about 6.6% (US population-based, hospital discharge data)]
+  accessed: 2026-11-14
+  access: secondary   # HealthDay summary
+- id: UZUN2017
+  citation: "Uzun C, Akkaya Z, Atman ED, et al. Non-coaxial CT-guided fine needle aspiration of pulmonary lesions, 442 biopsies. Diagn Interv Radiol 2017;23:137-."
+  url: https://dirjournal.org/pdf/beb8919b-f013-4ea1-b1c8-40332e840fe1/articles/dir.2016.16173/Diagn%20Interv%20Radiol-23-137-En.pdf
+  year: 2017
+  supports: [single-centre CT-guided FNA: accuracy 97.6%, non-diagnostic 2.7%, pneumothorax 19%, chest tube 2.9%]
+  accessed: 2026-11-14
+  access: full_text   # title paraphrased; single centre, fine-needle aspiration rather than core biopsy
+- id: GLOBOCAN_FIN
+  citation: "IARC Global Cancer Observatory. Finland fact sheet (GLOBOCAN), as retrieved 2026-11-14."
+  url: https://gco.iarc.who.int/media/globocan/factsheets/populations/246-finland-fact-sheet.pdf
+  year: 2024
+  supports: [lung cancer new cases per year in Finland, population]
+  accessed: 2026-11-14
+  access: full_text   # the page was summarised by the fetch tool; estimate year labelled 2024 there, not independently confirmed
+- id: PIRHA_PATH
+  citation: "Pirkanmaa Hospital District (Pirha). Keuhkosyopapotilaan hoitopolku (lung cancer patient pathway), patient information document."
+  url: https://pirha.fi/documents/d/kehitysversio/keuhkosyopapotilaan-hoitopolku
+  year: 2025
+  supports: [typical internal process times at a Finnish university hospital district (CT within about a week, bronchoscopy results 3-5 days), tests used in the pathway]
+  accessed: 2026-11-14
+  access: full_text   # document year not shown on the page; 2025 is a guess for ordering only

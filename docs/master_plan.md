@@ -22,13 +22,13 @@ Exported from the Claude doc on 14 Nov 2026 · Tuomas. Figures from the original
 
 The national cancer strategy has four main goals, and our project touches three of them. Goal 3, equal and effective care, is the required one and our primary target. Its indicators are that survival in poor-prognosis cancers reaches the Nordic level, which for lung cancer means more than 14 percentage points, that cancer mortality falls by 10 percent, and that patients reach treatment within target times. We measure the last one directly. Goal 2, prevention and early detection, is an additional target, through testing of fast-track lanes and earlier diagnosis. Goal 4, we target by standardizing the care decisions, as our model can recommend a novel treatment, test, or diagnostic for a doctor that he was unaware of. We can also to some effect simulate addition of new solutions to the network.
 
-**Evidence on time gap:** Finland takes longer than the other Nordic countries to diagnose cancer. Lung cancer is the clearest case, and it is also where Finnish survival lags furthest behind. In Finland, 40 to 60 percent of patients with lung symptoms first see a nurse, while elsewhere in the Nordics they see a doctor. Fewer than 10 percent of Finnish primary care units can order a CT scan directly.
+**Evidence on time gap:** Finland takes longer than the other Nordic countries to diagnose cancer. Lung cancer is the clearest case, and it is also where Finnish survival lags furthest behind. In Finland, 40 to 60 percent of patients with lung symptoms first see a nurse, while elsewhere in the Nordics they see a doctor. Fewer than 10 percent of Finnish primary care units could perform CT scanning, against about 90 to 100 percent elsewhere in the Nordics (IHE 2026; *corrected 14 Nov: the source says 'perform', not 'order directly'; we found no source on direct ordering*).
 
 The delay does not always arise in the same place. In one study from Satakunta, the referral took about two weeks, but the diagnosis took almost two more months, so most of the delay was in specialist care.
 
 **Why reordering helps:** Changing the order of steps in the pathway is one of the easiest ways to cut these times, because it needs no new equipment or staff. A better order eases queues at scarce tests. Fast tracks get the most urgent cases through first. And catching outlier decisions prevents the worst missed or late diagnoses. A Norwegian study supports this: reordering the tests alone would have doubled the share of patients treated on time, from 40 to 80 percent.
 
-**Finland is slower at each step of the lung cancer pathway** (typical waiting time in days; IHE Cancer Dashboard Finland 2026, citing Khalife et al. 2025):
+**Finland is slower at most steps of the lung cancer pathway** (*14 Nov: at the diagnosis step Sweden equals Finland; the figures are survey modes, not measured waits*) (typical waiting time in days; IHE Cancer Dashboard Finland 2026, citing Khalife et al. 2025):
 
 | Step | Finland | Denmark, Norway, Sweden |
 |---|---|---|
@@ -46,7 +46,7 @@ The delay does not always arise in the same place. In one study from Satakunta, 
 
 **Capacity versus order:** The same Norwegian study separates the two levers. During the study the median time from PET-CT referral to report was 20.5 days, and a new scanner later cut that wait to 7 days or less. Re-timing the patients with only the shorter PET wait raised the share treated on time from 40 to 48 percent, a gain that was not statistically significant. Changing the order of the steps, with the same shorter PET wait, raised it to 80 percent. Adding capacity at one bottleneck barely helped, while reordering doubled the result without new equipment or staff.
 
-**More evidence:** The Norwegian result is not an isolated case. In England, a hospital cut the wait from an abnormal chest X-ray to CT from 15 days to 3, yet the time to a treatment decision stayed at 66 versus 65 days, because the later diagnostic and staging steps were unchanged. A review of radiotherapy simulations makes the same point: more machine capacity does not help if an earlier step limits the flow. Where the whole pathway was redesigned, times fell. A Norwegian county hospital cut time to treatment by about 8 days with a local diagnostic algorithm and by about 15 days with national pathways. A Toronto clinic that ordered tests before the first visit cut referral to diagnosis from 39.9 to 28.1 days. The Royal Free in London cut referral to treatment from 66 to 29 days, and a Welsh simulation found that a first visit within 7 days and streamlined tests would remove about 11 days.
+**More evidence:** The Norwegian result is not an isolated case. In England, a hospital cut the wait from an abnormal chest X-ray to CT from 15 days to 3, yet the time to a treatment decision stayed at 66 versus 65 days, because the later diagnostic and staging steps were unchanged. A review of radiotherapy simulations makes the same point: more machine capacity does not help if an earlier step limits the flow. Where the whole pathway was redesigned, times fell. A Norwegian county hospital cut time to treatment by about 8 days with a local diagnostic algorithm and by about 15 days with national pathways. A Toronto clinic that ordered tests before the first visit cut referral to diagnosis from 39.9 to 28.1 days. The Royal Free in London cut referral to treatment from 66 to 29 days, and a Welsh simulation found that a first visit within 7 days would remove about 10 to 12 days, and that combining it with daily testing and next-day reporting would remove about 20 to 22 days (England et al.; *corrected 14 Nov, the earlier 'about 11 days' mixed scenarios; the PubMed link below may point to a different paper*).
 
 **Limits of reordering:** Some tests are genuinely undersized, as a London study found for imaging and endoscopy, and no reordering fixes that. Fast tracks can also lengthen waits for other patients who need the same resources, a concern raised in Sweden. The simulator therefore reports waits for all patients, not only those with cancer, and treats more waiting for others as a guardrail.
 
@@ -88,7 +88,7 @@ The optimiser therefore works on patient groups and estimates which test is expe
 
 **Demo:** Generate patients, run a starting flowchart, let the optimiser propose a change, rerun the same patients, re-run with unseen test dataset, and compare the numbers: time to treatment, share within target, cancers missed and tests per patient.
 
-**Validation:** An improvement inside our own simulator proves little, so we check the optimiser against a published case. A Norwegian study of 100 early-stage lung cancer patients reports the observed pathway step by step. We rebuild that pathway as a flowchart (CT, first hospital visit, bronchoscopy or needle biopsy, PET-CT, exercise test, weekly tumour board, treatment) and set its waiting times from the paper, for example a median of 20.5 days from PET-CT referral to report and 4.5 days from sampling to pathology report. We then generate about 100 matching patients and check that the run reproduces the observed result: only 40 percent started treatment within the 42-day target, with a median of 46.5 days. That is the calibration step.
+**Validation:** An improvement inside our own simulator proves little, so we check the optimiser against a published case. A Norwegian study of 100 early-stage lung cancer patients reports the observed pathway step by step. We rebuild that pathway as a flowchart (CT, first hospital visit, bronchoscopy or needle biopsy, PET-CT, exercise test, weekly tumour board, treatment) and set its waiting times from the paper, for example a median of 20.5 days from PET-CT referral to report and 4.5 days from sampling to pathology report. We then generate about 100 matching patients and check that the run reproduces the observed result: only 40 percent started treatment within the 42-day target, with a median of 46.5 days. That is the calibration step. (*42 days is the Norwegian target; Finnish targets in IHE 2026 are assessment within 21 days of referral. We use 42 days for comparability and say so.*)
 
 Next the optimiser searches without being told the authors' solution. It passes if it finds a similar reordering, with PET-CT and the exercise test ordered at the first visit, a tumour board straight after them, and sampling done while treatment is booked, and if it lands near the authors' 80 percent. The paper gives most of the inputs. Its 80 percent is itself a model estimate rather than an observed result, and all of its patients already had cancer, so the check covers specialist care but not primary care filtering.
 
@@ -141,13 +141,76 @@ The first two block a first run or the pitch.
 13. **Parameter sources:** which published figures feed the simulator?
 14. **Scope:** lung cancer only, or several cancers?
 
-## 10. Risks
+## 10. Build status and decisions taken (overnight 14 to 15 Nov)
+
+Code is on branch `overnight/sim`; how to run it is in `README.md`. Provisional decisions, each easy to change, are listed in `docs/decisions.md` (D1 to D13). Items marked *provisional* need a team call.
+
+- **Flowchart format** (*provisional*): a DAG with required, any-of and optional prerequisites, guards on revealed results, choice nodes and exits. A linear sequence cannot express the Norwegian optimal pathway, which is mostly parallel ordering. See `docs/architecture.md`.
+- **Resources** (*provisional*): `server` for capacity queues (Finland), `delay` for published wait distributions (the Stokstad check, as the authors re-timed patients), and `batch` for the weekly tumour board.
+- **Open question 1, first run** (*provisional*): a hand-written starting flowchart plus a rule policy. Observed practice variation in the Stokstad data (late PET referral and similar) is reproduced as a "mix" at choice nodes.
+- **Open questions 5, 7 and 8, optimiser** (*provisional*):
+  - Proposals are scored from revealed timestamps only: which prerequisite held each step back, and by how many days.
+  - Proposals are accepted only if a rerun of the same patients, with common random numbers, is faster.
+  - Results are reported on held-out patients.
+  - Proposals can be biased (hindsight, selection), but acceptance is an exact counterfactual on the same patients. In real life that acceptance step is a pilot.
+- **Open question 9, guardrails** (*provisional*): no more missed or untreated cancers, at most 2 percent more tests or invasive procedures, at most 2 percent fewer tissue-confirmed diagnoses, and no longer exit times for patients without cancer.
+  - The tissue-confirmed guardrail was added after the optimiser tried "skip tissue sampling" to save time.
+  - The scenario also lists clinical needs, for example "the tumour board needs PET-CT", that no change may break.
+  - *Update 14 Nov, review:* the tissue-confirmed guardrail is now active in Finland too (bronchoscopy and needle biopsy are marked as confirming). In the Norwegian check the missed-cancer guardrail is vacuous, because every patient has cancer and there is no discharge exit.
+- **Validation result** (`docs/validation.md`):
+  - Calibrating only the observed pathway reproduces the observed 40 percent. It then *predicts* 78 to 86 percent for the authors' pathway (published 80 percent) and their 16 percent drop in sampling procedures.
+  - It over-predicts "faster PET only": 55 to 67 percent against the published 48 percent.
+  - The blind optimiser, given the faster scanner as the authors were, finds their three changes:
+    1. the tumour board before sampling;
+    2. PET-CT always ordered on time;
+    3. the exercise test ordered early.
+  - It also finds a fourth change: planning tissue sampling when the referral is triaged, before the first hospital visit (before a specialist has seen the patient). That needs a clinical check.
+  - This reaches 88 percent on held-out patients. Without new equipment it reaches 67 percent.
+  - *Disclosures (review M3, M7):* the 80 percent "prediction" carries the calibrated observed practice of ordering PET-CT at referral triage into the authors' pathway; with PET-CT ordered only at the first visit the simulated authors' pathway gives 66 percent. The search chose from a menu of about 70 single changes that included each of the authors' changes as one edit, and was not told which ones the authors made.
+- **Decision model** (`decision_model/README.md`):
+  - On a task where the right answer depends on the set of options, the correction model beats a parameter-matched dot-product model: 84.5 against 79.0 percent accuracy (78.3 percent is the smaller d=32 dot-product model).
+  - The "half the compute for a second question" claim was *not* reproduced at our model sizes. Only the context embedding is cached, so a second question costs 76 to 91 percent of the first.
+  - *Update 14 Nov, wave 2:* the model now runs inside the simulator at the sampling-method choice. It is trained from a random-exploration log on revealed outcomes only (reward = usable result − days/30, a value judgement, D25).
+    - On the Norwegian scenario it rediscovers the location rule (central → bronchoscopy, peripheral → needle biopsy) and ties with it.
+    - On Finland it first sent most patients to the shortest-looking queue and overloaded it (on time 21% → 1–3%). Once it can see queue state, it matches the rule.
+    - Insight for the pitch: a model that optimises each patient separately harms the shared system unless it can see the queues.
+    - Dot-product and correction models show no difference yet, because no scenario varies which options are on offer. *Open question 12 result:* in a built case where an option's value depends on another option (a needle-biopsy rescue sharing a queue), the correction model learns the comparison with enough data (12k training patients) and the dot-product model cannot at any size. The gain is small (+0.02 reward, no on-time gain), and a dot-product model with a hand-written summary of the offer does about as well. The correction model's real advantage is that it needs no hand-written set features. Details are in `decision_model/README.md`.
+- **Wave 2 optimiser** (D22 to D24):
+  - A change must help in each of two training cohorts.
+  - No presentation group may get slower or less often on time.
+  - A two-step lookahead lets it accept pairs of changes that only help together.
+  - Norway: the same four changes as before; held-out 60% → 88%, selection optimism 1.7 points.
+  - Finland (after review B1, fast track excluded from the search): two reorders survive, "reserve the treatment slot when the case is sent to the tumour board" and "book the specialist visit as soon as the referral arrives". Held-out within 90 days 18% → 33%, median 102 → 94 days, no new equipment, missed cancers unchanged.
+  - The earlier 61% ("urgent booking for every referred patient") is a **conditional finding**: it gives the same lead reduction to everyone, so the gain is exactly the assumed gap between routine and urgent booking leads. With 0 / 50 / 100% of the assumed reduction the share is 18 / 44 / 61%. Never present it as the headline or as a fast lane.
+  - "GP first instead of nurse first" did not pass the safety checks on the training patients (half a missed cancer more per cohort, one patient in one cohort). On unseen patients it looked neutral to positive (fewer missed, but it trips the equity guardrail), so the rejection is noise-level and it needs a paired test with more cohorts.
+- **Sensitivity** (`docs/sensitivity.md`):
+  - Norway: reorder beats observed in 80 of 80 joint draws of the unsourced parameters, with a gain of +32 to +48 points.
+  - Finland: the direction holds but the size is uncertain by about 10 points. These runs compare the hand-written order-together pathway, not the two accepted reorders or the urgent-booking variant.
+  - Reordering alone, against a capacity-matched control, gives about +20 points. It turns negative if CT or PET-CT is one slot short.
+  - The Finnish equity gap comes entirely from our detection assumptions, not from Finnish data. Claim it only as "in our synthetic county, under these assumptions".
+- **External check** (`docs/external_checks.md`): the UK rapid-CT pattern is reproduced. Moving the CT earlier cut X-ray to CT result from 29 to 9 days, but X-ray to tumour board decision stayed at 61 days.
+- **Evidence corrections** found by the pitch track are marked *corrected 14 Nov* in sections 2 and 7 above. The full list is in `docs/pitch/evidence_brief.md`.
+
+## 11. Risks
 
 **Missing the brief:** The output might need to read also as a sourced, national-level recommendation that names the equity gap, not only as a technology demo.
 
 **Credibility:** An improvement in our own simulator proves little without the Norwegian check, and the architecture is invisible without a dot-product baseline at one node.
 
 **Scope and wording:** Only the optimisation loop fits the time. The clinician approves every proposal, the data is synthetic, and a treatment slot is reserved while tests finish.
+
+## 12. Platform direction (set by Tuomas, 14 Nov)
+
+The end goal is an online platform, not only a hackathon demo: build your own flowchart, attach JEV to its decision points, train JEV on your dataset, run the simulation, optimise the flowchart and rerun.
+
+- **JEV arrives as an API attached to the graph.** At each decision point it gets the revealed context and the options on offer, and returns a probability per option. Until it exists, a stub with hardcoded probabilities per decision point stands in behind the same contract.
+- **What exists becomes the engine.** `pathway_sim` and `optimiser` are reused as libraries. The lung scenarios become the first two templates. `decision_model/` becomes one optional backend, not the JEV itself.
+- **Plan, specs and tickets** are in `docs/platform/` (`README.md`, `specs/01` to `07`, `tickets.md`). Milestone M1 (JEV in the graph) is built on branch `plat/jev`: the `jev/` package (contract, `BackendPolicy`, stub with probability tables, HTTP client and stub server, local and rule backends), engine decision modes, CLI flags `--jev`, `--decision-mode`, `--set`, and contract tests. See `docs/architecture.md` (Policy, JEV).
+- **The simulator no longer always takes the most likely option.** The engine asks the policy for probabilities and, in `sample` mode (the platform default, fork F2 provisional), draws the choice with the common-random-number uniform `(seed, patient, "mix", node)`, so a patient makes the same choice in every flowchart variant; `argmax` is switchable per run. Rule-based policies return one-hot probabilities and are unaffected: every shipped scenario reproduces its previous metrics exactly through the stub.
+- **Open forks F1 to F7** (what counts as a decision point, sample or most-likely, the JEV contract and its owner, web stack, hosting and data, the cut for Sunday, `standardise` under JEV) are listed with leans in `docs/platform/README.md` section 5 and need a team call.
+
+- **Planning framework (14 Nov, later the same day).** `docs/plan/` is now the entry point for agents and people: vision, architecture, one file per component (C1 patient engine, C2 clinical catalogue, C3 simulation, C4 decision layer, C5 optimiser, C6 platform, C7 evidence), the execution strategy for parallel agent work, a guide for writing work packages and tickets, and the live status. The first platform wave (JEV contract and stub, safe conditions, validation, service, web app, flow page, datasets and training, deployment files) is merged into `overnight/sim`.
+- **Synthetic patients become a component of their own.** Each patient is a card: background, a hidden primary condition (a cancer, another illness, or healthy), hidden variables derived from it (symptoms, findings), and a pre-drawn result for every test in a sourced clinical catalogue. Flowchart steps reveal these; decisions and the optimiser see only what was revealed. A language model writes the patient's text (history, notes, referral letter) from the sampled facts and never sets a number. The optimiser gains a second family of changes: the decision criteria at each node, next to the order of steps. Decisions D33 to D36.
 
 ## Sources
 

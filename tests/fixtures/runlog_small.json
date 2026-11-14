@@ -1,0 +1,380 @@
+{
+ "scenario": "fixture_small",
+ "flowchart": "baseline",
+ "seed": 1,
+ "n_patients": 8,
+ "patients": [
+  {
+   "id": 0,
+   "group": "site_specific",
+   "condition": "lung_cancer",
+   "cancer": true,
+   "arrival": 0.0,
+   "outcome": "treatment",
+   "t_diagnosis": 19.0,
+   "t_treatment": 24.0,
+   "t_exit": 24.0,
+   "events": [
+    {
+     "node": "cxr",
+     "test": "chest_xray",
+     "resource": "chest_xray_res",
+     "stage": "diagnosis",
+     "t_ready": 1.0,
+     "t_start": 3.0,
+     "t_end": 3.1,
+     "t_result": 4.0,
+     "result": true,
+     "attempt": 0
+    },
+    {
+     "node": "referral",
+     "test": "specialist_referral",
+     "resource": "specialist_referral_res",
+     "stage": "diagnosis",
+     "t_ready": 4.0,
+     "t_start": 4.0,
+     "t_end": 4.0,
+     "t_result": 9.0,
+     "result": true,
+     "attempt": 0
+    },
+    {
+     "node": "bronch",
+     "test": "bronchoscopy",
+     "resource": "bronchoscopy_res",
+     "stage": "diagnosis",
+     "t_ready": 9.0,
+     "t_start": 17.0,
+     "t_end": 17.5,
+     "t_result": 19.0,
+     "result": true,
+     "attempt": 0
+    }
+   ]
+  },
+  {
+   "id": 1,
+   "group": "non_specific",
+   "condition": "lung_cancer",
+   "cancer": true,
+   "arrival": 0.7,
+   "outcome": "treatment",
+   "t_diagnosis": 19.7,
+   "t_treatment": 24.7,
+   "t_exit": 24.7,
+   "events": [
+    {
+     "node": "cxr",
+     "test": "chest_xray",
+     "resource": "chest_xray_res",
+     "stage": "diagnosis",
+     "t_ready": 1.7,
+     "t_start": 3.7,
+     "t_end": 3.8,
+     "t_result": 4.7,
+     "result": true,
+     "attempt": 0
+    },
+    {
+     "node": "referral",
+     "test": "specialist_referral",
+     "resource": "specialist_referral_res",
+     "stage": "diagnosis",
+     "t_ready": 4.7,
+     "t_start": 4.7,
+     "t_end": 4.7,
+     "t_result": 9.7,
+     "result": true,
+     "attempt": 0
+    },
+    {
+     "node": "ttnb",
+     "test": "ttnb",
+     "resource": "ttnb_res",
+     "stage": "diagnosis",
+     "t_ready": 9.7,
+     "t_start": 17.7,
+     "t_end": 18.2,
+     "t_result": 19.7,
+     "result": true,
+     "attempt": 0
+    }
+   ]
+  },
+  {
+   "id": 2,
+   "group": "site_specific",
+   "condition": "benign",
+   "cancer": false,
+   "arrival": 1.4,
+   "outcome": "discharged",
+   "t_diagnosis": null,
+   "t_treatment": null,
+   "t_exit": 5.4,
+   "events": [
+    {
+     "node": "cxr",
+     "test": "chest_xray",
+     "resource": "chest_xray_res",
+     "stage": "diagnosis",
+     "t_ready": 2.4,
+     "t_start": 4.4,
+     "t_end": 4.5,
+     "t_result": 5.4,
+     "result": false,
+     "attempt": 0
+    }
+   ]
+  },
+  {
+   "id": 3,
+   "group": "non_specific",
+   "condition": "pneumonia",
+   "cancer": false,
+   "arrival": 2.0999999999999996,
+   "outcome": "diagnosis_only",
+   "t_diagnosis": 33.1,
+   "t_treatment": null,
+   "t_exit": 33.1,
+   "events": [
+    {
+     "node": "cxr",
+     "test": "chest_xray",
+     "resource": "chest_xray_res",
+     "stage": "diagnosis",
+     "t_ready": 3.0999999999999996,
+     "t_start": 5.1,
+     "t_end": 5.199999999999999,
+     "t_result": 6.1,
+     "result": true,
+     "attempt": 0
+    },
+    {
+     "node": "referral",
+     "test": "specialist_referral",
+     "resource": "specialist_referral_res",
+     "stage": "diagnosis",
+     "t_ready": 6.1,
+     "t_start": 6.1,
+     "t_end": 6.1,
+     "t_result": 11.1,
+     "result": true,
+     "attempt": 0
+    },
+    {
+     "node": "bronch",
+     "test": "bronchoscopy",
+     "resource": "bronchoscopy_res",
+     "stage": "diagnosis",
+     "t_ready": 11.1,
+     "t_start": 21.1,
+     "t_end": 21.6,
+     "t_result": 23.1,
+     "result": null,
+     "attempt": 0
+    },
+    {
+     "node": "ttnb",
+     "test": "ttnb",
+     "resource": "ttnb_res",
+     "stage": "diagnosis",
+     "t_ready": 23.1,
+     "t_start": 31.1,
+     "t_end": 31.6,
+     "t_result": 33.1,
+     "result": true,
+     "attempt": 1
+    }
+   ]
+  },
+  {
+   "id": 4,
+   "group": "non_specific",
+   "condition": "lung_cancer",
+   "cancer": true,
+   "arrival": 2.8,
+   "outcome": "treatment",
+   "t_diagnosis": 21.8,
+   "t_treatment": 26.8,
+   "t_exit": 26.8,
+   "events": [
+    {
+     "node": "cxr",
+     "test": "chest_xray",
+     "resource": "chest_xray_res",
+     "stage": "diagnosis",
+     "t_ready": 3.8,
+     "t_start": 5.8,
+     "t_end": 5.9,
+     "t_result": 6.8,
+     "result": true,
+     "attempt": 0
+    },
+    {
+     "node": "referral",
+     "test": "specialist_referral",
+     "resource": "specialist_referral_res",
+     "stage": "diagnosis",
+     "t_ready": 6.8,
+     "t_start": 6.8,
+     "t_end": 6.8,
+     "t_result": 11.8,
+     "result": true,
+     "attempt": 0
+    },
+    {
+     "node": "ttnb",
+     "test": "ttnb",
+     "resource": "ttnb_res",
+     "stage": "diagnosis",
+     "t_ready": 11.8,
+     "t_start": 19.8,
+     "t_end": 20.3,
+     "t_result": 21.8,
+     "result": true,
+     "attempt": 0
+    }
+   ]
+  },
+  {
+   "id": 5,
+   "group": "site_specific",
+   "condition": "lung_cancer",
+   "cancer": true,
+   "arrival": 3.5,
+   "outcome": "treatment",
+   "t_diagnosis": 22.5,
+   "t_treatment": 27.5,
+   "t_exit": 27.5,
+   "events": [
+    {
+     "node": "cxr",
+     "test": "chest_xray",
+     "resource": "chest_xray_res",
+     "stage": "diagnosis",
+     "t_ready": 4.5,
+     "t_start": 6.5,
+     "t_end": 6.6,
+     "t_result": 7.5,
+     "result": true,
+     "attempt": 0
+    },
+    {
+     "node": "referral",
+     "test": "specialist_referral",
+     "resource": "specialist_referral_res",
+     "stage": "diagnosis",
+     "t_ready": 7.5,
+     "t_start": 7.5,
+     "t_end": 7.5,
+     "t_result": 12.5,
+     "result": true,
+     "attempt": 0
+    },
+    {
+     "node": "bronch",
+     "test": "bronchoscopy",
+     "resource": "bronchoscopy_res",
+     "stage": "diagnosis",
+     "t_ready": 12.5,
+     "t_start": 20.5,
+     "t_end": 21.0,
+     "t_result": 22.5,
+     "result": true,
+     "attempt": 0
+    }
+   ]
+  },
+  {
+   "id": 6,
+   "group": "non_specific",
+   "condition": "benign",
+   "cancer": false,
+   "arrival": 4.199999999999999,
+   "outcome": "discharged",
+   "t_diagnosis": null,
+   "t_treatment": null,
+   "t_exit": 8.2,
+   "events": [
+    {
+     "node": "cxr",
+     "test": "chest_xray",
+     "resource": "chest_xray_res",
+     "stage": "diagnosis",
+     "t_ready": 5.199999999999999,
+     "t_start": 7.199999999999999,
+     "t_end": 7.299999999999999,
+     "t_result": 8.2,
+     "result": false,
+     "attempt": 0
+    }
+   ]
+  },
+  {
+   "id": 7,
+   "group": "site_specific",
+   "condition": "pneumonia",
+   "cancer": false,
+   "arrival": 4.8999999999999995,
+   "outcome": "diagnosis_only",
+   "t_diagnosis": 23.9,
+   "t_treatment": null,
+   "t_exit": 23.9,
+   "events": [
+    {
+     "node": "cxr",
+     "test": "chest_xray",
+     "resource": "chest_xray_res",
+     "stage": "diagnosis",
+     "t_ready": 5.8999999999999995,
+     "t_start": 7.8999999999999995,
+     "t_end": 8.0,
+     "t_result": 8.899999999999999,
+     "result": true,
+     "attempt": 0
+    },
+    {
+     "node": "referral",
+     "test": "specialist_referral",
+     "resource": "specialist_referral_res",
+     "stage": "diagnosis",
+     "t_ready": 8.899999999999999,
+     "t_start": 8.899999999999999,
+     "t_end": 8.899999999999999,
+     "t_result": 13.899999999999999,
+     "result": true,
+     "attempt": 0
+    },
+    {
+     "node": "ttnb",
+     "test": "ttnb",
+     "resource": "ttnb_res",
+     "stage": "diagnosis",
+     "t_ready": 13.899999999999999,
+     "t_start": 21.9,
+     "t_end": 22.4,
+     "t_result": 23.9,
+     "result": false,
+     "attempt": 0
+    }
+   ]
+  }
+ ],
+ "resources": {
+  "xray": {
+   "type": "server",
+   "utilisation": 0.5,
+   "queue": [
+    [
+     0.0,
+     0
+    ],
+    [
+     1.0,
+     2
+    ]
+   ]
+  }
+ }
+}
