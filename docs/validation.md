@@ -29,7 +29,7 @@ Calibrated scenario used downstream: `scenarios/generated/stokstad_calibrated.ya
 
 | Flowchart | Published | Simulated (11 accepted sets) | Verdict |
 |---|---|---|---|
-| Observed (calibrated) | 40%, median 46.5 d | 37–43%, median ~46 d | fitted |
+| Observed (calibrated) | 40%, median 46.5 d | 36–43%, median ~46 d | fitted |
 | PET-CT ≤ 7 days only | 48% (95% CI 39–58), n.s. | **55–67%** (median 62%) | over-predicts |
 | Authors' optimal pathway | 80% (95% CI 72–87) | **78–86%** (median 83%) | **matches** |
 | Sampling procedures, optimal / observed | 92 / 112 = 0.82 | 0.80 / 0.98 = 0.82 | matches |

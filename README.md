@@ -11,7 +11,7 @@ Plan: `docs/master_plan.md`. Interface contract: `docs/architecture.md`. Open ch
 
 ```bash
 pip install -r requirements.txt            # pyyaml, numpy
-python -m pytest -q                        # all tests, ~35 s
+python -m pytest -q                        # all tests, about 2 min (660+ tests)
 python -m pathway_sim demo                 # full loop -> demo/data/demo_bundle.json (~9 min; `--quick` ~2.5 min)
 open demo/index.html                       # the dashboard (works offline, 6 screens, keys 1-6)
 ```
@@ -94,6 +94,8 @@ clinical check.
 Finnish capacities and all booking leads are assumptions calibrated to published waits. The 90-day target is provisional. Counts of
 sourced and assumed scenario inputs are in `docs/pitch/filled/data_transparency.md`. The parameter table in the demo lists evidence
 and calibration targets, not only simulator inputs.
+
+Ranges (`docs/ranges.md`): the two held-out cohorts are the headline. Across 12 cohorts of the same size today's share is 14% to 25% and the suggested change's 24% to 42%; the gain is 9 to 19 points and positive in all 12 cohorts, and in all 16 joint draws of the assumed inputs. On 100-patient cohorts (the size of the real Norwegian study) the Norwegian numbers are 40% (30 to 51), 80% (72 to 87), 88% (81 to 94) and 67% (56 to 75). The evidence ledger (`docs/ledger.md`, from `python3 params/ledger.py`) counts sourced and assumed scenario inputs from the files; `docs/booking_vs_queue.md` splits booking time from queueing; `docs/capacity_probe.md` has the one-more-slot table with its range.
 
 Missed cancers do not change in any accepted Finnish change; the tissue-confirmed guardrail is active in Finland (bronchoscopy and
 needle biopsy count as confirming) and blocks "faster by skipping tissue sampling". In the Norwegian check every patient has cancer

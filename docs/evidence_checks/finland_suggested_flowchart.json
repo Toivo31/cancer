@@ -1,0 +1,361 @@
+{
+ "flowchart": {
+  "id": "baseline_optimised",
+  "nodes": [
+   {
+    "id": "first_contact",
+    "kind": "choice",
+    "label": "Nurse or GP first",
+    "options": [
+     "nurse_visit",
+     "gp_visit"
+    ]
+   },
+   {
+    "id": "nurse_visit",
+    "kind": "step",
+    "test": "nurse_assessment",
+    "label": "Nurse assessment"
+   },
+   {
+    "id": "gp_visit",
+    "kind": "step",
+    "test": "gp_assessment",
+    "label": "GP appointment"
+   },
+   {
+    "id": "gp_after_nurse",
+    "kind": "step",
+    "test": "gp_assessment_after_nurse",
+    "when": "not nurse_visit",
+    "label": "GP appointment after nurse",
+    "after": [
+     "nurse_visit"
+    ]
+   },
+   {
+    "id": "cxr_ordered",
+    "kind": "step",
+    "when": "nurse_visit or gp_visit or gp_after_nurse",
+    "label": "Chest X-ray ordered",
+    "after_optional": [
+     "nurse_visit",
+     "gp_visit",
+     "gp_after_nurse"
+    ]
+   },
+   {
+    "id": "no_cxr",
+    "kind": "step",
+    "when": "not (nurse_visit or gp_visit or gp_after_nurse)",
+    "label": "No imaging ordered",
+    "after_optional": [
+     "nurse_visit",
+     "gp_visit",
+     "gp_after_nurse"
+    ]
+   },
+   {
+    "id": "cxr",
+    "kind": "step",
+    "test": "chest_xray",
+    "label": "Chest X-ray",
+    "after": [
+     "cxr_ordered"
+    ]
+   },
+   {
+    "id": "second_look",
+    "kind": "step",
+    "test": "gp_second_look",
+    "when": "not cxr",
+    "label": "GP review of a negative film",
+    "after": [
+     "cxr"
+    ]
+   },
+   {
+    "id": "gp_referral",
+    "kind": "step",
+    "test": "gp_referral_letter",
+    "when": "cxr or second_look",
+    "label": "GP writes referral",
+    "after_optional": [
+     "cxr",
+     "second_look"
+    ]
+   },
+   {
+    "id": "no_referral",
+    "kind": "step",
+    "when": "not gp_referral",
+    "label": "No referral",
+    "after_optional": [
+     "gp_referral"
+    ]
+   },
+   {
+    "id": "persist",
+    "kind": "step",
+    "test": "symptoms_persist",
+    "label": "Do symptoms persist",
+    "after": [
+     "no_referral"
+    ]
+   },
+   {
+    "id": "discharge_no_return",
+    "kind": "exit",
+    "when": "not persist",
+    "outcome": "discharged",
+    "label": "Discharged (does not return)",
+    "after": [
+     "persist"
+    ]
+   },
+   {
+    "id": "represent",
+    "kind": "step",
+    "test": "gp_represent",
+    "when": "persist",
+    "label": "Re-presents to GP",
+    "after": [
+     "persist"
+    ]
+   },
+   {
+    "id": "discharge_represent",
+    "kind": "exit",
+    "when": "not represent",
+    "outcome": "discharged",
+    "label": "Discharged after re-presentation",
+    "after": [
+     "represent"
+    ]
+   },
+   {
+    "id": "referral_in",
+    "kind": "step",
+    "when": "gp_referral or represent",
+    "label": "Specialist referral sent",
+    "after_optional": [
+     "gp_referral",
+     "represent"
+    ]
+   },
+   {
+    "id": "triage",
+    "kind": "step",
+    "test": "referral_triage",
+    "label": "Referral handling at hospital",
+    "after": [
+     "referral_in"
+    ]
+   },
+   {
+    "id": "spec_visit",
+    "kind": "step",
+    "test": "specialist_visit",
+    "label": "Specialist visit",
+    "after": [
+     "referral_in"
+    ]
+   },
+   {
+    "id": "discharge_spec",
+    "kind": "exit",
+    "when": "not spec_visit",
+    "outcome": "discharged",
+    "label": "Discharged by specialist",
+    "after": [
+     "spec_visit"
+    ]
+   },
+   {
+    "id": "ct",
+    "kind": "step",
+    "test": "chest_ct",
+    "when": "spec_visit",
+    "label": "CT chest",
+    "after": [
+     "spec_visit"
+    ]
+   },
+   {
+    "id": "discharge_ct",
+    "kind": "exit",
+    "when": "not ct",
+    "outcome": "discharged",
+    "label": "Discharged after negative CT",
+    "after": [
+     "ct"
+    ]
+   },
+   {
+    "id": "sample_choice",
+    "kind": "choice",
+    "when": "ct",
+    "label": "Choose sampling method",
+    "after": [
+     "ct"
+    ],
+    "options": [
+     "bronch",
+     "ttnb"
+    ]
+   },
+   {
+    "id": "bronch",
+    "kind": "step",
+    "test": "bronchoscopy",
+    "retry": {
+     "max": 0,
+     "true": "nondiagnostic",
+     "fallback": "ttnb"
+    },
+    "label": "Bronchoscopy"
+   },
+   {
+    "id": "ttnb",
+    "kind": "step",
+    "test": "ttnb",
+    "label": "Needle biopsy"
+   },
+   {
+    "id": "sampling_done",
+    "kind": "step",
+    "label": "Sampling finished",
+    "after_optional": [
+     "sample_choice",
+     "bronch",
+     "ttnb"
+    ]
+   },
+   {
+    "id": "diagnosis",
+    "kind": "milestone",
+    "milestone": "diagnosis",
+    "label": "Tissue diagnosis",
+    "after": [
+     "sampling_done"
+    ]
+   },
+   {
+    "id": "pet",
+    "kind": "step",
+    "test": "pet_ct",
+    "when": "bronch is not False and ttnb is not False",
+    "label": "PET-CT",
+    "after": [
+     "sampling_done"
+    ]
+   },
+   {
+    "id": "mdt",
+    "kind": "step",
+    "test": "tumour_board",
+    "label": "Tumour board",
+    "after": [
+     "sampling_done"
+    ],
+    "after_optional": [
+     "pet"
+    ]
+   },
+   {
+    "id": "book_treat",
+    "kind": "step",
+    "test": "treatment_booking",
+    "when": "bronch or ttnb or (pet and bronch is not False and ttnb is not False)",
+    "label": "Waiting for treatment slot",
+    "after": [
+     "sampling_done"
+    ],
+    "after_optional": [
+     "pet"
+    ]
+   },
+   {
+    "id": "discharge_mdt",
+    "kind": "exit",
+    "when": "not (bronch or ttnb or (pet and bronch is not False and ttnb is not False))",
+    "outcome": "discharged",
+    "label": "No cancer (board)",
+    "after": [
+     "mdt"
+    ]
+   },
+   {
+    "id": "treat",
+    "kind": "exit",
+    "outcome": "treatment",
+    "label": "Treatment starts",
+    "after": [
+     "book_treat"
+    ],
+    "after_optional": [
+     "mdt",
+     "triage"
+    ]
+   }
+  ],
+  "policy": {
+   "first_contact": {
+    "mix": {
+     "nurse_visit": 0.5,
+     "gp_visit": 0.5
+    },
+    "source": "KHALIFE2025"
+   },
+   "sample_choice": {
+    "rules": [
+     {
+      "when": "location == 'central'",
+      "choose": "bronch"
+     }
+    ],
+    "mix": {
+     "bronch": 0.35,
+     "ttnb": 0.65
+    },
+    "source": "assumption"
+   }
+  },
+  "description": "Finnish sequential pathway (nurse/GP, CXR, referral, specialist, CT, sampling, PET-CT, board, treatment)"
+ },
+ "steps": [
+  {
+   "kind": "relax",
+   "target": "book_treat",
+   "other": "mdt",
+   "plain": "Waiting for treatment slot: order it at the same time as tumour board, not after",
+   "score": 0.076,
+   "evidence": {
+    "predicted_days_saved": 0.08,
+    "train_on_time_before": 0.1339,
+    "train_on_time_after": 0.2336,
+    "train_median_before": 106.14,
+    "train_median_after": 101.66,
+    "accepted_together_with": [],
+    "records_reading": "In the records, the step 'waiting for treatment slot' was held back by tumour board: on average 0.1 days per patient on the critical path"
+   }
+  },
+  {
+   "kind": "relax",
+   "target": "spec_visit",
+   "other": "triage",
+   "plain": "Specialist visit: order it at the same time as referral handling at hospital, not after",
+   "score": 0.238,
+   "evidence": {
+    "predicted_days_saved": 0.24,
+    "train_on_time_before": 0.2336,
+    "train_on_time_after": 0.2874,
+    "train_median_before": 101.66,
+    "train_median_after": 98.4,
+    "accepted_together_with": [],
+    "records_reading": "In the records, the step 'specialist visit' was held back by referral handling at hospital: on average 0.2 days per patient on the critical path"
+   }
+  }
+ ],
+ "check_matches_bundle": true
+}

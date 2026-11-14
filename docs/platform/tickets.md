@@ -120,9 +120,9 @@ Critical path to the first browser loop:
 
 | | ID | Ticket | Size | Needs | Done when |
 |---|---|---|---|---|---|
-| [ ] | M8-1 | Evidence ledger: low, high and grade on every world parameter; ledger view | M | M5-6 | Counts of sourced and assumed inputs come from the world document |
+| [ ] | M8-1 | Evidence ledger: low, high and grade on every world parameter; ledger view (additive part done on plat/evidence: `params/ledger.py`, `docs/ledger.md`, `docs/ledger.json` count sourced and assumed input blocks from the scenario files, grade = how the source was read; low and high per parameter and the view are still open) | M | M5-6 | Counts of sourced and assumed inputs come from the world document |
 | [ ] | M8-2 | Robustness run as a job (existing `sensitivity.py`) with tornado chart | M | M2-5 | "Holds in X of Y draws" for a chosen comparison |
 | [ ] | M8-3 | Calibration as a job (existing `calibrate.py`): fit unknown capacities to observed waits | M | M2-5 | Simulated against observed table in the browser |
-| [ ] | M8-4 | Capacity probe: "one more slot here gains X" | S | M2-6 | Table per run |
-| [ ] | M8-5 | Pitch material updated for the platform framing | S | M4-4 | `docs/pitch/` templates refilled |
-| [ ] | M8-6 | Open items from `docs/review.md`: booking time split from queueing; ranges next to headlines; sensitivity of the accepted Finnish changes | M | – | Review items closed |
+| [x] | M8-4 | Capacity probe: "one more slot here gains X" (analysis table with ranges in `docs/capacity_probe.md`; a per-run table in the service is not built) | S | M2-6 | Table per run |
+| [x] | M8-5 | Pitch material updated for the platform framing (`docs/pitch/platform_framing.md`) | S | M4-4 | `docs/pitch/` templates refilled |
+| [x] | M8-6 | Open items from `docs/review.md`: booking time split from queueing; ranges next to headlines; sensitivity of the accepted Finnish changes | M | – | Review items closed |

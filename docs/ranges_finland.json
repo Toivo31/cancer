@@ -1,0 +1,2954 @@
+{
+ "cohort_spread": {
+  "seeds": [
+   301,
+   302,
+   303,
+   304,
+   305,
+   306,
+   307,
+   308,
+   309,
+   310,
+   311,
+   312
+  ],
+  "per_cohort": [
+   {
+    "seed": 301,
+    "baseline": {
+     "share": 0.2047,
+     "median": 101.73,
+     "n_cancer": 254,
+     "groups": {
+      "non_specific": 0.1591,
+      "site_specific": 0.3077
+     }
+    },
+    "suggested": {
+     "share": 0.3701,
+     "median": 92.53,
+     "n_cancer": 254,
+     "groups": {
+      "non_specific": 0.2841,
+      "site_specific": 0.5641
+     }
+    }
+   },
+   {
+    "seed": 302,
+    "baseline": {
+     "share": 0.1461,
+     "median": 102.89,
+     "n_cancer": 267,
+     "groups": {
+      "non_specific": 0.1081,
+      "site_specific": 0.2317
+     }
+    },
+    "suggested": {
+     "share": 0.2921,
+     "median": 95.63,
+     "n_cancer": 267,
+     "groups": {
+      "non_specific": 0.227,
+      "site_specific": 0.439
+     }
+    }
+   },
+   {
+    "seed": 303,
+    "baseline": {
+     "share": 0.1455,
+     "median": 108.43,
+     "n_cancer": 268,
+     "groups": {
+      "non_specific": 0.1081,
+      "site_specific": 0.2289
+     }
+    },
+    "suggested": {
+     "share": 0.2388,
+     "median": 101.07,
+     "n_cancer": 268,
+     "groups": {
+      "non_specific": 0.1784,
+      "site_specific": 0.3735
+     }
+    }
+   },
+   {
+    "seed": 304,
+    "baseline": {
+     "share": 0.1569,
+     "median": 105.21,
+     "n_cancer": 255,
+     "groups": {
+      "non_specific": 0.1011,
+      "site_specific": 0.2857
+     }
+    },
+    "suggested": {
+     "share": 0.302,
+     "median": 98.74,
+     "n_cancer": 255,
+     "groups": {
+      "non_specific": 0.2303,
+      "site_specific": 0.4675
+     }
+    }
+   },
+   {
+    "seed": 305,
+    "baseline": {
+     "share": 0.2159,
+     "median": 100.76,
+     "n_cancer": 264,
+     "groups": {
+      "non_specific": 0.1538,
+      "site_specific": 0.3537
+     }
+    },
+    "suggested": {
+     "share": 0.3864,
+     "median": 94.15,
+     "n_cancer": 264,
+     "groups": {
+      "non_specific": 0.2747,
+      "site_specific": 0.6341
+     }
+    }
+   },
+   {
+    "seed": 306,
+    "baseline": {
+     "share": 0.1411,
+     "median": 102.66,
+     "n_cancer": 241,
+     "groups": {
+      "non_specific": 0.061,
+      "site_specific": 0.3117
+     }
+    },
+    "suggested": {
+     "share": 0.3154,
+     "median": 96.12,
+     "n_cancer": 241,
+     "groups": {
+      "non_specific": 0.2317,
+      "site_specific": 0.4935
+     }
+    }
+   },
+   {
+    "seed": 307,
+    "baseline": {
+     "share": 0.2273,
+     "median": 99.29,
+     "n_cancer": 242,
+     "groups": {
+      "non_specific": 0.1361,
+      "site_specific": 0.4384
+     }
+    },
+    "suggested": {
+     "share": 0.4215,
+     "median": 92.13,
+     "n_cancer": 242,
+     "groups": {
+      "non_specific": 0.3077,
+      "site_specific": 0.6849
+     }
+    }
+   },
+   {
+    "seed": 308,
+    "baseline": {
+     "share": 0.2065,
+     "median": 100.61,
+     "n_cancer": 247,
+     "groups": {
+      "non_specific": 0.1228,
+      "site_specific": 0.3947
+     }
+    },
+    "suggested": {
+     "share": 0.3684,
+     "median": 94.05,
+     "n_cancer": 247,
+     "groups": {
+      "non_specific": 0.269,
+      "site_specific": 0.5921
+     }
+    }
+   },
+   {
+    "seed": 309,
+    "baseline": {
+     "share": 0.188,
+     "median": 104.63,
+     "n_cancer": 250,
+     "groups": {
+      "non_specific": 0.1395,
+      "site_specific": 0.2949
+     }
+    },
+    "suggested": {
+     "share": 0.292,
+     "median": 98.05,
+     "n_cancer": 250,
+     "groups": {
+      "non_specific": 0.2151,
+      "site_specific": 0.4615
+     }
+    }
+   },
+   {
+    "seed": 310,
+    "baseline": {
+     "share": 0.1788,
+     "median": 105.33,
+     "n_cancer": 274,
+     "groups": {
+      "non_specific": 0.1134,
+      "site_specific": 0.3375
+     }
+    },
+    "suggested": {
+     "share": 0.2774,
+     "median": 98.53,
+     "n_cancer": 274,
+     "groups": {
+      "non_specific": 0.2062,
+      "site_specific": 0.45
+     }
+    }
+   },
+   {
+    "seed": 311,
+    "baseline": {
+     "share": 0.2308,
+     "median": 100.4,
+     "n_cancer": 234,
+     "groups": {
+      "non_specific": 0.1656,
+      "site_specific": 0.3636
+     }
+    },
+    "suggested": {
+     "share": 0.3932,
+     "median": 92.72,
+     "n_cancer": 234,
+     "groups": {
+      "non_specific": 0.2866,
+      "site_specific": 0.6104
+     }
+    }
+   },
+   {
+    "seed": 312,
+    "baseline": {
+     "share": 0.2535,
+     "median": 99.52,
+     "n_cancer": 217,
+     "groups": {
+      "non_specific": 0.1513,
+      "site_specific": 0.4923
+     }
+    },
+    "suggested": {
+     "share": 0.4055,
+     "median": 91.96,
+     "n_cancer": 217,
+     "groups": {
+      "non_specific": 0.3158,
+      "site_specific": 0.6154
+     }
+    }
+   }
+  ],
+  "baseline_share": {
+   "mean": 0.19125833333333334,
+   "sd": 0.03784183491450923,
+   "min": 0.1411,
+   "max": 0.2535
+  },
+  "suggested_share": {
+   "mean": 0.3385666666666667,
+   "sd": 0.05909267503188735,
+   "min": 0.2388,
+   "max": 0.4215
+  },
+  "gain_pp": {
+   "mean": 14.730833333333333,
+   "sd": 3.223046154672861,
+   "min": 9.330000000000002,
+   "max": 19.419999999999998
+  },
+  "baseline_median": {
+   "mean": 102.62166666666667,
+   "sd": 2.793530946940654,
+   "min": 99.29,
+   "max": 108.43
+  },
+  "suggested_median": {
+   "mean": 95.47333333333333,
+   "sd": 3.044540070753584,
+   "min": 91.96,
+   "max": 101.07
+  },
+  "gain_pp_by_group": {
+   "non_specific": {
+    "mean": 12.555833333333334,
+    "sd": 3.4142680789814257,
+    "min": 7.03,
+    "max": 17.159999999999997
+   },
+   "site_specific": {
+    "mean": 19.543333333333333,
+    "sd": 5.412482766436279,
+    "min": 11.249999999999998,
+    "max": 28.04
+   }
+  },
+  "cohorts_where_suggested_beats_baseline": 12
+ },
+ "sensitivity_suggested_vs_baseline": {
+  "scenario": "finland_lung",
+  "file": "/tmp/tmpitcyr_09.yaml",
+  "n": 18800,
+  "seeds": [
+   1
+  ],
+  "n_params": 26,
+  "pairs": [
+   [
+    "baseline",
+    "suggested"
+   ]
+  ],
+  "variation": "low/high = x0.75 / x1.25 unless the parameter row shows otherwise; integer capacities +-1 (1-4 slots) or +-25%",
+  "parameters": [
+   {
+    "id": "tests.chest_ct.p_positive[non-cancer]",
+    "label": "chest_ct: P(positive), non-cancer conditions",
+    "kind": "prob",
+    "rel": 0.25
+   },
+   {
+    "id": "tests.chest_ct.report_days.median",
+    "label": "chest_ct: report_days median",
+    "kind": "median",
+    "rel": 0.25
+   },
+   {
+    "id": "tests.gp_assessment.p_positive[cancer]",
+    "label": "gp_assessment: P(positive), cancer conditions",
+    "kind": "prob",
+    "rel": 0.25
+   },
+   {
+    "id": "tests.gp_represent.extra_wait.median",
+    "label": "gp_represent: extra_wait median",
+    "kind": "median",
+    "rel": 0.25
+   },
+   {
+    "id": "tests.gp_second_look.p_positive[cancer]",
+    "label": "gp_second_look: P(positive), cancer conditions",
+    "kind": "prob",
+    "rel": 0.25
+   },
+   {
+    "id": "tests.gp_second_look.wait.median",
+    "label": "gp_second_look: wait median",
+    "kind": "median",
+    "rel": 0.25
+   },
+   {
+    "id": "tests.nurse_assessment.p_positive[cancer]",
+    "label": "nurse_assessment: P(positive), cancer conditions",
+    "kind": "prob",
+    "rel": 0.25
+   },
+   {
+    "id": "tests.specialist_visit.p_positive[non-cancer]",
+    "label": "specialist_visit: P(positive), non-cancer conditions",
+    "kind": "prob",
+    "rel": 0.25
+   },
+   {
+    "id": "tests.symptoms_persist.p_positive[cancer]",
+    "label": "symptoms_persist: P(positive), cancer conditions",
+    "kind": "prob",
+    "rel": 0.25
+   },
+   {
+    "id": "tests.treatment_booking.extra_wait.median",
+    "label": "treatment_booking: extra_wait median",
+    "kind": "median",
+    "rel": 0.25
+   },
+   {
+    "id": "resources.bronchoscopy.capacity_per_day",
+    "label": "bronchoscopy: slots per day",
+    "kind": "int",
+    "rel": 0.25
+   },
+   {
+    "id": "resources.bronchoscopy.min_lead_days",
+    "label": "bronchoscopy: min_lead_days",
+    "kind": "float",
+    "rel": 0.25
+   },
+   {
+    "id": "resources.clinic.capacity_per_day",
+    "label": "clinic: slots per day",
+    "kind": "int",
+    "rel": 0.25
+   },
+   {
+    "id": "resources.clinic.min_lead_days",
+    "label": "clinic: min_lead_days",
+    "kind": "float",
+    "rel": 0.25
+   },
+   {
+    "id": "resources.clinic.urgent_lead_days",
+    "label": "clinic: urgent_lead_days",
+    "kind": "float",
+    "rel": 0.25
+   },
+   {
+    "id": "resources.ct_scanner.capacity_per_day",
+    "label": "ct_scanner: slots per day (also the flowchart capacity overrides)",
+    "kind": "int",
+    "rel": 0.25
+   },
+   {
+    "id": "resources.ct_scanner.min_lead_days",
+    "label": "ct_scanner: min_lead_days",
+    "kind": "float",
+    "rel": 0.25
+   },
+   {
+    "id": "resources.ct_scanner.urgent_lead_days",
+    "label": "ct_scanner: urgent_lead_days",
+    "kind": "float",
+    "rel": 0.25
+   },
+   {
+    "id": "resources.pet_scanner.capacity_per_day",
+    "label": "pet_scanner: slots per day (also the flowchart capacity overrides)",
+    "kind": "int",
+    "rel": 0.25
+   },
+   {
+    "id": "resources.pet_scanner.min_lead_days",
+    "label": "pet_scanner: min_lead_days",
+    "kind": "float",
+    "rel": 0.25
+   },
+   {
+    "id": "resources.treatment_slot.capacity_per_day",
+    "label": "treatment_slot: slots per day",
+    "kind": "int",
+    "rel": 0.25
+   },
+   {
+    "id": "resources.treatment_slot.min_lead_days",
+    "label": "treatment_slot: min_lead_days",
+    "kind": "float",
+    "rel": 0.25
+   },
+   {
+    "id": "resources.ttnb_slot.capacity_per_day",
+    "label": "ttnb_slot: slots per day",
+    "kind": "int",
+    "rel": 0.25
+   },
+   {
+    "id": "attributes.location.central",
+    "label": "attribute location: share central (rest peripheral)",
+    "kind": "share",
+    "rel": 0.25
+   },
+   {
+    "id": "arrivals.rate_per_day",
+    "label": "arrivals per day (county size)",
+    "kind": "float",
+    "rel": 0.1
+   },
+   {
+    "id": "policy.sample_choice.bronch",
+    "label": "policy sample_choice: share bronch (rest ttnb), all flowcharts",
+    "kind": "share",
+    "rel": 0.25
+   }
+  ],
+  "tornado": {
+   "base": {
+    "baseline": {
+     "share": 16.4,
+     "median": 104.5,
+     "untreated": 20.0
+    },
+    "suggested": {
+     "share": 37.2,
+     "median": 96.0,
+     "untreated": 20.0
+    }
+   },
+   "base_full": {
+    "baseline": {
+     "share": 0.1645,
+     "median": 104.45,
+     "mean": 107.49,
+     "missed": 20.0,
+     "untreated": 20.0,
+     "n_cancer": 231.0,
+     "tests_per_patient": 0.415,
+     "by_group": {
+      "non_specific": {
+       "n_cancer": 159.0,
+       "median_days_to_treatment": 108.25,
+       "share_within_target": 0.0943,
+       "missed_cancers": 15.0
+      },
+      "site_specific": {
+       "n_cancer": 72.0,
+       "median_days_to_treatment": 94.43,
+       "share_within_target": 0.3194,
+       "missed_cancers": 5.0
+      }
+     }
+    },
+    "suggested": {
+     "share": 0.3723,
+     "median": 96.0,
+     "mean": 98.2,
+     "missed": 20.0,
+     "untreated": 20.0,
+     "n_cancer": 231.0,
+     "tests_per_patient": 0.415,
+     "by_group": {
+      "non_specific": {
+       "n_cancer": 159.0,
+       "median_days_to_treatment": 98.71,
+       "share_within_target": 0.2642,
+       "missed_cancers": 15.0
+      },
+      "site_specific": {
+       "n_cancer": 72.0,
+       "median_days_to_treatment": 84.07,
+       "share_within_target": 0.6111,
+       "missed_cancers": 5.0
+      }
+     }
+    }
+   },
+   "pairs": {
+    "baseline>suggested": {
+     "base_gain_pp": 20.8,
+     "base_gain_days": -8.5,
+     "order": [
+      "resources.clinic.capacity_per_day",
+      "resources.ct_scanner.capacity_per_day",
+      "tests.gp_assessment.p_positive[cancer]",
+      "arrivals.rate_per_day",
+      "policy.sample_choice.bronch",
+      "resources.ct_scanner.min_lead_days",
+      "resources.ttnb_slot.capacity_per_day",
+      "tests.gp_represent.extra_wait.median",
+      "resources.pet_scanner.capacity_per_day",
+      "resources.clinic.min_lead_days",
+      "resources.pet_scanner.min_lead_days",
+      "attributes.location.central",
+      "tests.gp_second_look.p_positive[cancer]",
+      "tests.nurse_assessment.p_positive[cancer]",
+      "tests.treatment_booking.extra_wait.median",
+      "resources.treatment_slot.min_lead_days",
+      "resources.bronchoscopy.capacity_per_day",
+      "tests.chest_ct.p_positive[non-cancer]",
+      "tests.specialist_visit.p_positive[non-cancer]",
+      "tests.chest_ct.report_days.median",
+      "resources.bronchoscopy.min_lead_days",
+      "tests.gp_second_look.wait.median",
+      "tests.symptoms_persist.p_positive[cancer]",
+      "resources.clinic.urgent_lead_days",
+      "resources.ct_scanner.urgent_lead_days",
+      "resources.treatment_slot.capacity_per_day"
+     ]
+    }
+   },
+   "rows": [
+    {
+     "param": "tests.chest_ct.p_positive[non-cancer]",
+     "label": "chest_ct: P(positive), non-cancer conditions",
+     "kind": "prob",
+     "base": 0.65,
+     "low": 0.4875,
+     "high": 0.8125,
+     "calibration_ok": {
+      "low": null,
+      "high": null
+     },
+     "flowcharts": {
+      "low": {
+       "baseline": {
+        "share": 17.3,
+        "median": 104.5,
+        "untreated": 20.0
+       },
+       "suggested": {
+        "share": 37.2,
+        "median": 94.8,
+        "untreated": 20.0
+       }
+      },
+      "high": {
+       "baseline": {
+        "share": 15.2,
+        "median": 105.6,
+        "untreated": 20.0
+       },
+       "suggested": {
+        "share": 34.2,
+        "median": 96.3,
+        "untreated": 20.0
+       }
+      }
+     },
+     "baseline>suggested": {
+      "A_low": 17.3,
+      "A_high": 15.2,
+      "B_low": 37.2,
+      "B_high": 34.2,
+      "A_median_low": 104.5,
+      "A_median_high": 105.6,
+      "B_median_low": 94.8,
+      "B_median_high": 96.3,
+      "gain_pp_low": 19.9,
+      "gain_pp_high": 19.1,
+      "gain_pp_base": 20.8,
+      "gain_days_low": -9.6,
+      "gain_days_high": -9.4,
+      "gain_days_base": -8.5,
+      "swing_pp": 0.9,
+      "swing_days": 0.3,
+      "worst_gain_pp": 19.1,
+      "gain_vanishes": false,
+      "unstable": false
+     }
+    },
+    {
+     "param": "tests.chest_ct.report_days.median",
+     "label": "chest_ct: report_days median",
+     "kind": "median",
+     "base": 3,
+     "low": 2.25,
+     "high": 3.75,
+     "calibration_ok": {
+      "low": null,
+      "high": null
+     },
+     "flowcharts": {
+      "low": {
+       "baseline": {
+        "share": 18.6,
+        "median": 104.4,
+        "untreated": 20.0
+       },
+       "suggested": {
+        "share": 38.1,
+        "median": 94.4,
+        "untreated": 20.0
+       }
+      },
+      "high": {
+       "baseline": {
+        "share": 14.3,
+        "median": 105.5,
+        "untreated": 20.0
+       },
+       "suggested": {
+        "share": 34.2,
+        "median": 96.9,
+        "untreated": 20.0
+       }
+      }
+     },
+     "baseline>suggested": {
+      "A_low": 18.6,
+      "A_high": 14.3,
+      "B_low": 38.1,
+      "B_high": 34.2,
+      "A_median_low": 104.4,
+      "A_median_high": 105.5,
+      "B_median_low": 94.4,
+      "B_median_high": 96.9,
+      "gain_pp_low": 19.5,
+      "gain_pp_high": 19.9,
+      "gain_pp_base": 20.8,
+      "gain_days_low": -10.0,
+      "gain_days_high": -8.6,
+      "gain_days_base": -8.5,
+      "swing_pp": 0.4,
+      "swing_days": 1.4,
+      "worst_gain_pp": 19.5,
+      "gain_vanishes": false,
+      "unstable": false
+     }
+    },
+    {
+     "param": "tests.gp_assessment.p_positive[cancer]",
+     "label": "gp_assessment: P(positive), cancer conditions",
+     "kind": "prob",
+     "base": 0.45,
+     "low": 0.3375,
+     "high": 0.5625,
+     "calibration_ok": {
+      "low": null,
+      "high": null
+     },
+     "flowcharts": {
+      "low": {
+       "baseline": {
+        "share": 16.9,
+        "median": 105.7,
+        "untreated": 25.0
+       },
+       "suggested": {
+        "share": 30.3,
+        "median": 97.2,
+        "untreated": 25.0
+       }
+      },
+      "high": {
+       "baseline": {
+        "share": 19.1,
+        "median": 102.4,
+        "untreated": 19.0
+       },
+       "suggested": {
+        "share": 40.3,
+        "median": 93.1,
+        "untreated": 19.0
+       }
+      }
+     },
+     "baseline>suggested": {
+      "A_low": 16.9,
+      "A_high": 19.1,
+      "B_low": 30.3,
+      "B_high": 40.3,
+      "A_median_low": 105.7,
+      "A_median_high": 102.4,
+      "B_median_low": 97.2,
+      "B_median_high": 93.1,
+      "gain_pp_low": 13.4,
+      "gain_pp_high": 21.2,
+      "gain_pp_base": 20.8,
+      "gain_days_low": -8.5,
+      "gain_days_high": -9.3,
+      "gain_days_base": -8.5,
+      "swing_pp": 7.8,
+      "swing_days": 0.7,
+      "worst_gain_pp": 13.4,
+      "gain_vanishes": false,
+      "unstable": false
+     }
+    },
+    {
+     "param": "tests.gp_represent.extra_wait.median",
+     "label": "gp_represent: extra_wait median",
+     "kind": "median",
+     "base": 14,
+     "low": 10.5,
+     "high": 17.5,
+     "calibration_ok": {
+      "low": null,
+      "high": null
+     },
+     "flowcharts": {
+      "low": {
+       "baseline": {
+        "share": 18.2,
+        "median": 103.8,
+        "untreated": 20.0
+       },
+       "suggested": {
+        "share": 32.5,
+        "median": 94.2,
+        "untreated": 20.0
+       }
+      },
+      "high": {
+       "baseline": {
+        "share": 16.0,
+        "median": 105.9,
+        "untreated": 20.0
+       },
+       "suggested": {
+        "share": 34.6,
+        "median": 96.6,
+        "untreated": 20.0
+       }
+      }
+     },
+     "baseline>suggested": {
+      "A_low": 18.2,
+      "A_high": 16.0,
+      "B_low": 32.5,
+      "B_high": 34.6,
+      "A_median_low": 103.8,
+      "A_median_high": 105.9,
+      "B_median_low": 94.2,
+      "B_median_high": 96.6,
+      "gain_pp_low": 14.3,
+      "gain_pp_high": 18.6,
+      "gain_pp_base": 20.8,
+      "gain_days_low": -9.6,
+      "gain_days_high": -9.3,
+      "gain_days_base": -8.5,
+      "swing_pp": 4.3,
+      "swing_days": 0.3,
+      "worst_gain_pp": 14.3,
+      "gain_vanishes": false,
+      "unstable": false
+     }
+    },
+    {
+     "param": "tests.gp_second_look.p_positive[cancer]",
+     "label": "gp_second_look: P(positive), cancer conditions",
+     "kind": "prob",
+     "base": 0.1,
+     "low": 0.075,
+     "high": 0.125,
+     "calibration_ok": {
+      "low": null,
+      "high": null
+     },
+     "flowcharts": {
+      "low": {
+       "baseline": {
+        "share": 16.0,
+        "median": 104.5,
+        "untreated": 20.0
+       },
+       "suggested": {
+        "share": 36.8,
+        "median": 95.5,
+        "untreated": 20.0
+       }
+      },
+      "high": {
+       "baseline": {
+        "share": 16.9,
+        "median": 104.6,
+        "untreated": 19.0
+       },
+       "suggested": {
+        "share": 35.5,
+        "median": 96.1,
+        "untreated": 19.0
+       }
+      }
+     },
+     "baseline>suggested": {
+      "A_low": 16.0,
+      "A_high": 16.9,
+      "B_low": 36.8,
+      "B_high": 35.5,
+      "A_median_low": 104.5,
+      "A_median_high": 104.6,
+      "B_median_low": 95.5,
+      "B_median_high": 96.1,
+      "gain_pp_low": 20.8,
+      "gain_pp_high": 18.6,
+      "gain_pp_base": 20.8,
+      "gain_days_low": -9.0,
+      "gain_days_high": -8.5,
+      "gain_days_base": -8.5,
+      "swing_pp": 2.2,
+      "swing_days": 0.5,
+      "worst_gain_pp": 18.6,
+      "gain_vanishes": false,
+      "unstable": false
+     }
+    },
+    {
+     "param": "tests.gp_second_look.wait.median",
+     "label": "gp_second_look: wait median",
+     "kind": "median",
+     "base": 2,
+     "low": 1.5,
+     "high": 2.5,
+     "calibration_ok": {
+      "low": null,
+      "high": null
+     },
+     "flowcharts": {
+      "low": {
+       "baseline": {
+        "share": 16.9,
+        "median": 104.4,
+        "untreated": 20.0
+       },
+       "suggested": {
+        "share": 36.4,
+        "median": 94.8,
+        "untreated": 20.0
+       }
+      },
+      "high": {
+       "baseline": {
+        "share": 16.4,
+        "median": 103.5,
+        "untreated": 20.0
+       },
+       "suggested": {
+        "share": 35.9,
+        "median": 96.0,
+        "untreated": 20.0
+       }
+      }
+     },
+     "baseline>suggested": {
+      "A_low": 16.9,
+      "A_high": 16.4,
+      "B_low": 36.4,
+      "B_high": 35.9,
+      "A_median_low": 104.4,
+      "A_median_high": 103.5,
+      "B_median_low": 94.8,
+      "B_median_high": 96.0,
+      "gain_pp_low": 19.5,
+      "gain_pp_high": 19.5,
+      "gain_pp_base": 20.8,
+      "gain_days_low": -9.6,
+      "gain_days_high": -7.5,
+      "gain_days_base": -8.5,
+      "swing_pp": 0.0,
+      "swing_days": 2.0,
+      "worst_gain_pp": 19.5,
+      "gain_vanishes": false,
+      "unstable": false
+     }
+    },
+    {
+     "param": "tests.nurse_assessment.p_positive[cancer]",
+     "label": "nurse_assessment: P(positive), cancer conditions",
+     "kind": "prob",
+     "base": 0.15,
+     "low": 0.1125,
+     "high": 0.1875,
+     "calibration_ok": {
+      "low": null,
+      "high": null
+     },
+     "flowcharts": {
+      "low": {
+       "baseline": {
+        "share": 17.3,
+        "median": 104.5,
+        "untreated": 20.0
+       },
+       "suggested": {
+        "share": 35.5,
+        "median": 95.5,
+        "untreated": 20.0
+       }
+      },
+      "high": {
+       "baseline": {
+        "share": 18.6,
+        "median": 103.5,
+        "untreated": 20.0
+       },
+       "suggested": {
+        "share": 39.0,
+        "median": 95.2,
+        "untreated": 20.0
+       }
+      }
+     },
+     "baseline>suggested": {
+      "A_low": 17.3,
+      "A_high": 18.6,
+      "B_low": 35.5,
+      "B_high": 39.0,
+      "A_median_low": 104.5,
+      "A_median_high": 103.5,
+      "B_median_low": 95.5,
+      "B_median_high": 95.2,
+      "gain_pp_low": 18.2,
+      "gain_pp_high": 20.4,
+      "gain_pp_base": 20.8,
+      "gain_days_low": -9.0,
+      "gain_days_high": -8.3,
+      "gain_days_base": -8.5,
+      "swing_pp": 2.2,
+      "swing_days": 0.7,
+      "worst_gain_pp": 18.2,
+      "gain_vanishes": false,
+      "unstable": false
+     }
+    },
+    {
+     "param": "tests.specialist_visit.p_positive[non-cancer]",
+     "label": "specialist_visit: P(positive), non-cancer conditions",
+     "kind": "prob",
+     "base": 0.9,
+     "low": 0.675,
+     "high": 1.0,
+     "calibration_ok": {
+      "low": null,
+      "high": null
+     },
+     "flowcharts": {
+      "low": {
+       "baseline": {
+        "share": 24.2,
+        "median": 102.0,
+        "untreated": 20.0
+       },
+       "suggested": {
+        "share": 40.3,
+        "median": 93.8,
+        "untreated": 20.0
+       }
+      },
+      "high": {
+       "baseline": {
+        "share": 15.2,
+        "median": 106.0,
+        "untreated": 20.0
+       },
+       "suggested": {
+        "share": 32.0,
+        "median": 96.8,
+        "untreated": 20.0
+       }
+      }
+     },
+     "baseline>suggested": {
+      "A_low": 24.2,
+      "A_high": 15.2,
+      "B_low": 40.3,
+      "B_high": 32.0,
+      "A_median_low": 102.0,
+      "A_median_high": 106.0,
+      "B_median_low": 93.8,
+      "B_median_high": 96.8,
+      "gain_pp_low": 16.0,
+      "gain_pp_high": 16.9,
+      "gain_pp_base": 20.8,
+      "gain_days_low": -8.2,
+      "gain_days_high": -9.1,
+      "gain_days_base": -8.5,
+      "swing_pp": 0.9,
+      "swing_days": 1.0,
+      "worst_gain_pp": 16.0,
+      "gain_vanishes": false,
+      "unstable": false
+     }
+    },
+    {
+     "param": "tests.symptoms_persist.p_positive[cancer]",
+     "label": "symptoms_persist: P(positive), cancer conditions",
+     "kind": "prob",
+     "base": 0.9,
+     "low": 0.675,
+     "high": 1.0,
+     "calibration_ok": {
+      "low": null,
+      "high": null
+     },
+     "flowcharts": {
+      "low": {
+       "baseline": {
+        "share": 22.5,
+        "median": 99.2,
+        "untreated": 48.0
+       },
+       "suggested": {
+        "share": 40.7,
+        "median": 89.3,
+        "untreated": 48.0
+       }
+      },
+      "high": {
+       "baseline": {
+        "share": 16.4,
+        "median": 105.3,
+        "untreated": 14.0
+       },
+       "suggested": {
+        "share": 34.6,
+        "median": 96.6,
+        "untreated": 14.0
+       }
+      }
+     },
+     "baseline>suggested": {
+      "A_low": 22.5,
+      "A_high": 16.4,
+      "B_low": 40.7,
+      "B_high": 34.6,
+      "A_median_low": 99.2,
+      "A_median_high": 105.3,
+      "B_median_low": 89.3,
+      "B_median_high": 96.6,
+      "gain_pp_low": 18.2,
+      "gain_pp_high": 18.2,
+      "gain_pp_base": 20.8,
+      "gain_days_low": -9.9,
+      "gain_days_high": -8.7,
+      "gain_days_base": -8.5,
+      "swing_pp": 0.0,
+      "swing_days": 1.2,
+      "worst_gain_pp": 18.2,
+      "gain_vanishes": false,
+      "unstable": false
+     }
+    },
+    {
+     "param": "tests.treatment_booking.extra_wait.median",
+     "label": "treatment_booking: extra_wait median",
+     "kind": "median",
+     "base": 4,
+     "low": 3.0,
+     "high": 5.0,
+     "calibration_ok": {
+      "low": null,
+      "high": null
+     },
+     "flowcharts": {
+      "low": {
+       "baseline": {
+        "share": 19.5,
+        "median": 103.3,
+        "untreated": 20.0
+       },
+       "suggested": {
+        "share": 41.1,
+        "median": 93.5,
+        "untreated": 20.0
+       }
+      },
+      "high": {
+       "baseline": {
+        "share": 15.6,
+        "median": 105.6,
+        "untreated": 20.0
+       },
+       "suggested": {
+        "share": 35.1,
+        "median": 97.8,
+        "untreated": 20.0
+       }
+      }
+     },
+     "baseline>suggested": {
+      "A_low": 19.5,
+      "A_high": 15.6,
+      "B_low": 41.1,
+      "B_high": 35.1,
+      "A_median_low": 103.3,
+      "A_median_high": 105.6,
+      "B_median_low": 93.5,
+      "B_median_high": 97.8,
+      "gain_pp_low": 21.6,
+      "gain_pp_high": 19.5,
+      "gain_pp_base": 20.8,
+      "gain_days_low": -9.8,
+      "gain_days_high": -7.9,
+      "gain_days_base": -8.5,
+      "swing_pp": 2.2,
+      "swing_days": 1.9,
+      "worst_gain_pp": 19.5,
+      "gain_vanishes": false,
+      "unstable": false
+     }
+    },
+    {
+     "param": "resources.bronchoscopy.capacity_per_day",
+     "label": "bronchoscopy: slots per day",
+     "kind": "int",
+     "base": 1,
+     "low": 1,
+     "high": 2,
+     "calibration_ok": {
+      "low": null,
+      "high": null
+     },
+     "flowcharts": {
+      "low": {
+       "baseline": {
+        "share": 16.4,
+        "median": 104.5,
+        "untreated": 20.0
+       },
+       "suggested": {
+        "share": 37.2,
+        "median": 96.0,
+        "untreated": 20.0
+       }
+      },
+      "high": {
+       "baseline": {
+        "share": 16.9,
+        "median": 103.5,
+        "untreated": 20.0
+       },
+       "suggested": {
+        "share": 36.4,
+        "median": 94.5,
+        "untreated": 20.0
+       }
+      }
+     },
+     "baseline>suggested": {
+      "A_low": 16.4,
+      "A_high": 16.9,
+      "B_low": 37.2,
+      "B_high": 36.4,
+      "A_median_low": 104.5,
+      "A_median_high": 103.5,
+      "B_median_low": 96.0,
+      "B_median_high": 94.5,
+      "gain_pp_low": 20.8,
+      "gain_pp_high": 19.5,
+      "gain_pp_base": 20.8,
+      "gain_days_low": -8.5,
+      "gain_days_high": -9.1,
+      "gain_days_base": -8.5,
+      "swing_pp": 1.3,
+      "swing_days": 0.6,
+      "worst_gain_pp": 19.5,
+      "gain_vanishes": false,
+      "unstable": false
+     }
+    },
+    {
+     "param": "resources.bronchoscopy.min_lead_days",
+     "label": "bronchoscopy: min_lead_days",
+     "kind": "float",
+     "base": 6,
+     "low": 4.5,
+     "high": 7.5,
+     "calibration_ok": {
+      "low": null,
+      "high": null
+     },
+     "flowcharts": {
+      "low": {
+       "baseline": {
+        "share": 19.5,
+        "median": 102.9,
+        "untreated": 20.0
+       },
+       "suggested": {
+        "share": 36.4,
+        "median": 95.5,
+        "untreated": 20.0
+       }
+      },
+      "high": {
+       "baseline": {
+        "share": 16.9,
+        "median": 105.6,
+        "untreated": 20.0
+       },
+       "suggested": {
+        "share": 33.3,
+        "median": 95.8,
+        "untreated": 20.0
+       }
+      }
+     },
+     "baseline>suggested": {
+      "A_low": 19.5,
+      "A_high": 16.9,
+      "B_low": 36.4,
+      "B_high": 33.3,
+      "A_median_low": 102.9,
+      "A_median_high": 105.6,
+      "B_median_low": 95.5,
+      "B_median_high": 95.8,
+      "gain_pp_low": 16.9,
+      "gain_pp_high": 16.4,
+      "gain_pp_base": 20.8,
+      "gain_days_low": -7.4,
+      "gain_days_high": -9.8,
+      "gain_days_base": -8.5,
+      "swing_pp": 0.4,
+      "swing_days": 2.4,
+      "worst_gain_pp": 16.4,
+      "gain_vanishes": false,
+      "unstable": false
+     }
+    },
+    {
+     "param": "resources.clinic.capacity_per_day",
+     "label": "clinic: slots per day",
+     "kind": "int",
+     "base": 7,
+     "low": 5,
+     "high": 9,
+     "calibration_ok": {
+      "low": null,
+      "high": null
+     },
+     "flowcharts": {
+      "low": {
+       "baseline": {
+        "share": 2.6,
+        "median": 130.4,
+        "untreated": 20.0
+       },
+       "suggested": {
+        "share": 5.6,
+        "median": 122.1,
+        "untreated": 20.0
+       }
+      },
+      "high": {
+       "baseline": {
+        "share": 16.0,
+        "median": 104.4,
+        "untreated": 20.0
+       },
+       "suggested": {
+        "share": 37.2,
+        "median": 96.0,
+        "untreated": 20.0
+       }
+      }
+     },
+     "baseline>suggested": {
+      "A_low": 2.6,
+      "A_high": 16.0,
+      "B_low": 5.6,
+      "B_high": 37.2,
+      "A_median_low": 130.4,
+      "A_median_high": 104.4,
+      "B_median_low": 122.1,
+      "B_median_high": 96.0,
+      "gain_pp_low": 3.0,
+      "gain_pp_high": 21.2,
+      "gain_pp_base": 20.8,
+      "gain_days_low": -8.3,
+      "gain_days_high": -8.4,
+      "gain_days_base": -8.5,
+      "swing_pp": 18.2,
+      "swing_days": 0.1,
+      "worst_gain_pp": 3.0,
+      "gain_vanishes": false,
+      "unstable": false
+     }
+    },
+    {
+     "param": "resources.clinic.min_lead_days",
+     "label": "clinic: min_lead_days",
+     "kind": "float",
+     "base": 12,
+     "low": 9.0,
+     "high": 15.0,
+     "calibration_ok": {
+      "low": null,
+      "high": null
+     },
+     "flowcharts": {
+      "low": {
+       "baseline": {
+        "share": 24.2,
+        "median": 100.8,
+        "untreated": 20.0
+       },
+       "suggested": {
+        "share": 41.1,
+        "median": 92.6,
+        "untreated": 20.0
+       }
+      },
+      "high": {
+       "baseline": {
+        "share": 14.3,
+        "median": 106.4,
+        "untreated": 20.0
+       },
+       "suggested": {
+        "share": 27.7,
+        "median": 98.5,
+        "untreated": 20.0
+       }
+      }
+     },
+     "baseline>suggested": {
+      "A_low": 24.2,
+      "A_high": 14.3,
+      "B_low": 41.1,
+      "B_high": 27.7,
+      "A_median_low": 100.8,
+      "A_median_high": 106.4,
+      "B_median_low": 92.6,
+      "B_median_high": 98.5,
+      "gain_pp_low": 16.9,
+      "gain_pp_high": 13.4,
+      "gain_pp_base": 20.8,
+      "gain_days_low": -8.2,
+      "gain_days_high": -7.9,
+      "gain_days_base": -8.5,
+      "swing_pp": 3.5,
+      "swing_days": 0.2,
+      "worst_gain_pp": 13.4,
+      "gain_vanishes": false,
+      "unstable": false
+     }
+    },
+    {
+     "param": "resources.clinic.urgent_lead_days",
+     "label": "clinic: urgent_lead_days",
+     "kind": "float",
+     "base": 5,
+     "low": 3.75,
+     "high": 6.25,
+     "calibration_ok": {
+      "low": null,
+      "high": null
+     },
+     "flowcharts": {
+      "low": {
+       "baseline": {
+        "share": 16.4,
+        "median": 104.5,
+        "untreated": 20.0
+       },
+       "suggested": {
+        "share": 37.2,
+        "median": 96.0,
+        "untreated": 20.0
+       }
+      },
+      "high": {
+       "baseline": {
+        "share": 16.4,
+        "median": 104.5,
+        "untreated": 20.0
+       },
+       "suggested": {
+        "share": 37.2,
+        "median": 96.0,
+        "untreated": 20.0
+       }
+      }
+     },
+     "baseline>suggested": {
+      "A_low": 16.4,
+      "A_high": 16.4,
+      "B_low": 37.2,
+      "B_high": 37.2,
+      "A_median_low": 104.5,
+      "A_median_high": 104.5,
+      "B_median_low": 96.0,
+      "B_median_high": 96.0,
+      "gain_pp_low": 20.8,
+      "gain_pp_high": 20.8,
+      "gain_pp_base": 20.8,
+      "gain_days_low": -8.5,
+      "gain_days_high": -8.5,
+      "gain_days_base": -8.5,
+      "swing_pp": 0.0,
+      "swing_days": 0.0,
+      "worst_gain_pp": 20.8,
+      "gain_vanishes": false,
+      "unstable": false
+     }
+    },
+    {
+     "param": "resources.ct_scanner.capacity_per_day",
+     "label": "ct_scanner: slots per day (also the flowchart capacity overrides)",
+     "kind": "int",
+     "base": 3,
+     "low": 2,
+     "high": 4,
+     "calibration_ok": {
+      "low": null,
+      "high": null
+     },
+     "flowcharts": {
+      "low": {
+       "baseline": {
+        "share": 1.3,
+        "median": 172.5,
+        "untreated": 20.0
+       },
+       "suggested": {
+        "share": 1.7,
+        "median": 167.5,
+        "untreated": 20.0
+       }
+      },
+      "high": {
+       "baseline": {
+        "share": 23.4,
+        "median": 102.7,
+        "untreated": 20.0
+       },
+       "suggested": {
+        "share": 39.0,
+        "median": 94.2,
+        "untreated": 20.0
+       }
+      }
+     },
+     "baseline>suggested": {
+      "A_low": 1.3,
+      "A_high": 23.4,
+      "B_low": 1.7,
+      "B_high": 39.0,
+      "A_median_low": 172.5,
+      "A_median_high": 102.7,
+      "B_median_low": 167.5,
+      "B_median_high": 94.2,
+      "gain_pp_low": 0.4,
+      "gain_pp_high": 15.6,
+      "gain_pp_base": 20.8,
+      "gain_days_low": -5.0,
+      "gain_days_high": -8.5,
+      "gain_days_base": -8.5,
+      "swing_pp": 15.2,
+      "swing_days": 3.5,
+      "worst_gain_pp": 0.4,
+      "gain_vanishes": false,
+      "unstable": true
+     }
+    },
+    {
+     "param": "resources.ct_scanner.min_lead_days",
+     "label": "ct_scanner: min_lead_days",
+     "kind": "float",
+     "base": 4,
+     "low": 3.0,
+     "high": 5.0,
+     "calibration_ok": {
+      "low": null,
+      "high": null
+     },
+     "flowcharts": {
+      "low": {
+       "baseline": {
+        "share": 22.5,
+        "median": 102.5,
+        "untreated": 20.0
+       },
+       "suggested": {
+        "share": 39.4,
+        "median": 93.6,
+        "untreated": 20.0
+       }
+      },
+      "high": {
+       "baseline": {
+        "share": 17.3,
+        "median": 105.6,
+        "untreated": 20.0
+       },
+       "suggested": {
+        "share": 29.0,
+        "median": 98.5,
+        "untreated": 20.0
+       }
+      }
+     },
+     "baseline>suggested": {
+      "A_low": 22.5,
+      "A_high": 17.3,
+      "B_low": 39.4,
+      "B_high": 29.0,
+      "A_median_low": 102.5,
+      "A_median_high": 105.6,
+      "B_median_low": 93.6,
+      "B_median_high": 98.5,
+      "gain_pp_low": 16.9,
+      "gain_pp_high": 11.7,
+      "gain_pp_base": 20.8,
+      "gain_days_low": -8.8,
+      "gain_days_high": -7.2,
+      "gain_days_base": -8.5,
+      "swing_pp": 5.2,
+      "swing_days": 1.7,
+      "worst_gain_pp": 11.7,
+      "gain_vanishes": false,
+      "unstable": false
+     }
+    },
+    {
+     "param": "resources.ct_scanner.urgent_lead_days",
+     "label": "ct_scanner: urgent_lead_days",
+     "kind": "float",
+     "base": 1,
+     "low": 0.75,
+     "high": 1.25,
+     "calibration_ok": {
+      "low": null,
+      "high": null
+     },
+     "flowcharts": {
+      "low": {
+       "baseline": {
+        "share": 16.4,
+        "median": 104.5,
+        "untreated": 20.0
+       },
+       "suggested": {
+        "share": 37.2,
+        "median": 96.0,
+        "untreated": 20.0
+       }
+      },
+      "high": {
+       "baseline": {
+        "share": 16.4,
+        "median": 104.5,
+        "untreated": 20.0
+       },
+       "suggested": {
+        "share": 37.2,
+        "median": 96.0,
+        "untreated": 20.0
+       }
+      }
+     },
+     "baseline>suggested": {
+      "A_low": 16.4,
+      "A_high": 16.4,
+      "B_low": 37.2,
+      "B_high": 37.2,
+      "A_median_low": 104.5,
+      "A_median_high": 104.5,
+      "B_median_low": 96.0,
+      "B_median_high": 96.0,
+      "gain_pp_low": 20.8,
+      "gain_pp_high": 20.8,
+      "gain_pp_base": 20.8,
+      "gain_days_low": -8.5,
+      "gain_days_high": -8.5,
+      "gain_days_base": -8.5,
+      "swing_pp": 0.0,
+      "swing_days": 0.0,
+      "worst_gain_pp": 20.8,
+      "gain_vanishes": false,
+      "unstable": false
+     }
+    },
+    {
+     "param": "resources.pet_scanner.capacity_per_day",
+     "label": "pet_scanner: slots per day (also the flowchart capacity overrides)",
+     "kind": "int",
+     "base": 1,
+     "low": 1,
+     "high": 2,
+     "calibration_ok": {
+      "low": null,
+      "high": null
+     },
+     "flowcharts": {
+      "low": {
+       "baseline": {
+        "share": 16.4,
+        "median": 104.5,
+        "untreated": 20.0
+       },
+       "suggested": {
+        "share": 37.2,
+        "median": 96.0,
+        "untreated": 20.0
+       }
+      },
+      "high": {
+       "baseline": {
+        "share": 26.0,
+        "median": 101.5,
+        "untreated": 20.0
+       },
+       "suggested": {
+        "share": 42.4,
+        "median": 92.3,
+        "untreated": 20.0
+       }
+      }
+     },
+     "baseline>suggested": {
+      "A_low": 16.4,
+      "A_high": 26.0,
+      "B_low": 37.2,
+      "B_high": 42.4,
+      "A_median_low": 104.5,
+      "A_median_high": 101.5,
+      "B_median_low": 96.0,
+      "B_median_high": 92.3,
+      "gain_pp_low": 20.8,
+      "gain_pp_high": 16.5,
+      "gain_pp_base": 20.8,
+      "gain_days_low": -8.5,
+      "gain_days_high": -9.2,
+      "gain_days_base": -8.5,
+      "swing_pp": 4.3,
+      "swing_days": 0.8,
+      "worst_gain_pp": 16.5,
+      "gain_vanishes": false,
+      "unstable": false
+     }
+    },
+    {
+     "param": "resources.pet_scanner.min_lead_days",
+     "label": "pet_scanner: min_lead_days",
+     "kind": "float",
+     "base": 4,
+     "low": 3.0,
+     "high": 5.0,
+     "calibration_ok": {
+      "low": null,
+      "high": null
+     },
+     "flowcharts": {
+      "low": {
+       "baseline": {
+        "share": 19.5,
+        "median": 102.7,
+        "untreated": 20.0
+       },
+       "suggested": {
+        "share": 40.7,
+        "median": 94.5,
+        "untreated": 20.0
+       }
+      },
+      "high": {
+       "baseline": {
+        "share": 15.6,
+        "median": 105.8,
+        "untreated": 20.0
+       },
+       "suggested": {
+        "share": 33.8,
+        "median": 97.1,
+        "untreated": 20.0
+       }
+      }
+     },
+     "baseline>suggested": {
+      "A_low": 19.5,
+      "A_high": 15.6,
+      "B_low": 40.7,
+      "B_high": 33.8,
+      "A_median_low": 102.7,
+      "A_median_high": 105.8,
+      "B_median_low": 94.5,
+      "B_median_high": 97.1,
+      "gain_pp_low": 21.2,
+      "gain_pp_high": 18.2,
+      "gain_pp_base": 20.8,
+      "gain_days_low": -8.2,
+      "gain_days_high": -8.8,
+      "gain_days_base": -8.5,
+      "swing_pp": 3.0,
+      "swing_days": 0.6,
+      "worst_gain_pp": 18.2,
+      "gain_vanishes": false,
+      "unstable": false
+     }
+    },
+    {
+     "param": "resources.treatment_slot.capacity_per_day",
+     "label": "treatment_slot: slots per day",
+     "kind": "int",
+     "base": 2,
+     "low": 1,
+     "high": 3,
+     "calibration_ok": {
+      "low": null,
+      "high": null
+     },
+     "flowcharts": {
+      "low": {
+       "baseline": {
+        "share": 13.0,
+        "median": 106.8,
+        "untreated": 20.0
+       },
+       "suggested": {
+        "share": 33.3,
+        "median": 97.8,
+        "untreated": 20.0
+       }
+      },
+      "high": {
+       "baseline": {
+        "share": 16.9,
+        "median": 104.4,
+        "untreated": 20.0
+       },
+       "suggested": {
+        "share": 37.2,
+        "median": 95.8,
+        "untreated": 20.0
+       }
+      }
+     },
+     "baseline>suggested": {
+      "A_low": 13.0,
+      "A_high": 16.9,
+      "B_low": 33.3,
+      "B_high": 37.2,
+      "A_median_low": 106.8,
+      "A_median_high": 104.4,
+      "B_median_low": 97.8,
+      "B_median_high": 95.8,
+      "gain_pp_low": 20.3,
+      "gain_pp_high": 20.4,
+      "gain_pp_base": 20.8,
+      "gain_days_low": -9.0,
+      "gain_days_high": -8.6,
+      "gain_days_base": -8.5,
+      "swing_pp": 0.0,
+      "swing_days": 0.4,
+      "worst_gain_pp": 20.3,
+      "gain_vanishes": false,
+      "unstable": false
+     }
+    },
+    {
+     "param": "resources.treatment_slot.min_lead_days",
+     "label": "treatment_slot: min_lead_days",
+     "kind": "float",
+     "base": 10,
+     "low": 7.5,
+     "high": 12.5,
+     "calibration_ok": {
+      "low": null,
+      "high": null
+     },
+     "flowcharts": {
+      "low": {
+       "baseline": {
+        "share": 22.1,
+        "median": 102.2,
+        "untreated": 20.0
+       },
+       "suggested": {
+        "share": 42.4,
+        "median": 94.0,
+        "untreated": 20.0
+       }
+      },
+      "high": {
+       "baseline": {
+        "share": 12.6,
+        "median": 106.9,
+        "untreated": 20.0
+       },
+       "suggested": {
+        "share": 30.7,
+        "median": 98.4,
+        "untreated": 20.0
+       }
+      }
+     },
+     "baseline>suggested": {
+      "A_low": 22.1,
+      "A_high": 12.6,
+      "B_low": 42.4,
+      "B_high": 30.7,
+      "A_median_low": 102.2,
+      "A_median_high": 106.9,
+      "B_median_low": 94.0,
+      "B_median_high": 98.4,
+      "gain_pp_low": 20.3,
+      "gain_pp_high": 18.2,
+      "gain_pp_base": 20.8,
+      "gain_days_low": -8.2,
+      "gain_days_high": -8.5,
+      "gain_days_base": -8.5,
+      "swing_pp": 2.2,
+      "swing_days": 0.3,
+      "worst_gain_pp": 18.2,
+      "gain_vanishes": false,
+      "unstable": false
+     }
+    },
+    {
+     "param": "resources.ttnb_slot.capacity_per_day",
+     "label": "ttnb_slot: slots per day",
+     "kind": "int",
+     "base": 1,
+     "low": 1,
+     "high": 2,
+     "calibration_ok": {
+      "low": null,
+      "high": null
+     },
+     "flowcharts": {
+      "low": {
+       "baseline": {
+        "share": 16.4,
+        "median": 104.5,
+        "untreated": 20.0
+       },
+       "suggested": {
+        "share": 37.2,
+        "median": 96.0,
+        "untreated": 20.0
+       }
+      },
+      "high": {
+       "baseline": {
+        "share": 20.8,
+        "median": 103.2,
+        "untreated": 20.0
+       },
+       "suggested": {
+        "share": 36.8,
+        "median": 94.5,
+        "untreated": 20.0
+       }
+      }
+     },
+     "baseline>suggested": {
+      "A_low": 16.4,
+      "A_high": 20.8,
+      "B_low": 37.2,
+      "B_high": 36.8,
+      "A_median_low": 104.5,
+      "A_median_high": 103.2,
+      "B_median_low": 96.0,
+      "B_median_high": 94.5,
+      "gain_pp_low": 20.8,
+      "gain_pp_high": 16.0,
+      "gain_pp_base": 20.8,
+      "gain_days_low": -8.5,
+      "gain_days_high": -8.7,
+      "gain_days_base": -8.5,
+      "swing_pp": 4.8,
+      "swing_days": 0.3,
+      "worst_gain_pp": 16.0,
+      "gain_vanishes": false,
+      "unstable": false
+     }
+    },
+    {
+     "param": "attributes.location.central",
+     "label": "attribute location: share central (rest peripheral)",
+     "kind": "share",
+     "base": 0.35,
+     "low": 0.2625,
+     "high": 0.4375,
+     "calibration_ok": {
+      "low": null,
+      "high": null
+     },
+     "flowcharts": {
+      "low": {
+       "baseline": {
+        "share": 17.8,
+        "median": 104.4,
+        "untreated": 20.0
+       },
+       "suggested": {
+        "share": 36.4,
+        "median": 94.8,
+        "untreated": 20.0
+       }
+      },
+      "high": {
+       "baseline": {
+        "share": 19.9,
+        "median": 103.2,
+        "untreated": 20.0
+       },
+       "suggested": {
+        "share": 35.9,
+        "median": 95.5,
+        "untreated": 20.0
+       }
+      }
+     },
+     "baseline>suggested": {
+      "A_low": 17.8,
+      "A_high": 19.9,
+      "B_low": 36.4,
+      "B_high": 35.9,
+      "A_median_low": 104.4,
+      "A_median_high": 103.2,
+      "B_median_low": 94.8,
+      "B_median_high": 95.5,
+      "gain_pp_low": 18.6,
+      "gain_pp_high": 16.0,
+      "gain_pp_base": 20.8,
+      "gain_days_low": -9.6,
+      "gain_days_high": -7.8,
+      "gain_days_base": -8.5,
+      "swing_pp": 2.6,
+      "swing_days": 1.9,
+      "worst_gain_pp": 16.0,
+      "gain_vanishes": false,
+      "unstable": false
+     }
+    },
+    {
+     "param": "arrivals.rate_per_day",
+     "label": "arrivals per day (county size)",
+     "kind": "float",
+     "base": 44,
+     "low": 39.6,
+     "high": 48.4,
+     "calibration_ok": {
+      "low": null,
+      "high": null
+     },
+     "flowcharts": {
+      "low": {
+       "baseline": {
+        "share": 26.6,
+        "median": 101.5,
+        "untreated": 21.0
+       },
+       "suggested": {
+        "share": 38.8,
+        "median": 92.9,
+        "untreated": 21.0
+       }
+      },
+      "high": {
+       "baseline": {
+        "share": 14.5,
+        "median": 108.6,
+        "untreated": 19.0
+       },
+       "suggested": {
+        "share": 20.3,
+        "median": 100.1,
+        "untreated": 19.0
+       }
+      }
+     },
+     "baseline>suggested": {
+      "A_low": 26.6,
+      "A_high": 14.5,
+      "B_low": 38.8,
+      "B_high": 20.3,
+      "A_median_low": 101.5,
+      "A_median_high": 108.6,
+      "B_median_low": 92.9,
+      "B_median_high": 100.1,
+      "gain_pp_low": 12.2,
+      "gain_pp_high": 5.7,
+      "gain_pp_base": 20.8,
+      "gain_days_low": -8.5,
+      "gain_days_high": -8.5,
+      "gain_days_base": -8.5,
+      "swing_pp": 6.5,
+      "swing_days": 0.1,
+      "worst_gain_pp": 5.7,
+      "gain_vanishes": false,
+      "unstable": false
+     }
+    },
+    {
+     "param": "policy.sample_choice.bronch",
+     "label": "policy sample_choice: share bronch (rest ttnb), all flowcharts",
+     "kind": "share",
+     "base": 0.35,
+     "low": 0.2625,
+     "high": 0.4375,
+     "calibration_ok": {
+      "low": null,
+      "high": null
+     },
+     "flowcharts": {
+      "low": {
+       "baseline": {
+        "share": 16.0,
+        "median": 104.4,
+        "untreated": 20.0
+       },
+       "suggested": {
+        "share": 38.5,
+        "median": 95.3,
+        "untreated": 20.0
+       }
+      },
+      "high": {
+       "baseline": {
+        "share": 18.2,
+        "median": 104.6,
+        "untreated": 20.0
+       },
+       "suggested": {
+        "share": 34.6,
+        "median": 96.6,
+        "untreated": 20.0
+       }
+      }
+     },
+     "baseline>suggested": {
+      "A_low": 16.0,
+      "A_high": 18.2,
+      "B_low": 38.5,
+      "B_high": 34.6,
+      "A_median_low": 104.4,
+      "A_median_high": 104.6,
+      "B_median_low": 95.3,
+      "B_median_high": 96.6,
+      "gain_pp_low": 22.5,
+      "gain_pp_high": 16.4,
+      "gain_pp_base": 20.8,
+      "gain_days_low": -9.1,
+      "gain_days_high": -7.9,
+      "gain_days_base": -8.5,
+      "swing_pp": 6.1,
+      "swing_days": 1.1,
+      "worst_gain_pp": 16.4,
+      "gain_vanishes": false,
+      "unstable": false
+     }
+    }
+   ]
+  },
+  "noise": {
+   "baseline>suggested": {
+    "seeds": [
+     1,
+     2,
+     3
+    ],
+    "gain_pp": [
+     20.8,
+     15.0,
+     12.5
+    ],
+    "gain_days": [
+     -8.5,
+     -8.6,
+     -6.9
+    ],
+    "sd_pp_single_seed": 4.25,
+    "sd_days_single_seed": 0.95
+   }
+  },
+  "joint": {
+   "draws": [
+    {
+     "ts": {
+      "tests.chest_ct.p_positive[non-cancer]": -0.352,
+      "tests.chest_ct.report_days.median": -0.698,
+      "tests.gp_assessment.p_positive[cancer]": 0.302,
+      "tests.gp_represent.extra_wait.median": -0.855,
+      "tests.gp_second_look.p_positive[cancer]": 0.072,
+      "tests.gp_second_look.wait.median": -0.269,
+      "tests.nurse_assessment.p_positive[cancer]": -0.884,
+      "tests.specialist_visit.p_positive[non-cancer]": 0.015,
+      "tests.symptoms_persist.p_positive[cancer]": -0.925,
+      "tests.treatment_booking.extra_wait.median": -0.133,
+      "resources.bronchoscopy.capacity_per_day": -0.86,
+      "resources.bronchoscopy.min_lead_days": -0.819,
+      "resources.clinic.capacity_per_day": -0.151,
+      "resources.clinic.min_lead_days": 0.654,
+      "resources.clinic.urgent_lead_days": -0.752,
+      "resources.ct_scanner.capacity_per_day": -0.554,
+      "resources.ct_scanner.min_lead_days": 0.255,
+      "resources.ct_scanner.urgent_lead_days": 0.895,
+      "resources.pet_scanner.capacity_per_day": 0.154,
+      "resources.pet_scanner.min_lead_days": -0.207,
+      "resources.treatment_slot.capacity_per_day": 0.953,
+      "resources.treatment_slot.min_lead_days": -0.907,
+      "resources.ttnb_slot.capacity_per_day": 0.717,
+      "attributes.location.central": -0.421,
+      "arrivals.rate_per_day": -0.711,
+      "policy.sample_choice.bronch": -0.764
+     },
+     "calibration_ok": null,
+     "flowcharts": {
+      "baseline": {
+       "share": 1.3,
+       "median": 139.3,
+       "untreated": 45.0
+      },
+      "suggested": {
+       "share": 5.6,
+       "median": 131.4,
+       "untreated": 45.0
+      }
+     },
+     "baseline>suggested": {
+      "gain_pp": 4.28,
+      "gain_days": -7.9
+     }
+    },
+    {
+     "ts": {
+      "tests.chest_ct.p_positive[non-cancer]": -0.383,
+      "tests.chest_ct.report_days.median": 0.632,
+      "tests.gp_assessment.p_positive[cancer]": -0.639,
+      "tests.gp_represent.extra_wait.median": 0.163,
+      "tests.gp_second_look.p_positive[cancer]": 0.278,
+      "tests.gp_second_look.wait.median": -0.255,
+      "tests.nurse_assessment.p_positive[cancer]": 0.095,
+      "tests.specialist_visit.p_positive[non-cancer]": -0.874,
+      "tests.symptoms_persist.p_positive[cancer]": -0.881,
+      "tests.treatment_booking.extra_wait.median": -0.588,
+      "resources.bronchoscopy.capacity_per_day": 0.361,
+      "resources.bronchoscopy.min_lead_days": -0.145,
+      "resources.clinic.capacity_per_day": -0.372,
+      "resources.clinic.min_lead_days": 0.171,
+      "resources.clinic.urgent_lead_days": -0.094,
+      "resources.ct_scanner.capacity_per_day": -0.4,
+      "resources.ct_scanner.min_lead_days": 0.589,
+      "resources.ct_scanner.urgent_lead_days": 0.398,
+      "resources.pet_scanner.capacity_per_day": -0.512,
+      "resources.pet_scanner.min_lead_days": 0.149,
+      "resources.treatment_slot.capacity_per_day": 0.05,
+      "resources.treatment_slot.min_lead_days": 0.75,
+      "resources.ttnb_slot.capacity_per_day": 0.459,
+      "attributes.location.central": -0.424,
+      "arrivals.rate_per_day": 0.96,
+      "policy.sample_choice.bronch": -0.764
+     },
+     "calibration_ok": null,
+     "flowcharts": {
+      "baseline": {
+       "share": 8.4,
+       "median": 107.9,
+       "untreated": 49.0
+      },
+      "suggested": {
+       "share": 24.2,
+       "median": 99.9,
+       "untreated": 49.0
+      }
+     },
+     "baseline>suggested": {
+      "gain_pp": 15.86,
+      "gain_days": -8.04
+     }
+    },
+    {
+     "ts": {
+      "tests.chest_ct.p_positive[non-cancer]": -0.164,
+      "tests.chest_ct.report_days.median": 0.514,
+      "tests.gp_assessment.p_positive[cancer]": -0.696,
+      "tests.gp_represent.extra_wait.median": -0.022,
+      "tests.gp_second_look.p_positive[cancer]": -0.922,
+      "tests.gp_second_look.wait.median": 0.336,
+      "tests.nurse_assessment.p_positive[cancer]": 0.529,
+      "tests.specialist_visit.p_positive[non-cancer]": 0.146,
+      "tests.symptoms_persist.p_positive[cancer]": 0.751,
+      "tests.treatment_booking.extra_wait.median": -0.373,
+      "resources.bronchoscopy.capacity_per_day": 0.391,
+      "resources.bronchoscopy.min_lead_days": 0.189,
+      "resources.clinic.capacity_per_day": 0.16,
+      "resources.clinic.min_lead_days": -0.088,
+      "resources.clinic.urgent_lead_days": 0.68,
+      "resources.ct_scanner.capacity_per_day": 0.889,
+      "resources.ct_scanner.min_lead_days": -0.052,
+      "resources.ct_scanner.urgent_lead_days": 0.328,
+      "resources.pet_scanner.capacity_per_day": -0.879,
+      "resources.pet_scanner.min_lead_days": 0.403,
+      "resources.treatment_slot.capacity_per_day": 0.294,
+      "resources.treatment_slot.min_lead_days": 0.986,
+      "resources.ttnb_slot.capacity_per_day": 0.644,
+      "attributes.location.central": -0.431,
+      "arrivals.rate_per_day": -0.228,
+      "policy.sample_choice.bronch": 0.337
+     },
+     "calibration_ok": null,
+     "flowcharts": {
+      "baseline": {
+       "share": 15.6,
+       "median": 106.3,
+       "untreated": 14.0
+      },
+      "suggested": {
+       "share": 28.6,
+       "median": 100.1,
+       "untreated": 14.0
+      }
+     },
+     "baseline>suggested": {
+      "gain_pp": 12.99,
+      "gain_days": -6.13
+     }
+    },
+    {
+     "ts": {
+      "tests.chest_ct.p_positive[non-cancer]": -0.955,
+      "tests.chest_ct.report_days.median": -0.077,
+      "tests.gp_assessment.p_positive[cancer]": -0.664,
+      "tests.gp_represent.extra_wait.median": -0.766,
+      "tests.gp_second_look.p_positive[cancer]": -0.882,
+      "tests.gp_second_look.wait.median": 0.536,
+      "tests.nurse_assessment.p_positive[cancer]": -0.741,
+      "tests.specialist_visit.p_positive[non-cancer]": -0.505,
+      "tests.symptoms_persist.p_positive[cancer]": -0.218,
+      "tests.treatment_booking.extra_wait.median": 0.743,
+      "resources.bronchoscopy.capacity_per_day": -0.839,
+      "resources.bronchoscopy.min_lead_days": -0.102,
+      "resources.clinic.capacity_per_day": 0.099,
+      "resources.clinic.min_lead_days": 0.767,
+      "resources.clinic.urgent_lead_days": 0.639,
+      "resources.ct_scanner.capacity_per_day": 0.728,
+      "resources.ct_scanner.min_lead_days": -0.443,
+      "resources.ct_scanner.urgent_lead_days": -0.169,
+      "resources.pet_scanner.capacity_per_day": -0.282,
+      "resources.pet_scanner.min_lead_days": 0.768,
+      "resources.treatment_slot.capacity_per_day": 0.915,
+      "resources.treatment_slot.min_lead_days": -0.698,
+      "resources.ttnb_slot.capacity_per_day": -0.648,
+      "attributes.location.central": -0.536,
+      "arrivals.rate_per_day": -0.533,
+      "policy.sample_choice.bronch": -0.03
+     },
+     "calibration_ok": null,
+     "flowcharts": {
+      "baseline": {
+       "share": 19.5,
+       "median": 101.6,
+       "untreated": 26.0
+      },
+      "suggested": {
+       "share": 38.1,
+       "median": 92.9,
+       "untreated": 26.0
+      }
+     },
+     "baseline>suggested": {
+      "gain_pp": 18.62,
+      "gain_days": -8.71
+     }
+    },
+    {
+     "ts": {
+      "tests.chest_ct.p_positive[non-cancer]": 0.178,
+      "tests.chest_ct.report_days.median": -0.475,
+      "tests.gp_assessment.p_positive[cancer]": -0.992,
+      "tests.gp_represent.extra_wait.median": -0.162,
+      "tests.gp_second_look.p_positive[cancer]": -0.261,
+      "tests.gp_second_look.wait.median": 0.133,
+      "tests.nurse_assessment.p_positive[cancer]": 0.906,
+      "tests.specialist_visit.p_positive[non-cancer]": 0.381,
+      "tests.symptoms_persist.p_positive[cancer]": 0.031,
+      "tests.treatment_booking.extra_wait.median": 0.235,
+      "resources.bronchoscopy.capacity_per_day": 0.352,
+      "resources.bronchoscopy.min_lead_days": -0.892,
+      "resources.clinic.capacity_per_day": 0.799,
+      "resources.clinic.min_lead_days": 0.56,
+      "resources.clinic.urgent_lead_days": 0.749,
+      "resources.ct_scanner.capacity_per_day": 0.596,
+      "resources.ct_scanner.min_lead_days": -0.215,
+      "resources.ct_scanner.urgent_lead_days": -0.202,
+      "resources.pet_scanner.capacity_per_day": -0.793,
+      "resources.pet_scanner.min_lead_days": 0.269,
+      "resources.treatment_slot.capacity_per_day": -0.876,
+      "resources.treatment_slot.min_lead_days": -0.865,
+      "resources.ttnb_slot.capacity_per_day": -0.582,
+      "attributes.location.central": -0.675,
+      "arrivals.rate_per_day": -0.32,
+      "policy.sample_choice.bronch": -0.895
+     },
+     "calibration_ok": null,
+     "flowcharts": {
+      "baseline": {
+       "share": 17.8,
+       "median": 105.7,
+       "untreated": 23.0
+      },
+      "suggested": {
+       "share": 32.5,
+       "median": 97.8,
+       "untreated": 23.0
+      }
+     },
+     "baseline>suggested": {
+      "gain_pp": 14.72,
+      "gain_days": -7.89
+     }
+    },
+    {
+     "ts": {
+      "tests.chest_ct.p_positive[non-cancer]": -1.0,
+      "tests.chest_ct.report_days.median": -0.697,
+      "tests.gp_assessment.p_positive[cancer]": -0.797,
+      "tests.gp_represent.extra_wait.median": -0.273,
+      "tests.gp_second_look.p_positive[cancer]": -0.949,
+      "tests.gp_second_look.wait.median": 0.749,
+      "tests.nurse_assessment.p_positive[cancer]": 0.228,
+      "tests.specialist_visit.p_positive[non-cancer]": -0.703,
+      "tests.symptoms_persist.p_positive[cancer]": -0.495,
+      "tests.treatment_booking.extra_wait.median": -0.305,
+      "resources.bronchoscopy.capacity_per_day": -0.272,
+      "resources.bronchoscopy.min_lead_days": -0.754,
+      "resources.clinic.capacity_per_day": 0.698,
+      "resources.clinic.min_lead_days": 0.986,
+      "resources.clinic.urgent_lead_days": -0.068,
+      "resources.ct_scanner.capacity_per_day": -0.032,
+      "resources.ct_scanner.min_lead_days": -0.828,
+      "resources.ct_scanner.urgent_lead_days": -0.796,
+      "resources.pet_scanner.capacity_per_day": -0.315,
+      "resources.pet_scanner.min_lead_days": -0.47,
+      "resources.treatment_slot.capacity_per_day": 0.658,
+      "resources.treatment_slot.min_lead_days": -0.677,
+      "resources.ttnb_slot.capacity_per_day": -0.954,
+      "attributes.location.central": 0.902,
+      "arrivals.rate_per_day": 0.057,
+      "policy.sample_choice.bronch": -0.707
+     },
+     "calibration_ok": null,
+     "flowcharts": {
+      "baseline": {
+       "share": 22.2,
+       "median": 100.2,
+       "untreated": 35.0
+      },
+      "suggested": {
+       "share": 40.4,
+       "median": 91.1,
+       "untreated": 35.0
+      }
+     },
+     "baseline>suggested": {
+      "gain_pp": 18.26,
+      "gain_days": -9.11
+     }
+    },
+    {
+     "ts": {
+      "tests.chest_ct.p_positive[non-cancer]": 0.086,
+      "tests.chest_ct.report_days.median": -0.946,
+      "tests.gp_assessment.p_positive[cancer]": 0.056,
+      "tests.gp_represent.extra_wait.median": 0.957,
+      "tests.gp_second_look.p_positive[cancer]": 0.727,
+      "tests.gp_second_look.wait.median": 0.392,
+      "tests.nurse_assessment.p_positive[cancer]": -0.478,
+      "tests.specialist_visit.p_positive[non-cancer]": -0.267,
+      "tests.symptoms_persist.p_positive[cancer]": -0.666,
+      "tests.treatment_booking.extra_wait.median": 0.544,
+      "resources.bronchoscopy.capacity_per_day": 0.065,
+      "resources.bronchoscopy.min_lead_days": 0.558,
+      "resources.clinic.capacity_per_day": -0.341,
+      "resources.clinic.min_lead_days": -0.554,
+      "resources.clinic.urgent_lead_days": 0.623,
+      "resources.ct_scanner.capacity_per_day": 0.97,
+      "resources.ct_scanner.min_lead_days": 0.705,
+      "resources.ct_scanner.urgent_lead_days": 0.612,
+      "resources.pet_scanner.capacity_per_day": 0.637,
+      "resources.pet_scanner.min_lead_days": 0.48,
+      "resources.treatment_slot.capacity_per_day": -0.547,
+      "resources.treatment_slot.min_lead_days": 0.035,
+      "resources.ttnb_slot.capacity_per_day": -0.289,
+      "attributes.location.central": -0.942,
+      "arrivals.rate_per_day": -0.944,
+      "policy.sample_choice.bronch": -0.441
+     },
+     "calibration_ok": null,
+     "flowcharts": {
+      "baseline": {
+       "share": 25.7,
+       "median": 98.4,
+       "untreated": 36.0
+      },
+      "suggested": {
+       "share": 45.6,
+       "median": 89.3,
+       "untreated": 36.0
+      }
+     },
+     "baseline>suggested": {
+      "gain_pp": 19.83,
+      "gain_days": -9.06
+     }
+    },
+    {
+     "ts": {
+      "tests.chest_ct.p_positive[non-cancer]": -0.482,
+      "tests.chest_ct.report_days.median": 0.385,
+      "tests.gp_assessment.p_positive[cancer]": 0.913,
+      "tests.gp_represent.extra_wait.median": -0.106,
+      "tests.gp_second_look.p_positive[cancer]": 0.874,
+      "tests.gp_second_look.wait.median": 0.976,
+      "tests.nurse_assessment.p_positive[cancer]": 0.91,
+      "tests.specialist_visit.p_positive[non-cancer]": -0.271,
+      "tests.symptoms_persist.p_positive[cancer]": -0.559,
+      "tests.treatment_booking.extra_wait.median": -0.546,
+      "resources.bronchoscopy.capacity_per_day": -0.607,
+      "resources.bronchoscopy.min_lead_days": -0.591,
+      "resources.clinic.capacity_per_day": 0.248,
+      "resources.clinic.min_lead_days": 0.801,
+      "resources.clinic.urgent_lead_days": 0.681,
+      "resources.ct_scanner.capacity_per_day": -0.041,
+      "resources.ct_scanner.min_lead_days": 0.306,
+      "resources.ct_scanner.urgent_lead_days": 0.599,
+      "resources.pet_scanner.capacity_per_day": -0.83,
+      "resources.pet_scanner.min_lead_days": 0.321,
+      "resources.treatment_slot.capacity_per_day": 0.82,
+      "resources.treatment_slot.min_lead_days": 0.565,
+      "resources.ttnb_slot.capacity_per_day": 0.5,
+      "attributes.location.central": -0.044,
+      "arrivals.rate_per_day": -0.643,
+      "policy.sample_choice.bronch": 0.578
+     },
+     "calibration_ok": null,
+     "flowcharts": {
+      "baseline": {
+       "share": 19.2,
+       "median": 100.3,
+       "untreated": 29.0
+      },
+      "suggested": {
+       "share": 42.3,
+       "median": 91.5,
+       "untreated": 29.0
+      }
+     },
+     "baseline>suggested": {
+      "gain_pp": 23.08,
+      "gain_days": -8.82
+     }
+    },
+    {
+     "ts": {
+      "tests.chest_ct.p_positive[non-cancer]": -0.335,
+      "tests.chest_ct.report_days.median": 0.602,
+      "tests.gp_assessment.p_positive[cancer]": 0.943,
+      "tests.gp_represent.extra_wait.median": -0.208,
+      "tests.gp_second_look.p_positive[cancer]": -0.197,
+      "tests.gp_second_look.wait.median": 0.894,
+      "tests.nurse_assessment.p_positive[cancer]": 0.45,
+      "tests.specialist_visit.p_positive[non-cancer]": -0.66,
+      "tests.symptoms_persist.p_positive[cancer]": -0.746,
+      "tests.treatment_booking.extra_wait.median": -0.698,
+      "resources.bronchoscopy.capacity_per_day": 0.81,
+      "resources.bronchoscopy.min_lead_days": 0.613,
+      "resources.clinic.capacity_per_day": -0.708,
+      "resources.clinic.min_lead_days": 0.653,
+      "resources.clinic.urgent_lead_days": 0.961,
+      "resources.ct_scanner.capacity_per_day": 0.315,
+      "resources.ct_scanner.min_lead_days": -0.299,
+      "resources.ct_scanner.urgent_lead_days": 0.097,
+      "resources.pet_scanner.capacity_per_day": -0.738,
+      "resources.pet_scanner.min_lead_days": -0.972,
+      "resources.treatment_slot.capacity_per_day": 0.942,
+      "resources.treatment_slot.min_lead_days": 0.299,
+      "resources.ttnb_slot.capacity_per_day": 0.053,
+      "attributes.location.central": 0.867,
+      "arrivals.rate_per_day": -0.132,
+      "policy.sample_choice.bronch": 0.743
+     },
+     "calibration_ok": null,
+     "flowcharts": {
+      "baseline": {
+       "share": 22.5,
+       "median": 99.0,
+       "untreated": 39.0
+      },
+      "suggested": {
+       "share": 43.3,
+       "median": 89.4,
+       "untreated": 39.0
+      }
+     },
+     "baseline>suggested": {
+      "gain_pp": 20.78,
+      "gain_days": -9.53
+     }
+    },
+    {
+     "ts": {
+      "tests.chest_ct.p_positive[non-cancer]": 0.652,
+      "tests.chest_ct.report_days.median": -0.578,
+      "tests.gp_assessment.p_positive[cancer]": -0.496,
+      "tests.gp_represent.extra_wait.median": -0.414,
+      "tests.gp_second_look.p_positive[cancer]": -0.519,
+      "tests.gp_second_look.wait.median": 0.173,
+      "tests.nurse_assessment.p_positive[cancer]": -0.481,
+      "tests.specialist_visit.p_positive[non-cancer]": -0.162,
+      "tests.symptoms_persist.p_positive[cancer]": -0.738,
+      "tests.treatment_booking.extra_wait.median": 0.82,
+      "resources.bronchoscopy.capacity_per_day": -0.292,
+      "resources.bronchoscopy.min_lead_days": -0.084,
+      "resources.clinic.capacity_per_day": 0.167,
+      "resources.clinic.min_lead_days": 0.809,
+      "resources.clinic.urgent_lead_days": -0.159,
+      "resources.ct_scanner.capacity_per_day": 0.835,
+      "resources.ct_scanner.min_lead_days": 0.003,
+      "resources.ct_scanner.urgent_lead_days": 0.064,
+      "resources.pet_scanner.capacity_per_day": 0.047,
+      "resources.pet_scanner.min_lead_days": -0.963,
+      "resources.treatment_slot.capacity_per_day": -0.12,
+      "resources.treatment_slot.min_lead_days": -0.634,
+      "resources.ttnb_slot.capacity_per_day": -0.992,
+      "attributes.location.central": 0.598,
+      "arrivals.rate_per_day": -0.655,
+      "policy.sample_choice.bronch": -0.053
+     },
+     "calibration_ok": null,
+     "flowcharts": {
+      "baseline": {
+       "share": 22.2,
+       "median": 98.4,
+       "untreated": 44.0
+      },
+      "suggested": {
+       "share": 39.3,
+       "median": 90.2,
+       "untreated": 44.0
+      }
+     },
+     "baseline>suggested": {
+      "gain_pp": 17.1,
+      "gain_days": -8.25
+     }
+    },
+    {
+     "ts": {
+      "tests.chest_ct.p_positive[non-cancer]": 0.45,
+      "tests.chest_ct.report_days.median": 0.113,
+      "tests.gp_assessment.p_positive[cancer]": -0.348,
+      "tests.gp_represent.extra_wait.median": 0.037,
+      "tests.gp_second_look.p_positive[cancer]": 0.111,
+      "tests.gp_second_look.wait.median": 0.569,
+      "tests.nurse_assessment.p_positive[cancer]": -0.788,
+      "tests.specialist_visit.p_positive[non-cancer]": 0.121,
+      "tests.symptoms_persist.p_positive[cancer]": -0.503,
+      "tests.treatment_booking.extra_wait.median": -0.446,
+      "resources.bronchoscopy.capacity_per_day": 0.545,
+      "resources.bronchoscopy.min_lead_days": 0.015,
+      "resources.clinic.capacity_per_day": 0.123,
+      "resources.clinic.min_lead_days": 0.52,
+      "resources.clinic.urgent_lead_days": 0.825,
+      "resources.ct_scanner.capacity_per_day": -0.114,
+      "resources.ct_scanner.min_lead_days": 0.225,
+      "resources.ct_scanner.urgent_lead_days": 0.011,
+      "resources.pet_scanner.capacity_per_day": 0.024,
+      "resources.pet_scanner.min_lead_days": 0.385,
+      "resources.treatment_slot.capacity_per_day": -0.095,
+      "resources.treatment_slot.min_lead_days": 0.067,
+      "resources.ttnb_slot.capacity_per_day": -0.044,
+      "attributes.location.central": 0.883,
+      "arrivals.rate_per_day": 0.398,
+      "policy.sample_choice.bronch": 0.753
+     },
+     "calibration_ok": null,
+     "flowcharts": {
+      "baseline": {
+       "share": 17.1,
+       "median": 104.8,
+       "untreated": 32.0
+      },
+      "suggested": {
+       "share": 32.9,
+       "median": 96.4,
+       "untreated": 32.0
+      }
+     },
+     "baseline>suggested": {
+      "gain_pp": 15.78,
+      "gain_days": -8.48
+     }
+    },
+    {
+     "ts": {
+      "tests.chest_ct.p_positive[non-cancer]": 0.884,
+      "tests.chest_ct.report_days.median": -0.481,
+      "tests.gp_assessment.p_positive[cancer]": 0.119,
+      "tests.gp_represent.extra_wait.median": 0.887,
+      "tests.gp_second_look.p_positive[cancer]": 0.68,
+      "tests.gp_second_look.wait.median": -0.726,
+      "tests.nurse_assessment.p_positive[cancer]": -0.757,
+      "tests.specialist_visit.p_positive[non-cancer]": -0.116,
+      "tests.symptoms_persist.p_positive[cancer]": -0.855,
+      "tests.treatment_booking.extra_wait.median": -0.519,
+      "resources.bronchoscopy.capacity_per_day": -0.854,
+      "resources.bronchoscopy.min_lead_days": 0.339,
+      "resources.clinic.capacity_per_day": 0.568,
+      "resources.clinic.min_lead_days": 0.794,
+      "resources.clinic.urgent_lead_days": -0.691,
+      "resources.ct_scanner.capacity_per_day": 0.432,
+      "resources.ct_scanner.min_lead_days": 0.321,
+      "resources.ct_scanner.urgent_lead_days": -0.714,
+      "resources.pet_scanner.capacity_per_day": 0.766,
+      "resources.pet_scanner.min_lead_days": 0.935,
+      "resources.treatment_slot.capacity_per_day": -0.561,
+      "resources.treatment_slot.min_lead_days": 0.905,
+      "resources.ttnb_slot.capacity_per_day": -0.203,
+      "attributes.location.central": -0.025,
+      "arrivals.rate_per_day": 0.98,
+      "policy.sample_choice.bronch": 0.665
+     },
+     "calibration_ok": null,
+     "flowcharts": {
+      "baseline": {
+       "share": 4.9,
+       "median": 110.3,
+       "untreated": 42.0
+      },
+      "suggested": {
+       "share": 14.1,
+       "median": 102.3,
+       "untreated": 42.0
+      }
+     },
+     "baseline>suggested": {
+      "gain_pp": 9.25,
+      "gain_days": -7.98
+     }
+    },
+    {
+     "ts": {
+      "tests.chest_ct.p_positive[non-cancer]": -0.677,
+      "tests.chest_ct.report_days.median": -0.137,
+      "tests.gp_assessment.p_positive[cancer]": 0.031,
+      "tests.gp_represent.extra_wait.median": -0.322,
+      "tests.gp_second_look.p_positive[cancer]": -0.609,
+      "tests.gp_second_look.wait.median": -0.363,
+      "tests.nurse_assessment.p_positive[cancer]": 0.444,
+      "tests.specialist_visit.p_positive[non-cancer]": -0.961,
+      "tests.symptoms_persist.p_positive[cancer]": 0.108,
+      "tests.treatment_booking.extra_wait.median": -0.119,
+      "resources.bronchoscopy.capacity_per_day": -0.964,
+      "resources.bronchoscopy.min_lead_days": -0.337,
+      "resources.clinic.capacity_per_day": 0.248,
+      "resources.clinic.min_lead_days": 0.025,
+      "resources.clinic.urgent_lead_days": -0.871,
+      "resources.ct_scanner.capacity_per_day": 0.97,
+      "resources.ct_scanner.min_lead_days": 0.577,
+      "resources.ct_scanner.urgent_lead_days": 0.943,
+      "resources.pet_scanner.capacity_per_day": -0.79,
+      "resources.pet_scanner.min_lead_days": -0.469,
+      "resources.treatment_slot.capacity_per_day": -0.921,
+      "resources.treatment_slot.min_lead_days": 0.558,
+      "resources.ttnb_slot.capacity_per_day": -0.459,
+      "attributes.location.central": -0.741,
+      "arrivals.rate_per_day": -0.155,
+      "policy.sample_choice.bronch": 0.823
+     },
+     "calibration_ok": null,
+     "flowcharts": {
+      "baseline": {
+       "share": 17.8,
+       "median": 104.6,
+       "untreated": 17.0
+      },
+      "suggested": {
+       "share": 35.1,
+       "median": 95.0,
+       "untreated": 17.0
+      }
+     },
+     "baseline>suggested": {
+      "gain_pp": 17.31,
+      "gain_days": -9.65
+     }
+    },
+    {
+     "ts": {
+      "tests.chest_ct.p_positive[non-cancer]": 0.638,
+      "tests.chest_ct.report_days.median": -0.483,
+      "tests.gp_assessment.p_positive[cancer]": -0.701,
+      "tests.gp_represent.extra_wait.median": 0.838,
+      "tests.gp_second_look.p_positive[cancer]": 0.141,
+      "tests.gp_second_look.wait.median": 0.401,
+      "tests.nurse_assessment.p_positive[cancer]": -0.821,
+      "tests.specialist_visit.p_positive[non-cancer]": -0.885,
+      "tests.symptoms_persist.p_positive[cancer]": 0.376,
+      "tests.treatment_booking.extra_wait.median": -0.149,
+      "resources.bronchoscopy.capacity_per_day": -0.855,
+      "resources.bronchoscopy.min_lead_days": 0.877,
+      "resources.clinic.capacity_per_day": 0.269,
+      "resources.clinic.min_lead_days": 0.603,
+      "resources.clinic.urgent_lead_days": -0.833,
+      "resources.ct_scanner.capacity_per_day": 0.712,
+      "resources.ct_scanner.min_lead_days": -0.867,
+      "resources.ct_scanner.urgent_lead_days": 0.726,
+      "resources.pet_scanner.capacity_per_day": -0.092,
+      "resources.pet_scanner.min_lead_days": -0.322,
+      "resources.treatment_slot.capacity_per_day": 0.106,
+      "resources.treatment_slot.min_lead_days": 0.853,
+      "resources.ttnb_slot.capacity_per_day": -0.464,
+      "attributes.location.central": -0.742,
+      "arrivals.rate_per_day": 0.054,
+      "policy.sample_choice.bronch": -0.523
+     },
+     "calibration_ok": null,
+     "flowcharts": {
+      "baseline": {
+       "share": 13.5,
+       "median": 108.3,
+       "untreated": 14.0
+      },
+      "suggested": {
+       "share": 26.1,
+       "median": 100.5,
+       "untreated": 14.0
+      }
+     },
+     "baseline>suggested": {
+      "gain_pp": 12.61,
+      "gain_days": -7.78
+     }
+    },
+    {
+     "ts": {
+      "tests.chest_ct.p_positive[non-cancer]": -0.781,
+      "tests.chest_ct.report_days.median": -0.677,
+      "tests.gp_assessment.p_positive[cancer]": -0.899,
+      "tests.gp_represent.extra_wait.median": -0.596,
+      "tests.gp_second_look.p_positive[cancer]": -0.376,
+      "tests.gp_second_look.wait.median": -0.39,
+      "tests.nurse_assessment.p_positive[cancer]": 0.519,
+      "tests.specialist_visit.p_positive[non-cancer]": -0.42,
+      "tests.symptoms_persist.p_positive[cancer]": 0.0,
+      "tests.treatment_booking.extra_wait.median": -0.644,
+      "resources.bronchoscopy.capacity_per_day": -0.306,
+      "resources.bronchoscopy.min_lead_days": -0.964,
+      "resources.clinic.capacity_per_day": -0.499,
+      "resources.clinic.min_lead_days": -0.969,
+      "resources.clinic.urgent_lead_days": 0.466,
+      "resources.ct_scanner.capacity_per_day": 0.102,
+      "resources.ct_scanner.min_lead_days": -0.621,
+      "resources.ct_scanner.urgent_lead_days": -0.05,
+      "resources.pet_scanner.capacity_per_day": 0.869,
+      "resources.pet_scanner.min_lead_days": -0.787,
+      "resources.treatment_slot.capacity_per_day": 0.638,
+      "resources.treatment_slot.min_lead_days": -0.136,
+      "resources.ttnb_slot.capacity_per_day": -0.01,
+      "attributes.location.central": 0.669,
+      "arrivals.rate_per_day": -0.214,
+      "policy.sample_choice.bronch": 0.013
+     },
+     "calibration_ok": null,
+     "flowcharts": {
+      "baseline": {
+       "share": 36.8,
+       "median": 94.9,
+       "untreated": 21.0
+      },
+      "suggested": {
+       "share": 56.7,
+       "median": 85.8,
+       "untreated": 21.0
+      }
+     },
+     "baseline>suggested": {
+      "gain_pp": 19.91,
+      "gain_days": -9.08
+     }
+    },
+    {
+     "ts": {
+      "tests.chest_ct.p_positive[non-cancer]": 0.375,
+      "tests.chest_ct.report_days.median": 0.965,
+      "tests.gp_assessment.p_positive[cancer]": -0.315,
+      "tests.gp_represent.extra_wait.median": 0.665,
+      "tests.gp_second_look.p_positive[cancer]": 0.413,
+      "tests.gp_second_look.wait.median": 0.272,
+      "tests.nurse_assessment.p_positive[cancer]": -0.191,
+      "tests.specialist_visit.p_positive[non-cancer]": -0.305,
+      "tests.symptoms_persist.p_positive[cancer]": -0.891,
+      "tests.treatment_booking.extra_wait.median": -0.74,
+      "resources.bronchoscopy.capacity_per_day": -0.859,
+      "resources.bronchoscopy.min_lead_days": 0.482,
+      "resources.clinic.capacity_per_day": -0.489,
+      "resources.clinic.min_lead_days": -0.674,
+      "resources.clinic.urgent_lead_days": -0.831,
+      "resources.ct_scanner.capacity_per_day": 0.683,
+      "resources.ct_scanner.min_lead_days": 0.741,
+      "resources.ct_scanner.urgent_lead_days": 0.341,
+      "resources.pet_scanner.capacity_per_day": -0.436,
+      "resources.pet_scanner.min_lead_days": -0.516,
+      "resources.treatment_slot.capacity_per_day": -0.414,
+      "resources.treatment_slot.min_lead_days": -0.081,
+      "resources.ttnb_slot.capacity_per_day": -0.685,
+      "attributes.location.central": -0.108,
+      "arrivals.rate_per_day": -0.474,
+      "policy.sample_choice.bronch": 0.924
+     },
+     "calibration_ok": null,
+     "flowcharts": {
+      "baseline": {
+       "share": 26.8,
+       "median": 98.4,
+       "untreated": 49.0
+      },
+      "suggested": {
+       "share": 41.1,
+       "median": 89.1,
+       "untreated": 49.0
+      }
+     },
+     "baseline>suggested": {
+      "gain_pp": 14.29,
+      "gain_days": -9.35
+     }
+    }
+   ],
+   "summary": {
+    "baseline>suggested": {
+     "all": {
+      "draws": 16,
+      "p_B_better_share": 1.0,
+      "p_B_faster_median": 1.0,
+      "gain_pp": {
+       "min": 4.3,
+       "p5": 8.0,
+       "median": 16.5,
+       "p95": 21.4,
+       "max": 23.1
+      },
+      "gain_days": {
+       "min": -9.7,
+       "p5": -9.6,
+       "median": -8.6,
+       "p95": -7.4,
+       "max": -6.1
+      }
+     },
+     "calibration_consistent": null,
+     "spearman_with_gain_pp": {
+      "tests.chest_ct.p_positive[non-cancer]": -0.56,
+      "tests.nurse_assessment.p_positive[cancer]": 0.53,
+      "resources.clinic.urgent_lead_days": 0.47,
+      "tests.gp_second_look.wait.median": 0.46,
+      "tests.specialist_visit.p_positive[non-cancer]": -0.36,
+      "resources.clinic.capacity_per_day": -0.31,
+      "resources.bronchoscopy.capacity_per_day": 0.29,
+      "resources.treatment_slot.capacity_per_day": 0.25,
+      "tests.gp_represent.extra_wait.median": -0.24,
+      "resources.pet_scanner.min_lead_days": -0.23,
+      "attributes.location.central": 0.21,
+      "arrivals.rate_per_day": -0.19,
+      "policy.sample_choice.bronch": 0.18,
+      "resources.bronchoscopy.min_lead_days": -0.15,
+      "resources.pet_scanner.capacity_per_day": -0.13,
+      "tests.gp_assessment.p_positive[cancer]": 0.12,
+      "resources.ct_scanner.min_lead_days": -0.12,
+      "resources.treatment_slot.min_lead_days": -0.12,
+      "tests.symptoms_persist.p_positive[cancer]": 0.1,
+      "tests.treatment_booking.extra_wait.median": -0.09,
+      "resources.ct_scanner.urgent_lead_days": -0.08,
+      "tests.gp_second_look.p_positive[cancer]": -0.05,
+      "tests.chest_ct.report_days.median": 0.04,
+      "resources.ct_scanner.capacity_per_day": 0.04,
+      "resources.ttnb_slot.capacity_per_day": -0.04,
+      "resources.clinic.min_lead_days": 0.03
+     }
+    }
+   }
+  },
+  "simulations": 144,
+  "runtime_s": 869.5
+ }
+}
