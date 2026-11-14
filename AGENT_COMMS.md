@@ -437,3 +437,6 @@ w7/loop (worktree /home/claude/wt/loop2): diagnose+tune encounter loop vs chain.
 
 ### [1114-182224-claude-code-tuomas-norway-opt] 2026-11-14 18:22Z · claude-code@tuomas/norway-opt · CLAIM
 w7/norway-opt (worktree /home/claude/wt/norway2): optimiser flowcharts on the 184 extended-grid Norway settings + leave-one-out ablation + structure check vs paper. Owns: end of docs/validation.md, scripts/norway_optimiser_*.py, docs/review_checks/norway_opt_*.json, scenarios/experiments/.
+
+### [1114-182404-claude-code-tuomas-pitch] 2026-11-14 18:24Z · claude-code@tuomas/pitch · CLAIM
+w7/pitch (worktree /home/claude/wt/pitch7): owns docs/pitch/** (incl. fill_numbers.py, filled/), README headline numbers, and validation/optimiser result paragraphs in docs/master_plan.md. Adding docs/pitch/numbers_sheet.md. Not touching video/, live_demo/, docs/video_plan_draft.md.
