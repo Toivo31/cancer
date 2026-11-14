@@ -61,6 +61,20 @@ CODES: dict[str, tuple[str, str]] = {
     "no_positive_when": (WARNING, "A test has no `positive_when`, so the adapter to today's simulator cannot give it a yes/no result."),
     # cards (schema check; semantic checks belong to the card validator)
     "card_schema": (ERROR, "A card does not match the JSON Schema generated from its catalogue."),
+    # cards (semantic checks, patient_engine/validate.py, WP-C1-4)
+    "card_state_keys": (ERROR, "A per-state section of a card does not have exactly the card's states as keys, or `states` does not start with all_active."),
+    "card_conditions": (ERROR, "A card's conditions are wrong: not exactly one primary, more than one coexisting, a repeat, or an id or attribute that is not the catalogue's."),
+    "card_cause_inactive": (ERROR, "A finding's caused_by names a condition the patient does not have, or one that is resolved in that state."),
+    "card_unexplained_finding": (ERROR, "A binary finding is true with no cause and the catalogue gives it no background rate."),
+    "card_unsupported_cause": (WARNING, "A finding lists a cause for which the catalogue has no entry for that variable."),
+    "card_attempts": (ERROR, "A test has no attempts or more than its maximum, or a non_diagnostic attempt where the test cannot fail."),
+    "card_only_if": (ERROR, "A finding or output is null although its only_if holds, or has a value although it does not."),
+    "card_plan_mismatch": (ERROR, "A guided card's attempts or values disagree with hidden.error_plan."),
+    "card_value_range": (ERROR, "A number is outside the catalogue's range for its variable or background field."),
+    "card_implausible": (WARNING, "A measured value is far from the true value although the error plan does not cover it."),
+    "card_mention_unknown": (ERROR, "A note mentions something that is not a variable id, test id or test.output."),
+    "card_reveals_condition": (WARNING, "A text names the hidden primary condition without a revealing fact in its mentions."),
+    "card_report_contradiction": (WARNING, "A report says the opposite of a binary output value."),
 }
 
 
