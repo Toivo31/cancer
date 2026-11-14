@@ -20,6 +20,14 @@
       <span class="label">Pathway</span>
       <select id="scn" aria-label="Which pathway to simulate"></select>
     </label>
+    <div class="sim-dec" id="jevsw" hidden>
+      <span class="label">Decisions</span>
+      <div class="sim-toggle" role="group" aria-label="Who decides at each choice point">
+        <button type="button" class="sim-toggle__b" data-dec="rules" id="jevsw-rules">Rule tables</button><button type="button" class="sim-toggle__b" data-dec="jev" id="jevsw-jev">JEV</button>
+      </div>
+      <span class="stamp" id="jevsw-stamp"></span>
+      <p class="caption sim-dec__note" id="jevsw-note"></p>
+    </div>
     <div class="sim-flip" id="flip" hidden>
       <div class="sim-toggle" role="group" aria-label="Before or after the change">
         <button type="button" class="sim-toggle__b" data-side="0" id="flip-today">Today</button><button type="button" class="sim-toggle__b" data-side="1" id="flip-after">After the change</button>
@@ -59,6 +67,7 @@
 <div class="footer-strip sim-footer"></div>
 
 <script src="data/flow_bundle.js"></script>
+<script src="data/flow_jev_bundle.js"></script>
 <script src="data/start_bundle.js"></script>
 <script src="site.js"></script>
 <script src="flow.js"></script>

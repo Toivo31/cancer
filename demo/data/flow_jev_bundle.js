@@ -1,0 +1,1 @@
+window.FLOW_JEV_DATA = {"format":"flow-jev-bundle/1","generated_at":"2026-11-14T23:00:39+00:00","status":"not_recorded","how_to_record":["python -m decision_api.server","python -m pathway_sim.jev_run","python demo/export_jev_flow.py"],"scenarios":[]};
