@@ -199,6 +199,15 @@ Code is on branch `overnight/sim`; how to run it is in `README.md`. Provisional 
 
 **Scope and wording:** Only the optimisation loop fits the time. The clinician approves every proposal, the data is synthetic, and a treatment slot is reserved while tests finish.
 
+## 12. Platform direction (set by Tuomas, 14 Nov)
+
+The end goal is an online platform, not only a hackathon demo: build your own flowchart, attach JEV to its decision points, train JEV on your dataset, run the simulation, optimise the flowchart and rerun.
+
+- **JEV arrives as an API attached to the graph.** At each decision point it gets the revealed context and the options on offer, and returns a probability per option. Until it exists, a stub with hardcoded probabilities per decision point stands in behind the same contract.
+- **What exists becomes the engine.** `pathway_sim` and `optimiser` are reused as libraries. The lung scenarios become the first two templates. `decision_model/` becomes one optional backend, not the JEV itself.
+- **Plan, specs and tickets** are in `docs/platform/` (`README.md`, `specs/01` to `07`, `tickets.md`). Nothing there is built yet.
+- **Open forks F1 to F7** (what counts as a decision point, sample or most-likely, the JEV contract and its owner, web stack, hosting and data, the cut for Sunday, `standardise` under JEV) are listed with leans in `docs/platform/README.md` section 5 and need a team call.
+
 ## Sources
 
 - [National Cancer Strategy 2026 to 2035, Finland](https://www.iccp-portal.org/sites/default/files/2026-02/National_Cancer_Strategy_2026-2035_Finland.pdf): Goal 3 indicators and targets.

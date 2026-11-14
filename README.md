@@ -5,6 +5,8 @@ flowchart. An optimiser proposes a better order of steps using only information 
 see. The same patients are rerun to accept a change, and held-out patients are used to report it.
 Plan: `docs/master_plan.md`. Interface contract: `docs/architecture.md`. Open choices: `docs/decisions.md`.
 
+**Where this is going:** an online platform (build a flowchart, attach the JEV decision model, train, simulate, optimise, rerun). Plan, specs and tickets: `docs/platform/`.
+
 ## Quick start
 
 ```bash
