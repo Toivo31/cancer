@@ -104,7 +104,7 @@ fail with a share of 0.1085; reverted afterwards. The CLI test is unaffected by 
 
 **Decisions made.** (1) Slow list is a text file of node ids with prefix matching (a file, class, test, or test with any parameters), so
 nothing in other lanes' files changes. (2) `tests/contracts/test_jev_stub.py` re-exports the checks of `tests/test_jev_contract.py`
-instead of copying them, so the JEV owner's file stays the single source; those 20 tests therefore run twice in a full run (about 1 s).
+instead of copying them, so the JEV owner's file stays the single source; those tests therefore run twice in a full run (about 1 s).
 (3) Contracts and golden tests are also in the fast tier (not slow), so the gate runs them twice (about 13 s). (4) The OpenAPI contract
 pins the 18 routes that have response models and checks 11 routes without one exist; the runs, datasets, models and optimisation routes have
 no response models yet (follow-up for the service lane, then move them to `WITH_SCHEMA`). (5) The interpreter: this worktree's `python` has no
