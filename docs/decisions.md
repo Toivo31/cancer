@@ -47,3 +47,13 @@ Each entry: what, why, how to change it. Flag to Tuomas before it hardens.
 | D41 | Every point where a decision is made is a decision node modelled by JEV (clinician judgements included); tests and other steps are nodes too. Fork F1 settled as "every judgement is a decision point" | settled by Tuomas 14 Nov | JEV powers the flowchart | C3 S4, C4 |
 | D42 | The patient engine is part of the Sunday submission, as the thin slice in C1 | architect's reading of Tuomas's "yes it does", **confirm** | | C1 "Sunday slice" |
 | D43 | Booking leads stay fixed inputs for the submission and are described as standing in for a backlog; emergent leads are a platform-track spike (C3 S12) | proposed by the architect, **needs Tuomas** | 57 of 93 waiting days are the fixed lead; recalibrating near full utilisation hours before the freeze risks every Finnish number; the reorder gain does not depend on it | `docs/booking_vs_queue.md`, C3 |
+
+## 14 Nov, evening (Tuomas)
+
+| # | Decision | Notes |
+|---|---|---|
+| D44 | **Primary care becomes an encounter loop** (option A): nurse and GP encounters reveal findings into a patient record (`record/1`) and choose role-specific actions from the record only; treatment follows the hidden truth; tests can be repeated with fresh results; patients can loop and return; a referral hands over to the existing hospital flowchart, which stays calibrated (Norway check untouched, it starts at CT) | Spec: `docs/plan/components/C8-encounter-loop.md`. Contracts: `patient_engine/record.py`, `patient_engine/care.py` (`care/1`) |
+| D45 | **No post-submission track**: everything built goes into the Sunday submission | Supersedes the two-track rule in `docs/plan/02-execution-strategy.md` |
+| D46 | **Definitive tests per condition**, slow, scarce and expensive, with real euro costs, real turnaround and capacity from current Finnish practice; costs may be scaled up by a visible factor because the model has more look-alike conditions than real practice | Catalogue content; capacity lives in the world document |
+| D47 | **Worried-well presenters**: a small share with no disease who report a random, incoherent set of symptoms | A catalogue condition with independent symptom probabilities and no objective findings |
+| D48 | Two findings in the pitch: the ordering result on the calibrated model, and the primary-care result from the encounter loop, labelled "patient-level model, assumptions marked" | |

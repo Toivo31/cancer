@@ -1,0 +1,37 @@
+# Tiny example care model (care/1): roles, actions, treatments, patient behaviour. NOT medical content.
+format: care/1
+roles:
+  - id: nurse
+    label: Nurse
+    resource: nurse
+    gathers:
+      - {test: history, outputs: [cough_3wk, fever]}       # a nurse does not ask about weight loss here
+    actions: [advice_return, book_gp_routine, book_gp_urgent]
+  - id: gp
+    label: GP
+    resource: gp
+    gathers:
+      - {test: history}                                   # all outputs
+    actions: [discharge, advice_return, follow_up, order_blood_count, order_chest_xray, treat_antibiotics, refer_routine, refer_urgent]
+actions:
+  - {id: advice_return, kind: discharge, advice: true, label: "Self-care advice; come back if it persists"}
+  - {id: discharge, kind: discharge, label: "No treatment, sent home"}
+  - {id: book_gp_routine, kind: book, role: gp, urgency: routine, label: "Book a GP visit"}
+  - {id: book_gp_urgent, kind: book, role: gp, urgency: urgent, label: "Book an urgent GP visit"}
+  - {id: follow_up, kind: follow_up, days: {value: 14, source: assumption}, label: "Follow-up visit"}
+  - {id: order_blood_count, kind: order, test: blood_count, label: "Blood count and CRP"}
+  - {id: order_chest_xray, kind: order, test: chest_xray, label: "Chest X-ray"}
+  - {id: treat_antibiotics, kind: treat, treatment: antibiotics, review_days: {value: 14, source: assumption}, label: "Antibiotics"}
+  - {id: refer_routine, kind: refer, urgency: routine, label: "Refer to a specialist"}
+  - {id: refer_urgent, kind: refer, urgency: urgent, label: "Urgent referral"}
+treatments:
+  - id: antibiotics
+    label: Antibiotics
+    resolves:
+      pneumonia: {p: {p: 0.9, source: assumption}, days: {dist: lognormal, median: 7, p90: 14, source: assumption}}
+behaviour:
+  first_contact: {values: {nurse: 0.5, gp: 0.5}, source: KHALIFE2025}
+  return_if_persisting: {p: 0.7, source: assumption, note: "after a discharge, while any symptom persists"}
+  return_delay_days: {dist: lognormal, median: 21, p90: 60, source: assumption}
+  give_up_per_episode: {p: 0.05, source: assumption}
+  horizon_days: {value: 365, source: assumption}
