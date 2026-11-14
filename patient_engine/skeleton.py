@@ -277,7 +277,35 @@ def _draw_background(catalogue: Catalogue, seed: int, index: int, k: int) -> dic
             hi = 100.0 if f.range[1] is None else f.range[1]
             x = _truncated_normal(lo, hi, u)
             bg[f.id] = int(round(x)) if hi - lo >= 50 else round(x, 1)
+    _smoking_consistency(bg, catalogue, seed, index, k)
     return bg
+
+
+# Pack-years given smoking status (assumption, not sourced): never-smokers have 0; former and current
+# smokers draw from a log-normal with median 25 / 35 pack-years (geometric SD about 2), within the
+# field's range. Without this, pack-years was drawn independently of smoking status (never-smokers
+# with 150 pack-years; median about 100 across all cards).
+_PACK_YEARS_MEDIAN = {"former": 25.0, "current": 35.0}
+_PACK_YEARS_LOG_SD = 0.7
+
+
+def _smoking_consistency(bg: dict, catalogue: Catalogue, seed: int, index: int, k: int) -> None:
+    fields = catalogue.background
+    if "pack_years" not in bg or "smoking_status" not in bg:
+        return
+    status = bg["smoking_status"]
+    if status == "never":
+        bg["pack_years"] = 0
+        return
+    median = _PACK_YEARS_MEDIAN.get(str(status))
+    if median is None:
+        return
+    f = fields["pack_years"]
+    lo = 0.0 if f.range[0] is None else f.range[0]
+    hi = 100.0 if f.range[1] is None else f.range[1]
+    u = min(max(uniform(seed, index, "bg", k, "pack_years_given_smoking"), 1e-9), 1 - 1e-9)
+    x = math.exp(math.log(median) + _PACK_YEARS_LOG_SD * _N.inv_cdf(u))
+    bg["pack_years"] = int(round(min(max(x, max(lo, 1.0)), hi)))
 
 
 def _prevalence_shares(catalogue: Catalogue, bg: Mapping[str, Any]) -> dict[str, float]:
