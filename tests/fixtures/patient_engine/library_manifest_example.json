@@ -1,0 +1,12 @@
+{
+  "format": "library/1",
+  "id": "L_example",
+  "catalogue_id": "tiny",
+  "catalogue_hash": "example-not-a-real-hash",
+  "generator": "llm",
+  "model": "example-model",
+  "prompts": {"patient": "g1@1", "results": "g2@1"},
+  "error_source": "guided",
+  "card_count_by_condition": {"lung_cancer": 300, "pneumonia": 150, "healthy": 150},
+  "created": "2026-11-14T15:00:00Z"
+}

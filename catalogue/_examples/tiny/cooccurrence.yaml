@@ -1,0 +1,4 @@
+# Which ordinary illness occurs next to which primary condition, as a share of that condition's patients.
+- primary: lung_cancer
+  coexisting: pneumonia
+  share: {value: 0.10, source: assumption, note: "illustrative: a pneumonia that hides the cancer"}

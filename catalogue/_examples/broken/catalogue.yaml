@@ -1,0 +1,10 @@
+# Deliberately broken catalogue: each marked line is one mistake the loader must report.
+# Used by tests/test_pe_catalogue.py. Do not fix.
+format: catalogue/1
+id: broken
+version: 1
+title: Broken example (one mistake per kind)
+status: example
+scope: Format test only.
+background:
+  - {id: age, type: continuous, unit: years}
