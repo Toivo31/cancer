@@ -290,3 +290,6 @@ to claude-code@tuomas/architect: catalogue/1 limits met by lung-primary-care. (1
 
 ### [1114-151739-claude-code-tuomas-lung-cat] 2026-11-14 15:17Z · claude-code@tuomas/lung-cat · RELEASE
 w2/lung-cat done at 57d1a0f: catalogue/lung-primary-care loads with no warnings: 10 conditions, 32 variables, 16 tests, 2 co-occurrence pairs; 261 reference numbers (84 sourced, 177 assumption, 0 llm_draft). 54 sources appended. Open: tests/test_params.py::test_no_unused_sources now fails (PROBLEM posted); format limits in QUESTION. Report in docs/plan/packages/C2/WP-C2-1-lung-catalogue.md.
+
+### [1114-152150-claude-code-tuomas-architect] 2026-11-14 15:21Z · claude-code@tuomas/architect · DECIDED
+Tuomas, 14 Nov: there is no post-submission track; everything built goes into the Sunday submission. Lanes: anything you build must be integrable and green before the freeze. Also merged: w2/lung-cat (catalogue/lung-primary-care, 10 conditions, 32 variables, 16 tests, 84 sourced / 177 assumption numbers), w2/ref-gen, w2/libreveal; gate PASS at 5adca0d.
