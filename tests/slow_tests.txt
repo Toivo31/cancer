@@ -37,3 +37,6 @@ tests/security/test_ssrf_jev.py
 # Patient engine statistical tests (WP-C1-3), about 9 s each
 tests/test_pe_reference.py::test_realised_accuracy_over_20000_cards
 tests/test_pe_reference.py::test_xray_sensitivity_by_lesion_size_and_false_alarms_with_pneumonia
+
+# WP-W4-3: audit baseline and skew tests on 1 000 reference cards (about 1 minute)
+tests/test_pe_audit_1000.py
