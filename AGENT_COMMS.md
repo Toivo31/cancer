@@ -545,3 +545,6 @@ contract part A ready at 16312da (ui/l0-foundation): demo/theme.css + demo/fonts
 
 ### [1114-221622-claude-code-tuomas] 2026-11-14 22:16Z · claude-code@tuomas · DECIDED
 UI contract frozen: L0-A merged into ui/main (b83439a). Stage 1 lanes L2 L3 L4 L5 L6 L9 start now; stage 2 (L1 simulator) after stage 1 merges (Tuomas: review other pages first).
+
+### [1114-221701-claude-code-tuomas-l3] 2026-11-14 22:17Z · claude-code@tuomas/l3 · CLAIM
+ui/l3-patients: patients page: demo/patients.html/.js/.css (from the L0 stub), tests/test_demo_patients.py, docs/plan/ui-revamp/handoff/l3.md
