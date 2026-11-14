@@ -1,0 +1,8 @@
+{
+  "_about": "Announcer lines from Tuomas's final trailer script (trailer-final-script.md). Run: python video/generated/tts.py --lines announcer.json --voice Kore",
+  "voice_style": "Read as a calm, polite public-address announcer in a hospital waiting room: neutral, slightly flat, unhurried.",
+  "lines": [
+    {"id": "an1_take_number", "at": "0:15.5", "slot": 4.0, "text": "Please take a number. Your wait is normal."},
+    {"id": "an2_number_one", "at": "1:46.5", "slot": 2.5, "text": "Number one."}
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "_about": "Final narration: one normal male voice for every line, natural speed in the files; the trailer plays each line at 1.2x with pitch preserved (browser time-stretch). Run: python video/generated/tts.py --lines vo_final.json --voice Iapetus",
+  "voice_style": "Speak in a normal, natural male voice, like a clear and friendly presenter. Conversational, not dramatic, not announcer-like.",
+  "lines": [
+    {
+      "id": "v3_wait",
+      "at": "0:10.6",
+      "text": "In our framework, each dot is a patient. The piles are the waiting. A few take the fast track."
+    },
+    {
+      "id": "v8_punch",
+      "at": "0:00",
+      "text": "Waiting is a decision nobody made."
+    }
+  ]
+}

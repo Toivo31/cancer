@@ -256,17 +256,20 @@ const FLOW = (() => {
       let x, y, col, rad = R, halo = 0;
       if (s.kind === "done") {
         if (s.ontime) { out.on++; out.grp[gk][0]++; }
+        if (FLOW.half && (i & 1)) continue;
         const [tx, ty] = nodeXY(g, "__finish", false);
         x = tx + (rnd(i, 7) - 0.5) * g.pw * 0.8; y = ty - H * 0.008 - rnd(i, 8) * H * 0.05;
         col = s.ontime ? (p.g === VAGUE ? "rgba(20,20,20,0.95)" : "rgba(150,150,145,0.95)") : "rgba(215,212,205,0.8)";
       } else if (s.kind === "gone") {
         out.missed++; if (p.g === VAGUE) out.missedVague++;
+        if (FLOW.half && (i & 1)) continue;
         const since = day - (p.tx || 0);
         if (since > 6) continue;
         const last = p.path.length ? p.path[p.path.length - 1][0] : "nurse_visit";
         const [lx, ly] = nodeXY(g, last, false);
         x = lx + (rnd(i, 3) - 0.5) * 30 - since * 8; y = ly + since * since * 6;
         col = `rgba(200,45,35,${Math.max(0, 1 - since / 6)})`; rad *= 1.4;
+      } else if (FLOW.half && (i & 1)) { continue;
       } else if (s.kind === "wait" || s.kind === "start") {
         const node = s.node || "nurse_visit";
         const onLane = fast && rowOf(node) >= FAST_FROM_ROW;
@@ -284,6 +287,7 @@ const FLOW = (() => {
           halo = h;
         }
         col = `rgba(${cr},${cg},${cb},0.95)`;
+        if (onLane && FLOW.mini > 0) col = "rgba(25,95,165,0.95)";
       } else {
         const fa = fast && rowOf(s.from) >= FAST_FROM_ROW, fb = fast && rowOf(s.to) >= FAST_FROM_ROW && s.to !== "__finish";
         const [x1, y1] = nodeXY(g, s.from, fa), [x2, y2] = nodeXY(g, s.to, fb), f = ease(s.frac);
@@ -374,11 +378,22 @@ const FLOW = (() => {
   }
 
   function draw(day, dt) {
+    if (!cv.width || !cv.height) return;      // hidden tab or zero-size canvas
     const sc = D.scenarios[0], target = sc.target_days;
     const vOld = sc.variants[0], vNew = current();
     if (!vNew._fl) {
       vNew.patients.forEach((p, i) => { const b = vOld.patients[i]; p.fl = !!(p.ft && p.tt !== null && b.tt !== null && b.tt - p.tt >= FAST_GAIN); });
       vNew._fl = true;
+    }
+    // trailer: a little fast-track use drawn into today's flowchart (thin blue line, a few blue patients, taken from the fast-lane run)
+    const mini = FLOW.mini > 0 && vNew.key === "baseline";
+    if (mini && !vNew._mini) {
+      const fv = sc.variants.find(v => v.key === "fastlane");
+      if (fv) {
+        if (!fv._fl) { fv.patients.forEach((p, i) => { const b = vOld.patients[i]; p.fl = !!(p.ft && p.tt !== null && b.tt !== null && b.tt - p.tt >= FAST_GAIN); }); fv._fl = true; }
+        vNew.patients.forEach((p, i) => { p.fl = !!(fv.patients[i] && fv.patients[i].fl) && i % 5 === 0; });
+      }
+      vNew._mini = true;
     }
     if (!layer || layer.width !== cv.width) {
       layer = document.createElement("canvas"); layer.width = cv.width; layer.height = cv.height;
@@ -395,7 +410,17 @@ const FLOW = (() => {
       ctx.beginPath(); ctx.moveTo(W / 2, H * 0.03); ctx.lineTo(W / 2, H * 0.9); ctx.stroke();
       drawChart(gL, vOld, false);
     }
-    drawChart(gR, vNew, vNew.patients.some(p => p.fl));
+    const laneOn = !mini && vNew.patients.some(p => p.fl);
+    drawChart(gR, vNew, laneOn);
+    if (mini) {                               // one thin blue line; the rest of the chart stays normal grey
+      const [fx, fy0] = nodeXY(gR, "spec_visit", true), [, fy1] = nodeXY(gR, "book_treat", true);
+      FLOW.laneInk = true;
+      ctx.save(); ctx.globalAlpha = Math.min(1, FLOW.mini); ctx.strokeStyle = "rgba(25,95,165,0.95)"; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(fx, fy0 + H * 0.03); ctx.lineTo(fx, fy1 - H * 0.02); ctx.stroke();
+      ctx.translate(fx - H * 0.012, (fy0 + fy1) / 2); ctx.rotate(-Math.PI / 2);
+      ctx.font = `600 ${Math.round(H * 0.015)}px "Inter", sans-serif`; ctx.textAlign = "center"; ctx.fillStyle = "rgba(25,95,165,0.95)"; ctx.fillText("FAST TRACK", 0, 0);
+      ctx.restore(); FLOW.laneInk = false;
+    }
     const oL = balls(gL, vOld, day, target, false, !SINGLE);
     FLOW.focusXY = null; FLOW.pos = [];
     const oR = balls(gR, vNew, day, target, true);
@@ -458,5 +483,5 @@ const FLOW = (() => {
     return vs.find(v => v.key === FLOW.newKey) || vs[1];
   }
 
-  return { draw, pickFocus, current, focus: null, focusXY: null, ring: false, pos: [], newKey: "fastlane" };
+  return { draw, pickFocus, current, mini: 0, laneInk: false, focus: null, focusXY: null, ring: false, pos: [], newKey: "fastlane" };
 })();

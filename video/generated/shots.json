@@ -1,0 +1,44 @@
+{
+  "_about": "Generated film-world shots for the trailer (script v3: docs/project-docs/trailer-script-v3.md on overnight/sim). Run: python video/generated/veo.py --shot <id> (or --all). Text, numbers and the IBM note are added in the edit, never generated. The man is an anonymous person, not any actor or character.",
+  "style": "1980s public-information documentary, 16mm film grain, slight VHS softness, cold teal-black shadows, grey-teal walls, cream and paper tones, one warm amber accent. Static or very slow camera, shallow focus. Calm, bureaucratic, lightly uneasy. No computers, monitors or screens. No readable text.",
+  "person": "an anonymous balding man in his fifties with glasses and a beige jacket, ordinary and tired, seen mostly from behind, in profile or in shadow",
+  "negative": "readable text, letters, numbers, logos, watermark, subtitles, computer, monitor, smartphone, smiling stock-photo doctor, glowing brain, famous person, celebrity likeness, gore, captions, posters, signs, printed paper with text",
+  "shots": [
+    {
+      "id": "a2_consultation",
+      "beat": "Part A / beat 1 (replaces the copyrighted clip)",
+      "seconds": 8,
+      "prompt": "A plain consultation room with grey-teal walls and a desk lamp. {person} sits across a wooden desk from a doctor seen only from behind at the edge of frame. The man's face goes still as he listens. {style}"
+    },
+    {
+      "id": "a4_stain",
+      "beat": "Part A",
+      "seconds": 5,
+      "prompt": "Extreme close-up of the chest pocket of a white doctor's coat with a small mustard stain, slow push-in, very shallow focus, the image slowly losing contrast. Mundane and slightly absurd. {style}"
+    },
+    {
+      "id": "b2_slip",
+      "beat": "Beat 2, the note",
+      "seconds": 6,
+      "prompt": "Close shot across a wooden desk in a plain consultation room. A doctor's hand, no face visible, slides a small folded slip of cream paper toward {person}, whose hand picks it up. Static camera, shallow focus, quiet. {style}"
+    },
+    {
+      "id": "b3_waiting_room",
+      "beat": "Beat 3, the number",
+      "seconds": 8,
+      "prompt": "A long municipal waiting room seen from the doorway, rows of plastic chairs, people as quiet silhouettes, tall frosted windows, cold teal light. {person} walks in and takes a seat. On the far wall a dot-matrix display with warm amber dots, left blank. Slow push-in, symmetrical one-point perspective. {style}"
+    },
+    {
+      "id": "b4_unfold",
+      "beat": "Beat 4, the note is the quote",
+      "seconds": 6,
+      "prompt": "Close on the hands of {person} unfolding a small slip of cream paper, then his eyes narrowing as he reads. The paper is a clean typed note with no legible text. Shallow focus, teal-black background. {style}"
+    },
+    {
+      "id": "b9_door",
+      "beat": "Beat 9, the ending",
+      "seconds": 8,
+      "prompt": "The same long municipal waiting room as before: rows of plastic chairs, tall frosted windows, bare concrete walls with no posters or signs, cold teal light. Faint amber dots drift up off a blank wall display like dust. {person} stands holding a small slip of paper; at the side a door is open and a doctor seen only from behind holds it. Calm and hopeful. {style}"
+    }
+  ]
+}

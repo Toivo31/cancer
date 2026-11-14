@@ -34,7 +34,7 @@
 n  Finland / Norway     g  colour by symptom group
 l  step labels          + −  speed
 h  hide this help and the UI for recording</div>
-<script src="dots_data.js?v=27"></script>
+<script src="dots_data.js?v=30"></script>
 <script>
 "use strict";
 // One dot = one simulated lung cancer patient (exported by export_dots.py from the pathway simulator).
@@ -127,7 +127,9 @@ function layoutLane(variant, g, t, target, dotR) {
   let onCount = 0;
   for (let i = 0; i < n; i++) {
     const p = pats[i], s = stateOf(p, t, target);
-    if (s.kind === "done") { (s.ontime ? fin.on : fin.late).push(i); if (s.ontime) onCount++; continue; }
+    if (s.kind === "done" && s.ontime) onCount++;
+    if (HALF_DOTS && (i & 1)) continue;          // counted above, not drawn
+    if (s.kind === "done") { (s.ontime ? fin.on : fin.late).push(i); continue; }
     if (s.kind === "gone") { fin.gone.push(i); continue; }
     if (s.kind === "wait") { (piles[s.node] = piles[s.node] || []).push({ i, ready: s.ready, w: s.waitFor }); continue; }
     if (s.kind === "start") { pos[i] = [g.left - 10, g.y0 + 18 + rnd(i, 1) * 26]; col[i] = 0; continue; }
@@ -293,17 +295,20 @@ function drawClock(target) {
 }
 
 // ---------------------------------------------------------------- loop
+var HALF_DOTS = false;   // trailer: draw every other patient (counts still use all)
 let last = performance.now();
 function frame(now) {
   const dt = Math.min(0.1, (now - last) / 1000); last = now;
   if (st.playing) st.day = Math.min(st.endDay, st.day + dt * st.speed);
   ctx.clearRect(0, 0, W, H);   // transparent: the yellowish-white page shows through
-  const mode = SHOW.active ? SHOW.update() : (qs.has("race") ? "race" : qs.has("flow") ? "flow" : qs.has("doc") ? "doc" : "lanes");
-  if (mode === "card" || mode === "race" || mode === "flow" || mode === "doc" || mode === "zoom" || mode === "pop") {
+  const mode = SHOW.active ? SHOW.update() : TRAILER.active ? TRAILER.update() : (qs.has("race") ? "race" : qs.has("flow") ? "flow" : qs.has("doc") ? "doc" : "lanes");
+  if (TRAILER.active) TRAILER.begin(mode);  // simulation zoomed out above a subtitle band; stills full frame
+  if (mode === "tdraw") { TRAILER.draw(); TRAILER.finish(); snap = true; requestAnimationFrame(frame); return; }
+  if (mode === "card" || mode === "race" || mode === "flow" || mode === "flowcard" || mode === "doc" || mode === "zoom" || mode === "pop") {
     if (mode === "card") SHOW.drawCard();
     else if (mode === "race") RACE.draw(st.day);
-    else if (mode === "flow") FLOW.draw(st.day, dt);
-    else if (mode === "doc") ZOOM.draw(SHOW.active ? SHOW.docT : (performance.now() / 1000) % 14);
+    else if (mode === "flow" || mode === "flowcard") FLOW.draw(st.day, dt);
+    else if (mode === "doc") ZOOM.draw(SHOW.active ? SHOW.docT : TRAILER.active ? TRAILER.docT : (performance.now() / 1000) % 14);
     else if (mode === "pop") {
       // slow motion: the flow keeps running underneath; a popup grows out of the focused ball and fills the page
       FLOW.draw(st.day, dt);
@@ -337,6 +342,7 @@ function frame(now) {
       ctx.fillStyle = `rgba(251,250,247,${Math.min(1, z * 1.3)})`; ctx.fillRect(0, 0, W, H);
     }
     if (SHOW.active) SHOW.drawSubs();
+    if (TRAILER.active) { TRAILER.overlay(mode); TRAILER.finish(); }
     snap = true; requestAnimationFrame(frame); return;
   }
   const sc = scen(), target = sc.target_days;
@@ -348,6 +354,7 @@ function frame(now) {
     drawLane(sc.variants[st.v], "lane0", laneGeom(0, 1), target, dt, 1);
   }
   if (SHOW.active) SHOW.drawSubs();
+  if (TRAILER.active) { TRAILER.overlay("lanes"); TRAILER.finish(); }
   snap = false;
   requestAnimationFrame(frame);
 }
@@ -372,10 +379,12 @@ window.addEventListener("keydown", (e) => {
 });
 
 </script>
-<script src="race.js?v=27"></script>
-<script src="flow.js?v=27"></script>
-<script src="zoom.js?v=27"></script>
-<script src="show.js?v=27"></script>
+<script src="race.js?v=30"></script>
+<script src="flow.js?v=11"></script>
+<script src="zoom.js?v=49"></script>
+<script src="show.js?v=30"></script>
+<script src="trailer_final.js?v=36"></script>
+<script src="trailer.js?v=71"></script>
 <script>
 resize();
 requestAnimationFrame(frame);

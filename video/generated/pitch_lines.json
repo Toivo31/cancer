@@ -1,0 +1,21 @@
+{
+  "_about": "Pitch-part narration (product pitch, proof, ending), natural speed: not time-stretched. Run: python video/generated/tts.py --lines pitch_lines.json",
+  "voice_style": "Say this like a founder pitching to a jury: warm, confident and clear, at a natural, slightly unhurried pace, with a short pause between sentences. Not dramatic, not robotic.",
+  "lines": [
+    {
+      "id": "p5_pitch",
+      "at": "0:26.6",
+      "text": "Our platform maps the whole pathway, simulates every patient, and tests a better order before anyone waits. Same machines. Fewer days lost."
+    },
+    {
+      "id": "p6_proof",
+      "at": "0:37.9",
+      "text": "Checked against a real Norwegian hospital. In Finland: eighteen to thirty-three percent, with no new equipment."
+    },
+    {
+      "id": "p7_end",
+      "at": "0:48.2",
+      "text": "We propose a research-based framework for future automation. Clinicians define, automate and validate each pipeline, transparently."
+    }
+  ]
+}

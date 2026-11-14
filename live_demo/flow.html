@@ -51,6 +51,15 @@
   .opt .bar2 { height: 14px; background: #efede6; margin-top: 3px; }
   .opt .bar2 i { display: block; height: 100%; background: #9c9a94; }
   .opt.pick .bar2 i { background: var(--ink); }
+  .cmd { font-family: ui-monospace, Menlo, monospace; font-size: 13px; background: #1f1f1d; color: #f3f1ea; padding: 6px 10px; margin: 10px 0 8px; }
+  .decide { border: 2px solid var(--ink); padding: 12px 14px; margin-top: 14px; background: #faf9f5; }
+  .decide .dhead { font-weight: 700; letter-spacing: .08em; }
+  .decide .btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .decide button { font: inherit; font-size: 14px; padding: 7px 12px; border: 1.5px solid var(--ink); background: #fff; cursor: pointer; border-radius: 3px; }
+  .decide button.primary { background: var(--ink); color: #fff; }
+  .decide .wait { color: var(--dim); font-size: 13px; margin-top: 8px; }
+  ol.log { padding-left: 18px; margin: 6px 0 0; font-size: 13px; }
+  ol.log li { margin: 3px 0; }
   .stamp { display: inline-block; border: 2px solid var(--ink); padding: 6px 12px; font-weight: 700; letter-spacing: .04em; transform: rotate(-1.5deg); margin-top: 8px; }
   .cards { display: grid; gap: 12px; margin-top: 12px; }
   .card { border: 1px solid var(--line); border-top: 3px solid var(--ink); padding: 10px 14px; background: #fff; }
@@ -183,11 +192,12 @@ function openTrace(i) {
     <h2 style="margin-top:18px">Referral note</h2>
     <div class="muted">Example referral note for a patient like this one (synthetic, written for the demo; not generated from this simulated patient).</div>
     <div class="paper" id="notetext">${esc(noteFor(p))}</div>
+    <div class="cmd" id="cmd">&gt; read referral note --patient ${i + 1}</div>
     <button class="btn" id="readBtn">Read the note</button> <label class="muted"><input type="checkbox" id="stored"> stored result (instant)</label>
     <span class="muted" id="readStatus"></span>
     <div id="readOut"></div>`;
   $("trace").classList.add("open");
-  $("readBtn").onclick = () => readNote(noteFor(p));
+  $("readBtn").onclick = () => readNote(noteFor(p), i);
 }
 
 let EXAMPLES = [];
@@ -198,19 +208,19 @@ function noteFor(p) {
     "Visit 3. Woman, 64, former smoker. Cough for 7 weeks. Tired, lost 6 kg since summer. Chest X-ray 4 weeks ago: no clear finding. Likely post-viral cough. Advised rest.";
 }
 
-async function readNote(text) {
+async function readNote(text, pid) {
   $("readBtn").disabled = true; const t0 = Date.now();
   const tick = setInterval(() => { $("readStatus").textContent = " reading… " + ((Date.now() - t0) / 1000).toFixed(0) + " s"; }, 250);
   try {
     const r = await fetch("/api/read", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text, stored: $("stored").checked }) });
     const d = await r.json(); if (!r.ok) throw new Error(d.error || r.status);
-    renderRead(d);
+    renderRead(d, pid);
     $("readStatus").textContent = d.precomputed ? " stored result" : ` read in ${d.seconds} s`;
   } catch (e) { $("readStatus").textContent = " error: " + e.message; }
   finally { clearInterval(tick); $("readBtn").disabled = false; }
 }
 
-function renderRead(d) {
+function renderRead(d, pid) {
   const text = d.text, flags = d.verdict.flags.slice().sort((a, b) => a.span.start - b.span.start);
   let html = "", pos = 0;
   for (const f of flags) { if (f.span.start < pos) continue; html += esc(text.slice(pos, f.span.start)) + `<mark title="${esc(f.name)}">${esc(text.slice(f.span.start, f.span.end))}</mark>`; pos = f.span.end; }
@@ -221,8 +231,38 @@ function renderRead(d) {
     out += `<p class="muted" style="margin:12px 0 2px">${esc(p.question)}</p>`;
     for (const o of p.options) out += `<div class="opt ${o.label === p.pick ? "pick" : ""}"><div class="row"><span>${esc(o.label)}${o.label === p.pick ? " · suggested" : ""}</span><b>${Math.round(100 * o.p)}%</b></div><div class="bar2"><i style="width:${100 * o.p}%"></i></div><div class="muted">${esc(o.detail)} · ${esc(o.source)}</div></div>`;
   }
-  out += `<div class="stamp">ROUTE: ${esc(d.next.route.toUpperCase())}</div><p class="muted">${esc(d.next.note)} Flags come from an LLM reading the note against our taxonomy; every quote is checked against the text.</p>`;
+  // the model suggests; nothing happens until a clinician chooses (logged)
+  const first = d.next.panels[0];
+  const suggested = first ? first.pick : (flags.length ? "Second look at the note" : "No change");
+  const choices = first ? first.options.map(o => o.label).concat(["No test now"]) : (flags.length ? ["Second look at the note", "No change"] : ["No change", "Order a test anyway"]);
+  out += `<div class="decide" id="decide">
+      <div class="dhead">CLINICIAN DECIDES</div>
+      <div class="muted">Model suggests: <b>${esc(suggested)}</b> · route: ${esc(d.next.route)}. Nothing is ordered until a clinician chooses.</div>
+      <div class="btns">${choices.map(c => `<button class="${c === suggested ? "primary" : ""}" data-choice="${esc(c)}">${c === suggested ? "Approve: " : ""}${esc(c)}</button>`).join("")}</div>
+      <div class="wait" id="decideStatus">Waiting for the clinician…</div>
+    </div>
+    <p class="muted">${esc(d.next.note)} Flags come from an LLM reading the note against our taxonomy; every quote is checked against the text.</p>
+    <h2 style="margin-top:14px;font-size:15px">Decision log</h2><ol class="log" id="log"></ol>`;
   $("readOut").innerHTML = out;
+  renderLog();
+  document.querySelectorAll("#decide button").forEach(b => b.onclick = () => {
+    const chosen = b.dataset.choice;
+    const entry = { t: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }), patient: pid + 1, suggested, chosen,
+      agreed: chosen === suggested, flags: flags.map(f => f.name), source: d.precomputed ? "stored" : "live" };
+    DECISIONS.unshift(entry); saveLog();
+    $("decideStatus").innerHTML = `<div class="stamp">${chosen === suggested ? "APPROVED" : "CHANGED"} BY CLINICIAN: ${esc(chosen.toUpperCase())}</div>`;
+    document.querySelectorAll("#decide button").forEach(x => x.disabled = true);
+    renderLog();
+  });
+}
+
+// decision log: kept in this browser only (a demo convenience; a real system would write an audit record)
+let DECISIONS = [];
+try { DECISIONS = JSON.parse(localStorage.getItem("ecp_decisions") || "[]"); } catch (e) { DECISIONS = []; }
+function saveLog() { try { localStorage.setItem("ecp_decisions", JSON.stringify(DECISIONS.slice(0, 50))); } catch (e) {} }
+function renderLog() {
+  const el = $("log"); if (!el) return;
+  el.innerHTML = DECISIONS.slice(0, 6).map(e => `<li>${esc(e.t)} · patient ${e.patient} · model: ${esc(e.suggested)} → clinician: <b>${esc(e.chosen)}</b>${e.agreed ? "" : " (changed)"} · flags: ${esc(e.flags.join(", ") || "none")} · ${e.source}</li>`).join("") || "<li class='muted'>No decisions yet.</li>";
 }
 
 // ---- actions panel

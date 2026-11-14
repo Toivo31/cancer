@@ -1,0 +1,48 @@
+{
+  "_about": "One-minute cut of the narrator lines (from vo_lines.json / script v3). Numbers checked against demo_bundle.json (14 Nov 09:46): waiting share 86.9%, Norway 40.1 -> 80.1 (authors' reorder), Finland 18 -> 33. Run: python video/generated/tts.py --lines vo_lines_60s.json Faster cut (about 50 s): hook first, narration at a brisk pace.",
+  "voice_style": "Read as a 1980s public-information documentary narrator: calm, dry, slightly formal. Keep a steady, slightly brisk pace with only short pauses between sentences. Say numbers clearly.",
+  "lines": [
+    {
+      "id": "s1_word",
+      "at": "0:00.3",
+      "slot": 3.8,
+      "text": "Cancer is a word. Waiting is a number."
+    },
+    {
+      "id": "s2_rule",
+      "at": "0:06.6",
+      "slot": 3.9,
+      "text": "A computer can never be held accountable. We agree."
+    },
+    {
+      "id": "s3_wait",
+      "at": "0:10.6",
+      "slot": 7.6,
+      "text": "Each dot is a simulated patient. The piles are waiting: eighty-seven percent of the days."
+    },
+    {
+      "id": "s4_engine",
+      "at": "0:18.5",
+      "slot": 7.9,
+      "text": "A model reads the notes and suggests a fast track when immediate care is needed."
+    },
+    {
+      "id": "s5_norway",
+      "at": "0:26.6",
+      "slot": 10.6,
+      "text": "Our platform maps the whole pathway, simulates every patient, and tests a better order before anyone waits. Same machines. Fewer days lost."
+    },
+    {
+      "id": "s6_finland",
+      "at": "0:37.6",
+      "slot": 7.3,
+      "text": "Checked against a real Norwegian hospital. In Finland: eighteen to thirty-three percent, with no new equipment."
+    },
+    {
+      "id": "s7_end",
+      "at": "0:45.5",
+      "slot": 7.0,
+      "text": "We propose a research-based framework for future automation. A doctor decides every case."
+    }
+  ]
+}
