@@ -151,7 +151,7 @@ export function ProjectScreen({ pid, route }: { pid: string; route: Route }) {
         <div className="workspace">
           <div className="canvas-col">
             <div className="canvas-wrap" style={{ flex: 1 }}>
-              <FlowCanvas refit={`${panelOpen ? 'p' : 'c'}${flow && layer !== 'structure' ? 'b' : ''}`} flowchart={fc} world={world} selected={selected} onSelect={setSelected} overlay={overlay} path={path}
+              <FlowCanvas layoutKey={`${pid}/${cur.id}`} refit={`${panelOpen ? 'p' : 'c'}${flow && layer !== 'structure' ? 'b' : ''}`} flowchart={fc} world={world} selected={selected} onSelect={setSelected} overlay={overlay} path={path}
                 playback={clock && layer !== 'structure' ? { clock, patients: pps, transit, selectedPatient: patientIdx, onPick: pickPatient } : null} />
               <button className="btn small panelbtn" onClick={() => setPanelOpen((o) => !o)} aria-pressed={panelOpen} title={panelOpen ? 'Hide the side panel for more room' : 'Show the side panel'}>{panelOpen ? 'Hide panel ›' : '‹ Panel'}</button>
               {flow && (

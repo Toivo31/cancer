@@ -1,12 +1,14 @@
-import { memo, useMemo, useState } from 'react'
-import { BaseEdge, Background, Controls, Handle, MarkerType, MiniMap, Position, ReactFlow } from '@xyflow/react'
-import type { Edge, EdgeProps, Node, NodeProps } from '@xyflow/react'
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { BaseEdge, Background, Controls, Handle, MarkerType, MiniMap, NodeResizer, Position, ReactFlow } from '@xyflow/react'
+import type { Edge, EdgeProps, Node, NodeChange, NodeProps } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import type { Flowchart, FlowNode, World } from '../api/types'
 import { defaultShares } from '../lib/policy'
 import { edgeGeometry } from './geometry'
 import type { EdgeGeom } from './geometry'
-import { layoutFlowchart, SIZE, structureKey } from './layout'
+import { layoutFlowchart, structureKey } from './layout'
+import { applyView, emptyView, isEmptyView, loadView, saveView } from './viewLayout'
+import type { ViewLayout } from './viewLayout'
 import type { NodeOverlay, Overlay } from './layers'
 import { pairKey } from './layers'
 import { PlaybackLayer } from './PlaybackLayer'
@@ -27,15 +29,18 @@ interface PData extends Record<string, unknown> {
   onPath: boolean
   overlay?: NodeOverlay
   probLine?: string
+  tip: string
 }
 
 const PNode = memo(function PNode({ data }: NodeProps<Node<PData>>) {
-  const { node, stage, selected, onPath, overlay, probLine } = data
+  const { node, stage, selected, onPath, overlay, probLine, tip } = data
   const cls = ['pnode', node.kind, node.kind === 'exit' ? (node.outcome === 'treatment' ? 'treatment' : 'discharged') : '', selected ? 'sel' : '', onPath ? 'onpath' : ''].join(' ')
   const eyebrow = node.kind === 'decision' ? 'Decision' : node.kind === 'exit' ? (node.outcome === 'treatment' ? 'Treatment starts' : '') : node.kind === 'milestone' ? 'Diagnosis reached' : node.kind === 'join' ? '' : stage ? (STAGE_LABEL[stage] ?? stage) : ''
   const sub = overlay?.sub ?? probLine
   return (
-    <div className={cls} style={{ background: overlay?.fill, borderColor: overlay?.border, borderWidth: overlay?.borderWidth }} title={node.label}>
+    <>
+    <NodeResizer isVisible={selected} minWidth={100} minHeight={34} lineStyle={{ borderColor: '#62B0FF' }} handleStyle={{ width: 10, height: 10, background: '#62B0FF', border: 'none' }} />
+    <div className={cls} style={{ background: overlay?.fill, borderColor: overlay?.border, borderWidth: overlay?.borderWidth }} title={tip}>
       <Handle id="l" type="target" position={Position.Left} />
       <Handle id="t" type="target" position={Position.Top} />
       {eyebrow && <div className="stage">{eyebrow}</div>}
@@ -49,6 +54,7 @@ const PNode = memo(function PNode({ data }: NodeProps<Node<PData>>) {
       <Handle id="r" type="source" position={Position.Right} />
       <Handle id="b" type="source" position={Position.Bottom} />
     </div>
+    </>
   )
 })
 const nodeTypes = { p: PNode }
@@ -79,20 +85,44 @@ interface Props {
   path?: { nodes: Set<string>; edges: Set<string> } | null
   playback?: CanvasPlayback | null
   showLegend?: boolean
+  /** where the view-only layout (dragged positions, resized boxes) is kept in the browser, one entry per flowchart */
+  layoutKey?: string
   /** change to redo the fit to the available space (for example after a panel opens or closes) */
   refit?: string | number
 }
 
-export function FlowCanvas({ flowchart, world, selected, onSelect, overlay, path, playback, showLegend = true, refit }: Props) {
+export function FlowCanvas({ flowchart, world, selected, onSelect, overlay, path, playback, showLegend = true, refit, layoutKey }: Props) {
   const key = structureKey(flowchart)
-  const layout = useMemo(() => layoutFlowchart(flowchart.nodes, flowchart.edges), [key]) // eslint-disable-line react-hooks/exhaustive-deps
-  const boxes = layout.boxes
-  const geoms = useMemo(() => flowchart.edges.map((e, i) => (boxes[e.from] && boxes[e.to] ? edgeGeometry(boxes[e.from], boxes[e.to], layout, i % 5) : null)), [key, layout]) // eslint-disable-line react-hooks/exhaustive-deps
+  const labelKey = flowchart.nodes.map((n) => n.label).join('|')
+  const layout = useMemo(() => layoutFlowchart(flowchart.nodes, flowchart.edges), [key, labelKey]) // eslint-disable-line react-hooks/exhaustive-deps
+  const lkey = layoutKey ?? flowchart.id
+  const [view, setView] = useState<ViewLayout>(() => loadView(lkey))
+  const [resetTick, setResetTick] = useState(0)
+  const loadedKey = useRef(lkey)
+  useEffect(() => { if (loadedKey.current !== lkey) { loadedKey.current = lkey; setView(loadView(lkey)) } }, [lkey])
+  useEffect(() => { if (loadedKey.current === lkey) saveView(lkey, view) }, [lkey, view])
+  const { boxes, moved } = useMemo(() => applyView(layout.boxes, view), [layout, view])
+  const geoms = useMemo(() => flowchart.edges.map((e, i) => {
+    const a = boxes[e.from], b = boxes[e.to]
+    if (!a || !b) return null
+    // a connection to a step the user moved is drawn directly; the others keep the row-wrapped routes
+    return moved.has(e.from) || moved.has(e.to) ? edgeGeometry({ ...a, row: 0 }, { ...b, row: 0 }, layout, i % 5) : edgeGeometry(a, b, layout, i % 5)
+  }), [key, layout, boxes, moved]) // eslint-disable-line react-hooks/exhaustive-deps
   const routes = useMemo(() => {
     const r: Record<string, [number, number][]> = {}
     flowchart.edges.forEach((e, i) => { const g = geoms[i]; if (g && !r[pairKey(e.from, e.to)]) r[pairKey(e.from, e.to)] = g.pts })
     return r
   }, [key, geoms]) // eslint-disable-line react-hooks/exhaustive-deps
+  const onNodesChange = useCallback((changes: NodeChange[]) => {
+    setView((v) => {
+      let next = v
+      for (const c of changes) {
+        if (c.type === 'position' && c.position) next = { ...next, pos: { ...next.pos, [c.id]: { x: c.position.x, y: c.position.y } } }
+        else if (c.type === 'dimensions' && c.setAttributes && c.dimensions) next = { ...next, size: { ...next.size, [c.id]: { w: Math.round(c.dimensions.width), h: Math.round(c.dimensions.height) } } }
+      }
+      return next
+    })
+  }, [])
   const [hover, setHover] = useState<string | null>(null)
   const focus = hover ?? selected ?? null
 
@@ -106,9 +136,9 @@ export function FlowCanvas({ flowchart, world, selected, onSelect, overlay, path
       if (n.kind === 'decision' && shares) probLine = `${Object.keys(shares).length} options${pt?.rules?.length ? ` · ${pt.rules.length} rule${pt.rules.length > 1 ? 's' : ''}` : ''}`
       else if (n.kind === 'decision') probLine = 'no probabilities set'
       return {
-        id: n.id, type: 'p', position: { x: boxes[n.id].x, y: boxes[n.id].y }, width: SIZE[n.kind].w, height: SIZE[n.kind].h,
-        data: { node: n, stage: stageOf(n, world), selected: selected === n.id, onPath: !!path?.nodes.has(n.id), overlay: overlay?.nodes[n.id], probLine },
-        draggable: false, selectable: true,
+        id: n.id, type: 'p', position: { x: boxes[n.id].x, y: boxes[n.id].y }, width: boxes[n.id].w, height: boxes[n.id].h,
+        data: { node: n, stage: stageOf(n, world), selected: selected === n.id, onPath: !!path?.nodes.has(n.id), overlay: overlay?.nodes[n.id], probLine, tip: [n.label, overlay?.nodes[n.id]?.sub ?? probLine].filter(Boolean).join('\n') },
+        draggable: true, selectable: true,
       }
     })
     const es: Edge[] = flowchart.edges.map((e, i) => {
@@ -146,9 +176,9 @@ export function FlowCanvas({ flowchart, world, selected, onSelect, overlay, path
   return (
     <div style={{ position: 'absolute', inset: 0 }} data-testid="canvas">
       <ReactFlow
-        key={`${key}/${refit ?? ''}`} nodes={nodes} edges={edges} nodeTypes={nodeTypes} edgeTypes={edgeTypes}
+        key={`${key}/${refit ?? ''}/${resetTick}`} nodes={nodes} onNodesChange={onNodesChange} edges={edges} nodeTypes={nodeTypes} edgeTypes={edgeTypes}
         fitView fitViewOptions={{ padding: { top: '84px', right: '24px', bottom: '24px', left: '24px' } }} minZoom={0.15} maxZoom={1.8}
-        nodesDraggable={false} nodesConnectable={false} elementsSelectable
+        nodesDraggable nodesConnectable={false} elementsSelectable
         proOptions={{ hideAttribution: true }}
         onNodeClick={(_, n) => onSelect?.(n.id)} onPaneClick={() => onSelect?.(null)}
         onNodeMouseEnter={(_, n) => setHover(n.id)} onNodeMouseLeave={() => setHover(null)}
@@ -158,6 +188,7 @@ export function FlowCanvas({ flowchart, world, selected, onSelect, overlay, path
         <MiniMap pannable zoomable nodeColor={(n) => ((n.data as PData).node.kind === 'decision' ? '#B79CFF' : '#2C3F52')} maskColor="rgba(10,15,20,.7)" style={{ width: 150, height: 96 }} />
         {playback && <PlaybackLayer {...playback} boxes={boxes} routes={routes} edges={flowchart.edges} />}
       </ReactFlow>
+      <button className="btn small resetbtn" disabled={isEmptyView(view)} onClick={() => { setView(emptyView()); setResetTick((t) => t + 1) }} title="Put every box back where the automatic layout placed it. Drag a box to move it and select a box to resize it; this changes only how the chart looks, not the flowchart.">Reset layout</button>
       {showLegend && !overlay && (
         <div className="legend">
           <span><i />required</span><span><i className="dash" />any of</span><span><i className="dot" />only if it ran</span><span><i className="opt" />decision option (% offered)</span>

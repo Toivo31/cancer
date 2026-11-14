@@ -11,6 +11,27 @@ export const SIZE: Record<NodeKind, { w: number; h: number }> = {
   milestone: { w: 160, h: 44 },
   exit: { w: 160, h: 48 },
 }
+/** Lines a label needs when words wrap within `chars` characters (a greedy estimate; the box grows to fit). */
+export function wrapLines(label: string, chars: number): number {
+  let lines = 1, cur = 0
+  for (const word of label.split(/\s+/).filter(Boolean)) {
+    const w = word.length
+    if (cur === 0) cur = w
+    else if (cur + 1 + w <= chars) cur += 1 + w
+    else { lines++; cur = w }
+    while (cur > chars) { lines++; cur -= chars }
+  }
+  return lines
+}
+
+/** Footprint of one step: the kind's width, and a height that fits the whole label (no cut-off text). */
+export function nodeSize(n: Pick<FlowNode, 'kind' | 'label'>): { w: number; h: number } {
+  const { w, h } = SIZE[n.kind]
+  const lines = wrapLines(n.label ?? '', Math.max(8, Math.floor((w - 26) / 6.4)))
+  if (n.kind === 'join') return { w, h: Math.max(h, 14 + lines * 14) }
+  if (n.kind === 'step' || n.kind === 'decision') return { w, h: Math.max(h, 18 + 12 + lines * 15 + 12) }
+  return { w, h: Math.max(h, 22 + 12 + lines * 15) }
+}
 const RANKSEP = 56
 const ROWGAP = 96
 
@@ -29,7 +50,8 @@ export function layoutFlowchart(nodes: FlowNode[], edges: FlowEdge[], view = { w
   g.setGraph({ rankdir: 'LR', ranksep: RANKSEP, nodesep: 22, edgesep: 12, marginx: 0, marginy: 0, ranker })
   g.setDefaultEdgeLabel(() => ({}))
   const ids = new Set(nodes.map((n) => n.id))
-  for (const n of nodes) g.setNode(n.id, { width: SIZE[n.kind].w, height: SIZE[n.kind].h })
+  const size = new Map(nodes.map((n) => [n.id, nodeSize(n)]))
+  for (const n of nodes) g.setNode(n.id, { width: size.get(n.id)!.w, height: size.get(n.id)!.h })
   edges.forEach((e, i) => {
     if (ids.has(e.from) && ids.has(e.to) && e.from !== e.to) g.setEdge(e.from, e.to, { minlen: 1, weight: e.type === 'option' ? 2 : 1 }, String(i))
   })
@@ -41,7 +63,7 @@ export function layoutFlowchart(nodes: FlowNode[], edges: FlowEdge[], view = { w
   const rankOf = new Map(nodes.map((n, i) => [n.id, rankCx.indexOf(cx[i])]))
   const R = rankCx.length
   const rankW = new Array(R).fill(0)
-  nodes.forEach((n) => { rankW[rankOf.get(n.id)!] = Math.max(rankW[rankOf.get(n.id)!], SIZE[n.kind].w) })
+  nodes.forEach((n) => { rankW[rankOf.get(n.id)!] = Math.max(rankW[rankOf.get(n.id)!], size.get(n.id)!.w) })
   const rankX: number[] = []
   let acc = 0
   for (let r = 0; r < R; r++) { rankX[r] = acc; acc += rankW[r] + RANKSEP }
@@ -79,12 +101,13 @@ export function layoutFlowchart(nodes: FlowNode[], edges: FlowEdge[], view = { w
     for (let j = 0; j < k; j++) {
       const inRow = nodes.filter((n) => rowOfRank[rankOf.get(n.id)!] === j)
       if (!inRow.length) continue
-      const top = Math.min(...inRow.map((n) => g.node(n.id).y - SIZE[n.kind].h / 2))
-      const bottom = Math.max(...inRow.map((n) => g.node(n.id).y + SIZE[n.kind].h / 2))
+      const top = Math.min(...inRow.map((n) => g.node(n.id).y - size.get(n.id)!.h / 2))
+      const bottom = Math.max(...inRow.map((n) => g.node(n.id).y + size.get(n.id)!.h / 2))
       const left = rankX[cuts[j]]
       for (const n of inRow) {
         const r = rankOf.get(n.id)!
-        boxes[n.id] = { x: rankX[r] - left + (rankW[r] - SIZE[n.kind].w) / 2, y: y0 + (g.node(n.id).y - SIZE[n.kind].h / 2 - top), w: SIZE[n.kind].w, h: SIZE[n.kind].h, row: j }
+        const sz = size.get(n.id)!
+        boxes[n.id] = { x: rankX[r] - left + (rankW[r] - sz.w) / 2, y: y0 + (g.node(n.id).y - sz.h / 2 - top), w: sz.w, h: sz.h, row: j }
         width = Math.max(width, boxes[n.id].x + boxes[n.id].w)
       }
       rowTop[j] = y0; rowBottom[j] = y0 + bottom - top
