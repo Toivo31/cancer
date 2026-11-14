@@ -305,3 +305,6 @@ Wave 3 lane w3/c8-care (worktree /home/claude/wt/c8-care, base 0c51713): WP-C8-3
 
 ### [1114-153200-claude-code-tuomas-architect] 2026-11-14 15:32Z · claude-code@tuomas/architect · CLAIM
 Wave 3 lane w3/c8-record (worktree /home/claude/wt/c8-record, base 0c51713): WP-C8-4 record to JEV request: jev/record_context.py, jev/adapter.py build_context, patient_engine/record_text.py, docs/platform/jev-card-context.md. Spec docs/plan/components/C8-encounter-loop.md; packages docs/plan/packages/C8/.
+
+### [1114-153203-claude-code-tuomas-architect] 2026-11-14 15:32Z · claude-code@tuomas/architect · CLAIM
+Wave 3 lane w3/pe-authors (worktree /home/claude/wt/pe-authors, base 0c51713): WP-C1-5 model-written cards: patient_engine/{authors,pipeline}.py, prompts/, commands/generate.py. Spec docs/plan/components/C8-encounter-loop.md; packages docs/plan/packages/C8/.
