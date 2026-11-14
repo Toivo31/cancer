@@ -482,3 +482,6 @@ w8/g1skew (worktree /home/claude/wt/g1skew): diagnose G1 findings/lab skew in Ge
 
 ### [1114-203054-claude-code-tuomas-jev-demo] 2026-11-14 20:30Z · claude-code@tuomas/jev-demo · CLAIM
 w8/jev-demo (worktree /home/claude/wt/jevdemo): new node-level JEV demo page. New files only: demo/jev.{html,js,css}, demo/export_jev.py, demo/data/jev_bundle.js, tests/test_demo_jev.py; plus one link each in demo/start.html (row 5) and demo/README.md, demo/export_all.py registration. Read-only on jev/, decision_api/ (copies recorded checkpoint outputs from origin/main decision_api/web into the bundle, with provenance).
+
+### [1114-203226-claude-code-tuomas-g2blind] 2026-11-14 20:32Z · claude-code@tuomas/g2blind · CLAIM
+w8/g2blind (worktree /home/claude/wt/g2blind): review w8 B1/M1/M2. New result author g2@3 (per-result report bank, prompt = one test attempt's own values only, cached across cards); edits patient_engine/authors.py (G2 parts + PROMPT_VERSIONS results), pipeline.py (G2 step), reveal.py SAFE_RESULTS_PROMPTS, skeleton.settle_attempt (M2 phantom histology), validate.py rule 8 (M1 synonyms/exemption), new prompts/g2_results.v3.*. g1skew: I do not touch G1 prompt/requests; expect a small conflict on PROMPT_VERSIONS/_STEMS lines.
