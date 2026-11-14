@@ -623,3 +623,6 @@ textcheck resuming: patient_engine/textfix.py, textsym.py, data/, commands/fixte
 
 ### [1114-225315-claude-code-tuomas] 2026-11-14 22:53Z · claude-code@tuomas · FYI
 Wave 9 started (Tuomas: JEV top priority). Lanes: w9/jev-install (jev/birch.py, jev/factory.py, decision_api/ from origin/main, docs/platform/jev-birch.md), w9/jev-demo-live (demo/jev.*, serve_jev.py, export_jev.py), w9/jev-sim (new JEV runner + flow_jev_bundle + flow page JEV variant), w9/ui-followups (HANDOFF, demo_path, small page fixes; not jev/flow), w8/textcheck (finish), w9/content-fix (wait basis one definition, register yaml, sources), w9/ci-green (CI + W8-10). Integrator merges and regenerates bundles.
+
+### [1114-225315-claude-code-tuomas-content-fix] 2026-11-14 22:53Z · claude-code@tuomas/content-fix · CLAIM
+w9/content-fix (wt/contentfix): waiting-basis unification + register fixes. Owns demo/wait_basis.py, demo/research_split.py, demo/export_research.py, docs/research_claims.*, params/sources.yaml (additions only), docs/pitch/*.md sources (not filled/), tests for these. May do a one-line removal in demo/research.js (rejoin workaround) if dead.
