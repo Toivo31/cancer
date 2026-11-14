@@ -17,6 +17,7 @@ import type { Route } from '../lib/route'
 import { useRuns } from '../lib/useRuns'
 import { DecisionsTable } from './DecisionsTable'
 import { RunPanel } from './RunPanel'
+import { OptimisePanel } from './OptimisePanel'
 
 type Tab = 'flowchart' | 'decisions'
 
@@ -109,7 +110,7 @@ export function ProjectScreen({ pid, route }: { pid: string; route: Route }) {
   const adj = useMemo(() => adjacency(fc?.edges ?? []), [fc])
   const [patientIdx, setPatientIdx] = useState<number | null>(null)
   const [panelOpen, setPanelOpen] = useState(true)
-  const [sideTab, setSideTab] = useState<'run' | 'time' | 'patient'>('run')
+  const [sideTab, setSideTab] = useState<'run' | 'time' | 'patient' | 'optimise'>('run')
   useEffect(() => { setPatientIdx(null) }, [flow])
   const pickPatient = useCallback((idx: number | null) => { setPatientIdx(idx); if (idx !== null) setSideTab('patient') }, [])
   const patient = patientIdx !== null ? pps.find((p) => p.idx === patientIdx) ?? null : null
@@ -119,6 +120,12 @@ export function ProjectScreen({ pid, route }: { pid: string; route: Route }) {
     const r = runs.find((x) => x.id === id)
     replace(`p/${pid}`, q({ run: id, ...(r ? { f: r.flowchart.id, v: r.flowchart.version } : {}) }))
   }
+
+  // after the optimiser saved a new version: refresh the list of versions, then show it with its run
+  const openVersion = useCallback(async (fid: string, version: number, run: string | null) => {
+    try { setList(await api.listFlowcharts(pid)) } catch { /* the address still works */ }
+    go(`p/${pid}`, { f: fid, v: version, run })
+  }, [api, pid])
 
   if (error && !fc) return <div className="page"><div className="error">{error}</div><p><a href="#/">Back to projects</a></p></div>
   if (!fc || !cur || curVer === null || !draft || !world) return <div className="page"><div className="empty">Loading…</div></div>
@@ -187,14 +194,17 @@ export function ProjectScreen({ pid, route }: { pid: string; route: Route }) {
                 )}
               </section>
             )}
-            {flow && (
+            {(
               <div className="tabs" role="tablist">
-                {([['run', 'Run'], ['time', 'Where time is lost'], ['patient', 'Patient']] as const).map(([id, t]) => <button key={id} role="tab" aria-selected={sideTab === id} className={`tab ${sideTab === id ? 'on' : ''}`} onClick={() => setSideTab(id)}>{t}</button>)}
+                {([['run', 'Run'], ['optimise', 'Optimise'], ...(flow ? [['time', 'Where time is lost'], ['patient', 'Patient']] : [])] as ['run' | 'time' | 'patient' | 'optimise', string][]).map(([id, t]) => <button key={id} role="tab" aria-selected={sideTab === id} className={`tab ${sideTab === id ? 'on' : ''}`} onClick={() => setSideTab(id)}>{t}</button>)}
               </div>
             )}
             {flow && sideTab === 'time' && <TimeLostPanel flow={flow} selected={selected} onSelect={setSelected} />}
             {flow && sideTab === 'patient' && <TracePanel flow={flow} pp={patient} labelOf={labelOf} patients={pps} onPick={pickPatient} />}
-            {(!flow || sideTab === 'run') && (
+            {sideTab === 'optimise' && (
+              <OptimisePanel pid={pid} flowchart={fc} world={world} onRunsChanged={reloadRuns} onOpen={openVersion} />
+            )}
+            {((!flow && sideTab !== 'optimise') || sideTab === 'run') && (
               <RunPanel pid={pid} flowchart={fc} world={world} runs={runs} runsError={runsError} selectedRun={effRun}
                 onSelectRun={selectRun} onChanged={reloadRuns} dirty={dirty} />
             )}
