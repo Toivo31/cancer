@@ -68,6 +68,27 @@ calibration:
       flowcharts.observed.policy.pet_on_time.mix.pet_early_route: 0.2
     - flowcharts.observed.policy.pet_on_time.mix.pet_triage: 1.0
       flowcharts.observed.policy.pet_on_time.mix.pet_early_route: 0.0
+optimiser:
+  needs:
+    tumour_board:
+    - pet_ct
+    - pet_ct_late
+    - exercise_test
+    - exercise_test_late
+    - further_workup
+    - first_visit
+    treatment:
+    - tumour_board
+    pet_ct:
+    - baseline_ct
+    pet_ct_late:
+    - first_visit
+    exercise_test_late:
+    - first_visit
+    bronchoscopy:
+    - baseline_ct
+    ttnb:
+    - baseline_ct
 conditions:
 - id: lung_cancer_stage_i_ii
   cancer: true
@@ -142,6 +163,7 @@ tests:
     note: 50/100 waited >7 d, 18 >= 14 d -> lognormal median 7, p90 18.5 (derived).
       extra_wait = CT/report not ready (assumption, calibrated)
   bronchoscopy:
+    confirms_diagnosis: true
     resource: waits
     stage: diagnosis
     invasive: true
@@ -167,6 +189,7 @@ tests:
       the paper (27 diagnostic of ~74); central/peripheral split follows RIVERA2013
       (88% central vs 34-63% peripheral sensitivity)
   bronchoscopy_repeat:
+    confirms_diagnosis: true
     resource: waits
     stage: diagnosis
     invasive: true
@@ -189,6 +212,7 @@ tests:
     source: STOKSTAD2019
     note: repeat sampling wait median 8 d (1-14)
   ttnb:
+    confirms_diagnosis: true
     resource: waits
     stage: diagnosis
     invasive: true

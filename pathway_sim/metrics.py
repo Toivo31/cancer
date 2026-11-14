@@ -111,6 +111,9 @@ def compute_metrics(run: RunLog, sc: Scenario | None = None, include_warmup: boo
         "median_days_to_diagnosis": _med(ttd),
         "mean_days_to_treatment": round(sum(x for x in ttt if x is not None) / max(1, len([x for x in ttt if x is not None])), 2) if treated else None,
         "missed_cancers": sum(1 for pr in cancer if pr.outcome == "discharged"),
+        "confirmed_cancers": sum(1 for pr in cancer if any(
+            e.result is True and sc is not None and sc.tests.get(e.test, {}).get("confirms_diagnosis")
+            for e in pr.events)),
         "untreated_cancers": sum(1 for pr in cancer if pr.outcome != "treatment"),
         "stuck": sum(1 for pr in prs if pr.outcome == "stuck"),
         "false_treatments": sum(1 for pr in noncancer if pr.outcome == "treatment"),
