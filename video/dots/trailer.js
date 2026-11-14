@@ -303,7 +303,7 @@ const TRAILER = (() => {
     if (mode === "lanes") {
       ctx.fillStyle = "rgba(251,249,239,0.95)"; ctx.fillRect(0, 0, W, H * 0.12);
       text("A REAL NORWEGIAN HOSPITAL · STOKSTAD ET AL. 2019", W * 0.04, H * 0.06, H * 0.026, "#1f1f1d", 700, "left");
-      text(t < DROP ? "Published 40%  ·  Ours 40%" : "Reordered, same patients: 80%  (88% with the faster scanner · 67% no new equipment)",
+      text(t < DROP ? "Published 40%  ·  Ours 40%" : "Authors' reordered pathway, same patients: 80%  ·  optimiser, no new equipment: 67%",
            W * 0.96, H * 0.06, H * 0.022, "#1f1f1d", 700, "right");
     }
     if (mode === "flowcard") {                 // the challenge and the tech challenges, as text beside the running flow

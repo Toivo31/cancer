@@ -43,6 +43,11 @@ def dashboard_share(bundle: dict, sid: str, role: str | None):
     return None
 
 
+def dash_field(bundle: dict, sid: str, key: str):
+    """A scenario-level field of the dashboard bundle (e.g. wait_basis: where the baseline's waiting days come from)."""
+    return next((s.get(key) for s in bundle["scenarios"] if s["id"] == sid), None)
+
+
 def opt_flowchart(sc, name: str, fid: str):
     d = json.loads((ROOT / "runs" / f"{name}.json").read_text())
     fc = parse_flowchart(fid, {**d["flowchart_after"], "id": fid})
@@ -76,7 +81,7 @@ def build(quick: bool = False, sample: int = 300) -> list[dict]:
     held = cohorts(sc, (201, 202, 203), n)
     pub = sc.raw["published"]
     no_eq, ch_no = opt_flowchart(sc, "opt_stokstad", "suggested_no_equipment")
-    fast, ch_fast = opt_flowchart(sc, "opt_stokstad_fastpet", "suggested_faster_pet")
+    # D68: the optimiser run from the faster-scanner pathway (runs/opt_stokstad_fastpet.json) is not shown
     variants = [
         make(sc, sc.flowcharts["observed"], held, "observed", "Observed pathway", "baseline",
              "Calibrated to the published observed pathway (Stokstad et al. 2019). Published: 40% treated within 42 days.",
@@ -87,9 +92,6 @@ def build(quick: bool = False, sample: int = 300) -> list[dict]:
         make(sc, sc.flowcharts["faster_pet"], held, "faster_pet", "Faster PET-CT scanner only", "faster_pet",
              "Same order, only the faster scanner (7-day wait). Published: 48%, not statistically significant.",
              check=dashboard_share(bundle, "stokstad", "faster_pet"), sample=sample),
-        make(sc, fast, held, "suggested_faster_pet", "Suggested change with the faster PET-CT scanner", "optimiser",
-             "Same search, starting from the authors' faster-scanner assumption. Needs the new scanner.",
-             changes=ch_fast, check=dashboard_share(bundle, "stokstad", "optimiser"), sample=sample),
         make(sc, sc.flowcharts["optimal"], held, "authors", "Authors' reordered pathway (simulated)", "authors_pathway",
              "The reordering Stokstad et al. propose, run in our simulator. Their own estimate is 80%, a model estimate, not an observed result.",
              check=dashboard_share(bundle, "stokstad", "authors_pathway"), sample=sample),
@@ -102,7 +104,7 @@ def build(quick: bool = False, sample: int = 300) -> list[dict]:
                               "faster_pet_share": pub["faster_pet"]["share_within_target"],
                               "authors_estimate_share": pub["optimal"]["share_within_target"],
                               "source": "Stokstad et al. 2019, BMC Health Services Research (80% is the authors' model estimate)"},
-                "variants": variants})
+                "wait_basis": dash_field(bundle, "stokstad", "wait_basis"), "variants": variants})
 
     print("finland")
     sc = load_scenario(ROOT / "scenarios" / "finland_lung.yaml")
@@ -122,7 +124,7 @@ def build(quick: bool = False, sample: int = 300) -> list[dict]:
                 "target_days": sc.target_days, "default_pair": ["baseline", "suggested"],
                 "description": "Synthetic patients with chest symptoms followed from first contact in primary care to treatment, "
                                "against a provisional 90-day target.",
-                "published": None, "variants": variants})
+                "published": None, "wait_basis": dash_field(bundle, "finland_lung", "wait_basis"), "variants": variants})
     return out
 
 

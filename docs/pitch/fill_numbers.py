@@ -105,7 +105,8 @@ def stokstad_values(V: dict, bundle: dict, val: dict | None) -> None:
     base = s["baseline"]["metrics"]
     fast = by_role(s, "faster_pet")["metrics"]
     auth = by_role(s, "authors_pathway")["metrics"]
-    opt = by_role(s, "optimiser")
+    # D68: the Norwegian optimiser result is the run from today's pathway with no new equipment; the run from the
+    # faster-scanner pathway is not reported (Tuomas, 14 Nov), so there are no s_opt_* values any more
     noeq = by_role(s, "optimiser_no_new_equipment")
     V.update({
         "s_source": pub["source"],
@@ -119,34 +120,22 @@ def stokstad_values(V: dict, bundle: dict, val: dict | None) -> None:
         "s_fast_median": n0(fast["median_days_to_treatment"]),
         "s_auth_share": pc(auth["share_within_target"]),
         "s_auth_median": n0(auth["median_days_to_treatment"]),
-        "s_opt_share": pc(opt["metrics"]["share_within_target"]),
-        "s_opt_median": n0(opt["metrics"]["median_days_to_treatment"]),
         "s_noeq_share": pc(noeq["metrics"]["share_within_target"]),
         "s_noeq_median": n0(noeq["metrics"]["median_days_to_treatment"]),
         "s_n": thousands(base["n"]),
-        "s_missed_max": n0(max(opt["metrics"]["missed_cancers"], noeq["metrics"]["missed_cancers"],
-                               auth["missed_cancers"])),
+        "s_missed_max": n0(max(noeq["metrics"]["missed_cancers"], auth["missed_cancers"])),
         "s_fast_over_pp": n0(100 * (fast["share_within_target"] - pub["faster_pet_share"])),
         "s_tests_base": n2(base["tests_per_patient"]),
         "s_tests_auth": n2(auth["tests_per_patient"]),
-        "s_tests_opt": n2(opt["metrics"]["tests_per_patient"]),
         "s_tests_noeq": n2(noeq["metrics"]["tests_per_patient"]),
     })
-    # optimiser: steps, train vs held-out, optimism
-    for tag, o in (("opt", opt), ("noeq", noeq)):
-        steps = o["optimiser"]["steps"] if "optimiser" in o else None
-    so = s["optimiser"]
-    sn = s["optimiser_no_new_equipment"]
-    V["s_opt_train"] = pc(so["steps"][-1]["evidence"]["train_on_time_after"])
+    # optimiser (no new equipment): steps, train vs held-out, optimism
+    sn = s["optimiser"]
     V["s_noeq_train"] = pc(sn["steps"][-1]["evidence"]["train_on_time_after"])
-    V["s_opt_train_start"] = pc(so["steps"][0]["evidence"]["train_on_time_before"])
     V["s_noeq_train_start"] = pc(sn["steps"][0]["evidence"]["train_on_time_before"])
-    V["s_opt_optimism_pp"] = n1(so["selection_optimism_pp"])
     V["s_noeq_optimism_pp"] = n1(sn["selection_optimism_pp"])
-    V["s_candidates"] = n0(so["candidates_evaluated"])
-    V["s_opt_nsteps"] = n0(len(so["steps"]))
+    V["s_candidates"] = n0(sn["candidates_evaluated"])
     V["s_noeq_nsteps"] = n0(len(sn["steps"]))
-    V["s_opt_changes"] = "\n".join(f"{i}. {c}" for i, c in enumerate(opt["changes"], 1))
     V["s_noeq_changes"] = "\n".join(f"{i}. {c}" for i, c in enumerate(noeq["changes_detail"], 1))
     st = base["stage_breakdown"]
     top = max(st, key=lambda k: st[k]["wait"])
@@ -197,8 +186,7 @@ def stokstad_values(V: dict, bundle: dict, val: dict | None) -> None:
     V["s_optimiser_table"] = md_table(
         ["Search starting point", "Share within 42 d, held-out", "Median days", "Missed cancers"],
         [["Observed pathway (no change)", f"{V['s_obs_share']}%", V["s_obs_median"], "0"],
-         ["Search from a menu we wrote, with the faster scanner (the authors' premise)", f"{V['s_opt_share']}%", V["s_opt_median"], V["s_missed_max"]],
-         ["Same search, no new equipment", f"{V['s_noeq_share']}%", V["s_noeq_median"], V["s_missed_max"]]])
+         ["Search from a menu we wrote, from today's pathway, no new equipment", f"{V['s_noeq_share']}%", V["s_noeq_median"], V["s_missed_max"]]])
 
 
 def finland_values(V: dict, bundle: dict) -> None:
@@ -285,6 +273,15 @@ def finland_values(V: dict, bundle: dict) -> None:
     V["f_wait_share"] = n0(100 * tot_wait / (tot_wait + tot_svc))
     V["f_wait_total"] = n0(tot_wait)
     V["f_svc_total"] = n0(tot_svc)
+    # where the waiting days come from (bundle wait_basis, demo/wait_basis.py): published figure vs our assumption
+    wb = f.get("wait_basis")
+    if wb:
+        gp, ga = wb["groups"]["published"], wb["groups"]["assumption"]
+        V["f_wb_pub_share"] = n0(100 * gp["share_of_waiting"])
+        V["f_wb_asm_share"] = n0(100 * ga["share_of_waiting"])
+        V["f_wb_pub_steps"] = ", ".join(f"{r['step']} {n0(r['days'])} d" for r in gp["steps"])
+        V["f_wb_asm_steps"] = ", ".join(f"{r['step']} {n0(r['days'])} d" for r in ga["steps"])
+        V["f_wb_statement"] = wb["statement"]
     top = max(st, key=lambda k: st[k]["wait"])
     V["f_top_stage"] = top.replace("_", " ")
     V["f_top_stage_wait"] = n0(st[top]["wait"])
@@ -449,7 +446,7 @@ def range_values(V: dict) -> None:
     n = load(ROOT / "docs" / "ranges_norway.json")
     if n:
         c, b = n["cohorts_of_100"], n["accepted_calibration_sets"]["range"]
-        for k, tag in (("observed", "obs"), ("authors", "auth"), ("optimiser_faster_scanner", "opt"), ("optimiser_no_new_equipment", "noeq")):
+        for k, tag in (("observed", "obs"), ("authors", "auth"), ("optimiser_no_new_equipment", "noeq")):
             V[f"r_n_{tag}_lo"], V[f"r_n_{tag}_hi"] = pc(c[k]["p2_5"]), pc(c[k]["p97_5"])
             V[f"r_n_{tag}_cal_lo"], V[f"r_n_{tag}_cal_hi"] = pc(b[k]["min"]), pc(b[k]["max"])
         V["r_n_sets"] = n0(n["accepted_calibration_sets"]["n_sets"])
@@ -560,26 +557,21 @@ def optimiser_values(V: dict) -> None:
     b, c, df, bf = sm["bands_percent"], sm["counts"], sm["differences_pts"], sm["best_fit_shipped_percent"]
     f0 = lambda x: n0(x)  # noqa: E731
     V["o_n"] = n0(sm["n_settings"])
-    V["o_fast_min"], V["o_fast_med"], V["o_fast_max"] = f0(b["full_fast"]["min"]), f0(b["full_fast"]["median"]), f0(b["full_fast"]["max"])
     V["o_nof_min"], V["o_nof_med"], V["o_nof_max"] = f0(b["full_nofast"]["min"]), f0(b["full_nofast"]["median"]), f0(b["full_nofast"]["max"])
     V["o_obs_min"], V["o_obs_max"] = f0(b["observed"]["min"]), f0(b["observed"]["max"])
     V["o_nof_beats_obs"] = n0(c["opt_nofast_beats_observed"])
     V["o_nof_beats_fast"] = n0(c["opt_nofast_beats_fasterpet"])
     V["o_nof_loses_fast"] = n0(sm["n_settings"] - c["opt_nofast_beats_fasterpet"])
-    V["o_fast_beats_fast"] = n0(c["opt_fast_beats_fasterpet"])
-    V["o_nod_fast_bf"], V["o_nod_nof_bf"] = f0(bf["no_d_fast"]), f0(bf["no_d_nofast"])
-    V["o_nod_fast_bf1"], V["o_nod_nof_bf1"] = n1(bf["no_d_fast"]), n1(bf["no_d_nofast"])
-    dv = [bf["full_nofast"] - bf["no_d_nofast"], bf["full_fast"] - bf["no_d_fast"],
-          df["full_nofast - no_d_nofast (value of d)"]["median"], df["full_fast - no_d_fast (value of d)"]["median"]]
+    V["o_nod_nof_bf"], V["o_nod_nof_bf1"] = f0(bf["no_d_nofast"]), n1(bf["no_d_nofast"])
+    V["o_nof_bf1"] = n1(bf["full_nofast"])
+    dv = [bf["full_nofast"] - bf["no_d_nofast"], df["full_nofast - no_d_nofast (value of d)"]["median"]]
     V["o_d_lo"], V["o_d_hi"] = f0(min(dv)), f0(max(dv))
     V["o_b_loss_med"] = f0(df["full_nofast - no_b_nofast"]["median"])
-    V["o_nod_beats_auth"] = n0(c["no_d_fast_beats_authors"])
     # structure check
     gb = st["grid_bands"]
     V["o_ship_med"], V["o_ship_in"] = pc1(gb["optimal"]["share"]["median"] / 100), n0(gb["optimal"]["in_published_CI_72_87"])
     V["o_nogate_bf"] = f0(st["best_fit_shipped_percent"]["optimal_nogate"])
     V["o_nogate_bf1"] = n1(st["best_fit_shipped_percent"]["optimal_nogate"])
-    V["o_full_fast_bf1"] = n1(bf["full_fast"])
     V["o_nogate_med"] = n1(gb["optimal_nogate"]["share"]["median"])
     V["o_nogate_gain"] = n1(gb["optimal_nogate"]["minus_authors_pts"]["median"])
     V["o_petvisit_loss"] = n1(-gb["optimal_petvisit"]["minus_authors_pts"]["median"])
@@ -588,14 +580,6 @@ def optimiser_values(V: dict) -> None:
     V["o_lit_med"] = f0(lit["share"]["median"])
     V["o_lit_min"], V["o_lit_max"] = f0(lit["share"]["min"]), f0(lit["share"]["max"])
     V["o_lit_in"] = n0(lit["in_published_CI_72_87"])
-    if gr:
-        diffs = []
-        for r in gr["rows"]:
-            ref = next((x for x in st["rows"] if x["i"] == r["i"]), None)
-            if ref and "optimal_nogate" in ref:
-                diffs.append(abs(r["full_fast"]["share_within_target"] - ref["optimal_nogate"]["share_within_target"]) * 100)
-        if diffs:
-            V["o_gap_lo"], V["o_gap_hi"] = n1(min(diffs)), n1(max(diffs))
     # demo start bundle: re-simulation without the fourth change at the best-fit setting (held-out cohorts)
     sb = ROOT / "demo" / "data" / "start_bundle.js"
     if sb.exists():
@@ -607,24 +591,17 @@ def optimiser_values(V: dict) -> None:
         except Exception:
             pass
     # ready-made sentences, so every pitch file says the same thing (numbers_sheet.md rows B1 to B6)
-    V["o_txt_fast"] = (f"{V['s_opt_share']}% at the best fit; {V['o_fast_min']} to {V['o_fast_max']}% across all {V['o_n']} settings "
-                       f"(median {V['o_fast_med']}%)")
     V["o_txt_nof"] = (f"{V['s_noeq_share']}% at the best fit; {V['o_nof_min']} to {V['o_nof_max']}% across all {V['o_n']} settings "
                       f"(median {V['o_nof_med']}%), against {V['o_obs_min']} to {V['o_obs_max']}% for today's pathway")
-    V["o_txt_core"] = ("Starting from the observed pathway and without being told the answer, the optimiser arrived at the authors' redesign "
-                       "(their three changes, plus one overlapping change that needs a clinical check) and performs about the same as the "
-                       f"authors' pathway built without a wait for sampling ({V['o_nogate_bf1']}% against {V['o_full_fast_bf1']}% at the best fit; "
-                       f"within {V.get('o_gap_lo', '?')} to {V.get('o_gap_hi', '?')} points in every setting). It did not beat the authors")
+    V["o_txt_core"] = ("Starting from today's pathway, with no new equipment and without being told the answer, the optimiser arrived at the "
+                       "authors' three timing changes plus a fourth that needs clinical review. It did not improve on the authors' redesign")
+    V["o_txt_notpair"] = (f"The authors' {V['s_pub_opt']}% ({V.get('val_pub_opt_ci', '?')}%) for their reordered pathway includes the shorter "
+                          "PET-CT wait; our optimiser's pathway assumes no new equipment, so the two are not a like-for-like pair")
     V["o_txt_scanner"] = (f"Without new equipment it beats today's pathway in {V['o_nof_beats_obs']} of {V['o_n']} settings but beats the faster "
-                          f"scanner alone in only {V['o_nof_beats_fast']} of {V['o_n']}; with the scanner it beats the scanner alone in "
-                          f"{V['o_fast_beats_fast']} of {V['o_n']}")
-    V["o_txt_fourth"] = (f"Without the fourth change the optimiser still gives {V['o_nod_fast_bf']}% at the best fit with the scanner and "
-                         f"{V['o_nod_nof_bf']}% without; the fourth change is worth {V['o_d_lo']} to {V['o_d_hi']} points and overlaps with "
-                         "\"tumour board before sampling\". It was not in the paper and needs a clinical check")
-    V["o_txt_lead"] = (f"The optimiser's apparent lead over our simulated authors' pathway ({V['s_opt_share']}% against {V['s_auth_share']}%) is not a "
-                       "finding about care: our version of the authors' pathway makes treatment wait for a tissue sample that starts after the "
-                       f"tumour board, while the paper takes the sample while the patient waits for treatment; with that wait removed the "
-                       f"authors' pathway gives {V['o_nogate_bf']}%")
+                          f"scanner alone in only {V['o_nof_beats_fast']} of {V['o_n']}")
+    V["o_txt_fourth"] = (f"Without the fourth change the optimiser still gives {V['o_nod_nof_bf']}% at the best fit; the fourth change is worth "
+                         f"{V['o_d_lo']} to {V['o_d_hi']} points and overlaps with \"tumour board before sampling\". It was not in the paper "
+                         "and needs a clinical check")
     V["o_txt_literal"] = (f"A stricter reading of the paper's text (PET-CT at the first visit, treatment not waiting for sampling) gives a median of "
                           f"{V['o_lit_med']}% over the {V['o_n']} settings ({V['o_lit_min']} to {V['o_lit_max']}%; {V['o_lit_in']} of {V['o_n']} inside "
                           f"the published {V['val_pub_opt_ci']}%) and {V['o_lit_bf']}% at the best fit. Caveats: we read summaries of the paper, not "

@@ -87,7 +87,7 @@
   guard("p-trust", function (box) {
     var nor = scen("norway"), pub = nor && nor.published;
     var obs = nor && variant(nor, "observed"), fp = nor && variant(nor, "faster_pet"), au = nor && variant(nor, "authors");
-    var nf = nor && variant(nor, "suggested_faster_pet"), ns = nor && variant(nor, "suggested");
+    var ns = nor && variant(nor, "suggested");
     if (!pub || !au) return pending(box, "run demo/export_flow.py");
     var sh = function (v) { return v.flow.metrics.share_within_target; };
     big(box, [pct(pub.authors_estimate_share) + " published", pct(sh(au)) + " simulated"]);
@@ -100,12 +100,12 @@
       (p && p.faster_pet ? " (range " + esc(pct(p.faster_pet.min)) + " to " + esc(pct(p.faster_pet.max)) + ")" : "") + ". Trust the ranking of reorderings, not the exact size.");
     if (S) cap(box, "<b>Structure check:</b> read literally (treatment does not wait for the tissue sample; PET-CT ordered at the first visit, not at triage), the authors' pathway gives a median of " + esc(pct(S.literal_median)) + " over the " + esc(S.settings) + " settings, with " + esc(S.literal_in_published_ci) + " of " + esc(S.settings) +
       " inside the published " + esc(pct(S.published_ci[0])) + " to " + esc(pct(S.published_ci[1])) + " interval (the shipped version: " + esc(S.shipped_in_published_ci) + "). Caveats: only the paper's text was read, not its figures; the observed pathway was not recalibrated under that reading; the shipped scenario is unchanged.");
-    if (nf && O) {
+    if (ns && O) {
+      var VP = ST && ST.validation && ST.validation.published, ci = VP && VP.optimal && VP.optimal.ci95;
       var d = document.createElement("details"); d.className = "more"; d.open = true;
       d.appendChild(el("summary", null, "What our optimiser did on this test"));
-      var h = "<p><b>It found the authors' redesign without being told it.</b> Started from the observed pathway only, it arrived at the authors' three changes (PET-CT and exercise test ordered early, tumour board without waiting for the tissue sample) plus a fourth, overlapping change: planning tissue sampling when the referral is triaged, which <b>needs a clinical check</b>. It performs the same as the authors' redesign, not better: the gap in our simulator (" + esc(pct(sh(nf))) + " against " + esc(pct(sh(au))) + " at the best fit) comes from how we built the authors' pathway, where treatment waits for a tissue sample that only starts after the tumour board. Without that wait the two are within a few points in every setting.</p>" +
-        "<p><b>With the faster scanner:</b> " + esc(rg(O.bands.optimiser_scanner)) + " across the " + esc(O.n_settings) + " settings (best fit " + esc(pct(sh(nf))) + "). It beats the scanner alone in " + esc(O.counts.scanner_beats_scanner_alone) + " of " + esc(O.n_settings) + ".</p>" +
-        "<p><b>No new equipment:</b> " + esc(rg(O.bands.optimiser_no_equipment)) + " (best fit " + esc(pct(sh(ns))) + "), better than today in " + esc(O.counts.noeq_beats_observed) + " of " + esc(O.n_settings) + ". It beats the faster scanner alone (" + esc(rg(O.bands.faster_pet)) + ") in only " + esc(O.counts.noeq_beats_scanner_alone) + " of " + esc(O.n_settings) + ". The authors' " + esc(pct(pub.authors_estimate_share)) + " needs the scanner, so it is not comparable with this number.</p>" +
+      var h = "<p><b>A plausibility check, not a forecast.</b> Started from the observed pathway, with no new equipment and without being told the answer, the optimiser reached " + esc(rg(O.bands.optimiser_no_equipment)) + " across the " + esc(O.n_settings) + " settings that fit (best fit " + esc(pct(sh(ns))) + "; today " + esc(rg(O.bands.observed)) + "). Its pathway contains the authors' three timing changes (PET-CT and exercise test ordered early, tumour board without waiting for the tissue sample) plus a fourth: planning tissue sampling when the referral is triaged, which <b>needs a clinical check</b>. It did not improve on the authors' redesign.</p>" +
+        "<p>Not a like-for-like pair: the authors' " + esc(pct(pub.authors_estimate_share)) + (ci ? " (" + esc(pct(ci[0])) + " to " + esc(pct(ci[1])) + ")" : "") + " includes the shorter PET-CT wait; ours does not. Without new equipment it beats the faster scanner alone (" + esc(rg(O.bands.faster_pet)) + ") in only " + esc(O.counts.noeq_beats_scanner_alone) + " of " + esc(O.n_settings) + " settings.</p>" +
         "<p>The numbers come from a model fitted to one hospital. Treat them as a ranking, not a forecast.</p>";
       var c = el("div", "cap"); c.innerHTML = h; d.appendChild(c); box.appendChild(d);
     }

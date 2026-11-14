@@ -27,6 +27,8 @@ from optimiser.edits import Edit, apply as apply_edit  # noqa: E402
 from optimiser.search import cohorts, evaluate  # noqa: E402
 from pathway_sim import load_scenario  # noqa: E402
 from pathway_sim.scenario import Flowchart, Scenario  # noqa: E402
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from wait_basis import wait_basis  # noqa: E402
 
 OUT = ROOT / "demo" / "data" / "demo_bundle.json"
 
@@ -285,22 +287,20 @@ def build_stokstad(quick: bool) -> dict:
     cfg = Config(n_train=n, heldout_seeds=(201, 202, 203), n_heldout=n)
     held = cohorts(sc, cfg.heldout_seeds, n)
     obs, fpet, opt = (sc.flowcharts[k] for k in ("observed", "faster_pet", "optimal"))
-    m_obs0 = metrics_on(sc, obs, held)
-    res_fast = search(sc, "faster_pet", cfg, log=lambda *a: None)
+    m_obs0, obs_runs = evaluate(sc, obs, held)
+    # D68 (Tuomas, 14 Nov): only the optimiser run from today's pathway, with no new equipment, is reported. The
+    # authors reported the faster scanner and their reordered pathway separately, so we do not run or show the
+    # optimiser started from the faster-scanner pathway.
     res_noeq = search(sc, "observed", cfg, log=lambda *a: None)
     m_fpet = metrics_on(sc, fpet, held)
     m_opt = metrics_on(sc, opt, held)
-    lead = [{"step": -1, "label": "Observed pathway", "kind": "lead", "share": m_obs0["share_within_target"],
-             "median_days": m_obs0["median_days_to_treatment"], "missed_cancers": m_obs0["missed_cancers"],
-             "tests_per_patient": m_obs0["tests_per_patient"]}]
-    view_fast = optimiser_view(sc, fpet, res_fast, held, "Faster PET-CT scanner", lead)
     view_noeq = optimiser_view(sc, obs, res_noeq, held, "Observed pathway")
-    from pathway_sim.scenario import parse_flowchart
-    after_fast = parse_flowchart("suggested", res_fast["flowchart_after"])
-    from pathway_sim.scenario import validate_flowchart
-    validate_flowchart(sc, after_fast)
+    from pathway_sim.scenario import parse_flowchart, validate_flowchart
+    after_noeq = parse_flowchart("suggested", res_noeq["flowchart_after"])
+    validate_flowchart(sc, after_noeq)
     m_obs = rekey_nodes(m_obs0, sc, obs)
     pub = sc.raw["published"]
+    h_noeq = res_noeq["heldout"]["after"]
     return {
         "id": "stokstad",
         "title": "Norwegian check: does the model reproduce a real hospital?",
@@ -309,36 +309,33 @@ def build_stokstad(quick: bool) -> dict:
         "target_days": sc.target_days,
         "baseline": {"label": "Observed pathway", "metrics": m_obs},
         "variants": [
-            {"label": "Suggested change (found without seeing the authors' answer)",
-             "metrics": rekey_nodes(res_fast["heldout"]["after"], sc, after_fast),
-             "changes": ["Use the faster PET-CT scanner (the same assumption the authors made)"] + [d["label"] for d in view_fast["details"]],
-             "role": "optimiser"},
+            {"label": "Suggested change, no new equipment (found without seeing the authors' answer)",
+             "metrics": rekey_nodes(h_noeq, sc, after_noeq),
+             "changes": [d["label"] for d in view_noeq["details"]], "changes_detail": [d["raw"] for d in view_noeq["details"]],
+             "role": "optimiser_no_new_equipment"},
             {"label": "Faster PET-CT scan only", "metrics": rekey_nodes(m_fpet, sc, fpet), "role": "faster_pet"},
             {"label": "Authors' reordered pathway, simulated", "metrics": rekey_nodes(m_opt, sc, opt), "role": "authors_pathway"},
-            {"label": "Suggested change without any new equipment",
-             "metrics": rekey_nodes(res_noeq["heldout"]["after"], sc, obs),
-             "changes": [d["label"] for d in view_noeq["details"]], "changes_detail": [d["raw"] for d in view_noeq["details"]], "role": "optimiser_no_new_equipment"},
         ],
         "published": {"baseline_share": pub["observed"]["share_within_target"],
                       "faster_pet_share": pub["faster_pet"]["share_within_target"],
                       "optimal_share": pub["optimal"]["share_within_target"],
                       "source": "Stokstad et al. 2019, BMC Health Services Research"},
         "flowchart_before": display_flowchart(sc, obs),
-        "flowchart_after": display_flowchart(sc, after_fast),
-        "optimiser": view_fast,
-        "optimiser_no_new_equipment": view_noeq,
+        "flowchart_after": display_flowchart(sc, after_noeq),
+        "optimiser": view_noeq,
         "capacity_vs_order": {
             "title": "Faster scanner or better order?",
             "capacity_label": "New equipment: the faster PET-CT scanner alone",
             "rows": [
                 {"kind": "today", "label": "Observed pathway", "share": m_obs0["share_within_target"], "median_days": m_obs0["median_days_to_treatment"]},
-                {"kind": "capacity", "label": "Faster PET-CT scanner only (7-day wait)", "share": m_fpet["share_within_target"], "median_days": m_fpet["median_days_to_treatment"]},
-                {"kind": "order", "label": "Reordered steps, no new equipment", "share": res_noeq["heldout"]["after"]["share_within_target"], "median_days": res_noeq["heldout"]["after"]["median_days_to_treatment"]},
-                {"kind": "both", "label": "Reordered steps and the faster scanner", "share": res_fast["heldout"]["after"]["share_within_target"], "median_days": res_fast["heldout"]["after"]["median_days_to_treatment"]},
+                {"kind": "capacity", "label": "Faster PET-CT scanner only (7-day wait)", "share": m_fpet["share_within_target"], "median_days": m_fpet["median_days_to_treatment"],
+                 "published_share": pub["faster_pet"]["share_within_target"]},
+                {"kind": "order", "label": "Reordered steps, no new equipment", "share": h_noeq["share_within_target"], "median_days": h_noeq["median_days_to_treatment"]},
             ],
+            "n_patients": sum(len(p) for _, p in held), "n_cohorts": len(held),
         },
-        "headline_no_new_equipment": {"share": res_noeq["heldout"]["after"]["share_within_target"],
-                                      "median_days": res_noeq["heldout"]["after"]["median_days_to_treatment"]},
+        "headline_no_new_equipment": {"share": h_noeq["share_within_target"], "median_days": h_noeq["median_days_to_treatment"]},
+        "wait_basis": wait_basis(sc, obs_runs),
         **({"sensitivity": sens} if (sens := sensitivity_rows("stokstad")) else {}),
     }
 
@@ -400,9 +397,9 @@ def capacity_vs_order(sc: Scenario, fc0: Flowchart, base: dict, probe: list[dict
             {"kind": "today", "label": "Today", "share": b["share_within_target"], "median_days": b["median_days_to_treatment"]},
             {"kind": "capacity", "label": f"One more appointment a day at the busiest step ({top['label'].replace(' appointments', '')}, from {top['capacity_per_day']} to {top['capacity_per_day'] + 1})",
              "share": round(b["share_within_target"] + top["delta_share_pp"] / 100, 4),
-             "median_days": round(b["median_days_to_treatment"] + top["delta_median_days"], 1)},
+             "median_days": round(b["median_days_to_treatment"] + top["delta_median_days"], 1), "what_if": True},
             {"kind": "capacity", "label": "A large capacity increase, same order: " + "; ".join(parts),
-             "share": big["share_within_target"], "median_days": big["median_days_to_treatment"]},
+             "share": big["share_within_target"], "median_days": big["median_days_to_treatment"], "what_if": True},
             {"kind": "order", "label": suggested_change_label(res),
              "share": h["share_within_target"], "median_days": h["median_days_to_treatment"]},
         ],
@@ -454,7 +451,7 @@ def build_capacity_scenario(path: Path, quick: bool, start: str = "baseline", co
     from pathway_sim.scenario import parse_flowchart, validate_flowchart
     after = parse_flowchart("suggested", res["flowchart_after"])
     validate_flowchart(sc, after)
-    base = metrics_on(sc, fc0, held)
+    base, base_runs = evaluate(sc, fc0, held)
     view = optimiser_view(sc, fc0, res, held, "Today's pathway")
     variants = [{"label": "Suggested change", "metrics": rekey_nodes(res["heldout"]["after"], sc, after),
                  "changes": [d["label"] for d in view["details"]] or ["No change passed the safety checks"], "role": "optimiser"}]
@@ -470,6 +467,8 @@ def build_capacity_scenario(path: Path, quick: bool, start: str = "baseline", co
         variants.append(urgent)
     probe = capacity_probe(sc, fc0, held, base)
     cvo = capacity_vs_order(sc, fc0, base, probe, hand, res)
+    if cvo:
+        cvo["n_patients"], cvo["n_cohorts"] = sum(len(p) for _, p in held), len(held)
     return {
         "id": sc.id, "title": sc.raw.get("title", "Finnish lung pathway (synthetic)"),
         "description": sc.description, "summary": FINLAND_SUMMARY, "target_days": sc.target_days,
@@ -477,6 +476,7 @@ def build_capacity_scenario(path: Path, quick: bool, start: str = "baseline", co
         "variants": variants,
         "flowchart_before": display_flowchart(sc, fc0), "flowchart_after": display_flowchart(sc, after),
         "optimiser": view,
+        "wait_basis": wait_basis(sc, base_runs),
         "capacity_probe": probe,
         **({"capacity_vs_order": cvo} if cvo else {}),
         **({"sensitivity": sens} if (sens := sensitivity_rows(sc.id)) else {}),

@@ -46,20 +46,21 @@ for r in top:
     L.append(f"| `{r['param']}` | {r['low']} / {r['base']} / {r['high']} | {r[k]['gain_pp_low']} | {r[k]['gain_pp_high']} |")
 L += ["", "Caveats: one seed per variant (single-seed noise about the sd above, so ranking among the smaller rows is not reliable); only the 26 default-shortlist assumptions are varied, out of the assumption parameters listed in `docs/ledger.md`; the Finnish scenario is not calibrated to Finnish capacity data, so this is robustness to our assumptions, not to the real county.", ""]
 C, B = N["cohorts_of_100"], N["accepted_calibration_sets"]
-L += ["## Norway: 40 observed, 80 authors' pathway, 88 optimiser with the faster scanner, 67 without", "",
-      "Two sources of uncertainty, both for the flowcharts the bundle reports (the two optimiser flowcharts were found once, on the best-fit calibration).", "",
+L += ["## Norway: 40 observed, 80 authors' pathway, optimiser with no new equipment", "",
+      "Two sources of uncertainty, both for the flowcharts the bundle reports (the optimiser flowchart was found once, on the best-fit calibration). "
+      "D68: the optimiser run from the faster-scanner pathway is not reported, so it is not in this table.", "",
       "| Flowchart | Bundle (3 x 1000 patients) | 100-patient cohorts, central 95% (300 cohorts) | Across the 11 accepted calibration sets (3 x 1000 patients each), min to max |", "|---|---|---|---|"]
 bundle = json.loads((ROOT / "demo" / "data" / "demo_bundle.json").read_text())
 st = next(s for s in bundle["scenarios"] if s["id"] == "stokstad")
 bv = {"observed": st["baseline"]["metrics"], **{v["role"]: v["metrics"] for v in st["variants"]}}
 names = [("observed", "Observed pathway", "observed", "Published 40% (95% CI 31 to 50)"), ("faster_pet", "Faster PET-CT only", "faster_pet", "Published 48% (39 to 58)"),
          ("authors", "Authors' pathway, simulated", "authors_pathway", "Published 80% (72 to 87)"),
-         ("optimiser_faster_scanner", "Optimiser, faster scanner", "optimiser", "no published value"), ("optimiser_no_new_equipment", "Optimiser, no new equipment", "optimiser_no_new_equipment", "no published value")]
+         ("optimiser_no_new_equipment", "Optimiser, no new equipment", "optimiser_no_new_equipment", "no published value")]
 for key, lab, role, _ in names:
     L.append(f"| {lab} | {p1(bv[role]['share_within_target'])}% | {p0(C[key]['p2_5'])} to {p0(C[key]['p97_5'])}% | {p0(B['range'][key]['min'])} to {p0(B['range'][key]['max'])}% |")
 L += ["", f"- A real cohort has 100 patients, so any single-hospital number carries about plus or minus {(C['authors']['p97_5'] - C['authors']['p2_5']) * 50:.0f} pp (central 95% range {p0(C['authors']['p2_5'])} to {p0(C['authors']['p97_5'])}% for the authors' pathway); the published 95% intervals (observed 31 to 50, authors' 72 to 87) are of that size and our 100-patient ranges match them.",
-      f"- Across the {len(B['per_set'])} calibration sets that all reproduce the observed pathway ({p0(B['range']['observed']['min'])} to {p0(B['range']['observed']['max'])}% in this check; the fit tolerance is plus or minus 4 pp), the authors' pathway is {p0(B['range']['authors']['min'])} to {p0(B['range']['authors']['max'])}%, the optimiser with the faster scanner {p0(B['range']['optimiser_faster_scanner']['min'])} to {p0(B['range']['optimiser_faster_scanner']['max'])}%, and without new equipment {p0(B['range']['optimiser_no_new_equipment']['min'])} to {p0(B['range']['optimiser_no_new_equipment']['max'])}%. The no-new-equipment number is the less certain of the two optimiser numbers. The ordering (optimiser above the authors' pathway above faster PET-CT above observed) holds in {sum(1 for r in B['per_set'] if r['optimiser_faster_scanner'] > r['authors'] > r['faster_pet'] > r['observed'])} of {len(B['per_set'])} sets.",
-      "- The optimiser flowcharts were found under the best-fit calibration and evaluated under the others unchanged, so these ranges are slightly pessimistic for the optimiser (a re-search per calibration might find a better flowchart).",
+      f"- Across the {len(B['per_set'])} calibration sets that all reproduce the observed pathway ({p0(B['range']['observed']['min'])} to {p0(B['range']['observed']['max'])}% in this check; the fit tolerance is plus or minus 4 pp), the authors' pathway is {p0(B['range']['authors']['min'])} to {p0(B['range']['authors']['max'])}%, and the optimiser with no new equipment {p0(B['range']['optimiser_no_new_equipment']['min'])} to {p0(B['range']['optimiser_no_new_equipment']['max'])}%. The ordering (authors' pathway above faster PET-CT above observed) holds in {sum(1 for r in B['per_set'] if r['authors'] > r['faster_pet'] > r['observed'])} of {len(B['per_set'])} sets. The authors' pathway includes the shorter PET-CT wait and the optimiser's does not, so the two are not a like-for-like pair.",
+      "- The optimiser flowchart was found under the best-fit calibration and evaluated under the others unchanged, so these ranges are slightly pessimistic for the optimiser (a re-search per calibration might find a better flowchart).",
       "- Disclosures from the review stand (PET-CT at triage carried into the authors' pathway: 66% if PET-CT is ordered at the first visit; the menu of about 69 changes contained the authors' changes).", ""]
 (D / "ranges.md").write_text("\n".join(L))
 

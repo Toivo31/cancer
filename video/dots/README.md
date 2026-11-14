@@ -11,7 +11,7 @@ The patients are the same held-out cohorts the dashboard uses, so the percentage
 | | CT and PET-CT ordered together at the specialist visit | 53.7% |
 | Norway (Stokstad et al. 2019, 42 days) | Observed pathway | 40.1% |
 | | Authors' reordered pathway, simulated | 80.1% |
-| | Optimiser, found blind, with the faster PET-CT | 88.2% |
+| | Optimiser, found blind, no new equipment (D68) | 67.1% |
 
 ## Open
 

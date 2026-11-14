@@ -54,7 +54,7 @@ Effort is agent time on the shared 2-core machine. "Parallel" means safe to run 
   5. Optimise: Today-only start, changes card, Today/After toggle on the shared clock, stamp; `?compare` opens on
      After; side by side when `view=both` or width ≥1600.
 - Acceptance: headless Chrome, no console errors, screenshots at 1440×900 and 1920×1080 for
-  `flow.html`, `?s=finland`, `?s=finland&compare`, `?s=norway&compare`, `?s=norway&compare&left=authors&right=suggested_faster_pet`,
+  `flow.html`, `?s=finland`, `?s=finland&compare`, `?s=norway&compare`, `?s=norway&compare&left=authors&right=suggested`,
   `?paused&day=60`, `?layer=time`, `?theme=night`. Every Norway pair link built by `start.js` opens. Gate fast tests
   pass. A person who has not seen it finds Optimise and reads the before/after in under 30 s.
 - Rollback: revert the merge commit; or, on the night, `?theme=night` for colours only.

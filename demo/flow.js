@@ -532,6 +532,19 @@ function layerCard() {
   const [t, d] = HELP[S.layer];
   return `<div class="card"><h3>Layer: ${t}</h3><p style="margin:0">${d}</p></div>`;
 }
+/* where today's waiting days come from (demo/wait_basis.py, via the dashboard bundle); nothing typed */
+function waitBasisNote() {
+  const sc = D.scenarios.find(s => s.id === S.sid), wb = sc && sc.wait_basis;
+  if (!wb || !wb.groups) return '';
+  const P = wb.groups.published, A = wb.groups.assumption;
+  const lst = G => G.steps.map(r => `${esc(r.step)} ${f1(r.days)} d`).join(', ');
+  const src = G => G.steps.map(r => `${esc(r.step)}: ${esc(r.source)}`).join('; ');
+  return `<div class="wb" id="wait-basis" style="margin-top:8px;font-size:12px"><b style="color:${C.text}">Where these waits come from (today's pathway)</b>
+    <p style="margin:4px 0"><b>From our simulation:</b> the days are computed from the simulated patients' paths.</p>
+    <p style="margin:4px 0"><b>Set from published figures:</b> ${pct(P.share_of_waiting)} of the waiting days (${lst(P)}). <span title="${src(P)}" style="text-decoration:underline dotted">Sources</span>: ${src(P)}.</p>
+    <p style="margin:4px 0"><b>Our assumption or placeholder:</b> ${pct(A.share_of_waiting)} of the waiting days (${lst(A)}).</p>
+    <p style="margin:4px 0">${esc(wb.statement)}</p></div>`;
+}
 function lostCard() {
   const [A, B] = S.panes.map(p => p.P.F);
   // steps that appear on the graph in several variants (e.g. PET-CT ordered early or late) are added up under one name
@@ -555,8 +568,9 @@ function lostCard() {
     h += `<div class="nm" data-hl="${esc(r.k)}">${esc(r.k)}<span>${r.a ? pct(r.a.wait_share) : '–'} → ${r.b ? pct(r.b.wait_share) : '–'} of path</span></div>${bar(r.a ? r.a.wait : null, C.coral)}${bar(r.b ? r.b.wait : null, C.mint)}`;
   });
   const tot = g => Object.values(g).reduce((s, t) => s + t.wait, 0);
-  h += `</div><p style="margin-top:10px">Waiting adds up to <b style="color:${C.coral}">${f1(tot(ga))} d</b> on the left and <b style="color:${C.mint}">${f1(tot(gb))} d</b> on the right, per treated cancer patient.</p></div>`;
-  return h;
+  h += `</div><p style="margin-top:10px">In our model, waiting adds up to <b style="color:${C.coral}">${f1(tot(ga))} d</b> on the left and <b style="color:${C.mint}">${f1(tot(gb))} d</b> on the right, per treated cancer patient.</p>`;
+  h += waitBasisNote();
+  return h + '</div>';
 }
 function validationCard() {
   const sc = D.scenarios.find(s => s.id === S.sid);
@@ -577,14 +591,15 @@ function validationCard() {
   h += `<p><b style="color:${C.text}">The ${pct(sc.published.authors_estimate_share)} match is the best fit, not the only one.</b> ` +
     (P ? `Over all ${N.all_settings.accepted} settings that fit the observed data the authors' pathway comes out at ${rng(P.optimal)}, typically about ${pct(P.optimal.median)}. ` : '') +
     `The model also over-predicts the faster scanner alone (${pct(g('faster_pet'))} against ${pct(sc.published.faster_pet_share)} published${P ? '; ' + rng(P.faster_pet) + ' across settings' : ''}). Trust the ranking of reorderings, not their exact size.</p>`;
-  const nf = find('suggested_faster_pet'), ne = find('suggested');
+  const ne = find('suggested');
   const O = N && N.optimiser, ob = O && O.bands, SC = O && O.structure;
   const rb = x => x ? `${pct(x.min)} to ${pct(x.max)}, median ${pct(x.median)}` : null;
   if (SC) h += `<p style="margin-top:8px"><b style="color:${C.text}">Structure check.</b> Read literally (treatment does not wait for the tissue sample; PET-CT ordered at the first visit, not at triage), the authors' pathway gives a median of ${pct(SC.literal_median)} over the ${SC.settings} settings, with ${SC.literal_in_published_ci} of ${SC.settings} inside the published ${pct(SC.published_ci[0])} to ${pct(SC.published_ci[1])} (the shipped version: ${SC.shipped_in_published_ci}). Only the paper's text was read, not its figures; the observed pathway was not recalibrated under that reading; the shipped scenario is unchanged.</p>`;
-  if (nf && ne && O) {
-    h += `<p style="margin-top:8px"><b style="color:${C.text}">What our optimiser did.</b> Started from the observed pathway, without being told the answer, it arrived at the authors' redesign (their three changes) plus a fourth, overlapping change: plan tissue sampling when the referral is triaged. That fourth change <b>needs a clinical check</b>. It performs the same as the authors' redesign, not better.</p>
-    <p><b style="color:${C.text}">With no new equipment:</b> <b style="color:${C.mint}">${pct(g('suggested'))}</b> at the best fit; ${rb(ob.optimiser_no_equipment)} over the ${O.n_settings} settings that fit (today: ${rb(ob.observed)}). Better than today in ${O.counts.noeq_beats_observed} of ${O.n_settings}, but better than the faster scanner alone in only ${O.counts.noeq_beats_scanner_alone} of ${O.n_settings}.</p>
-    <p><b style="color:${C.text}">With the faster scanner:</b> ${pct(g('suggested_faster_pet'))} at the best fit; ${rb(ob.optimiser_scanner)}. It beats the scanner alone in ${O.counts.scanner_beats_scanner_alone} of ${O.n_settings}. The authors' ${pct(sc.published.authors_estimate_share)} needs that scanner, so it is not comparable with the no-equipment number. Our simulator puts the authors' pathway lower (${pct(g('authors'))}) because there treatment waits for a tissue sample that only starts after the tumour board; without that wait the two are within a few points. So the gap between those two panes is a modelling difference, not a finding about care.</p>`;
+  if (ne && O) {
+    const VP = window.START_DATA && window.START_DATA.validation && window.START_DATA.validation.published, ci = VP && VP.optimal && VP.optimal.ci95;
+    h += `<p style="margin-top:8px"><b style="color:${C.text}">What our optimiser did (a plausibility check).</b> Started from the observed pathway, with no new equipment and without being told the answer, it arrived at the authors' three timing changes plus a fourth, overlapping change: plan tissue sampling when the referral is triaged. That fourth change <b>needs a clinical check</b>. It did not improve on the authors' redesign.</p>
+    <p><b style="color:${C.text}">No new equipment:</b> <b style="color:${C.mint}">${pct(g('suggested'))}</b> at the best fit; ${rb(ob.optimiser_no_equipment)} over the ${O.n_settings} settings that fit (today: ${rb(ob.observed)}). Better than today in ${O.counts.noeq_beats_observed} of ${O.n_settings}, but better than the faster scanner alone in only ${O.counts.noeq_beats_scanner_alone} of ${O.n_settings}.</p>
+    <p>The authors' ${pct(sc.published.authors_estimate_share)}${ci ? ` (${pct(ci[0])} to ${pct(ci[1])})` : ''} includes the shorter PET-CT wait; the optimiser's pathway does not, so the two are not a like-for-like pair.</p>`;
   }
   return h + '</div>';
 }
@@ -652,8 +667,8 @@ function renderNote() {
   if (sc.published) {
     h += `<b>Norway:</b> see the check against the published study in the side panel. `;
     const O = window.START_DATA && window.START_DATA.norway && window.START_DATA.norway.optimiser, bd = O && O.bands;
-    if (S.keys[0] === 'authors' && S.keys[1] === 'suggested_faster_pet')
-      h += `<b>About this pair:</b> the difference between the two panes is a modelling difference in the left pane, not a finding about care. Our simulated authors' pathway makes treatment wait for a tissue sample that only starts after the tumour board; the paper takes the sample while the patient waits for treatment. Without that wait the two perform the same. `;
+    if (S.keys[0] === 'authors' && S.keys[1] === 'suggested')
+      h += `<b>About this pair:</b> not like for like. The authors' pathway, as in the paper, includes their shorter PET-CT wait; the optimiser's pathway assumes no new equipment. Our version of the authors' pathway also makes treatment wait for a tissue sample that only starts after the tumour board, which the paper does not. `;
     else if (S.keys[0] === 'observed' && S.keys[1] === 'suggested' && bd)
       h += `<b>About this pair:</b> today against the optimiser's pathway with no new equipment, at the best-fitting setting. Over the ${O.n_settings} settings that fit the observed data the optimiser gives ${pct(bd.optimiser_no_equipment.min)} to ${pct(bd.optimiser_no_equipment.max)} (median ${pct(bd.optimiser_no_equipment.median)}) against ${pct(bd.observed.min)} to ${pct(bd.observed.max)} today. `;
   }

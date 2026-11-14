@@ -119,7 +119,7 @@ footer{margin-top:2.5rem;color:var(--dim);font-family:var(--mono);font-size:.78r
 <script src="data/start_bundle.js"></script>
 <script id="bundle" type="application/json">
 {
- "generated_at": "2026-11-14T09:46:44+00:00",
+ "generated_at": "2026-11-14T21:55:20+00:00",
  "fixture": false,
  "scenarios": [
   {
@@ -408,18 +408,18 @@ footer{margin-top:2.5rem;color:var(--dim);font-family:var(--mono);font-size:.78r
    },
    "variants": [
     {
-     "label": "Suggested change (found without seeing the authors' answer)",
+     "label": "Suggested change, no new equipment (found without seeing the authors' answer)",
      "metrics": {
       "scenario": "stokstad",
-      "flowchart": "faster_pet_optimised",
+      "flowchart": "observed_optimised",
       "seed": 202.0,
       "n": 1000.0,
       "n_cancer": 1000.0,
       "target_days": 42.0,
-      "median_days_to_treatment": 27.0067,
-      "share_within_target": 0.882,
-      "median_days_to_diagnosis": 6.17,
-      "mean_days_to_treatment": 29.14,
+      "median_days_to_treatment": 36.9833,
+      "share_within_target": 0.671,
+      "median_days_to_diagnosis": 21.9733,
+      "mean_days_to_treatment": 38.8967,
       "missed_cancers": 0.0,
       "confirmed_cancers": 472.0,
       "untreated_cancers": 0.0,
@@ -435,16 +435,16 @@ footer{margin-top:2.5rem;color:var(--dim);font-family:var(--mono);font-size:.78r
         "service": 0.0
        },
        "referral": {
-        "wait": 10.46,
-        "service": 0.07
+        "wait": 5.01,
+        "service": 0.02
        },
        "diagnosis": {
-        "wait": 4.95,
-        "service": 2.21
+        "wait": 18.39,
+        "service": 3.0
        },
        "treatment_start": {
-        "wait": 10.8,
-        "service": 0.46
+        "wait": 11.32,
+        "service": 0.49
        }
       },
       "node_breakdown": {
@@ -454,22 +454,22 @@ footer{margin-top:2.5rem;color:var(--dim);font-family:var(--mono);font-size:.78r
         "n": 1000,
         "stage": "detection"
        },
-       "first_visit": {
-        "wait": 10.46,
-        "service": 0.07,
-        "n": 732,
-        "stage": "referral"
+       "pet_ct": {
+        "wait": 15.43,
+        "service": 2.04,
+        "n": 735,
+        "stage": "diagnosis"
        },
        "tumour_board": {
-        "wait": 3.35,
-        "service": 0.46,
-        "n": 915,
+        "wait": 3.49,
+        "service": 0.49,
+        "n": 981,
         "stage": "treatment_start"
        },
        "surgery_booking": {
-        "wait": 4.7,
+        "wait": 5.03,
         "service": 0.0,
-        "n": 668,
+        "n": 730,
         "stage": "treatment_start"
        },
        "treatment": {
@@ -479,45 +479,45 @@ footer{margin-top:2.5rem;color:var(--dim);font-family:var(--mono);font-size:.78r
         "stage": "treatment_start"
        },
        "radiotherapy_booking": {
-        "wait": 2.76,
+        "wait": 2.8,
         "service": 0.0,
-        "n": 247,
+        "n": 251,
         "stage": "treatment_start"
        },
-       "exercise_test": {
-        "wait": 2.67,
-        "service": 0.24,
-        "n": 222,
-        "stage": "diagnosis"
+       "first_visit": {
+        "wait": 5.01,
+        "service": 0.02,
+        "n": 246,
+        "stage": "referral"
        },
-       "pet_ct": {
-        "wait": 0.63,
-        "service": 0.52,
-        "n": 183,
+       "exercise_test": {
+        "wait": 1.82,
+        "service": 0.15,
+        "n": 139,
         "stage": "diagnosis"
        },
        "further_workup": {
-        "wait": 0.63,
-        "service": 0.41,
-        "n": 72,
+        "wait": 0.84,
+        "service": 0.54,
+        "n": 103,
         "stage": "diagnosis"
        },
        "bronchoscopy": {
-        "wait": 0.3,
-        "service": 0.54,
-        "n": 85,
-        "stage": "diagnosis"
-       },
-       "ttnb": {
-        "wait": 0.56,
-        "service": 0.37,
-        "n": 59,
+        "wait": 0.08,
+        "service": 0.12,
+        "n": 19,
         "stage": "diagnosis"
        },
        "bronchoscopy_repeat": {
-        "wait": 0.16,
+        "wait": 0.05,
+        "service": 0.02,
+        "n": 4,
+        "stage": "diagnosis"
+       },
+       "ttnb": {
+        "wait": 0.18,
         "service": 0.12,
-        "n": 17,
+        "n": 15,
         "stage": "diagnosis"
        }
       },
@@ -531,11 +531,11 @@ footer{margin-top:2.5rem;color:var(--dim);font-family:var(--mono);font-size:.78r
         "service": 0.1
        },
        "diagnosis": {
-        "wait": 12.8,
+        "wait": 28.87,
         "service": 8.8
        },
        "treatment_start": {
-        "wait": 11.54,
+        "wait": 11.49,
         "service": 0.5
        }
       },
@@ -559,7 +559,7 @@ footer{margin-top:2.5rem;color:var(--dim);font-family:var(--mono);font-size:.78r
         "stage": "diagnosis"
        },
        "pet_ct": {
-        "wait": 3.22,
+        "wait": 19.29,
         "service": 2.78,
         "n": 1000,
         "stage": "diagnosis"
@@ -571,7 +571,7 @@ footer{margin-top:2.5rem;color:var(--dim);font-family:var(--mono);font-size:.78r
         "stage": "diagnosis"
        },
        "tumour_board": {
-        "wait": 3.6,
+        "wait": 3.55,
         "service": 0.5,
         "n": 1000,
         "stage": "treatment_start"
@@ -625,44 +625,49 @@ footer{margin-top:2.5rem;color:var(--dim);font-family:var(--mono);font-size:.78r
         "service": 0.0
        },
        "referral": {
-        "wait": 10.46,
-        "service": 0.07
+        "wait": 5.01,
+        "service": 0.02
        },
        "diagnosis": {
-        "wait": 4.95,
-        "service": 2.21
+        "wait": 18.39,
+        "service": 3.0
        },
        "treatment_start": {
-        "wait": 10.8,
-        "service": 0.46
+        "wait": 11.32,
+        "service": 0.49
        }
       },
       "by_group": {
        "all": {
         "n": 1000.0,
         "n_cancer": 1000.0,
-        "median_days_to_treatment": 27.0067,
-        "share_within_target": 0.882,
-        "median_days_to_diagnosis": 6.17,
+        "median_days_to_treatment": 36.9833,
+        "share_within_target": 0.671,
+        "median_days_to_diagnosis": 21.9733,
         "missed_cancers": 0.0,
-        "median_days_to_exit_all": 27.0067
+        "median_days_to_exit_all": 36.9833
        }
       },
       "utilisation": {},
       "cohort_objectives": [
-       0.82806,
-       0.82156,
-       0.83434
+       0.60664,
+       0.59258,
+       0.59188
       ]
      },
      "changes": [
-      "Use the faster PET-CT scanner (the same assumption the authors made)",
-      "Plan tissue sampling when the referral is triaged, before the first hospital visit",
       "Always order the PET-CT scan at triage or the first visit, never late",
+      "Plan tissue sampling when the referral is triaged, before the first hospital visit",
       "Always order the exercise test early, together with the other tests",
       "Hold the tumour board without waiting for tissue sampling to finish; sampling runs alongside while treatment is booked"
      ],
-     "role": "optimiser"
+     "changes_detail": [
+      "When PET-CT is ordered: always pet-ct ordered at triage or at the first visit",
+      "Tissue sampling planned?: order it at the same time as first hospital visit, not after",
+      "When the exercise test is ordered: always exercise test",
+      "Diagnostic workup complete: don't wait for sampling finished (it runs in parallel; treatment still waits for it)"
+     ],
+     "role": "optimiser_no_new_equipment"
     },
     {
      "label": "Faster PET-CT scan only",
@@ -1193,268 +1198,6 @@ footer{margin-top:2.5rem;color:var(--dim);font-family:var(--mono);font-size:.78r
       ]
      },
      "role": "authors_pathway"
-    },
-    {
-     "label": "Suggested change without any new equipment",
-     "metrics": {
-      "scenario": "stokstad",
-      "flowchart": "observed_optimised",
-      "seed": 202.0,
-      "n": 1000.0,
-      "n_cancer": 1000.0,
-      "target_days": 42.0,
-      "median_days_to_treatment": 36.9833,
-      "share_within_target": 0.671,
-      "median_days_to_diagnosis": 21.9733,
-      "mean_days_to_treatment": 38.8967,
-      "missed_cancers": 0.0,
-      "confirmed_cancers": 472.0,
-      "untreated_cancers": 0.0,
-      "stuck": 0.0,
-      "false_treatments": 0.0,
-      "tests_per_patient": 2.3797,
-      "invasive_per_patient": 1.0873,
-      "cost_per_patient": 2831.6,
-      "median_days_to_exit_noncancer": null,
-      "stage_breakdown": {
-       "detection": {
-        "wait": 0.0,
-        "service": 0.0
-       },
-       "referral": {
-        "wait": 5.01,
-        "service": 0.02
-       },
-       "diagnosis": {
-        "wait": 18.39,
-        "service": 3.0
-       },
-       "treatment_start": {
-        "wait": 11.32,
-        "service": 0.49
-       }
-      },
-      "node_breakdown": {
-       "baseline_ct": {
-        "wait": 0.0,
-        "service": 0.0,
-        "n": 1000,
-        "stage": "detection"
-       },
-       "pet_ct": {
-        "wait": 15.43,
-        "service": 2.04,
-        "n": 735,
-        "stage": "diagnosis"
-       },
-       "tumour_board": {
-        "wait": 3.49,
-        "service": 0.49,
-        "n": 981,
-        "stage": "treatment_start"
-       },
-       "surgery_booking": {
-        "wait": 5.03,
-        "service": 0.0,
-        "n": 730,
-        "stage": "treatment_start"
-       },
-       "treatment": {
-        "wait": 0.0,
-        "service": 0.0,
-        "n": 1000,
-        "stage": "treatment_start"
-       },
-       "radiotherapy_booking": {
-        "wait": 2.8,
-        "service": 0.0,
-        "n": 251,
-        "stage": "treatment_start"
-       },
-       "first_visit": {
-        "wait": 5.01,
-        "service": 0.02,
-        "n": 246,
-        "stage": "referral"
-       },
-       "exercise_test": {
-        "wait": 1.82,
-        "service": 0.15,
-        "n": 139,
-        "stage": "diagnosis"
-       },
-       "further_workup": {
-        "wait": 0.84,
-        "service": 0.54,
-        "n": 103,
-        "stage": "diagnosis"
-       },
-       "bronchoscopy": {
-        "wait": 0.08,
-        "service": 0.12,
-        "n": 19,
-        "stage": "diagnosis"
-       },
-       "bronchoscopy_repeat": {
-        "wait": 0.05,
-        "service": 0.02,
-        "n": 4,
-        "stage": "diagnosis"
-       },
-       "ttnb": {
-        "wait": 0.18,
-        "service": 0.12,
-        "n": 15,
-        "stage": "diagnosis"
-       }
-      },
-      "stage_breakdown_all": {
-       "detection": {
-        "wait": 0.0,
-        "service": 0.0
-       },
-       "referral": {
-        "wait": 12.43,
-        "service": 0.1
-       },
-       "diagnosis": {
-        "wait": 28.87,
-        "service": 8.8
-       },
-       "treatment_start": {
-        "wait": 11.49,
-        "service": 0.5
-       }
-      },
-      "node_breakdown_all": {
-       "baseline_ct": {
-        "wait": 0.0,
-        "service": 0.0,
-        "n": 1000,
-        "stage": "detection"
-       },
-       "first_visit": {
-        "wait": 12.43,
-        "service": 0.1,
-        "n": 1000,
-        "stage": "referral"
-       },
-       "bronchoscopy": {
-        "wait": 2.62,
-        "service": 4.07,
-        "n": 787,
-        "stage": "diagnosis"
-       },
-       "pet_ct": {
-        "wait": 19.29,
-        "service": 2.78,
-        "n": 1000,
-        "stage": "diagnosis"
-       },
-       "ttnb": {
-        "wait": 1.25,
-        "service": 0.78,
-        "n": 145,
-        "stage": "diagnosis"
-       },
-       "tumour_board": {
-        "wait": 3.55,
-        "service": 0.5,
-        "n": 1000,
-        "stage": "treatment_start"
-       },
-       "surgery_booking": {
-        "wait": 5.11,
-        "service": 0.0,
-        "n": 745,
-        "stage": "treatment_start"
-       },
-       "treatment": {
-        "wait": 0.0,
-        "service": 0.0,
-        "n": 1000,
-        "stage": "treatment_start"
-       },
-       "radiotherapy_booking": {
-        "wait": 2.84,
-        "service": 0.0,
-        "n": 255,
-        "stage": "treatment_start"
-       },
-       "exercise_test": {
-        "wait": 2.78,
-        "service": 0.26,
-        "n": 234,
-        "stage": "diagnosis"
-       },
-       "further_workup": {
-        "wait": 0.92,
-        "service": 0.58,
-        "n": 113,
-        "stage": "diagnosis"
-       },
-       "bronchoscopy_repeat": {
-        "wait": 0.53,
-        "service": 0.33,
-        "n": 65,
-        "stage": "diagnosis"
-       },
-       "ct_redo": {
-        "wait": 1.49,
-        "service": 0.01,
-        "n": 75,
-        "stage": "diagnosis"
-       }
-      },
-      "stage_breakdown_everyone": {
-       "detection": {
-        "wait": 0.0,
-        "service": 0.0
-       },
-       "referral": {
-        "wait": 5.01,
-        "service": 0.02
-       },
-       "diagnosis": {
-        "wait": 18.39,
-        "service": 3.0
-       },
-       "treatment_start": {
-        "wait": 11.32,
-        "service": 0.49
-       }
-      },
-      "by_group": {
-       "all": {
-        "n": 1000.0,
-        "n_cancer": 1000.0,
-        "median_days_to_treatment": 36.9833,
-        "share_within_target": 0.671,
-        "median_days_to_diagnosis": 21.9733,
-        "missed_cancers": 0.0,
-        "median_days_to_exit_all": 36.9833
-       }
-      },
-      "utilisation": {},
-      "cohort_objectives": [
-       0.60664,
-       0.59258,
-       0.59188
-      ]
-     },
-     "changes": [
-      "Always order the PET-CT scan at triage or the first visit, never late",
-      "Plan tissue sampling when the referral is triaged, before the first hospital visit",
-      "Always order the exercise test early, together with the other tests",
-      "Hold the tumour board without waiting for tissue sampling to finish; sampling runs alongside while treatment is booked"
-     ],
-     "changes_detail": [
-      "When PET-CT is ordered: always pet-ct ordered at triage or at the first visit",
-      "Tissue sampling planned?: order it at the same time as first hospital visit, not after",
-      "When the exercise test is ordered: always exercise test",
-      "Diagnostic workup complete: don't wait for sampling finished (it runs in parallel; treatment still waits for it)"
-     ],
-     "role": "optimiser_no_new_equipment"
     }
    ],
    "published": {
@@ -1736,190 +1479,6 @@ footer{margin-top:2.5rem;color:var(--dim);font-family:var(--mono);font-size:.78r
    "optimiser": {
     "steps": [
      {
-      "kind": "relax",
-      "target": "sample_plan",
-      "other": "visit",
-      "plain": "Tissue sampling planned?: order it at the same time as first hospital visit, not after",
-      "score": 6.705,
-      "evidence": {
-       "predicted_days_saved": 6.7,
-       "train_on_time_before": 0.5845,
-       "train_on_time_after": 0.681,
-       "train_median_before": 38.765,
-       "train_median_after": 34.07,
-       "accepted_together_with": [],
-       "records_reading": "In the records, the step 'tissue sampling planned?' was held back by first hospital visit: on average 6.7 days per patient on the critical path"
-      }
-     },
-     {
-      "kind": "standardise",
-      "target": "pet_timing",
-      "other": "pet_on_time",
-      "plain": "When PET-CT is ordered: always pet-ct ordered at triage or at the first visit",
-      "score": 4.659,
-      "evidence": {
-       "predicted_days_saved": 4.66,
-       "train_on_time_before": 0.681,
-       "train_on_time_after": 0.787,
-       "train_median_before": 34.07,
-       "train_median_after": 30.3,
-       "accepted_together_with": [],
-       "records_reading": "In the records, patients for whom 'pet-ct ordered at triage or at the first visit' was chosen left the pathway sooner; spread over everyone else that is about 4.7 days per patient (a biased, unadjusted comparison)"
-      }
-     },
-     {
-      "kind": "standardise",
-      "target": "ex_timing",
-      "other": "ex_early",
-      "plain": "When the exercise test is ordered: always exercise test",
-      "score": 1.847,
-      "evidence": {
-       "predicted_days_saved": 1.85,
-       "train_on_time_before": 0.787,
-       "train_on_time_after": 0.8525,
-       "train_median_before": 30.3,
-       "train_median_after": 29.485,
-       "accepted_together_with": [],
-       "records_reading": "In the records, patients for whom 'exercise test' was chosen left the pathway sooner; spread over everyone else that is about 1.8 days per patient (a biased, unadjusted comparison)"
-      }
-     },
-     {
-      "kind": "detach",
-      "target": "diagnosis",
-      "other": "sampling_done",
-      "plain": "Diagnostic workup complete: don't wait for sampling finished (it runs in parallel; treatment still waits for it)",
-      "score": 3.242,
-      "evidence": {
-       "predicted_days_saved": 3.24,
-       "train_on_time_before": 0.8525,
-       "train_on_time_after": 0.88,
-       "train_median_before": 29.485,
-       "train_median_after": 27.02,
-       "accepted_together_with": [],
-       "records_reading": "In the records, the step 'diagnostic workup complete' was held back by sampling finished: on average 3.2 days per patient on the critical path"
-      }
-     }
-    ],
-    "selection_optimism_pp": 1.65,
-    "candidates_evaluated": 69,
-    "guardrails_heldout": [],
-    "details": [
-     {
-      "label": "Plan tissue sampling when the referral is triaged, before the first hospital visit",
-      "raw": "Tissue sampling planned?: order it at the same time as first hospital visit, not after",
-      "kind": "relax",
-      "records_said": "In the records, the step 'tissue sampling planned?' was held back by first hospital visit: on average 6.7 days per patient on the critical path.",
-      "rerun_said": "Rerunning the same patients confirmed it: treated on time 58% to 68%, median 39 to 34 days.",
-      "predicted_days_saved": 6.7,
-      "train_on_time_before": 0.5845,
-      "train_on_time_after": 0.681,
-      "train_median_before": 38.765,
-      "train_median_after": 34.07,
-      "heldout_on_time_after": 0.697
-     },
-     {
-      "label": "Always order the PET-CT scan at triage or the first visit, never late",
-      "raw": "When PET-CT is ordered: always pet-ct ordered at triage or at the first visit",
-      "kind": "standardise",
-      "records_said": "In the records, patients for whom 'pet-ct ordered at triage or at the first visit' was chosen left the pathway sooner; spread over everyone else that is about 4.7 days per patient (a biased, unadjusted comparison).",
-      "rerun_said": "Rerunning the same patients confirmed it: treated on time 68% to 79%, median 34 to 30 days.",
-      "predicted_days_saved": 4.66,
-      "train_on_time_before": 0.681,
-      "train_on_time_after": 0.787,
-      "train_median_before": 34.07,
-      "train_median_after": 30.3,
-      "heldout_on_time_after": 0.792
-     },
-     {
-      "label": "Always order the exercise test early, together with the other tests",
-      "raw": "When the exercise test is ordered: always exercise test",
-      "kind": "standardise",
-      "records_said": "In the records, patients for whom 'exercise test' was chosen left the pathway sooner; spread over everyone else that is about 1.8 days per patient (a biased, unadjusted comparison).",
-      "rerun_said": "Rerunning the same patients confirmed it: treated on time 79% to 85%, median 30 to 29 days.",
-      "predicted_days_saved": 1.85,
-      "train_on_time_before": 0.787,
-      "train_on_time_after": 0.8525,
-      "train_median_before": 30.3,
-      "train_median_after": 29.485,
-      "heldout_on_time_after": 0.8583
-     },
-     {
-      "label": "Hold the tumour board without waiting for tissue sampling to finish; sampling runs alongside while treatment is booked",
-      "raw": "Diagnostic workup complete: don't wait for sampling finished (it runs in parallel; treatment still waits for it)",
-      "kind": "detach",
-      "records_said": "In the records, the step 'diagnostic workup complete' was held back by sampling finished: on average 3.2 days per patient on the critical path.",
-      "rerun_said": "Rerunning the same patients confirmed it: treated on time 85% to 88%, median 29 to 27 days.",
-      "predicted_days_saved": 3.24,
-      "train_on_time_before": 0.8525,
-      "train_on_time_after": 0.88,
-      "train_median_before": 29.485,
-      "train_median_after": 27.02,
-      "heldout_on_time_after": 0.882
-     }
-    ],
-    "cumulative": [
-     {
-      "step": -1,
-      "label": "Observed pathway",
-      "kind": "lead",
-      "share": 0.401,
-      "median_days": 45.6833,
-      "missed_cancers": 0.0,
-      "tests_per_patient": 2.3797
-     },
-     {
-      "step": 0,
-      "label": "Faster PET-CT scanner",
-      "kind": "start",
-      "share": 0.603,
-      "median_days": 38.2433,
-      "missed_cancers": 0.0,
-      "tests_per_patient": 2.3797
-     },
-     {
-      "step": 1,
-      "label": "Plan tissue sampling when the referral is triaged, before the first hospital visit",
-      "kind": "change",
-      "share": 0.697,
-      "median_days": 34.08,
-      "missed_cancers": 0.0,
-      "tests_per_patient": 2.3797
-     },
-     {
-      "step": 2,
-      "label": "Always order the PET-CT scan at triage or the first visit, never late",
-      "kind": "change",
-      "share": 0.792,
-      "median_days": 30.04,
-      "missed_cancers": 0.0,
-      "tests_per_patient": 2.3797
-     },
-     {
-      "step": 3,
-      "label": "Always order the exercise test early, together with the other tests",
-      "kind": "change",
-      "share": 0.8583,
-      "median_days": 29.13,
-      "missed_cancers": 0.0,
-      "tests_per_patient": 2.3797
-     },
-     {
-      "step": 4,
-      "label": "Hold the tumour board without waiting for tissue sampling to finish; sampling runs alongside while treatment is booked",
-      "kind": "change",
-      "share": 0.882,
-      "median_days": 27.0067,
-      "missed_cancers": 0.0,
-      "tests_per_patient": 2.3797
-     }
-    ],
-    "n_train": 1000,
-    "n_heldout": 1000,
-    "heldout_cohorts": 3
-   },
-   "optimiser_no_new_equipment": {
-    "steps": [
-     {
       "kind": "standardise",
       "target": "pet_timing",
       "other": "pet_on_time",
@@ -2106,25 +1665,124 @@ footer{margin-top:2.5rem;color:var(--dim);font-family:var(--mono);font-size:.78r
       "kind": "capacity",
       "label": "Faster PET-CT scanner only (7-day wait)",
       "share": 0.603,
-      "median_days": 38.2433
+      "median_days": 38.2433,
+      "published_share": 0.48
      },
      {
       "kind": "order",
       "label": "Reordered steps, no new equipment",
       "share": 0.671,
       "median_days": 36.9833
-     },
-     {
-      "kind": "both",
-      "label": "Reordered steps and the faster scanner",
-      "share": 0.882,
-      "median_days": 27.0067
      }
-    ]
+    ],
+    "n_patients": 3000,
+    "n_cohorts": 3
    },
    "headline_no_new_equipment": {
     "share": 0.671,
     "median_days": 36.9833
+   },
+   "wait_basis": {
+    "waiting_days": 44.3,
+    "total_days": 49.3,
+    "waiting_share": 0.899,
+    "groups": {
+     "published": {
+      "days": 31.8,
+      "share_of_waiting": 0.7176,
+      "steps": [
+       {
+        "step": "PET-CT",
+        "source": "referral to report 20.5 d (STOKSTAD2019)",
+        "days": 8.5
+       },
+       {
+        "step": "first hospital visit",
+        "source": "wait derived from the paper's counts (STOKSTAD2019)",
+        "days": 6.9
+       },
+       {
+        "step": "PET-CT, ordered late",
+        "source": "late referral costs 8 d (STOKSTAD2019)",
+        "days": 5.5
+       },
+       {
+        "step": "surgery booking",
+        "source": "treatment referral to surgery 13 d (STOKSTAD2019, our reading of the start point)",
+        "days": 5.1
+       },
+       {
+        "step": "radiotherapy booking",
+        "source": "treatment referral to radiotherapy 22.5 d (STOKSTAD2019)",
+        "days": 2.8
+       },
+       {
+        "step": "exercise test, ordered late",
+        "source": "late referral costs 10 d (STOKSTAD2019)",
+        "days": 1.3
+       },
+       {
+        "step": "needle biopsy",
+        "source": "repeat-sampling wait 8 d (STOKSTAD2019)",
+        "days": 0.7
+       },
+       {
+        "step": "CT redo",
+        "source": "median extra delay 15.5 d (STOKSTAD2019)",
+        "days": 0.4
+       },
+       {
+        "step": "repeat sampling",
+        "source": "median 8 d (STOKSTAD2019)",
+        "days": 0.3
+       },
+       {
+        "step": "exercise test",
+        "source": "median 11 d (STOKSTAD2019)",
+        "days": 0.2
+       }
+      ]
+     },
+     "assumption": {
+      "days": 12.5,
+      "share_of_waiting": 0.2824,
+      "steps": [
+       {
+        "step": "tumour board",
+        "source": "weekly in the paper; weekday and cutoff fitted",
+        "days": 3.5
+       },
+       {
+        "step": "PET-CT, ordered late: extra wait",
+        "source": "assumed extra wait",
+        "days": 3.2
+       },
+       {
+        "step": "first hospital visit: extra wait",
+        "source": "CT report not ready at the first visit (fitted)",
+        "days": 2.5
+       },
+       {
+        "step": "exercise test, ordered late: extra wait",
+        "source": "assumed extra wait",
+        "days": 1.5
+       },
+       {
+        "step": "bronchoscopy",
+        "source": "wait not reported in the paper; fitted",
+        "days": 0.9
+       },
+       {
+        "step": "further work-up",
+        "source": "duration not reported; assumed like a sampling procedure",
+        "days": 0.9
+       }
+      ]
+     }
+    },
+    "untagged_tests": [],
+    "statement": "This is a consequence of the waits we put in, not a measurement from patient data; it shows where the modelled time sits, and it is only as good as those inputs.",
+    "method": "Mean days per treated cancer on the critical path, held-out cohorts of the baseline flowchart. Tags: demo/wait_basis.py (BASIS), written from the scenario file's source and note fields. A step tagged 'published' has its booking lead (and, where noted, its queue) set to match a published wait; the capacity behind any queue is still our input."
    },
    "sensitivity": [
     {
@@ -4980,6 +4638,98 @@ footer{margin-top:2.5rem;color:var(--dim);font-family:var(--mono);font-size:.78r
     "n_heldout": 18800,
     "heldout_cohorts": 2
    },
+   "wait_basis": {
+    "waiting_days": 92.7,
+    "total_days": 106.5,
+    "waiting_share": 0.8707,
+    "groups": {
+     "published": {
+      "days": 42.7,
+      "share_of_waiting": 0.4603,
+      "steps": [
+       {
+        "step": "GP appointment",
+        "source": "booking lead set so the first GP appointment takes about 14 d (KHALIFE2025, THL survey)",
+        "days": 17.1
+       },
+       {
+        "step": "specialist visit",
+        "source": "lead and queue calibrated to 14-28 d from GP referral to specialist visit (KHALIFE2025)",
+        "days": 12.7
+       },
+       {
+        "step": "treatment booking",
+        "source": "lead calibrated to about 37 d from diagnosis to treatment (IHE2026); that figure covers ALL cancers, not lung cancer: Finnish lung-specific figures are 65-69 d (docs/evidence_research.md)",
+        "days": 10.4
+       },
+       {
+        "step": "referral handling",
+        "source": "handling 1-2 working days, invitation letter 3-4 (Pirkanmaa pathway, PIRHA_PATH)",
+        "days": 2.5
+       }
+      ]
+     },
+     "assumption": {
+      "days": 50.1,
+      "share_of_waiting": 0.5397,
+      "steps": [
+       {
+        "step": "PET-CT",
+        "source": "placeholder capacity; no Finnish PET-CT wait found",
+        "days": 9.1
+       },
+       {
+        "step": "GP appointment: extra wait",
+        "source": "re-presentation interval after reassurance (assumed, median 14 d)",
+        "days": 8.5
+       },
+       {
+        "step": "chest CT",
+        "source": "assumed capacity slice and lead",
+        "days": 6.2
+       },
+       {
+        "step": "treatment booking: extra wait",
+        "source": "pre-treatment work-up before the slot (assumed)",
+        "days": 6.1
+       },
+       {
+        "step": "bronchoscopy",
+        "source": "placeholder capacity and assumed lead",
+        "days": 5.8
+       },
+       {
+        "step": "tumour board",
+        "source": "assumed weekly board (weekly is Norwegian practice)",
+        "days": 4.6
+       },
+       {
+        "step": "needle biopsy",
+        "source": "assumed slots and lead",
+        "days": 4.2
+       },
+       {
+        "step": "paperwork",
+        "source": "assumed",
+        "days": 2.5
+       },
+       {
+        "step": "chest X-ray",
+        "source": "assumed: direct-access X-ray within days",
+        "days": 1.8
+       },
+       {
+        "step": "nurse appointment",
+        "source": "assumed capacity and booking lead",
+        "days": 1.3
+       }
+      ]
+     }
+    },
+    "untagged_tests": [],
+    "statement": "This is a consequence of the waits we put in, not a measurement from patient data; it shows where the modelled time sits, and it is only as good as those inputs.",
+    "method": "Mean days per treated cancer on the critical path, held-out cohorts of the baseline flowchart. Tags: demo/wait_basis.py (BASIS), written from the scenario file's source and note fields. A step tagged 'published' has its booking lead (and, where noted, its queue) set to match a published wait; the capacity behind any queue is still our input."
+   },
    "capacity_probe": [
     {
      "resource": "pet_scanner",
@@ -5067,13 +4817,15 @@ footer{margin-top:2.5rem;color:var(--dim);font-family:var(--mono);font-size:.78r
       "kind": "capacity",
       "label": "One more appointment a day at the busiest step (PET-CT scanner, from 1 to 2)",
       "share": 0.2724,
-      "median_days": 98.4
+      "median_days": 98.4,
+      "what_if": true
      },
      {
       "kind": "capacity",
       "label": "A large capacity increase, same order: CT scanner 8 a day (from 3); PET-CT scanner 3 a day (from 1)",
       "share": 0.3085,
-      "median_days": 96.725
+      "median_days": 96.725,
+      "what_if": true
      },
      {
       "kind": "order",
@@ -5081,7 +4833,9 @@ footer{margin-top:2.5rem;color:var(--dim);font-family:var(--mono);font-size:.78r
       "share": 0.3311,
       "median_days": 94.08
      }
-    ]
+    ],
+    "n_patients": 37600,
+    "n_cohorts": 2
    },
    "sensitivity": [
     {
@@ -6308,23 +6062,24 @@ function screen1(sc){
   var h='<p class="eyebrow">1 &middot; What should we change, and what does it gain</p>';
   var noEq=g(sc,"headline_no_new_equipment"), s2=noEq?pctNum(noEq.share):null;
   if(s0!=null&&s1!=null){
-    h+='<h1>From '+s0+'% to '+s1+'% treated on time'+(noEq?' with reordering and the faster PET-CT scanner'+(nwOpt()?' (best fit; '+pct(nwOpt().bands.optimiser_scanner.min)+' to '+pct(nwOpt().bands.optimiser_scanner.max)+' across fitting settings)':''):' with the suggested change')+'</h1>';
+    h+='<h1>From '+s0+'% to '+s1+'% treated on time'+(noEq?' by reordering the steps, with no new equipment'+(nwOpt()&&nwOpt().bands.optimiser_no_equipment?' (best fit; '+pct(nwOpt().bands.optimiser_no_equipment.min)+' to '+pct(nwOpt().bands.optimiser_no_equipment.max)+' across the '+esc(nwOpt().n_settings)+' fitting settings)':''):' with the suggested change')+'</h1>';
   }else{h+='<h1>What should we change, and what does it gain</h1>'}
   h+='<p class="lede">Share of cancer patients who start treatment within '+esc(ts)+'. '+esc(plain(sc.summary||sc.description||""))+'</p>';
   var NO=noEq?nwOpt():null;
-  if(NO)h+='<p class="lede"><b>Read with the range.</b> These are best-fitting-setting values. Over the '+esc(NO.n_settings)+' settings that fit the observed data, today is '+nwRange(NO.bands.observed)+' and reordering with the faster scanner is '+nwRange(NO.bands.optimiser_scanner)+'. Started from the observed pathway and without being told the answer, the optimiser arrived at the authors&rsquo; redesign (plus a fourth, overlapping change that needs a clinical check) and performs the same as it. It does not beat the authors.</p>';
+  var VP=window.START_DATA&&window.START_DATA.validation&&window.START_DATA.validation.published,aci=VP&&VP.optimal&&VP.optimal.ci95;
+  if(NO)h+='<p class="lede"><b>A plausibility check, not a forecast.</b> These are best-fitting-setting values; over the '+esc(NO.n_settings)+' settings that fit the observed data, today is '+nwRange(NO.bands.observed)+' and the reordered pathway '+nwRange(NO.bands.optimiser_no_equipment)+'. Started from the observed pathway and without being told the answer, the optimiser arrived at the authors&rsquo; three timing changes plus a fourth that needs clinical review. It did not improve on the authors&rsquo; redesign. The authors&rsquo; '+pct(g(sc,"published","optimal_share"))+(aci?' ('+pct(aci[0])+' to '+pct(aci[1])+')':'')+' for their reordered pathway includes a shorter PET-CT wait; ours assumes no new equipment, so the two are not a like-for-like pair.</p>';
   h+='<div class="panel hero">';
   h+='<div class="cell"><div class="lab">Treated on time today</div><div class="big today">'+(s0!=null?s0+'<small>%</small>':'n/a')+'</div><div class="sub">'+esc(plain(g(sc,"baseline","label")||"Today"))+'</div></div>';
   h+='<div class="arrow" aria-hidden="true">&rarr;</div>';
   if(cv){
-    h+='<div class="cell"><div class="lab">'+(noEq?'With reordering and the faster PET-CT scanner':'With the suggested change')+'</div><div class="big after">'+(s1!=null?s1+'<small>%</small>':'n/a')+'</div>'+
+    h+='<div class="cell"><div class="lab">'+(noEq?'Reordered steps, no new equipment':'With the suggested change')+'</div><div class="big after">'+(s1!=null?s1+'<small>%</small>':'n/a')+'</div>'+
        (s0!=null&&s1!=null?'<span class="delta">'+(s1>=s0?'+':'')+(s1-s0)+' points</span>':'')+'</div>';
   }else{h+='<div class="cell"><div class="empty">No suggested change in this bundle.</div></div>'}
   h+='</div>';
   if(noEq&&s2!=null){
     var fp=null;(sc.variants||[]).forEach(function(v){if(v.role==="faster_pet")fp=v});
-    h+='<div class="panel pair"><div><div class="lab">The same reordering with no new equipment</div><div class="mid good">'+s2+'%</div><div class="sub">'+(s2-s0>=0?'+':'')+(s2-s0)+' points on today, median '+d1(noEq.median_days)+' days'+(NO?'. Over the '+esc(NO.n_settings)+' fitting settings: '+nwRange(NO.bands.optimiser_no_equipment)+'; better than today in '+esc(NO.counts.noeq_beats_observed)+' of '+esc(NO.n_settings):'')+'</div></div>'+
-       '<div><div class="lab">The faster scanner alone, no reordering</div><div class="mid wait">'+(fp?pct(fp.metrics.share_within_target):'n/a')+'</div><div class="sub">the scanner is included in the headline number above'+(NO?'. Range '+nwRange(NO.bands.faster_pet)+'. Reordering without equipment beats the scanner alone in only '+esc(NO.counts.noeq_beats_scanner_alone)+' of '+esc(NO.n_settings)+' settings':'')+'</div></div></div>';
+    h+='<div class="panel pair"><div><div class="lab">The authors&rsquo; published estimate for their reordered pathway</div><div class="mid">'+pct(g(sc,"published","optimal_share"))+'</div><div class="sub">'+(aci?pct(aci[0])+' to '+pct(aci[1])+' (95% CI); ':'')+'a recalculation of 100 patients&rsquo; recorded waits that includes the shorter PET-CT wait</div></div>'+
+       '<div><div class="lab">The faster scanner alone, no reordering</div><div class="mid wait">'+(fp?pct(fp.metrics.share_within_target):'n/a')+'</div><div class="sub">our model; the authors estimated '+pct(g(sc,"published","faster_pet_share"))+'. Compared with reordering on <a href="#'+esc(sc.id)+'/4">screen 4</a></div></div></div>';
   }else{
     var cr=(g(sc,"capacity_vs_order","rows")||[]).filter(function(r){return r.kind==="capacity"});
     if(cr.length){var best=cr.reduce(function(p,r){return r.share>p.share?r:p},cr[0]);
@@ -6403,6 +6158,17 @@ function stepList(sc,b){
   });
   return {html:s+'</svg>',top:rows[0],label:shortLabel(labels[rows[0].id]||human(rows[0].id))};
 }
+/* Provenance of the waiting days (demo/wait_basis.py via the bundle's wait_basis); nothing typed */
+function waitBasisStrip(sc){
+  var wb=sc.wait_basis;if(!wb||!wb.groups)return '';
+  var P=wb.groups.published||{},A=wb.groups.assumption||{};
+  var lst=function(G){return (G.steps||[]).map(function(r){return esc(r.step)+' '+d1(r.days)+' d ('+esc(r.source)+')'}).join('; ')};
+  return '<div class="panel" id="wait-basis" style="margin:.4rem 0 1rem"><div class="lab">Where this number comes from</div><ul style="margin:.4rem 0 0 1.1rem;padding:0;line-height:1.5">'+
+    '<li><b>From our simulation:</b> the share is computed from the simulated patients&rsquo; paths ('+d1(wb.waiting_days)+' of '+d1(wb.total_days)+' days on the critical path of each treated cancer, on average).</li>'+
+    '<li><b>Set from published figures:</b> '+pct(P.share_of_waiting)+' of the waiting days ('+d1(P.days)+' d): '+lst(P)+'.</li>'+
+    '<li><b>Our assumption or placeholder:</b> '+pct(A.share_of_waiting)+' of the waiting days ('+d1(A.days)+' d): '+lst(A)+'.</li></ul>'+
+    '<p style="margin:.5rem 0 0">'+esc(wb.statement)+'</p></div>';
+}
 function screen2(sc){
   var b=g(sc,"baseline","metrics")||{}, cv=changeVariant(sc), a=g(cv,"metrics");
   var rows=stageTotals(b), tw=0,tt=0;
@@ -6410,7 +6176,8 @@ function screen2(sc){
   var h='<p class="eyebrow">2 &middot; Where time is lost</p>';
   if(tt>0){
     var top=rows.reduce(function(p,r){return r.wait>p.wait?r:p},rows[0]);
-    h+='<h1>'+Math.round(tw/tt*100)+'% of the time to treatment is spent waiting (booking time and queues), not in the tests</h1>';
+    h+='<h1>In our model, '+Math.round(tw/tt*100)+'% of the time to treatment is waiting for bookings and queues, not the tests</h1>';
+    h+=waitBasisStrip(sc);
     h+='<p class="lede">Average days per cancer patient, split into waiting for a step and being served by it. The most waiting is at <b style="color:var(--wait)">'+esc((STAGES[top.id]||human(top.id)).toLowerCase())+'</b> ('+d1(top.wait)+' days).</p>';
   }else h+='<h1>Where time is lost</h1>';
   h+='<div class="legend"><span><i style="background:'+C.wait+'"></i>Waiting (booking time and queues)</span><span><i style="background:'+C.serve+'"></i>Being served (the test or visit itself)</span></div>';
@@ -6450,8 +6217,8 @@ function screenWhy(sc){
     h+='<h1>Each change adds on-time treatment, and the numbers come from patients the search never saw</h1>';
     h+='<p class="lede">Treated on time after 0, 1, 2 &hellip; changes, applied one by one to the same unseen patients. Final: '+pct(last.share)+(isNum(o.selection_optimism_pp)?'. Picking the best of '+(o.candidates_evaluated||"many")+' options on the search patients '+(o.selection_optimism_pp>=0?'flatters the result by about '+d1(o.selection_optimism_pp)+' points':'did not flatter the result here (the unseen patients did '+d1(-o.selection_optimism_pp)+' points better)')+'; the numbers shown come from unseen patients, so they do not carry it.':'.')+'</p>';
     var rows=cum.map(function(r,i){
-      var lab=r.kind==="lead"?r.label:(r.kind==="start"?(r.label==="Faster PET-CT scanner"?r.label:"Today"):"After change "+r.step);
-      return {v:r.share,label:lab,color:r.kind==="lead"||r.step===0?(r.label==="Faster PET-CT scanner"?C.serve:C.today):C.good,sub:null};
+      var lab=r.kind==="lead"?r.label:(r.kind==="start"?"Today":"After change "+r.step);
+      return {v:r.share,label:lab,color:r.kind==="lead"||r.step===0?C.today:C.good,sub:null};
     });
     h+='<div class="panel">'+barChart(rows,{aria:"Share treated on time after each accepted change"})+'</div>';
   }else h+='<h1>Why these changes</h1>';
@@ -6501,33 +6268,46 @@ function tornado(sc,rows){
 }
 
 /* ---------- Screen 4: capacity or order ---------- */
+/* 'Where these numbers come from' strip under the chart, same on both scenarios; every number from the bundle */
+function capSources(sc,cv){
+  var n=cv.n_patients,nc=cv.n_cohorts,items=[];
+  cv.rows.forEach(function(r){
+    var t='<b>'+esc(plain(r.label))+'</b>: our simulation'+(isNum(n)?', the same '+Number(n).toLocaleString('en')+' simulated patients'+(nc>1?' ('+esc(nc)+' cohorts)':''):'');
+    if(isNum(r.published_share))t+='. Published estimate by the authors: '+pct(r.published_share)+'; our model says '+pct(r.share)+'. See the <a href="#'+esc(sc.id)+'/5">evidence check</a> for why they differ: our virtual patients differ from the Norwegian cohort';
+    if(r.what_if)t+='. What-if: capacity values chosen by us, not measured';
+    if(r.kind==="order")t+='. The suggested change, found by the optimiser';
+    items.push('<li>'+t+'.</li>');
+  });
+  return '<div class="panel" id="cap-sources" style="margin-top:.8rem"><div class="lab">Where these numbers come from</div><ul style="margin:.4rem 0 0 1.1rem;padding:0;line-height:1.5">'+items.join('')+'</ul></div>';
+}
 function screenCap(sc){
   var cv=g(sc,"capacity_vs_order"),h='<p class="eyebrow">4 &middot; Capacity or order</p>';
   if(!cv||!cv.rows||!cv.rows.length){return h+'<h1>Capacity or order</h1><div class="empty">This data has no capacity comparison.</div>'}
-  var rows=cv.rows,t=rows[0].share,bestCap=null,order=null,both=null;
+  var rows=cv.rows,t=rows[0].share,bestCap=null,order=null;
   rows.forEach(function(r){
     if(r.kind==="capacity"&&(!bestCap||r.share>bestCap.share))bestCap=r;
-    if(r.kind==="order")order=r; if(r.kind==="both")both=r;
+    if(r.kind==="order")order=r;
   });
   /* the "order" row is the optimiser's result; only call it reordering if it changed the order (review fix) */
-  var oSteps=(cv.capacity_label?g(sc,"optimiser_no_new_equipment","steps"):g(sc,"optimiser","steps"))||[];
+  var oSteps=g(sc,"optimiser","steps")||[];
   var reorder=!oSteps.length||oSteps.some(function(x){return x.kind!=="fast_track"});
   if(bestCap&&order){
     var gc=Math.round((bestCap.share-t)*100),go=Math.round((order.share-t)*100);
     h+='<h1>'+(reorder?'Reordering the steps gains ':'The suggested change gains ')+go+' points; '+(cv.capacity_label?'the new scanner':'more capacity')+' gains '+gc+'</h1>';
   }else h+='<h1>More capacity, or a better order?</h1>';
-  h+='<p class="lede">The same patients run through each option. '+(cv.capacity_label?'A faster scanner helps, but reordering the steps with no new equipment helps more, and the two together help most.':(reorder?'Time is lost in queues, but a queue is often held up by the order of the steps rather than by too few slots: more slots at one step then help little.':'The suggested change keeps today\'s order: referred patients get urgent booking at every later step. Its size rests on our assumed gap between routine and urgent booking times.'))+'</p>';
-  var col={today:C.today,capacity:C.wait,order:C.good,both:C.good};
+  h+='<p class="lede">The same patients run through each option. '+(cv.capacity_label?'A faster scanner helps; in our model reordering the steps with no new equipment helps more.':(reorder?'Time is lost in queues, but a queue is often held up by the order of the steps rather than by too few slots: more slots at one step then help little.':'The suggested change keeps today\'s order: referred patients get urgent booking at every later step. Its size rests on our assumed gap between routine and urgent booking times.'))+'</p>';
+  var col={today:C.today,capacity:C.wait,order:C.good};
   var bars=rows.map(function(r){return {v:r.share,label:r.label,color:col[r.kind]||C.serve}});
   var H=rows.length*92+20,X0=520,W=500,s='<svg viewBox="0 0 1240 '+H+'" role="img" aria-label="Share treated on time for capacity options and the reorder">';
   rows.forEach(function(r,i){
     var y=10+i*92,w=r.share*W;
-    wrap(plain(r.label),44).slice(0,3).forEach(function(l,k){s+=svgText(X0-16,y+26+k*22-(Math.min(3,wrap(plain(r.label),44).length)-1)*8,l,{size:19,anchor:"end",weight:r.kind==="order"||r.kind==="both"?700:400})});
+    wrap(plain(r.label),44).slice(0,3).forEach(function(l,k){s+=svgText(X0-16,y+26+k*22-(Math.min(3,wrap(plain(r.label),44).length)-1)*8,l,{size:19,anchor:"end",weight:r.kind==="order"?700:400})});
     s+='<rect x="'+X0+'" y="'+y+'" width="'+w+'" height="60" fill="'+(col[r.kind]||C.serve)+'"/>';
     s+=svgText(X0+w+14,y+30,pct(r.share),{size:30,weight:700,cls:"mono"});
     s+=svgText(X0+w+14,y+54,(r.kind==="today"?"":(r.share>=t?"+":"")+Math.round((r.share-t)*100)+" points, ")+"median "+d1(r.median_days)+" days",{size:16,cls:"mono",fill:C.muted});
   });
   h+='<div class="legend"><span><i style="background:'+C.today+'"></i>Today</span><span><i style="background:'+C.wait+'"></i>More capacity, same order</span><span><i style="background:'+C.good+'"></i>Suggested change</span></div><div class="panel">'+s+'</svg></div>';
+  h+=capSources(sc,cv);
   var cp=(sc.capacity_probe||[]).filter(function(r){return isNum(r.delta_share_pp)});
   if(cp.length){
     h+='<h2>If you could add one appointment a day, put it here</h2>';
@@ -6601,7 +6381,7 @@ function validation(sc,cv){
   var G=[["Observed pathway",g(b,"share_within_target"),pub.baseline_share],
          ["Faster PET scan only",g(pv,"metrics","share_within_target"),pub.faster_pet_share]];
   if(av){G.push(["Authors' reordered pathway",g(av,"metrics","share_within_target"),pub.optimal_share]);
-         G.push(["Optimiser, same scanner, found blind",g(a,"share_within_target"),null]);}
+         G.push(["Optimiser, no new equipment, found blind",g(a,"share_within_target"),null]);}
   else G.push(["Reordered steps (suggested change)",g(a,"share_within_target"),pub.optimal_share]);
   G=G.filter(function(r){return isNum(r[1])||isNum(r[2])});
   if(!G.length)return '';
@@ -6625,7 +6405,7 @@ function validation(sc,cv){
   var N=window.START_DATA&&window.START_DATA.norway,P=N&&N.all_settings&&N.all_settings.pred,NO=nwOpt();
   if(av&&P&&P.optimal&&isNum(pub.optimal_share)){
     h+='<p class="lede" style="margin-top:1rem"><b>How to read the bars.</b> The '+pct(pub.optimal_share)+' match is the best fit, not a sharp hit: over all '+esc(N.all_settings.accepted)+' settings that fit the observed data the authors&rsquo; pathway as we built it comes out at '+pct(P.optimal.min)+' to '+pct(P.optimal.max)+', typically about '+pct(P.optimal.median)+'. The model over-predicts the faster scanner alone ('+pct(g(pv,"metrics","share_within_target"))+' against '+pct(pub.faster_pet_share)+' published'+(P.faster_pet?'; range '+pct(P.faster_pet.min)+' to '+pct(P.faster_pet.max):'')+'). Trust the ranking of reorderings, not their exact size.</p>';
-    if(NO)h+='<p class="lede"><b>The fourth bar is not &ldquo;better than the authors&rdquo;.</b> It uses the same new scanner as the authors&rsquo; '+pct(pub.optimal_share)+', and it is the optimiser arriving at the authors&rsquo; redesign without being told it. The gap to our simulated authors&rsquo; bar is a modelling difference: in our version treatment waits for a tissue sample that only starts after the tumour board, which the paper does not have. Over the '+esc(NO.n_settings)+' fitting settings the optimiser with the scanner is '+nwRange(NO.bands.optimiser_scanner)+'; with no new equipment '+nwRange(NO.bands.optimiser_no_equipment)+'.</p>'
+    if(NO)h+='<p class="lede"><b>The fourth bar is not comparable with the authors&rsquo; '+pct(pub.optimal_share)+'.</b> The authors&rsquo; estimate includes the shorter PET-CT wait; the optimiser&rsquo;s pathway assumes no new equipment. It is the optimiser arriving at the authors&rsquo; three timing changes (plus a fourth that needs clinical review) without being told them; it did not improve on their redesign. Over the '+esc(NO.n_settings)+' fitting settings it gives '+nwRange(NO.bands.optimiser_no_equipment)+'.</p>'
       +(NO.structure?'<p class="lede"><b>Structure check.</b> Read literally (treatment does not wait for the tissue sample; PET-CT ordered at the first visit), the simulated authors&rsquo; pathway gives a median of '+pct(NO.structure.literal_median)+', with '+esc(NO.structure.literal_in_published_ci)+' of '+esc(NO.structure.settings)+' settings inside the published '+pct(NO.structure.published_ci[0])+' to '+pct(NO.structure.published_ci[1])+'. Only the paper&rsquo;s text was read, and the observed pathway was not recalibrated for it.</p>':'');
   }
   return h;

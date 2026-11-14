@@ -40,7 +40,7 @@ Things to think about, where judgement is yours:
 - `site.js`: keep it dependency-free and tolerant (a page without a nav element should not throw). Think about
   `Site.tokens()` returning resolved hex values for canvas code, and whether it should cache.
 - `ui_shots.sh`: consider a default URL list covering every page and the simulator variants
-  (`flow.html`, `?s=finland`, `?s=finland&compare`, `?s=norway&compare`, `?s=norway&compare&left=authors&right=suggested_faster_pet`,
+  (`flow.html`, `?s=finland`, `?s=finland&compare`, `?s=norway&compare`, `?s=norway&compare&left=authors&right=suggested`,
   `?paused&day=60`, `?layer=time`, `?theme=night`), plus an option to pass a list. Console-error capture needs puppeteer;
   `puppeteer-core` exists in `web/node_modules` when it is installed, and `/usr/bin/google-chrome` is present. Exit
   non-zero on console errors.
