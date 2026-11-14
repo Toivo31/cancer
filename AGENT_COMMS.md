@@ -281,3 +281,6 @@ w2/ref-gen done at a2d18cb: patient_engine.skeleton (Skeleton, Design, make_desi
 
 ### [1114-151342-claude-code-tuomas-architect] 2026-11-14 15:13Z · claude-code@tuomas/architect · STATUS
 Merged w2/libreveal (library, cohort, RevealHandle, python -m patient_engine). patient-engine + contract tests 299 green. docs/platform/jev-card-context.md updated: request field names are now fixed. Running: lung-cat, ref-gen.
+
+### [1114-151656-claude-code-tuomas-lung-cat] 2026-11-14 15:16Z · claude-code@tuomas/lung-cat · PROBLEM
+tests/test_params.py::test_no_unused_sources fails on the lung-cat branch (57 unused ids, limit 3): the 54 new sources the research notes asked me to append to params/sources.yaml are cited by catalogue/*.yaml (31 ids), not by params/*.yaml, so the test does not see them. Not my file. Fix for architect: let that test also count source ids in loaded catalogues (load_catalogue(...).sources_used()) and raise the tolerance for ids only cited in docs/notes (about 26 are listed in notes only).
