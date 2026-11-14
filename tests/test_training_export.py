@@ -87,3 +87,71 @@ def test_split_is_deterministic_and_roughly_80_10_10():
     xs = [split_of(f"c{i}") for i in range(5000)]
     assert xs == [split_of(f"c{i}") for i in range(5000)]
     assert 0.77 < xs.count("train") / 5000 < 0.83 and xs.count("val") > 300 and xs.count("test") > 300
+
+
+# ---------------------------------------------------------------------------------------------- libraries (D52)
+
+@pytest.fixture(scope="module")
+def two_libs(tmp_path_factory):
+    from patient_engine.reference import reference_cards
+    from patient_engine.library import write_library
+    from patient_engine.skeleton import Design
+    world = load_world(WORLD)
+    paths = []
+    for seed, gen, extra in ((5, "reference", {}), (6, "llm", {"model": "test-model"})):
+        d = tmp_path_factory.mktemp(f"lib{seed}")
+        design = Design(mode="stratified", n=3 * len(world.catalogue.conditions), counts=tuple((c, 3) for c in world.catalogue.conditions))
+        cards = list(reference_cards(world.catalogue, design, seed))
+        meta = {"created": "1970-01-01T00:00:00Z", "generator": gen, **extra}
+        try:
+            write_library(cards, world.catalogue, d, meta=meta)
+        except Exception as e:                                   # an llm library needs llm provenance on its cards
+            pytest.skip(f"cannot write a {gen} test library from reference cards: {e}")
+        paths.append(str(d))
+    return paths
+
+
+def test_libraries_holdout_and_meta(two_libs, tmp_path):
+    out = str(tmp_path / "l.jsonl.gz")
+    s = export(WORLD, 150, [1], out, libraries=[two_libs[0]], holdout_libraries=[two_libs[1]], quiet=True)
+    rows = read(out)
+    gens = {(r["meta"]["generator"], r["meta"]["library"]) for r in rows}
+    assert len(gens) == 2 and {g for g, _ in gens} == {"reference", "llm:test-model"}
+    assert {r["meta"]["split"] for r in rows if r["meta"]["generator"].startswith("llm")} == {"test"}
+    assert {r["meta"]["split"] for r in rows if r["meta"]["generator"] == "reference"} >= {"train"}
+    assert [x["holdout"] for x in s["libraries"]] == [False, True]
+
+
+def test_library_for_another_catalogue_is_refused(tmp_path):
+    with pytest.raises(SystemExit):
+        export(WORLD, 10, [1], str(tmp_path / "x.jsonl.gz"), libraries=[str(tmp_path)], quiet=True)
+
+
+# ---------------------------------------------------------------------------------------------- the HTTP JEV (D51)
+
+def test_jev_over_http_against_the_stub_server(tmp_path, monkeypatch):
+    from jev.stub import StubBackend
+    from jev.stub_server import serve_in_thread
+    srv, url = serve_in_thread(StubBackend({}))
+    try:
+        monkeypatch.setenv("JEV_ALLOWED_HOSTS", url.split("//", 1)[1])
+        out = str(tmp_path / "j.jsonl.gz")
+        s = export(WORLD, 60, [1], out, jev=url, quiet=True)
+        rows = read(out)
+        assert rows and s["jev_calls"][0]["calls"] == len(rows) and s["jev_calls"][0]["failures"] == 0
+        assert s["jev_calls"][0]["network_calls"] >= 1 and s["jev_calls"][0]["p95_ms"] is not None
+        assert {r["policy"] for r in rows} == {"stub@1"}
+        for r in rows:
+            DecisionRequest.from_dict(r["request"])
+    finally:
+        srv.shutdown()
+
+
+def test_jev_not_allowed_or_unreachable_is_a_clear_error(tmp_path, monkeypatch):
+    monkeypatch.setenv("JEV_ALLOWED_HOSTS", "")
+    monkeypatch.delenv("JEV_DEFAULT_URL", raising=False)
+    with pytest.raises(SystemExit, match="JEV_ALLOWED_HOSTS"):
+        export(WORLD, 10, [1], str(tmp_path / "a.jsonl.gz"), jev="http://127.0.0.1:9", quiet=True)
+    monkeypatch.setenv("JEV_ALLOWED_HOSTS", "127.0.0.1:9")
+    with pytest.raises(SystemExit, match="not usable"):
+        export(WORLD, 10, [1], str(tmp_path / "b.jsonl.gz"), jev="http://127.0.0.1:9", quiet=True)

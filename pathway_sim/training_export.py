@@ -41,16 +41,22 @@ class _NoBackend:
 class CapturingPolicy:
     """Delegates to ``inner`` (the world's decision tables), optionally explores, keeps every request."""
 
-    backend_name = "table"
     decision_mode = "sample"
 
     def __init__(self, inner, world, seed: int, explore: float = 0.0):
         from jev.adapter import BackendPolicy
         self.inner, self.seed, self.explore = inner, seed, float(explore)
-        self.model_id = getattr(inner, "model_id", "table")
         self._req = BackendPolicy(_NoBackend(), mode="sample", scenario=world.scenario, flowchart=world.flowchart)
         self.captured: dict[int, list] = {}          # cohort index -> [(node, request json, offered, probs, tag)]
         self._n: Counter = Counter()
+
+    @property
+    def backend_name(self) -> str:                    # the engine writes it into the record's assessment author
+        return getattr(self.inner, "backend_name", "table")
+
+    @property
+    def model_id(self) -> str:
+        return getattr(self.inner, "model_id", "table")
 
     def choose_with_note(self, view, options):
         req = self._req.request_for(view, list(options))          # the live path's request builder
@@ -61,7 +67,7 @@ class CapturingPolicy:
             out, tag = (probs, None, {"plan": "{action}"}), "explore"
         else:
             out = self.inner.choose_with_note(view, options)
-            tag = "table"
+            tag = self.backend_name
         self.captured.setdefault(view.patient_id, []).append(
             (view.node, json.dumps(req.to_dict(), ensure_ascii=False, separators=(",", ":")),
              list(options), {k2: round(float(v), 4) for k2, v in out[0].items()}, tag))
@@ -72,6 +78,142 @@ class CapturingPolicy:
 
     def run_summary(self):
         return self.inner.run_summary()
+
+
+# ============================================================================ the JEV over HTTP (D51)
+
+class TimedBackend:
+    """Wraps a backend: counts calls and failures and keeps the latency of each ``decide`` call."""
+
+    def __init__(self, inner):
+        self.inner, self.latencies, self.failures, self.calls = inner, [], 0, 0
+
+    def info(self):
+        return self.inner.info()
+
+    def decide(self, requests):
+        t, h0 = time.perf_counter(), getattr(self.inner, "http_calls", None)
+        self.calls += 1
+        try:
+            return self.inner.decide(requests)
+        except Exception:
+            self.failures += 1
+            raise
+        finally:
+            if h0 is None or getattr(self.inner, "http_calls", h0) != h0:      # only calls that went over the network
+                self.latencies.append(time.perf_counter() - t)
+
+    def summary(self) -> dict:
+        xs = sorted(self.latencies)
+        q = lambda p: round(xs[min(len(xs) - 1, int(p * len(xs)))] * 1000, 1) if xs else None
+        out = {"calls": self.calls, "network_calls": len(xs), "failures": self.failures, "median_ms": q(0.5), "p95_ms": q(0.95)}
+        fn = getattr(self.inner, "summary", None)
+        if callable(fn):
+            out.update(fn())
+        return out
+
+
+def jev_policy(world, url: str, model: str | None = None, timeout: float = 5.0):
+    """``BackendPolicy`` over the HTTP JEV at ``url`` (host must be in JEV_ALLOWED_HOSTS / JEV_DEFAULT_URL, as for
+    the service). Raises SystemExit with a plain message when the host is not allowed or the JEV is unreachable."""
+    from jev.adapter import BackendPolicy
+    from jev.contract import BackendError
+    from jev.http import HttpBackend
+    try:
+        from service.security import HostNotAllowed, check_jev_url
+        check_jev_url(url, where="--jev")
+    except ImportError:
+        pass
+    except ValueError as e:                                   # HostNotAllowed
+        raise SystemExit(f"error: {e}") from None
+    try:
+        be = TimedBackend(HttpBackend(url, model, timeout=timeout, retries=1, on_error="fail"))
+        return BackendPolicy(be, mode="sample", scenario=world.scenario, flowchart=world.flowchart)
+    except (BackendError, ValueError) as e:
+        raise SystemExit(f"error: the JEV at {url} is not usable: {e}\n"
+                         "       start it (for a test: python -m jev.stub_server) and check the URL") from None
+
+
+def jev_summary(pol) -> dict | None:
+    be = getattr(pol, "backend", None)
+    return be.summary() if isinstance(be, TimedBackend) else None
+
+
+def format_jev_summary(sm: dict) -> str:
+    return (f"JEV decisions {sm['calls']} (network calls {sm['network_calls']}), failures {sm['failures']}, latency per network call: median {sm['median_ms']} ms, p95 {sm['p95_ms']} ms"
+            + (f", cache hits {sm['cache_hits']}" if "cache_hits" in sm else ""))
+
+
+# ============================================================================ libraries (reference or model-written)
+
+def load_libraries(world, paths: list[str]) -> list:
+    """Load and verify card libraries (``patient_engine.library.load_library``: file hashes, and the catalogue hash
+    must equal the world's). Without paths: the world's own library."""
+    from patient_engine.library import LibraryError, load_library
+    from .encounter import world_library
+    if not paths:
+        return [world_library(world)]
+    out = []
+    for p in paths:
+        try:
+            out.append(load_library(p, world.catalogue))
+        except LibraryError as e:
+            raise SystemExit(f"error: library {p}: {e}") from None
+    return out
+
+
+def library_cohort(world, lib, n: int, seed: int):
+    """Like ``encounter.world_cohort`` but for a given library."""
+    from patient_engine.cohort import CohortSpec, draw_cohort
+    prev = {c: v for c, v in world.prevalence().items() if c in lib.by_condition and v > 0}
+    arr = {k: v for k, v in (world.raw.get("arrivals") or {"rate_per_day": 44}).items() if k in ("rate_per_day", "spread_days")}
+    return draw_cohort(lib, CohortSpec(library_id=lib.id, prevalence=prev, n=n, seed=seed), arr)
+
+
+def generator_name(lib) -> str:
+    m = lib.manifest
+    return m.generator if not m.model else f"{m.generator}:{m.model}"
+
+
+def cli_run_world(a) -> None:
+    """``run`` for encounter worlds: ``encounter.cli_run`` plus ``--library`` and ``--jev URL``."""
+    from .encounter import format_outcomes, load_world, outcomes, run_encounter
+    t0 = time.time()
+    world = load_world(a.scenario)
+    n = a.n or int(world.raw.get("default_n", 2000))
+    libs = getattr(a, "library", None) or []
+    if len(libs) > 1:
+        raise SystemExit("error: `run` takes one --library (export-training takes several)")
+    lib = load_libraries(world, libs)[0]
+    cohort = library_cohort(world, lib, n, a.seed)
+    if a.decision_mode or a.set:
+        raise SystemExit("error: --decision-mode and --set apply to flowchart scenarios, not encounter worlds")
+    pol = None
+    if a.jev and a.jev not in ("stub", "rule"):
+        pol = jev_policy(world, a.jev, a.jev_model, a.jev_timeout or 5.0)
+    elif a.jev:
+        raise SystemExit("error: for encounter worlds --jev takes a URL (the world's decision tables are the default)")
+    try:
+        log = run_encounter(world, n, a.seed, policy=pol, cohort=cohort)
+    except Exception as e:
+        if type(e).__name__ in ("BackendError", "ContractError"):
+            raise SystemExit(f"error: the run stopped, the JEV failed: {e}") from None
+        raise
+    o = outcomes(log)
+    who = getattr(pol or world.policy, "model_id", "")
+    print(f"{world.id}: library {log.library_id} ({generator_name(lib)}, {log.distinct_cards} distinct cards), care {world.care_path}, "
+          f"policy {who}; {time.time() - t0:.1f} s")
+    print(format_outcomes(o, world.target_days))
+    if pol is not None:
+        sm = jev_summary(pol)
+        if sm:
+            print(format_jev_summary(sm))
+    elif world.policy.run_summary():
+        print("policy warnings:", world.policy.run_summary())
+    if a.out:
+        Path(a.out).parent.mkdir(parents=True, exist_ok=True)
+        Path(a.out).write_text(json.dumps({"run": log.to_dict(), "outcomes": o}))
+        print("wrote", a.out)
 
 
 def split_of(key: str, salt: str = "jev-train-split") -> str:
@@ -97,7 +239,7 @@ def _outcome(pr) -> dict:
 
 
 def rows_for_run(world, log, cohort, pol: CapturingPolicy, seed: int, split_by: str = "card",
-                 holdout_generator: str | None = None):
+                 holdout_generator: str | None = None, force_split: str | None = None):
     """Yield ``(row_json, row_info)`` for one finished run."""
     cat_hash = world.catalogue.version_hash[:12]
     for pr in log.patients:
@@ -109,23 +251,25 @@ def rows_for_run(world, log, cohort, pol: CapturingPolicy, seed: int, split_by: 
         if not caps:
             continue
         card = cohort.card(pid)
-        generator = card.provenance.generator
+        generator = generator_name(cohort.library)
         classes = world.catalogue.conditions
         coexisting = [c for c in pr.conditions if c != pr.primary_condition]
         label = {"primary": pr.primary_condition, "coexisting": coexisting,
                  "class": classes[pr.primary_condition].cls}
         out = _outcome(pr)
         card_key = card.id
-        if holdout_generator and generator == holdout_generator:
+        if force_split:
+            split = force_split
+        elif holdout_generator and generator.split(":")[0] == holdout_generator:
             split = "test"
         else:
             split = split_of(card_key if split_by == "card" else f"{seed}:{pid}")
         meta = {"catalogue": f"{world.catalogue.id}@{cat_hash}", "library": cohort.library_id, "generator": generator,
-                "seed": seed, "patient": f"P{pid:06d}", "split": split}
+                "seed": seed, "policy_model": pol.model_id, "patient": f"P{pid:06d}", "split": split}
         for (node, req_json, offered, probs, tag), ch in zip(caps, chosen):
             if ch["node"] != node or ch["offered"] != offered:
                 raise RuntimeError(f"patient {pid}: captured request does not match the engine's choice at {node}")
-            pol_tag = f"{pol.model_id}|{tag}" if tag == "explore" else pol.model_id
+            pol_tag = f"{pol.model_id}|explore" if tag == "explore" else pol.model_id
             line = ('{"request":' + req_json + ',"chosen":' + json.dumps(ch["chosen"]) + ',"policy":' + json.dumps(pol_tag)
                     + ',"behaviour_probs":' + json.dumps(probs, separators=(",", ":"))
                     + ',"label":' + json.dumps(label, separators=(",", ":"))
@@ -135,21 +279,38 @@ def rows_for_run(world, log, cohort, pol: CapturingPolicy, seed: int, split_by: 
 
 
 def export(scenario: str, n: int, seeds: list[int], out: str, explore: float = 0.0, split_by: str = "card",
-           holdout_generator: str | None = None, quiet: bool = False) -> dict:
-    from .encounter import load_world, run_encounter, world_cohort
+           holdout_generator: str | None = None, quiet: bool = False, libraries: list[str] | None = None,
+           holdout_libraries: list[str] | None = None, jev: str | None = None, jev_model: str | None = None,
+           jev_timeout: float = 5.0) -> dict:
+    from .encounter import load_world, run_encounter
     t0 = time.time()
     world = load_world(scenario)
+    train_libs = load_libraries(world, libraries or [])
+    hold_libs = load_libraries(world, holdout_libraries) if holdout_libraries else []
+    plan = [(lib, False) for lib in train_libs] + [(lib, True) for lib in hold_libs]
+    if len({lib.id for lib, _ in plan}) != len(plan):
+        raise SystemExit("error: the same library is given twice (or as both --library and --holdout-library)")
+    jev_stats = []
     Path(out).parent.mkdir(parents=True, exist_ok=True)
     tmp = out + ".tmp"
     by_point, by_label, by_class, by_split, by_chosen, by_policy = Counter(), Counter(), Counter(), Counter(), Counter(), Counter()
     patients = set()
     rows = 0
     with open(tmp, "wb") as raw, gzip.GzipFile(filename="", mode="wb", fileobj=raw, mtime=0, compresslevel=6) as gz:
-        for seed in seeds:
-            cohort = world_cohort(world, n, seed)
-            pol = CapturingPolicy(world.policy, world, seed, explore)
-            log = run_encounter(world, n, seed, policy=pol, cohort=cohort)
-            for line, (node, primary, split, tag) in rows_for_run(world, log, cohort, pol, seed, split_by, holdout_generator):
+        for (lib, is_hold), seed in ((lp, sd) for lp in plan for sd in seeds):
+            cohort = library_cohort(world, lib, n, seed)
+            inner = jev_policy(world, jev, jev_model, jev_timeout) if jev else world.policy
+            pol = CapturingPolicy(inner, world, seed, explore)
+            try:
+                log = run_encounter(world, n, seed, policy=pol, cohort=cohort)
+            except Exception as e:
+                if type(e).__name__ in ("BackendError", "ContractError"):
+                    raise SystemExit(f"error: the export stopped, the JEV failed: {e}") from None
+                raise
+            if jev:
+                jev_stats.append(jev_summary(inner))
+            for line, (node, primary, split, tag) in rows_for_run(world, log, cohort, pol, seed, split_by, holdout_generator,
+                                                                  force_split="test" if is_hold else None):
                 gz.write(line.encode() + b"\n")
                 rows += 1
                 by_point[node] += 1
@@ -166,7 +327,8 @@ def export(scenario: str, n: int, seeds: list[int], out: str, explore: float = 0
                "split_by": split_by, "holdout_generator": holdout_generator, "rows": rows, "patients": len(patients),
                "rows_per_decision_point": dict(by_point), "rows_per_primary_condition": dict(sorted(by_label.items())),
                "rows_per_split": dict(by_split), "rows_per_policy": dict(by_policy),
-               "patients_per_class": dict(by_class), "file": out, "file_bytes": os.path.getsize(out),
+               "libraries": [{"id": lib.id, "generator": generator_name(lib), "holdout": h} for lib, h in plan],
+               "jev": jev, "jev_calls": jev_stats or None, "patients_per_class": dict(by_class), "file": out, "file_bytes": os.path.getsize(out),
                "seconds": round(time.time() - t0, 1)}
     sp = out[:-len(".jsonl.gz")] + ".summary.json" if out.endswith(".jsonl.gz") else out + ".summary.json"
     Path(sp).write_text(json.dumps(summary, indent=2))
@@ -176,11 +338,15 @@ def export(scenario: str, n: int, seeds: list[int], out: str, explore: float = 0
 
 def cmd_export(a) -> None:
     from .__main__ import _seeds
-    s = export(a.scenario, a.n, _seeds(a.seeds), a.out, a.explore, a.split_by, a.holdout_generator)
+    s = export(a.scenario, a.n, _seeds(a.seeds), a.out, a.explore, a.split_by, a.holdout_generator,
+               libraries=a.library, holdout_libraries=a.holdout_library, jev=a.jev, jev_model=a.jev_model,
+               jev_timeout=a.jev_timeout)
     print(f"wrote {s['file']}: {s['rows']} rows from {s['patients']} patients, {s['file_bytes'] / 1e6:.1f} MB, {s['seconds']} s")
     print("rows per decision point:", s["rows_per_decision_point"])
     print("rows per split:", s["rows_per_split"], "| policy:", s["rows_per_policy"])
     print("label (primary condition):", s["rows_per_primary_condition"])
+    for sm in s["jev_calls"] or []:
+        print(format_jev_summary(sm))
     print("summary:", s["summary_file"])
 
 
@@ -194,5 +360,10 @@ def add_cli(sub) -> None:
     p.add_argument("--split-by", choices=["card", "patient"], default="card",
                    help="card (default): all patients drawn from one library card share a split, so no card is in train and test; patient: per patient and seed")
     p.add_argument("--holdout-generator", help="rows from cards made by this generator (e.g. reference) are marked test")
+    p.add_argument("--library", action="append", metavar="DIR", help="card library directory (patient_engine library); repeatable. Default: the world's reference library")
+    p.add_argument("--holdout-library", action="append", metavar="DIR", help="library whose patients all go to the test split (generalisation check); repeatable")
+    p.add_argument("--jev", metavar="URL", help="decide with the HTTP JEV at URL (host must be in JEV_ALLOWED_HOSTS or be JEV_DEFAULT_URL) instead of the decision tables")
+    p.add_argument("--jev-model", help="model id to ask the JEV for")
+    p.add_argument("--jev-timeout", type=float, default=5.0, help="seconds per JEV call (the client caps it at 5)")
     p.add_argument("--out", required=True, help="path ending in .jsonl.gz")
     p.set_defaults(f=cmd_export)
