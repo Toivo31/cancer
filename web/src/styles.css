@@ -203,3 +203,9 @@ input[type=range] { accent-color: var(--mint); }
 .confirm { border: 1px solid rgba(255,154,122,.5); background: rgba(255,154,122,.07); border-radius: 8px; padding: 10px 12px; }
 .addstep summary { font-size: 12.5px; color: var(--blue); }
 .addstep summary:focus-visible, .btn:focus-visible, .tab:focus-visible, .runrow:focus-visible, a:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--blue); outline-offset: 1px; }
+
+/* polish */
+.optbtn { position: absolute; right: 336px; top: 12px; z-index: 9; background: rgba(17,26,36,.94); border-color: var(--violet); }
+.ellipsis { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.react-flow__node:focus-visible .pnode { box-shadow: 0 0 0 2px var(--blue); }
+.runrow:focus-visible, .lostrow:focus-visible { outline: 2px solid var(--blue); outline-offset: 1px; }

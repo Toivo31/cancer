@@ -181,7 +181,12 @@ export function FlowCanvas({ flowchart, world, selected, onSelect, overlay, path
   }, [flowchart, world, boxes, geoms, selected, focus, overlay, path])
 
   return (
-    <div style={{ position: 'absolute', inset: 0 }} data-testid="canvas">
+    <div style={{ position: 'absolute', inset: 0 }} data-testid="canvas" onKeyDown={(e) => {
+      // a step reached with Tab is chosen with Enter or Space, like a click
+      if (e.key !== 'Enter' && e.key !== ' ') return
+      const el = (e.target as HTMLElement).closest?.('.react-flow__node') as HTMLElement | null
+      if (el?.dataset.id) { e.preventDefault(); onSelect?.(el.dataset.id) }
+    }}>
       <ReactFlow
         key={`${key}/${refit ?? ''}/${resetTick}`} nodes={nodes} onNodesChange={onNodesChange} edges={edges} nodeTypes={nodeTypes} edgeTypes={edgeTypes}
         fitView fitViewOptions={{ padding: { top: '84px', right: '24px', bottom: '64px', left: '24px' } }} minZoom={0.15} maxZoom={1.8}

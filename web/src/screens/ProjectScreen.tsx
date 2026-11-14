@@ -187,8 +187,8 @@ export function ProjectScreen({ pid, route }: { pid: string; route: Route }) {
     go(`p/${pid}`, { f: fid, v: version, run })
   }, [api, pid])
 
-  if (error && !fc) return <div className="page"><div className="error">{error}</div><p><a href="#/">Back to projects</a></p></div>
-  if (!fc || !cur || curVer === null || !draft || !world) return <div className="page"><div className="empty">Loading…</div></div>
+  if (error && !fc) return <div className="page"><div className="error" role="alert">Could not open this project: {error}</div><p><button className="btn" onClick={() => window.location.reload()}>Try again</button> <a href="#/" style={{ marginLeft: 10 }}>Back to projects</a></p></div>
+  if (!fc || !cur || curVer === null || !draft || !world) return <div className="page"><div className="empty" role="status">Loading the project…</div></div>
 
   const shown = editing && editDoc ? editDoc : fc
   const sel = selected ? fc.nodes.find((n) => n.id === selected) : null
@@ -198,9 +198,9 @@ export function ProjectScreen({ pid, route }: { pid: string; route: Route }) {
     <>
       <div className="subbar">
         <a href="#/" onClick={(e) => { e.preventDefault(); go('') }} className="muted">‹ Projects</a>
-        <strong>{project?.name}</strong>
+        <strong className="ellipsis" style={{ maxWidth: 260 }} title={project?.name}>{project?.name}</strong>
         <span className="sep dim">/</span>
-        <select className="field" aria-label="Flowchart" value={cur.id} onChange={(e) => nav({ f: e.target.value, v: null, run: null })}>
+        <select className="field ellipsis" style={{ maxWidth: 280 }} aria-label="Flowchart" value={cur.id} onChange={(e) => nav({ f: e.target.value, v: null, run: null })}>
           {list.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
         </select>
         <select className="field" aria-label="Version" value={curVer} onChange={(e) => nav({ v: e.target.value, run: null })}>
@@ -215,12 +215,12 @@ export function ProjectScreen({ pid, route }: { pid: string; route: Route }) {
         <div className="tabs" role="tablist">
           <button role="tab" aria-selected={tab === 'flowchart'} className={`tab ${tab === 'flowchart' ? 'on' : ''}`} onClick={() => nav({ tab: null })}>Flowchart</button>
           <button role="tab" aria-selected={tab === 'decisions'} className={`tab ${tab === 'decisions' ? 'on' : ''}`} onClick={() => nav({ tab: 'decisions' })}>Decisions{dirty ? ' •' : ''}</button>
-          <button role="tab" className="tab" disabled title="The dashboard report arrives with ticket M3-7">Report</button>
         </div>
         <span className="spacer" />
         <span className="dim" style={{ fontSize: 12 }}>{fc.nodes.length} steps · {fc.nodes.filter((n) => n.kind === 'decision').length} decisions{world.target_days ? ` · target ${world.target_days} days` : ''}</span>
       </div>
 
+      {error && tab === 'flowchart' && <div className="error" role="alert" style={{ margin: '8px 20px', display: 'flex', gap: 10, alignItems: 'center' }}><span style={{ flex: 1 }}>{error}</span><button className="btn small" onClick={() => setError(null)}>Dismiss</button></div>}
       {tab === 'flowchart' ? (
         <div className="workspace">
           <div className="canvas-col">
@@ -228,6 +228,7 @@ export function ProjectScreen({ pid, route }: { pid: string; route: Route }) {
               <FlowCanvas layoutKey={`${pid}/${cur.id}`} refit={`${panelOpen ? 'p' : 'c'}${flow && layer !== 'structure' ? 'b' : ''}`} flowchart={shown} world={world} selected={selected} onSelect={setSelected} overlay={editing ? null : overlay} path={editing ? null : path}
                 playback={clock && layer !== 'structure' && !editing ? { clock, patients: pps, transit, selectedPatient: patientIdx, onPick: pickPatient } : null} />
               <button className="btn small panelbtn" onClick={() => setPanelOpen((o) => !o)} aria-pressed={panelOpen} title={panelOpen ? 'Hide the side panel for more room' : 'Show the side panel'}>{panelOpen ? 'Hide panel ›' : '‹ Panel'}</button>
+              {!editing && <button className="btn small optbtn" onClick={() => { setPanelOpen(true); setSideTab('optimise') }} title="Search for changes to the order of steps that bring treatment forward" data-testid="open-optimise">Optimise…</button>}
               <button className={`btn small editbtn ${editing ? 'primary' : ''}`} onClick={() => (editing ? stopEdit() : startEdit())} aria-pressed={editing} title={editing ? 'Leave edit mode (unsaved changes are dropped)' : 'Change steps and connections and save them as a new version'}>{editing ? 'Done editing' : 'Edit'}</button>
               {flow && !editing && (
                 <>
@@ -237,6 +238,7 @@ export function ProjectScreen({ pid, route }: { pid: string; route: Route }) {
                   <div className="toolhint"><strong>{runObj ? runObj.label || runObj.id : ''}</strong> · {overlay?.legend || LAYERS.find((l) => l.id === layer)?.hint}</div>
                 </>
               )}
+              {!flow && !flowLoading && !flowError && !editing && runsLoaded && <div className="toolhint" style={{ top: 12 }} data-testid="no-run-hint">No finished run of this version yet. Press Run in the side panel to see patients flow through it, or Optimise to search for improvements.</div>}
               {!flow && (flowLoading || flowError) && <div className="toolhint" style={{ top: 12 }}>{flowLoading ? 'Loading the run…' : flowError}</div>}
             </div>
             {flow && clock && layer !== 'structure' && !editing && <PlaybackBar clock={clock} patients={pps} sampleLabel={`Dots: ${pps.length} sampled patients of ${flow.totals.n.toLocaleString('en')}. Counts and colours use everyone.`} />}
