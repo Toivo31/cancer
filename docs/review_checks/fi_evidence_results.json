@@ -1,0 +1,2637 @@
+{
+ "meta": {
+  "script": "scripts/fi_evidence_sensitivity.py",
+  "scenario": "scenarios/finland_lung.yaml",
+  "suggested_pathway": "runs/opt_fi_noft.json (flowchart_after)",
+  "patients_per_cohort": 18800,
+  "calibration_cohorts": [
+   901,
+   902
+  ],
+  "heldout_cohorts_pair": [
+   301,
+   302,
+   303,
+   304
+  ],
+  "heldout_cohorts_ranking": [
+   301,
+   302,
+   303
+  ],
+  "runs": "common random numbers: the same patients and the same per-patient random draws in every world and pathway",
+  "seconds": 984,
+  "quick": false
+ },
+ "results": {
+  "A": {
+   "target_equivalent_days": 90,
+   "pair": {
+    "baseline": {
+     "interval_median": {
+      "first_contact_to_treatment": 104.5,
+      "diagnosis_to_treatment": 33.2,
+      "referral_to_treatment": 74.8,
+      "specialist_visit_to_treatment": 59.0
+     },
+     "by_target": {
+      "90": {
+       "mean": {
+        "share_within_target": 0.1633,
+        "median_days_to_treatment": 104.565,
+        "missed_cancers": 26.75,
+        "confirmed_cancers": 223.25,
+        "n_cancer": 261.0,
+        "tests_per_patient": 0.4095,
+        "invasive_per_patient": 0.0265,
+        "median_days_to_exit_noncancer": 16.75,
+        "untreated_cancers": 26.75,
+        "stuck": 0.0,
+        "by_group": {
+         "non_specific": {
+          "share_within_target": 0.1191,
+          "median_days_to_treatment": 109.6575,
+          "n_cancer": 181.0
+         },
+         "site_specific": {
+          "share_within_target": 0.2635,
+          "median_days_to_treatment": 97.25,
+          "n_cancer": 80.0
+         }
+        },
+        "max_utilisation": 0.8913,
+        "utilisation": {
+         "nurse_appt": 0.888,
+         "gp_appt": 0.891,
+         "xray": 0.84,
+         "clinic": 0.768,
+         "ct_scanner": 0.842,
+         "bronchoscopy": 0.82,
+         "ttnb_slot": 0.686,
+         "pet_scanner": 0.789,
+         "treatment_slot": 0.356
+        }
+       },
+       "per_cohort_share": [
+        0.2047,
+        0.1461,
+        0.1455,
+        0.1569
+       ],
+       "per_cohort_median": [
+        101.73,
+        102.89,
+        108.43,
+        105.21
+       ]
+      }
+     }
+    },
+    "suggested": {
+     "interval_median": {
+      "first_contact_to_treatment": 97.1,
+      "diagnosis_to_treatment": 27.9,
+      "referral_to_treatment": 66.8,
+      "specialist_visit_to_treatment": 53.9
+     },
+     "by_target": {
+      "90": {
+       "mean": {
+        "share_within_target": 0.3008,
+        "median_days_to_treatment": 96.9925,
+        "missed_cancers": 26.75,
+        "confirmed_cancers": 223.25,
+        "n_cancer": 261.0,
+        "tests_per_patient": 0.4095,
+        "invasive_per_patient": 0.0265,
+        "median_days_to_exit_noncancer": 16.75,
+        "untreated_cancers": 26.75,
+        "stuck": 0.0,
+        "by_group": {
+         "non_specific": {
+          "share_within_target": 0.23,
+          "median_days_to_treatment": 101.9825,
+          "n_cancer": 181.0
+         },
+         "site_specific": {
+          "share_within_target": 0.461,
+          "median_days_to_treatment": 90.44,
+          "n_cancer": 80.0
+         }
+        },
+        "max_utilisation": 0.8913,
+        "utilisation": {
+         "nurse_appt": 0.888,
+         "gp_appt": 0.891,
+         "xray": 0.84,
+         "clinic": 0.766,
+         "ct_scanner": 0.835,
+         "bronchoscopy": 0.824,
+         "ttnb_slot": 0.694,
+         "pet_scanner": 0.797,
+         "treatment_slot": 0.372
+        }
+       },
+       "per_cohort_share": [
+        0.3701,
+        0.2921,
+        0.2388,
+        0.302
+       ],
+       "per_cohort_median": [
+        92.53,
+        95.63,
+        101.07,
+        98.74
+       ]
+      }
+     }
+    }
+   },
+   "rank": {
+    "baseline": {
+     "share": 0.1654,
+     "median_days": 104.35,
+     "missed_cancers": 27.0,
+     "max_utilisation": 0.8913
+    },
+    "suggested": {
+     "share": 0.3003,
+     "median_days": 96.41,
+     "missed_cancers": 27.0,
+     "max_utilisation": 0.8913
+    },
+    "direct_ct": {
+     "share": 0.202,
+     "median_days": 102.2967,
+     "missed_cancers": 26.3333,
+     "max_utilisation": 0.8946
+    },
+    "bundled_workup": {
+     "share": 0.5434,
+     "median_days": 82.35,
+     "missed_cancers": 27.0,
+     "max_utilisation": 0.8913
+    },
+    "fast_track_nonspecific": {
+     "share": 0.345,
+     "median_days": 95.8067,
+     "missed_cancers": 29.3333,
+     "max_utilisation": 0.8913
+    },
+    "baseline_plus_capacity": {
+     "share": 0.3151,
+     "median_days": 96.46,
+     "missed_cancers": 27.0,
+     "max_utilisation": 0.8913
+    }
+   },
+   "gain": {
+    "90": {
+     "gain_pp_per_cohort": [
+      16.54,
+      14.6,
+      9.33,
+      14.51
+     ],
+     "gain_pp_mean": 13.74,
+     "gain_pp_min": 9.33,
+     "gain_pp_max": 16.54,
+     "positive_in": "4 of 4",
+     "median_days_change_per_cohort": [
+      -9.2,
+      -7.26,
+      -7.36,
+      -6.47
+     ],
+     "median_days_change_mean": -7.57
+    }
+   },
+   "guardrails_failed": [],
+   "guardrails_passed": true,
+   "equity": {
+    "non_specific": {
+     "share_base": 0.1191,
+     "share_suggested": 0.23,
+     "median_base": 109.6575,
+     "median_suggested": 101.9825
+    },
+    "site_specific": {
+     "share_base": 0.2635,
+     "share_suggested": 0.461,
+     "median_base": 97.25,
+     "median_suggested": 90.44
+    },
+    "gap_pp_base": 14.4,
+    "gap_pp_suggested": 23.1,
+    "gap_days_base": 12.4,
+    "gap_days_suggested": 11.5
+   },
+   "rank_order_by_share": [
+    "bundled_workup",
+    "fast_track_nonspecific",
+    "baseline_plus_capacity",
+    "suggested",
+    "direct_ct",
+    "baseline"
+   ],
+   "rank_order_by_median_days": [
+    "bundled_workup",
+    "fast_track_nonspecific",
+    "suggested",
+    "baseline_plus_capacity",
+    "direct_ct",
+    "baseline"
+   ],
+   "rank_kendall_tau_vs_A_share": 1.0,
+   "rank_kendall_tau_vs_A_days": 1.0
+  },
+  "N37": {
+   "target_equivalent_days": 94,
+   "pair": {
+    "baseline": {
+     "interval_median": {
+      "first_contact_to_treatment": 111.0,
+      "diagnosis_to_treatment": 39.9,
+      "referral_to_treatment": 81.5,
+      "specialist_visit_to_treatment": 65.9
+     },
+     "by_target": {
+      "90": {
+       "mean": {
+        "share_within_target": 0.0636,
+        "median_days_to_treatment": 111.3725,
+        "missed_cancers": 26.75,
+        "confirmed_cancers": 223.25,
+        "n_cancer": 261.0,
+        "tests_per_patient": 0.4095,
+        "invasive_per_patient": 0.0265,
+        "median_days_to_exit_noncancer": 16.75,
+        "untreated_cancers": 26.75,
+        "stuck": 0.0,
+        "by_group": {
+         "non_specific": {
+          "share_within_target": 0.0512,
+          "median_days_to_treatment": 116.2275,
+          "n_cancer": 181.0
+         },
+         "site_specific": {
+          "share_within_target": 0.0921,
+          "median_days_to_treatment": 104.1525,
+          "n_cancer": 80.0
+         }
+        },
+        "max_utilisation": 0.8913,
+        "utilisation": {
+         "nurse_appt": 0.888,
+         "gp_appt": 0.891,
+         "xray": 0.84,
+         "clinic": 0.768,
+         "ct_scanner": 0.842,
+         "bronchoscopy": 0.82,
+         "ttnb_slot": 0.686,
+         "pet_scanner": 0.789,
+         "treatment_slot": 0.352
+        }
+       },
+       "per_cohort_share": [
+        0.0827,
+        0.03,
+        0.0634,
+        0.0784
+       ],
+       "per_cohort_median": [
+        108.63,
+        109.82,
+        115.11,
+        111.93
+       ]
+      },
+      "94": {
+       "mean": {
+        "share_within_target": 0.1135,
+        "median_days_to_treatment": 111.3725,
+        "missed_cancers": 26.75,
+        "confirmed_cancers": 223.25,
+        "n_cancer": 261.0,
+        "tests_per_patient": 0.4095,
+        "invasive_per_patient": 0.0265,
+        "median_days_to_exit_noncancer": 16.75,
+        "untreated_cancers": 26.75,
+        "stuck": 0.0,
+        "by_group": {
+         "non_specific": {
+          "share_within_target": 0.0884,
+          "median_days_to_treatment": 116.2275,
+          "n_cancer": 181.0
+         },
+         "site_specific": {
+          "share_within_target": 0.1709,
+          "median_days_to_treatment": 104.1525,
+          "n_cancer": 80.0
+         }
+        },
+        "max_utilisation": 0.8913,
+        "utilisation": {
+         "nurse_appt": 0.888,
+         "gp_appt": 0.891,
+         "xray": 0.84,
+         "clinic": 0.768,
+         "ct_scanner": 0.842,
+         "bronchoscopy": 0.82,
+         "ttnb_slot": 0.686,
+         "pet_scanner": 0.789,
+         "treatment_slot": 0.352
+        }
+       },
+       "per_cohort_share": [
+        0.1496,
+        0.0936,
+        0.097,
+        0.1137
+       ],
+       "per_cohort_median": [
+        108.63,
+        109.82,
+        115.11,
+        111.93
+       ]
+      }
+     }
+    },
+    "suggested": {
+     "interval_median": {
+      "first_contact_to_treatment": 103.7,
+      "diagnosis_to_treatment": 34.7,
+      "referral_to_treatment": 73.4,
+      "specialist_visit_to_treatment": 60.8
+     },
+     "by_target": {
+      "90": {
+       "mean": {
+        "share_within_target": 0.1711,
+        "median_days_to_treatment": 103.685,
+        "missed_cancers": 26.75,
+        "confirmed_cancers": 223.25,
+        "n_cancer": 261.0,
+        "tests_per_patient": 0.4095,
+        "invasive_per_patient": 0.0265,
+        "median_days_to_exit_noncancer": 16.75,
+        "untreated_cancers": 26.75,
+        "stuck": 0.0,
+        "by_group": {
+         "non_specific": {
+          "share_within_target": 0.1245,
+          "median_days_to_treatment": 108.5525,
+          "n_cancer": 181.0
+         },
+         "site_specific": {
+          "share_within_target": 0.2768,
+          "median_days_to_treatment": 97.01,
+          "n_cancer": 80.0
+         }
+        },
+        "max_utilisation": 0.8913,
+        "utilisation": {
+         "nurse_appt": 0.888,
+         "gp_appt": 0.891,
+         "xray": 0.84,
+         "clinic": 0.766,
+         "ct_scanner": 0.835,
+         "bronchoscopy": 0.824,
+         "ttnb_slot": 0.694,
+         "pet_scanner": 0.797,
+         "treatment_slot": 0.362
+        }
+       },
+       "per_cohort_share": [
+        0.2205,
+        0.161,
+        0.1381,
+        0.1647
+       ],
+       "per_cohort_median": [
+        98.98,
+        102.6,
+        107.81,
+        105.35
+       ]
+      },
+      "94": {
+       "mean": {
+        "share_within_target": 0.2497,
+        "median_days_to_treatment": 103.685,
+        "missed_cancers": 26.75,
+        "confirmed_cancers": 223.25,
+        "n_cancer": 261.0,
+        "tests_per_patient": 0.4095,
+        "invasive_per_patient": 0.0265,
+        "median_days_to_exit_noncancer": 16.75,
+        "untreated_cancers": 26.75,
+        "stuck": 0.0,
+        "by_group": {
+         "non_specific": {
+          "share_within_target": 0.1882,
+          "median_days_to_treatment": 108.5525,
+          "n_cancer": 181.0
+         },
+         "site_specific": {
+          "share_within_target": 0.3895,
+          "median_days_to_treatment": 97.01,
+          "n_cancer": 80.0
+         }
+        },
+        "max_utilisation": 0.8913,
+        "utilisation": {
+         "nurse_appt": 0.888,
+         "gp_appt": 0.891,
+         "xray": 0.84,
+         "clinic": 0.766,
+         "ct_scanner": 0.835,
+         "bronchoscopy": 0.824,
+         "ttnb_slot": 0.694,
+         "pet_scanner": 0.797,
+         "treatment_slot": 0.362
+        }
+       },
+       "per_cohort_share": [
+        0.3031,
+        0.2397,
+        0.2052,
+        0.251
+       ],
+       "per_cohort_median": [
+        98.98,
+        102.6,
+        107.81,
+        105.35
+       ]
+      }
+     }
+    }
+   },
+   "rank": {
+    "baseline": {
+     "share": 0.1134,
+     "median_days": 111.1867,
+     "missed_cancers": 27.0,
+     "max_utilisation": 0.8913
+    },
+    "suggested": {
+     "share": 0.2493,
+     "median_days": 103.13,
+     "missed_cancers": 27.0,
+     "max_utilisation": 0.8913
+    },
+    "direct_ct": {
+     "share": 0.1551,
+     "median_days": 108.91,
+     "missed_cancers": 26.3333,
+     "max_utilisation": 0.8946
+    },
+    "bundled_workup": {
+     "share": 0.5321,
+     "median_days": 87.1833,
+     "missed_cancers": 27.0,
+     "max_utilisation": 0.8913
+    },
+    "fast_track_nonspecific": {
+     "share": 0.3045,
+     "median_days": 102.72,
+     "missed_cancers": 29.3333,
+     "max_utilisation": 0.8913
+    },
+    "baseline_plus_capacity": {
+     "share": 0.2621,
+     "median_days": 103.2467,
+     "missed_cancers": 27.0,
+     "max_utilisation": 0.8913
+    }
+   },
+   "gain": {
+    "90": {
+     "gain_pp_per_cohort": [
+      13.78,
+      13.1,
+      7.47,
+      8.63
+     ],
+     "gain_pp_mean": 10.74,
+     "gain_pp_min": 7.47,
+     "gain_pp_max": 13.78,
+     "positive_in": "4 of 4",
+     "median_days_change_per_cohort": [
+      -9.65,
+      -7.22,
+      -7.3,
+      -6.58
+     ],
+     "median_days_change_mean": -7.69
+    },
+    "94": {
+     "gain_pp_per_cohort": [
+      15.35,
+      14.61,
+      10.82,
+      13.73
+     ],
+     "gain_pp_mean": 13.63,
+     "gain_pp_min": 10.82,
+     "gain_pp_max": 15.35,
+     "positive_in": "4 of 4",
+     "median_days_change_per_cohort": [
+      -9.65,
+      -7.22,
+      -7.3,
+      -6.58
+     ],
+     "median_days_change_mean": -7.69
+    }
+   },
+   "guardrails_failed": [],
+   "guardrails_passed": true,
+   "equity": {
+    "non_specific": {
+     "share_base": 0.0884,
+     "share_suggested": 0.1882,
+     "median_base": 116.2275,
+     "median_suggested": 108.5525
+    },
+    "site_specific": {
+     "share_base": 0.1709,
+     "share_suggested": 0.3895,
+     "median_base": 104.1525,
+     "median_suggested": 97.01
+    },
+    "gap_pp_base": 8.2,
+    "gap_pp_suggested": 20.1,
+    "gap_days_base": 12.1,
+    "gap_days_suggested": 11.5
+   },
+   "rank_order_by_share": [
+    "bundled_workup",
+    "fast_track_nonspecific",
+    "baseline_plus_capacity",
+    "suggested",
+    "direct_ct",
+    "baseline"
+   ],
+   "rank_order_by_median_days": [
+    "bundled_workup",
+    "fast_track_nonspecific",
+    "suggested",
+    "baseline_plus_capacity",
+    "direct_ct",
+    "baseline"
+   ],
+   "rank_kendall_tau_vs_A_share": 1.0,
+   "rank_kendall_tau_vs_A_days": 1.0
+  },
+  "L67": {
+   "target_equivalent_days": 124,
+   "pair": {
+    "baseline": {
+     "interval_median": {
+      "first_contact_to_treatment": 141.0,
+      "diagnosis_to_treatment": 69.9,
+      "referral_to_treatment": 111.5,
+      "specialist_visit_to_treatment": 95.9
+     },
+     "by_target": {
+      "90": {
+       "mean": {
+        "share_within_target": 0.0,
+        "median_days_to_treatment": 141.6425,
+        "missed_cancers": 26.75,
+        "confirmed_cancers": 223.25,
+        "n_cancer": 261.0,
+        "tests_per_patient": 0.4095,
+        "invasive_per_patient": 0.0265,
+        "median_days_to_exit_noncancer": 16.75,
+        "untreated_cancers": 26.75,
+        "stuck": 0.0,
+        "by_group": {
+         "non_specific": {
+          "share_within_target": 0.0,
+          "median_days_to_treatment": 146.3375,
+          "n_cancer": 181.0
+         },
+         "site_specific": {
+          "share_within_target": 0.0,
+          "median_days_to_treatment": 134.3825,
+          "n_cancer": 80.0
+         }
+        },
+        "max_utilisation": 0.8913,
+        "utilisation": {
+         "nurse_appt": 0.888,
+         "gp_appt": 0.891,
+         "xray": 0.84,
+         "clinic": 0.768,
+         "ct_scanner": 0.842,
+         "bronchoscopy": 0.82,
+         "ttnb_slot": 0.686,
+         "pet_scanner": 0.789,
+         "treatment_slot": 0.324
+        }
+       },
+       "per_cohort_share": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+       ],
+       "per_cohort_median": [
+        138.71,
+        140.23,
+        145.55,
+        142.08
+       ]
+      },
+      "124": {
+       "mean": {
+        "share_within_target": 0.1163,
+        "median_days_to_treatment": 141.6425,
+        "missed_cancers": 26.75,
+        "confirmed_cancers": 223.25,
+        "n_cancer": 261.0,
+        "tests_per_patient": 0.4095,
+        "invasive_per_patient": 0.0265,
+        "median_days_to_exit_noncancer": 16.75,
+        "untreated_cancers": 26.75,
+        "stuck": 0.0,
+        "by_group": {
+         "non_specific": {
+          "share_within_target": 0.0871,
+          "median_days_to_treatment": 146.3375,
+          "n_cancer": 181.0
+         },
+         "site_specific": {
+          "share_within_target": 0.183,
+          "median_days_to_treatment": 134.3825,
+          "n_cancer": 80.0
+         }
+        },
+        "max_utilisation": 0.8913,
+        "utilisation": {
+         "nurse_appt": 0.888,
+         "gp_appt": 0.891,
+         "xray": 0.84,
+         "clinic": 0.768,
+         "ct_scanner": 0.842,
+         "bronchoscopy": 0.82,
+         "ttnb_slot": 0.686,
+         "pet_scanner": 0.789,
+         "treatment_slot": 0.324
+        }
+       },
+       "per_cohort_share": [
+        0.1457,
+        0.0936,
+        0.1045,
+        0.1216
+       ],
+       "per_cohort_median": [
+        138.71,
+        140.23,
+        145.55,
+        142.08
+       ]
+      }
+     }
+    },
+    "suggested": {
+     "interval_median": {
+      "first_contact_to_treatment": 134.0,
+      "diagnosis_to_treatment": 64.9,
+      "referral_to_treatment": 103.3,
+      "specialist_visit_to_treatment": 90.1
+     },
+     "by_target": {
+      "90": {
+       "mean": {
+        "share_within_target": 0.0,
+        "median_days_to_treatment": 134.1,
+        "missed_cancers": 26.75,
+        "confirmed_cancers": 223.25,
+        "n_cancer": 261.0,
+        "tests_per_patient": 0.4095,
+        "invasive_per_patient": 0.0265,
+        "median_days_to_exit_noncancer": 16.75,
+        "untreated_cancers": 26.75,
+        "stuck": 0.0,
+        "by_group": {
+         "non_specific": {
+          "share_within_target": 0.0,
+          "median_days_to_treatment": 138.405,
+          "n_cancer": 181.0
+         },
+         "site_specific": {
+          "share_within_target": 0.0,
+          "median_days_to_treatment": 127.1975,
+          "n_cancer": 80.0
+         }
+        },
+        "max_utilisation": 0.8913,
+        "utilisation": {
+         "nurse_appt": 0.888,
+         "gp_appt": 0.891,
+         "xray": 0.84,
+         "clinic": 0.766,
+         "ct_scanner": 0.835,
+         "bronchoscopy": 0.824,
+         "ttnb_slot": 0.694,
+         "pet_scanner": 0.797,
+         "treatment_slot": 0.33
+        }
+       },
+       "per_cohort_share": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+       ],
+       "per_cohort_median": [
+        129.98,
+        132.86,
+        137.86,
+        135.7
+       ]
+      },
+      "124": {
+       "mean": {
+        "share_within_target": 0.2478,
+        "median_days_to_treatment": 134.1,
+        "missed_cancers": 26.75,
+        "confirmed_cancers": 223.25,
+        "n_cancer": 261.0,
+        "tests_per_patient": 0.4095,
+        "invasive_per_patient": 0.0265,
+        "median_days_to_exit_noncancer": 16.75,
+        "untreated_cancers": 26.75,
+        "stuck": 0.0,
+        "by_group": {
+         "non_specific": {
+          "share_within_target": 0.1841,
+          "median_days_to_treatment": 138.405,
+          "n_cancer": 181.0
+         },
+         "site_specific": {
+          "share_within_target": 0.3923,
+          "median_days_to_treatment": 127.1975,
+          "n_cancer": 80.0
+         }
+        },
+        "max_utilisation": 0.8913,
+        "utilisation": {
+         "nurse_appt": 0.888,
+         "gp_appt": 0.891,
+         "xray": 0.84,
+         "clinic": 0.766,
+         "ct_scanner": 0.835,
+         "bronchoscopy": 0.824,
+         "ttnb_slot": 0.694,
+         "pet_scanner": 0.797,
+         "treatment_slot": 0.33
+        }
+       },
+       "per_cohort_share": [
+        0.2953,
+        0.2472,
+        0.1978,
+        0.251
+       ],
+       "per_cohort_median": [
+        129.98,
+        132.86,
+        137.86,
+        135.7
+       ]
+      }
+     }
+    }
+   },
+   "rank": {
+    "baseline": {
+     "share": 0.1146,
+     "median_days": 141.4967,
+     "missed_cancers": 27.0,
+     "max_utilisation": 0.8913
+    },
+    "suggested": {
+     "share": 0.2468,
+     "median_days": 133.5667,
+     "missed_cancers": 27.0,
+     "max_utilisation": 0.8913
+    },
+    "direct_ct": {
+     "share": 0.1525,
+     "median_days": 139.0467,
+     "missed_cancers": 26.3333,
+     "max_utilisation": 0.8946
+    },
+    "bundled_workup": {
+     "share": 0.5499,
+     "median_days": 116.25,
+     "missed_cancers": 27.0,
+     "max_utilisation": 0.8913
+    },
+    "fast_track_nonspecific": {
+     "share": 0.3045,
+     "median_days": 132.35,
+     "missed_cancers": 29.3333,
+     "max_utilisation": 0.8913
+    },
+    "baseline_plus_capacity": {
+     "share": 0.2544,
+     "median_days": 133.3833,
+     "missed_cancers": 27.0,
+     "max_utilisation": 0.8913
+    }
+   },
+   "gain": {
+    "90": {
+     "gain_pp_per_cohort": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     "gain_pp_mean": 0.0,
+     "gain_pp_min": 0.0,
+     "gain_pp_max": 0.0,
+     "positive_in": "0 of 4",
+     "median_days_change_per_cohort": [
+      -8.73,
+      -7.37,
+      -7.69,
+      -6.38
+     ],
+     "median_days_change_mean": -7.54
+    },
+    "124": {
+     "gain_pp_per_cohort": [
+      14.96,
+      15.36,
+      9.33,
+      12.94
+     ],
+     "gain_pp_mean": 13.15,
+     "gain_pp_min": 9.33,
+     "gain_pp_max": 15.36,
+     "positive_in": "4 of 4",
+     "median_days_change_per_cohort": [
+      -8.73,
+      -7.37,
+      -7.69,
+      -6.38
+     ],
+     "median_days_change_mean": -7.54
+    }
+   },
+   "guardrails_failed": [],
+   "guardrails_passed": true,
+   "equity": {
+    "non_specific": {
+     "share_base": 0.0871,
+     "share_suggested": 0.1841,
+     "median_base": 146.3375,
+     "median_suggested": 138.405
+    },
+    "site_specific": {
+     "share_base": 0.183,
+     "share_suggested": 0.3923,
+     "median_base": 134.3825,
+     "median_suggested": 127.1975
+    },
+    "gap_pp_base": 9.6,
+    "gap_pp_suggested": 20.8,
+    "gap_days_base": 12.0,
+    "gap_days_suggested": 11.2
+   },
+   "rank_order_by_share": [
+    "bundled_workup",
+    "fast_track_nonspecific",
+    "baseline_plus_capacity",
+    "suggested",
+    "direct_ct",
+    "baseline"
+   ],
+   "rank_order_by_median_days": [
+    "bundled_workup",
+    "fast_track_nonspecific",
+    "baseline_plus_capacity",
+    "suggested",
+    "direct_ct",
+    "baseline"
+   ],
+   "rank_kendall_tau_vs_A_share": 1.0,
+   "rank_kendall_tau_vs_A_days": 0.867
+  },
+  "L92": {
+   "target_equivalent_days": 150,
+   "pair": {
+    "baseline": {
+     "interval_median": {
+      "first_contact_to_treatment": 166.2,
+      "diagnosis_to_treatment": 95.2,
+      "referral_to_treatment": 136.8,
+      "specialist_visit_to_treatment": 120.8
+     },
+     "by_target": {
+      "90": {
+       "mean": {
+        "share_within_target": 0.0,
+        "median_days_to_treatment": 166.9625,
+        "missed_cancers": 26.75,
+        "confirmed_cancers": 223.25,
+        "n_cancer": 261.0,
+        "tests_per_patient": 0.4095,
+        "invasive_per_patient": 0.0265,
+        "median_days_to_exit_noncancer": 16.75,
+        "untreated_cancers": 26.75,
+        "stuck": 0.0,
+        "by_group": {
+         "non_specific": {
+          "share_within_target": 0.0,
+          "median_days_to_treatment": 171.5325,
+          "n_cancer": 181.0
+         },
+         "site_specific": {
+          "share_within_target": 0.0,
+          "median_days_to_treatment": 159.2825,
+          "n_cancer": 80.0
+         }
+        },
+        "max_utilisation": 0.8913,
+        "utilisation": {
+         "nurse_appt": 0.888,
+         "gp_appt": 0.891,
+         "xray": 0.84,
+         "clinic": 0.768,
+         "ct_scanner": 0.842,
+         "bronchoscopy": 0.82,
+         "ttnb_slot": 0.686,
+         "pet_scanner": 0.789,
+         "treatment_slot": 0.305
+        }
+       },
+       "per_cohort_share": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+       ],
+       "per_cohort_median": [
+        164.26,
+        165.11,
+        170.22,
+        168.26
+       ]
+      },
+      "150": {
+       "mean": {
+        "share_within_target": 0.1231,
+        "median_days_to_treatment": 166.9625,
+        "missed_cancers": 26.75,
+        "confirmed_cancers": 223.25,
+        "n_cancer": 261.0,
+        "tests_per_patient": 0.4095,
+        "invasive_per_patient": 0.0265,
+        "median_days_to_exit_noncancer": 16.75,
+        "untreated_cancers": 26.75,
+        "stuck": 0.0,
+        "by_group": {
+         "non_specific": {
+          "share_within_target": 0.0953,
+          "median_days_to_treatment": 171.5325,
+          "n_cancer": 181.0
+         },
+         "site_specific": {
+          "share_within_target": 0.1864,
+          "median_days_to_treatment": 159.2825,
+          "n_cancer": 80.0
+         }
+        },
+        "max_utilisation": 0.8913,
+        "utilisation": {
+         "nurse_appt": 0.888,
+         "gp_appt": 0.891,
+         "xray": 0.84,
+         "clinic": 0.768,
+         "ct_scanner": 0.842,
+         "bronchoscopy": 0.82,
+         "ttnb_slot": 0.686,
+         "pet_scanner": 0.789,
+         "treatment_slot": 0.305
+        }
+       },
+       "per_cohort_share": [
+        0.1614,
+        0.0936,
+        0.1157,
+        0.1216
+       ],
+       "per_cohort_median": [
+        164.26,
+        165.11,
+        170.22,
+        168.26
+       ]
+      }
+     }
+    },
+    "suggested": {
+     "interval_median": {
+      "first_contact_to_treatment": 158.7,
+      "diagnosis_to_treatment": 89.9,
+      "referral_to_treatment": 128.1,
+      "specialist_visit_to_treatment": 114.9
+     },
+     "by_target": {
+      "90": {
+       "mean": {
+        "share_within_target": 0.0,
+        "median_days_to_treatment": 158.94,
+        "missed_cancers": 26.75,
+        "confirmed_cancers": 223.25,
+        "n_cancer": 261.0,
+        "tests_per_patient": 0.4095,
+        "invasive_per_patient": 0.0265,
+        "median_days_to_exit_noncancer": 16.75,
+        "untreated_cancers": 26.75,
+        "stuck": 0.0,
+        "by_group": {
+         "non_specific": {
+          "share_within_target": 0.0,
+          "median_days_to_treatment": 163.51,
+          "n_cancer": 181.0
+         },
+         "site_specific": {
+          "share_within_target": 0.0,
+          "median_days_to_treatment": 151.74,
+          "n_cancer": 80.0
+         }
+        },
+        "max_utilisation": 0.8913,
+        "utilisation": {
+         "nurse_appt": 0.888,
+         "gp_appt": 0.891,
+         "xray": 0.84,
+         "clinic": 0.766,
+         "ct_scanner": 0.835,
+         "bronchoscopy": 0.824,
+         "ttnb_slot": 0.694,
+         "pet_scanner": 0.797,
+         "treatment_slot": 0.308
+        }
+       },
+       "per_cohort_share": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+       ],
+       "per_cohort_median": [
+        154.45,
+        157.73,
+        162.63,
+        160.95
+       ]
+      },
+      "150": {
+       "mean": {
+        "share_within_target": 0.266,
+        "median_days_to_treatment": 158.94,
+        "missed_cancers": 26.75,
+        "confirmed_cancers": 223.25,
+        "n_cancer": 261.0,
+        "tests_per_patient": 0.4095,
+        "invasive_per_patient": 0.0265,
+        "median_days_to_exit_noncancer": 16.75,
+        "untreated_cancers": 26.75,
+        "stuck": 0.0,
+        "by_group": {
+         "non_specific": {
+          "share_within_target": 0.1938,
+          "median_days_to_treatment": 163.51,
+          "n_cancer": 181.0
+         },
+         "site_specific": {
+          "share_within_target": 0.4299,
+          "median_days_to_treatment": 151.74,
+          "n_cancer": 80.0
+         }
+        },
+        "max_utilisation": 0.8913,
+        "utilisation": {
+         "nurse_appt": 0.888,
+         "gp_appt": 0.891,
+         "xray": 0.84,
+         "clinic": 0.766,
+         "ct_scanner": 0.835,
+         "bronchoscopy": 0.824,
+         "ttnb_slot": 0.694,
+         "pet_scanner": 0.797,
+         "treatment_slot": 0.308
+        }
+       },
+       "per_cohort_share": [
+        0.3189,
+        0.2584,
+        0.2201,
+        0.2667
+       ],
+       "per_cohort_median": [
+        154.45,
+        157.73,
+        162.63,
+        160.95
+       ]
+      }
+     }
+    }
+   },
+   "rank": {
+    "baseline": {
+     "share": 0.1236,
+     "median_days": 166.53,
+     "missed_cancers": 27.0,
+     "max_utilisation": 0.8913
+    },
+    "suggested": {
+     "share": 0.2658,
+     "median_days": 158.27,
+     "missed_cancers": 27.0,
+     "max_utilisation": 0.8913
+    },
+    "direct_ct": {
+     "share": 0.1652,
+     "median_days": 164.1333,
+     "missed_cancers": 26.3333,
+     "max_utilisation": 0.8946
+    },
+    "bundled_workup": {
+     "share": 0.5562,
+     "median_days": 141.4567,
+     "missed_cancers": 27.0,
+     "max_utilisation": 0.8913
+    },
+    "fast_track_nonspecific": {
+     "share": 0.3147,
+     "median_days": 158.1267,
+     "missed_cancers": 29.3333,
+     "max_utilisation": 0.8913
+    },
+    "baseline_plus_capacity": {
+     "share": 0.2809,
+     "median_days": 158.4367,
+     "missed_cancers": 27.0,
+     "max_utilisation": 0.8913
+    }
+   },
+   "gain": {
+    "90": {
+     "gain_pp_per_cohort": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     "gain_pp_mean": 0.0,
+     "gain_pp_min": 0.0,
+     "gain_pp_max": 0.0,
+     "positive_in": "0 of 4",
+     "median_days_change_per_cohort": [
+      -9.81,
+      -7.38,
+      -7.59,
+      -7.31
+     ],
+     "median_days_change_mean": -8.02
+    },
+    "150": {
+     "gain_pp_per_cohort": [
+      15.75,
+      16.48,
+      10.44,
+      14.51
+     ],
+     "gain_pp_mean": 14.29,
+     "gain_pp_min": 10.44,
+     "gain_pp_max": 16.48,
+     "positive_in": "4 of 4",
+     "median_days_change_per_cohort": [
+      -9.81,
+      -7.38,
+      -7.59,
+      -7.31
+     ],
+     "median_days_change_mean": -8.02
+    }
+   },
+   "guardrails_failed": [],
+   "guardrails_passed": true,
+   "equity": {
+    "non_specific": {
+     "share_base": 0.0953,
+     "share_suggested": 0.1938,
+     "median_base": 171.5325,
+     "median_suggested": 163.51
+    },
+    "site_specific": {
+     "share_base": 0.1864,
+     "share_suggested": 0.4299,
+     "median_base": 159.2825,
+     "median_suggested": 151.74
+    },
+    "gap_pp_base": 9.1,
+    "gap_pp_suggested": 23.6,
+    "gap_days_base": 12.2,
+    "gap_days_suggested": 11.8
+   },
+   "rank_order_by_share": [
+    "bundled_workup",
+    "fast_track_nonspecific",
+    "baseline_plus_capacity",
+    "suggested",
+    "direct_ct",
+    "baseline"
+   ],
+   "rank_order_by_median_days": [
+    "bundled_workup",
+    "fast_track_nonspecific",
+    "suggested",
+    "baseline_plus_capacity",
+    "direct_ct",
+    "baseline"
+   ],
+   "rank_kendall_tau_vs_A_share": 1.0,
+   "rank_kendall_tau_vs_A_days": 1.0
+  },
+  "X1": {
+   "target_equivalent_days": 87,
+   "pair": {
+    "baseline": {
+     "interval_median": {
+      "first_contact_to_treatment": 104.5,
+      "diagnosis_to_treatment": 33.2,
+      "referral_to_treatment": 74.8,
+      "specialist_visit_to_treatment": 59.0
+     },
+     "by_target": {
+      "87": {
+       "mean": {
+        "share_within_target": 0.1106,
+        "median_days_to_treatment": 104.565,
+        "missed_cancers": 26.75,
+        "confirmed_cancers": 223.25,
+        "n_cancer": 261.0,
+        "tests_per_patient": 0.4095,
+        "invasive_per_patient": 0.0265,
+        "median_days_to_exit_noncancer": 16.75,
+        "untreated_cancers": 26.75,
+        "stuck": 0.0,
+        "by_group": {
+         "non_specific": {
+          "share_within_target": 0.0857,
+          "median_days_to_treatment": 109.6575,
+          "n_cancer": 181.0
+         },
+         "site_specific": {
+          "share_within_target": 0.1674,
+          "median_days_to_treatment": 97.25,
+          "n_cancer": 80.0
+         }
+        },
+        "max_utilisation": 0.8913,
+        "utilisation": {
+         "nurse_appt": 0.888,
+         "gp_appt": 0.891,
+         "xray": 0.84,
+         "clinic": 0.768,
+         "ct_scanner": 0.842,
+         "bronchoscopy": 0.82,
+         "ttnb_slot": 0.686,
+         "pet_scanner": 0.789,
+         "treatment_slot": 0.356
+        }
+       },
+       "per_cohort_share": [
+        0.1457,
+        0.0861,
+        0.1007,
+        0.1098
+       ],
+       "per_cohort_median": [
+        101.73,
+        102.89,
+        108.43,
+        105.21
+       ]
+      },
+      "90": {
+       "mean": {
+        "share_within_target": 0.1633,
+        "median_days_to_treatment": 104.565,
+        "missed_cancers": 26.75,
+        "confirmed_cancers": 223.25,
+        "n_cancer": 261.0,
+        "tests_per_patient": 0.4095,
+        "invasive_per_patient": 0.0265,
+        "median_days_to_exit_noncancer": 16.75,
+        "untreated_cancers": 26.75,
+        "stuck": 0.0,
+        "by_group": {
+         "non_specific": {
+          "share_within_target": 0.1191,
+          "median_days_to_treatment": 109.6575,
+          "n_cancer": 181.0
+         },
+         "site_specific": {
+          "share_within_target": 0.2635,
+          "median_days_to_treatment": 97.25,
+          "n_cancer": 80.0
+         }
+        },
+        "max_utilisation": 0.8913,
+        "utilisation": {
+         "nurse_appt": 0.888,
+         "gp_appt": 0.891,
+         "xray": 0.84,
+         "clinic": 0.768,
+         "ct_scanner": 0.842,
+         "bronchoscopy": 0.82,
+         "ttnb_slot": 0.686,
+         "pet_scanner": 0.789,
+         "treatment_slot": 0.356
+        }
+       },
+       "per_cohort_share": [
+        0.2047,
+        0.1461,
+        0.1455,
+        0.1569
+       ],
+       "per_cohort_median": [
+        101.73,
+        102.89,
+        108.43,
+        105.21
+       ]
+      }
+     }
+    },
+    "suggested": {
+     "interval_median": {
+      "first_contact_to_treatment": 97.1,
+      "diagnosis_to_treatment": 27.9,
+      "referral_to_treatment": 66.8,
+      "specialist_visit_to_treatment": 53.9
+     },
+     "by_target": {
+      "87": {
+       "mean": {
+        "share_within_target": 0.242,
+        "median_days_to_treatment": 96.9925,
+        "missed_cancers": 26.75,
+        "confirmed_cancers": 223.25,
+        "n_cancer": 261.0,
+        "tests_per_patient": 0.4095,
+        "invasive_per_patient": 0.0265,
+        "median_days_to_exit_noncancer": 16.75,
+        "untreated_cancers": 26.75,
+        "stuck": 0.0,
+        "by_group": {
+         "non_specific": {
+          "share_within_target": 0.1785,
+          "median_days_to_treatment": 101.9825,
+          "n_cancer": 181.0
+         },
+         "site_specific": {
+          "share_within_target": 0.3862,
+          "median_days_to_treatment": 90.44,
+          "n_cancer": 80.0
+         }
+        },
+        "max_utilisation": 0.8913,
+        "utilisation": {
+         "nurse_appt": 0.888,
+         "gp_appt": 0.891,
+         "xray": 0.84,
+         "clinic": 0.766,
+         "ct_scanner": 0.835,
+         "bronchoscopy": 0.824,
+         "ttnb_slot": 0.694,
+         "pet_scanner": 0.797,
+         "treatment_slot": 0.372
+        }
+       },
+       "per_cohort_share": [
+        0.2953,
+        0.236,
+        0.2015,
+        0.2353
+       ],
+       "per_cohort_median": [
+        92.53,
+        95.63,
+        101.07,
+        98.74
+       ]
+      },
+      "90": {
+       "mean": {
+        "share_within_target": 0.3008,
+        "median_days_to_treatment": 96.9925,
+        "missed_cancers": 26.75,
+        "confirmed_cancers": 223.25,
+        "n_cancer": 261.0,
+        "tests_per_patient": 0.4095,
+        "invasive_per_patient": 0.0265,
+        "median_days_to_exit_noncancer": 16.75,
+        "untreated_cancers": 26.75,
+        "stuck": 0.0,
+        "by_group": {
+         "non_specific": {
+          "share_within_target": 0.23,
+          "median_days_to_treatment": 101.9825,
+          "n_cancer": 181.0
+         },
+         "site_specific": {
+          "share_within_target": 0.461,
+          "median_days_to_treatment": 90.44,
+          "n_cancer": 80.0
+         }
+        },
+        "max_utilisation": 0.8913,
+        "utilisation": {
+         "nurse_appt": 0.888,
+         "gp_appt": 0.891,
+         "xray": 0.84,
+         "clinic": 0.766,
+         "ct_scanner": 0.835,
+         "bronchoscopy": 0.824,
+         "ttnb_slot": 0.694,
+         "pet_scanner": 0.797,
+         "treatment_slot": 0.372
+        }
+       },
+       "per_cohort_share": [
+        0.3701,
+        0.2921,
+        0.2388,
+        0.302
+       ],
+       "per_cohort_median": [
+        92.53,
+        95.63,
+        101.07,
+        98.74
+       ]
+      }
+     }
+    }
+   },
+   "rank": {
+    "baseline": {
+     "share": 0.1108,
+     "median_days": 104.35,
+     "missed_cancers": 27.0,
+     "max_utilisation": 0.8913
+    },
+    "suggested": {
+     "share": 0.2443,
+     "median_days": 96.41,
+     "missed_cancers": 27.0,
+     "max_utilisation": 0.8913
+    },
+    "direct_ct": {
+     "share": 0.1538,
+     "median_days": 102.2967,
+     "missed_cancers": 26.3333,
+     "max_utilisation": 0.8946
+    },
+    "bundled_workup": {
+     "share": 0.4953,
+     "median_days": 82.35,
+     "missed_cancers": 27.0,
+     "max_utilisation": 0.8913
+    },
+    "fast_track_nonspecific": {
+     "share": 0.3007,
+     "median_days": 95.8067,
+     "missed_cancers": 29.3333,
+     "max_utilisation": 0.8913
+    },
+    "baseline_plus_capacity": {
+     "share": 0.2558,
+     "median_days": 96.46,
+     "missed_cancers": 27.0,
+     "max_utilisation": 0.8913
+    }
+   },
+   "gain": {
+    "87": {
+     "gain_pp_per_cohort": [
+      14.96,
+      14.99,
+      10.08,
+      12.55
+     ],
+     "gain_pp_mean": 13.14,
+     "gain_pp_min": 10.08,
+     "gain_pp_max": 14.99,
+     "positive_in": "4 of 4",
+     "median_days_change_per_cohort": [
+      -9.2,
+      -7.26,
+      -7.36,
+      -6.47
+     ],
+     "median_days_change_mean": -7.57
+    },
+    "90": {
+     "gain_pp_per_cohort": [
+      16.54,
+      14.6,
+      9.33,
+      14.51
+     ],
+     "gain_pp_mean": 13.74,
+     "gain_pp_min": 9.33,
+     "gain_pp_max": 16.54,
+     "positive_in": "4 of 4",
+     "median_days_change_per_cohort": [
+      -9.2,
+      -7.26,
+      -7.36,
+      -6.47
+     ],
+     "median_days_change_mean": -7.57
+    }
+   },
+   "guardrails_failed": [],
+   "guardrails_passed": true,
+   "equity": {
+    "non_specific": {
+     "share_base": 0.0857,
+     "share_suggested": 0.1785,
+     "median_base": 109.6575,
+     "median_suggested": 101.9825
+    },
+    "site_specific": {
+     "share_base": 0.1674,
+     "share_suggested": 0.3862,
+     "median_base": 97.25,
+     "median_suggested": 90.44
+    },
+    "gap_pp_base": 8.2,
+    "gap_pp_suggested": 20.8,
+    "gap_days_base": 12.4,
+    "gap_days_suggested": 11.5
+   },
+   "rank_order_by_share": [
+    "bundled_workup",
+    "fast_track_nonspecific",
+    "baseline_plus_capacity",
+    "suggested",
+    "direct_ct",
+    "baseline"
+   ],
+   "rank_order_by_median_days": [
+    "bundled_workup",
+    "fast_track_nonspecific",
+    "suggested",
+    "baseline_plus_capacity",
+    "direct_ct",
+    "baseline"
+   ],
+   "rank_kendall_tau_vs_A_share": 1.0,
+   "rank_kendall_tau_vs_A_days": 1.0
+  },
+  "X2": {
+   "target_equivalent_days": 87,
+   "pair": {
+    "baseline": {
+     "interval_median": {
+      "first_contact_to_treatment": 104.5,
+      "diagnosis_to_treatment": 33.2,
+      "referral_to_treatment": 74.8,
+      "specialist_visit_to_treatment": 59.0
+     },
+     "by_target": {
+      "87": {
+       "mean": {
+        "share_within_target": 0.1106,
+        "median_days_to_treatment": 104.565,
+        "missed_cancers": 26.75,
+        "confirmed_cancers": 223.25,
+        "n_cancer": 261.0,
+        "tests_per_patient": 0.4095,
+        "invasive_per_patient": 0.0265,
+        "median_days_to_exit_noncancer": 16.75,
+        "untreated_cancers": 26.75,
+        "stuck": 0.0,
+        "by_group": {
+         "non_specific": {
+          "share_within_target": 0.0857,
+          "median_days_to_treatment": 109.6575,
+          "n_cancer": 181.0
+         },
+         "site_specific": {
+          "share_within_target": 0.1674,
+          "median_days_to_treatment": 97.25,
+          "n_cancer": 80.0
+         }
+        },
+        "max_utilisation": 0.8913,
+        "utilisation": {
+         "nurse_appt": 0.888,
+         "gp_appt": 0.891,
+         "xray": 0.84,
+         "clinic": 0.768,
+         "ct_scanner": 0.842,
+         "bronchoscopy": 0.82,
+         "ttnb_slot": 0.686,
+         "pet_scanner": 0.789,
+         "treatment_slot": 0.356
+        }
+       },
+       "per_cohort_share": [
+        0.1457,
+        0.0861,
+        0.1007,
+        0.1098
+       ],
+       "per_cohort_median": [
+        101.73,
+        102.89,
+        108.43,
+        105.21
+       ]
+      },
+      "90": {
+       "mean": {
+        "share_within_target": 0.1633,
+        "median_days_to_treatment": 104.565,
+        "missed_cancers": 26.75,
+        "confirmed_cancers": 223.25,
+        "n_cancer": 261.0,
+        "tests_per_patient": 0.4095,
+        "invasive_per_patient": 0.0265,
+        "median_days_to_exit_noncancer": 16.75,
+        "untreated_cancers": 26.75,
+        "stuck": 0.0,
+        "by_group": {
+         "non_specific": {
+          "share_within_target": 0.1191,
+          "median_days_to_treatment": 109.6575,
+          "n_cancer": 181.0
+         },
+         "site_specific": {
+          "share_within_target": 0.2635,
+          "median_days_to_treatment": 97.25,
+          "n_cancer": 80.0
+         }
+        },
+        "max_utilisation": 0.8913,
+        "utilisation": {
+         "nurse_appt": 0.888,
+         "gp_appt": 0.891,
+         "xray": 0.84,
+         "clinic": 0.768,
+         "ct_scanner": 0.842,
+         "bronchoscopy": 0.82,
+         "ttnb_slot": 0.686,
+         "pet_scanner": 0.789,
+         "treatment_slot": 0.356
+        }
+       },
+       "per_cohort_share": [
+        0.2047,
+        0.1461,
+        0.1455,
+        0.1569
+       ],
+       "per_cohort_median": [
+        101.73,
+        102.89,
+        108.43,
+        105.21
+       ]
+      }
+     }
+    },
+    "suggested": {
+     "interval_median": {
+      "first_contact_to_treatment": 97.1,
+      "diagnosis_to_treatment": 27.9,
+      "referral_to_treatment": 66.8,
+      "specialist_visit_to_treatment": 53.9
+     },
+     "by_target": {
+      "87": {
+       "mean": {
+        "share_within_target": 0.242,
+        "median_days_to_treatment": 96.9925,
+        "missed_cancers": 26.75,
+        "confirmed_cancers": 223.25,
+        "n_cancer": 261.0,
+        "tests_per_patient": 0.4095,
+        "invasive_per_patient": 0.0265,
+        "median_days_to_exit_noncancer": 16.75,
+        "untreated_cancers": 26.75,
+        "stuck": 0.0,
+        "by_group": {
+         "non_specific": {
+          "share_within_target": 0.1785,
+          "median_days_to_treatment": 101.9825,
+          "n_cancer": 181.0
+         },
+         "site_specific": {
+          "share_within_target": 0.3862,
+          "median_days_to_treatment": 90.44,
+          "n_cancer": 80.0
+         }
+        },
+        "max_utilisation": 0.8913,
+        "utilisation": {
+         "nurse_appt": 0.888,
+         "gp_appt": 0.891,
+         "xray": 0.84,
+         "clinic": 0.766,
+         "ct_scanner": 0.835,
+         "bronchoscopy": 0.824,
+         "ttnb_slot": 0.694,
+         "pet_scanner": 0.797,
+         "treatment_slot": 0.372
+        }
+       },
+       "per_cohort_share": [
+        0.2953,
+        0.236,
+        0.2015,
+        0.2353
+       ],
+       "per_cohort_median": [
+        92.53,
+        95.63,
+        101.07,
+        98.74
+       ]
+      },
+      "90": {
+       "mean": {
+        "share_within_target": 0.3008,
+        "median_days_to_treatment": 96.9925,
+        "missed_cancers": 26.75,
+        "confirmed_cancers": 223.25,
+        "n_cancer": 261.0,
+        "tests_per_patient": 0.4095,
+        "invasive_per_patient": 0.0265,
+        "median_days_to_exit_noncancer": 16.75,
+        "untreated_cancers": 26.75,
+        "stuck": 0.0,
+        "by_group": {
+         "non_specific": {
+          "share_within_target": 0.23,
+          "median_days_to_treatment": 101.9825,
+          "n_cancer": 181.0
+         },
+         "site_specific": {
+          "share_within_target": 0.461,
+          "median_days_to_treatment": 90.44,
+          "n_cancer": 80.0
+         }
+        },
+        "max_utilisation": 0.8913,
+        "utilisation": {
+         "nurse_appt": 0.888,
+         "gp_appt": 0.891,
+         "xray": 0.84,
+         "clinic": 0.766,
+         "ct_scanner": 0.835,
+         "bronchoscopy": 0.824,
+         "ttnb_slot": 0.694,
+         "pet_scanner": 0.797,
+         "treatment_slot": 0.372
+        }
+       },
+       "per_cohort_share": [
+        0.3701,
+        0.2921,
+        0.2388,
+        0.302
+       ],
+       "per_cohort_median": [
+        92.53,
+        95.63,
+        101.07,
+        98.74
+       ]
+      }
+     }
+    }
+   },
+   "rank": {
+    "baseline": {
+     "share": 0.1108,
+     "median_days": 104.35,
+     "missed_cancers": 27.0,
+     "max_utilisation": 0.8913
+    },
+    "suggested": {
+     "share": 0.2443,
+     "median_days": 96.41,
+     "missed_cancers": 27.0,
+     "max_utilisation": 0.8913
+    },
+    "direct_ct": {
+     "share": 0.1538,
+     "median_days": 102.2967,
+     "missed_cancers": 26.3333,
+     "max_utilisation": 0.8946
+    },
+    "bundled_workup": {
+     "share": 0.4953,
+     "median_days": 82.35,
+     "missed_cancers": 27.0,
+     "max_utilisation": 0.8913
+    },
+    "fast_track_nonspecific": {
+     "share": 0.3007,
+     "median_days": 95.8067,
+     "missed_cancers": 29.3333,
+     "max_utilisation": 0.8913
+    },
+    "baseline_plus_capacity": {
+     "share": 0.2558,
+     "median_days": 96.46,
+     "missed_cancers": 27.0,
+     "max_utilisation": 0.8913
+    }
+   },
+   "gain": {
+    "87": {
+     "gain_pp_per_cohort": [
+      14.96,
+      14.99,
+      10.08,
+      12.55
+     ],
+     "gain_pp_mean": 13.14,
+     "gain_pp_min": 10.08,
+     "gain_pp_max": 14.99,
+     "positive_in": "4 of 4",
+     "median_days_change_per_cohort": [
+      -9.2,
+      -7.26,
+      -7.36,
+      -6.47
+     ],
+     "median_days_change_mean": -7.57
+    },
+    "90": {
+     "gain_pp_per_cohort": [
+      16.54,
+      14.6,
+      9.33,
+      14.51
+     ],
+     "gain_pp_mean": 13.74,
+     "gain_pp_min": 9.33,
+     "gain_pp_max": 16.54,
+     "positive_in": "4 of 4",
+     "median_days_change_per_cohort": [
+      -9.2,
+      -7.26,
+      -7.36,
+      -6.47
+     ],
+     "median_days_change_mean": -7.57
+    }
+   },
+   "guardrails_failed": [],
+   "guardrails_passed": true,
+   "equity": {
+    "non_specific": {
+     "share_base": 0.0857,
+     "share_suggested": 0.1785,
+     "median_base": 109.6575,
+     "median_suggested": 101.9825
+    },
+    "site_specific": {
+     "share_base": 0.1674,
+     "share_suggested": 0.3862,
+     "median_base": 97.25,
+     "median_suggested": 90.44
+    },
+    "gap_pp_base": 8.2,
+    "gap_pp_suggested": 20.8,
+    "gap_days_base": 12.4,
+    "gap_days_suggested": 11.5
+   },
+   "rank_order_by_share": [
+    "bundled_workup",
+    "fast_track_nonspecific",
+    "baseline_plus_capacity",
+    "suggested",
+    "direct_ct",
+    "baseline"
+   ],
+   "rank_order_by_median_days": [
+    "bundled_workup",
+    "fast_track_nonspecific",
+    "suggested",
+    "baseline_plus_capacity",
+    "direct_ct",
+    "baseline"
+   ],
+   "rank_kendall_tau_vs_A_share": 1.0,
+   "rank_kendall_tau_vs_A_days": 1.0
+  },
+  "P": {
+   "target_equivalent_days": 87,
+   "pair": {
+    "baseline": {
+     "interval_median": {
+      "first_contact_to_treatment": 104.5,
+      "diagnosis_to_treatment": 33.2,
+      "referral_to_treatment": 74.8,
+      "specialist_visit_to_treatment": 59.0
+     },
+     "by_target": {
+      "87": {
+       "mean": {
+        "share_within_target": 0.1106,
+        "median_days_to_treatment": 104.565,
+        "missed_cancers": 26.75,
+        "confirmed_cancers": 223.25,
+        "n_cancer": 261.0,
+        "tests_per_patient": 0.4095,
+        "invasive_per_patient": 0.0265,
+        "median_days_to_exit_noncancer": 16.75,
+        "untreated_cancers": 26.75,
+        "stuck": 0.0,
+        "by_group": {
+         "non_specific": {
+          "share_within_target": 0.0857,
+          "median_days_to_treatment": 109.6575,
+          "n_cancer": 181.0
+         },
+         "site_specific": {
+          "share_within_target": 0.1674,
+          "median_days_to_treatment": 97.25,
+          "n_cancer": 80.0
+         }
+        },
+        "max_utilisation": 0.8913,
+        "utilisation": {
+         "nurse_appt": 0.888,
+         "gp_appt": 0.891,
+         "xray": 0.84,
+         "clinic": 0.768,
+         "ct_scanner": 0.842,
+         "bronchoscopy": 0.82,
+         "ttnb_slot": 0.686,
+         "pet_scanner": 0.789,
+         "treatment_slot": 0.356
+        }
+       },
+       "per_cohort_share": [
+        0.1457,
+        0.0861,
+        0.1007,
+        0.1098
+       ],
+       "per_cohort_median": [
+        101.73,
+        102.89,
+        108.43,
+        105.21
+       ]
+      },
+      "90": {
+       "mean": {
+        "share_within_target": 0.1633,
+        "median_days_to_treatment": 104.565,
+        "missed_cancers": 26.75,
+        "confirmed_cancers": 223.25,
+        "n_cancer": 261.0,
+        "tests_per_patient": 0.4095,
+        "invasive_per_patient": 0.0265,
+        "median_days_to_exit_noncancer": 16.75,
+        "untreated_cancers": 26.75,
+        "stuck": 0.0,
+        "by_group": {
+         "non_specific": {
+          "share_within_target": 0.1191,
+          "median_days_to_treatment": 109.6575,
+          "n_cancer": 181.0
+         },
+         "site_specific": {
+          "share_within_target": 0.2635,
+          "median_days_to_treatment": 97.25,
+          "n_cancer": 80.0
+         }
+        },
+        "max_utilisation": 0.8913,
+        "utilisation": {
+         "nurse_appt": 0.888,
+         "gp_appt": 0.891,
+         "xray": 0.84,
+         "clinic": 0.768,
+         "ct_scanner": 0.842,
+         "bronchoscopy": 0.82,
+         "ttnb_slot": 0.686,
+         "pet_scanner": 0.789,
+         "treatment_slot": 0.356
+        }
+       },
+       "per_cohort_share": [
+        0.2047,
+        0.1461,
+        0.1455,
+        0.1569
+       ],
+       "per_cohort_median": [
+        101.73,
+        102.89,
+        108.43,
+        105.21
+       ]
+      }
+     }
+    },
+    "suggested": {
+     "interval_median": {
+      "first_contact_to_treatment": 97.1,
+      "diagnosis_to_treatment": 27.9,
+      "referral_to_treatment": 66.8,
+      "specialist_visit_to_treatment": 53.9
+     },
+     "by_target": {
+      "87": {
+       "mean": {
+        "share_within_target": 0.242,
+        "median_days_to_treatment": 96.9925,
+        "missed_cancers": 26.75,
+        "confirmed_cancers": 223.25,
+        "n_cancer": 261.0,
+        "tests_per_patient": 0.4095,
+        "invasive_per_patient": 0.0265,
+        "median_days_to_exit_noncancer": 16.75,
+        "untreated_cancers": 26.75,
+        "stuck": 0.0,
+        "by_group": {
+         "non_specific": {
+          "share_within_target": 0.1785,
+          "median_days_to_treatment": 101.9825,
+          "n_cancer": 181.0
+         },
+         "site_specific": {
+          "share_within_target": 0.3862,
+          "median_days_to_treatment": 90.44,
+          "n_cancer": 80.0
+         }
+        },
+        "max_utilisation": 0.8913,
+        "utilisation": {
+         "nurse_appt": 0.888,
+         "gp_appt": 0.891,
+         "xray": 0.84,
+         "clinic": 0.766,
+         "ct_scanner": 0.835,
+         "bronchoscopy": 0.824,
+         "ttnb_slot": 0.694,
+         "pet_scanner": 0.797,
+         "treatment_slot": 0.372
+        }
+       },
+       "per_cohort_share": [
+        0.2953,
+        0.236,
+        0.2015,
+        0.2353
+       ],
+       "per_cohort_median": [
+        92.53,
+        95.63,
+        101.07,
+        98.74
+       ]
+      },
+      "90": {
+       "mean": {
+        "share_within_target": 0.3008,
+        "median_days_to_treatment": 96.9925,
+        "missed_cancers": 26.75,
+        "confirmed_cancers": 223.25,
+        "n_cancer": 261.0,
+        "tests_per_patient": 0.4095,
+        "invasive_per_patient": 0.0265,
+        "median_days_to_exit_noncancer": 16.75,
+        "untreated_cancers": 26.75,
+        "stuck": 0.0,
+        "by_group": {
+         "non_specific": {
+          "share_within_target": 0.23,
+          "median_days_to_treatment": 101.9825,
+          "n_cancer": 181.0
+         },
+         "site_specific": {
+          "share_within_target": 0.461,
+          "median_days_to_treatment": 90.44,
+          "n_cancer": 80.0
+         }
+        },
+        "max_utilisation": 0.8913,
+        "utilisation": {
+         "nurse_appt": 0.888,
+         "gp_appt": 0.891,
+         "xray": 0.84,
+         "clinic": 0.766,
+         "ct_scanner": 0.835,
+         "bronchoscopy": 0.824,
+         "ttnb_slot": 0.694,
+         "pet_scanner": 0.797,
+         "treatment_slot": 0.372
+        }
+       },
+       "per_cohort_share": [
+        0.3701,
+        0.2921,
+        0.2388,
+        0.302
+       ],
+       "per_cohort_median": [
+        92.53,
+        95.63,
+        101.07,
+        98.74
+       ]
+      }
+     }
+    }
+   },
+   "rank": {
+    "baseline": {
+     "share": 0.1108,
+     "median_days": 104.35,
+     "missed_cancers": 27.0,
+     "max_utilisation": 0.8913
+    },
+    "suggested": {
+     "share": 0.2443,
+     "median_days": 96.41,
+     "missed_cancers": 27.0,
+     "max_utilisation": 0.8913
+    },
+    "direct_ct": {
+     "share": 0.1538,
+     "median_days": 102.2967,
+     "missed_cancers": 26.3333,
+     "max_utilisation": 0.8946
+    },
+    "bundled_workup": {
+     "share": 0.4953,
+     "median_days": 82.35,
+     "missed_cancers": 27.0,
+     "max_utilisation": 0.8913
+    },
+    "fast_track_nonspecific": {
+     "share": 0.3007,
+     "median_days": 95.8067,
+     "missed_cancers": 29.3333,
+     "max_utilisation": 0.8913
+    },
+    "baseline_plus_capacity": {
+     "share": 0.2558,
+     "median_days": 96.46,
+     "missed_cancers": 27.0,
+     "max_utilisation": 0.8913
+    }
+   },
+   "gain": {
+    "87": {
+     "gain_pp_per_cohort": [
+      14.96,
+      14.99,
+      10.08,
+      12.55
+     ],
+     "gain_pp_mean": 13.14,
+     "gain_pp_min": 10.08,
+     "gain_pp_max": 14.99,
+     "positive_in": "4 of 4",
+     "median_days_change_per_cohort": [
+      -9.2,
+      -7.26,
+      -7.36,
+      -6.47
+     ],
+     "median_days_change_mean": -7.57
+    },
+    "90": {
+     "gain_pp_per_cohort": [
+      16.54,
+      14.6,
+      9.33,
+      14.51
+     ],
+     "gain_pp_mean": 13.74,
+     "gain_pp_min": 9.33,
+     "gain_pp_max": 16.54,
+     "positive_in": "4 of 4",
+     "median_days_change_per_cohort": [
+      -9.2,
+      -7.26,
+      -7.36,
+      -6.47
+     ],
+     "median_days_change_mean": -7.57
+    }
+   },
+   "guardrails_failed": [],
+   "guardrails_passed": true,
+   "equity": {
+    "non_specific": {
+     "share_base": 0.0857,
+     "share_suggested": 0.1785,
+     "median_base": 109.6575,
+     "median_suggested": 101.9825
+    },
+    "site_specific": {
+     "share_base": 0.1674,
+     "share_suggested": 0.3862,
+     "median_base": 97.25,
+     "median_suggested": 90.44
+    },
+    "gap_pp_base": 8.2,
+    "gap_pp_suggested": 20.8,
+    "gap_days_base": 12.4,
+    "gap_days_suggested": 11.5
+   },
+   "rank_order_by_share": [
+    "bundled_workup",
+    "fast_track_nonspecific",
+    "baseline_plus_capacity",
+    "suggested",
+    "direct_ct",
+    "baseline"
+   ],
+   "rank_order_by_median_days": [
+    "bundled_workup",
+    "fast_track_nonspecific",
+    "suggested",
+    "baseline_plus_capacity",
+    "direct_ct",
+    "baseline"
+   ],
+   "rank_kendall_tau_vs_A_share": 1.0,
+   "rank_kendall_tau_vs_A_days": 1.0
+  },
+  "ALT": {
+   "target_equivalent_days": 124,
+   "pair": {
+    "baseline": {
+     "interval_median": {
+      "first_contact_to_treatment": 141.0,
+      "diagnosis_to_treatment": 69.9,
+      "referral_to_treatment": 111.5,
+      "specialist_visit_to_treatment": 95.9
+     },
+     "by_target": {
+      "90": {
+       "mean": {
+        "share_within_target": 0.0,
+        "median_days_to_treatment": 141.6425,
+        "missed_cancers": 26.75,
+        "confirmed_cancers": 223.25,
+        "n_cancer": 261.0,
+        "tests_per_patient": 0.4095,
+        "invasive_per_patient": 0.0265,
+        "median_days_to_exit_noncancer": 16.75,
+        "untreated_cancers": 26.75,
+        "stuck": 0.0,
+        "by_group": {
+         "non_specific": {
+          "share_within_target": 0.0,
+          "median_days_to_treatment": 146.3375,
+          "n_cancer": 181.0
+         },
+         "site_specific": {
+          "share_within_target": 0.0,
+          "median_days_to_treatment": 134.3825,
+          "n_cancer": 80.0
+         }
+        },
+        "max_utilisation": 0.8913,
+        "utilisation": {
+         "nurse_appt": 0.888,
+         "gp_appt": 0.891,
+         "xray": 0.84,
+         "clinic": 0.768,
+         "ct_scanner": 0.842,
+         "bronchoscopy": 0.82,
+         "ttnb_slot": 0.686,
+         "pet_scanner": 0.789,
+         "treatment_slot": 0.324
+        }
+       },
+       "per_cohort_share": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+       ],
+       "per_cohort_median": [
+        138.71,
+        140.23,
+        145.55,
+        142.08
+       ]
+      },
+      "124": {
+       "mean": {
+        "share_within_target": 0.1163,
+        "median_days_to_treatment": 141.6425,
+        "missed_cancers": 26.75,
+        "confirmed_cancers": 223.25,
+        "n_cancer": 261.0,
+        "tests_per_patient": 0.4095,
+        "invasive_per_patient": 0.0265,
+        "median_days_to_exit_noncancer": 16.75,
+        "untreated_cancers": 26.75,
+        "stuck": 0.0,
+        "by_group": {
+         "non_specific": {
+          "share_within_target": 0.0871,
+          "median_days_to_treatment": 146.3375,
+          "n_cancer": 181.0
+         },
+         "site_specific": {
+          "share_within_target": 0.183,
+          "median_days_to_treatment": 134.3825,
+          "n_cancer": 80.0
+         }
+        },
+        "max_utilisation": 0.8913,
+        "utilisation": {
+         "nurse_appt": 0.888,
+         "gp_appt": 0.891,
+         "xray": 0.84,
+         "clinic": 0.768,
+         "ct_scanner": 0.842,
+         "bronchoscopy": 0.82,
+         "ttnb_slot": 0.686,
+         "pet_scanner": 0.789,
+         "treatment_slot": 0.324
+        }
+       },
+       "per_cohort_share": [
+        0.1457,
+        0.0936,
+        0.1045,
+        0.1216
+       ],
+       "per_cohort_median": [
+        138.71,
+        140.23,
+        145.55,
+        142.08
+       ]
+      }
+     }
+    },
+    "suggested": {
+     "interval_median": {
+      "first_contact_to_treatment": 134.0,
+      "diagnosis_to_treatment": 64.9,
+      "referral_to_treatment": 103.3,
+      "specialist_visit_to_treatment": 90.1
+     },
+     "by_target": {
+      "90": {
+       "mean": {
+        "share_within_target": 0.0,
+        "median_days_to_treatment": 134.1,
+        "missed_cancers": 26.75,
+        "confirmed_cancers": 223.25,
+        "n_cancer": 261.0,
+        "tests_per_patient": 0.4095,
+        "invasive_per_patient": 0.0265,
+        "median_days_to_exit_noncancer": 16.75,
+        "untreated_cancers": 26.75,
+        "stuck": 0.0,
+        "by_group": {
+         "non_specific": {
+          "share_within_target": 0.0,
+          "median_days_to_treatment": 138.405,
+          "n_cancer": 181.0
+         },
+         "site_specific": {
+          "share_within_target": 0.0,
+          "median_days_to_treatment": 127.1975,
+          "n_cancer": 80.0
+         }
+        },
+        "max_utilisation": 0.8913,
+        "utilisation": {
+         "nurse_appt": 0.888,
+         "gp_appt": 0.891,
+         "xray": 0.84,
+         "clinic": 0.766,
+         "ct_scanner": 0.835,
+         "bronchoscopy": 0.824,
+         "ttnb_slot": 0.694,
+         "pet_scanner": 0.797,
+         "treatment_slot": 0.33
+        }
+       },
+       "per_cohort_share": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+       ],
+       "per_cohort_median": [
+        129.98,
+        132.86,
+        137.86,
+        135.7
+       ]
+      },
+      "124": {
+       "mean": {
+        "share_within_target": 0.2478,
+        "median_days_to_treatment": 134.1,
+        "missed_cancers": 26.75,
+        "confirmed_cancers": 223.25,
+        "n_cancer": 261.0,
+        "tests_per_patient": 0.4095,
+        "invasive_per_patient": 0.0265,
+        "median_days_to_exit_noncancer": 16.75,
+        "untreated_cancers": 26.75,
+        "stuck": 0.0,
+        "by_group": {
+         "non_specific": {
+          "share_within_target": 0.1841,
+          "median_days_to_treatment": 138.405,
+          "n_cancer": 181.0
+         },
+         "site_specific": {
+          "share_within_target": 0.3923,
+          "median_days_to_treatment": 127.1975,
+          "n_cancer": 80.0
+         }
+        },
+        "max_utilisation": 0.8913,
+        "utilisation": {
+         "nurse_appt": 0.888,
+         "gp_appt": 0.891,
+         "xray": 0.84,
+         "clinic": 0.766,
+         "ct_scanner": 0.835,
+         "bronchoscopy": 0.824,
+         "ttnb_slot": 0.694,
+         "pet_scanner": 0.797,
+         "treatment_slot": 0.33
+        }
+       },
+       "per_cohort_share": [
+        0.2953,
+        0.2472,
+        0.1978,
+        0.251
+       ],
+       "per_cohort_median": [
+        129.98,
+        132.86,
+        137.86,
+        135.7
+       ]
+      }
+     }
+    }
+   },
+   "rank": {
+    "baseline": {
+     "share": 0.1146,
+     "median_days": 141.4967,
+     "missed_cancers": 27.0,
+     "max_utilisation": 0.8913
+    },
+    "suggested": {
+     "share": 0.2468,
+     "median_days": 133.5667,
+     "missed_cancers": 27.0,
+     "max_utilisation": 0.8913
+    },
+    "direct_ct": {
+     "share": 0.1525,
+     "median_days": 139.0467,
+     "missed_cancers": 26.3333,
+     "max_utilisation": 0.8946
+    },
+    "bundled_workup": {
+     "share": 0.5499,
+     "median_days": 116.25,
+     "missed_cancers": 27.0,
+     "max_utilisation": 0.8913
+    },
+    "fast_track_nonspecific": {
+     "share": 0.3045,
+     "median_days": 132.35,
+     "missed_cancers": 29.3333,
+     "max_utilisation": 0.8913
+    },
+    "baseline_plus_capacity": {
+     "share": 0.2544,
+     "median_days": 133.3833,
+     "missed_cancers": 27.0,
+     "max_utilisation": 0.8913
+    }
+   },
+   "gain": {
+    "90": {
+     "gain_pp_per_cohort": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     "gain_pp_mean": 0.0,
+     "gain_pp_min": 0.0,
+     "gain_pp_max": 0.0,
+     "positive_in": "0 of 4",
+     "median_days_change_per_cohort": [
+      -8.73,
+      -7.37,
+      -7.69,
+      -6.38
+     ],
+     "median_days_change_mean": -7.54
+    },
+    "124": {
+     "gain_pp_per_cohort": [
+      14.96,
+      15.36,
+      9.33,
+      12.94
+     ],
+     "gain_pp_mean": 13.15,
+     "gain_pp_min": 9.33,
+     "gain_pp_max": 15.36,
+     "positive_in": "4 of 4",
+     "median_days_change_per_cohort": [
+      -8.73,
+      -7.37,
+      -7.69,
+      -6.38
+     ],
+     "median_days_change_mean": -7.54
+    }
+   },
+   "guardrails_failed": [],
+   "guardrails_passed": true,
+   "equity": {
+    "non_specific": {
+     "share_base": 0.0871,
+     "share_suggested": 0.1841,
+     "median_base": 146.3375,
+     "median_suggested": 138.405
+    },
+    "site_specific": {
+     "share_base": 0.183,
+     "share_suggested": 0.3923,
+     "median_base": 134.3825,
+     "median_suggested": 127.1975
+    },
+    "gap_pp_base": 9.6,
+    "gap_pp_suggested": 20.8,
+    "gap_days_base": 12.0,
+    "gap_days_suggested": 11.2
+   },
+   "rank_order_by_share": [
+    "bundled_workup",
+    "fast_track_nonspecific",
+    "baseline_plus_capacity",
+    "suggested",
+    "direct_ct",
+    "baseline"
+   ],
+   "rank_order_by_median_days": [
+    "bundled_workup",
+    "fast_track_nonspecific",
+    "baseline_plus_capacity",
+    "suggested",
+    "direct_ct",
+    "baseline"
+   ],
+   "rank_kendall_tau_vs_A_share": 1.0,
+   "rank_kendall_tau_vs_A_days": 0.867
+  }
+ }
+}

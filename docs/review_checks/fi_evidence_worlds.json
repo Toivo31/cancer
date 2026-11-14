@@ -1,0 +1,187 @@
+{
+ "meta": {
+  "script": "scripts/fi_evidence_sensitivity.py",
+  "scenario": "scenarios/finland_lung.yaml",
+  "suggested_pathway": "runs/opt_fi_noft.json (flowchart_after)",
+  "patients_per_cohort": 18800,
+  "calibration_cohorts": [
+   901,
+   902
+  ],
+  "heldout_cohorts_pair": [
+   301,
+   302,
+   303,
+   304
+  ],
+  "heldout_cohorts_ranking": [
+   301,
+   302,
+   303
+  ],
+  "runs": "common random numbers: the same patients and the same per-patient random draws in every world and pathway",
+  "seconds": 984,
+  "quick": false
+ },
+ "worlds": {
+  "A": {
+   "file": "scenarios/experiments/finland_evidence_a.yaml",
+   "what": "Control: the scenario as it is.",
+   "changes": {
+    "what": "Control: the scenario as it is."
+   },
+   "calibration": null
+  },
+  "N37": {
+   "file": "scenarios/experiments/finland_evidence_n37.yaml",
+   "what": "Treatment-slot booking lead recalibrated so that tissue diagnosis to treatment is 37 days, the scenario's own stated target (it gives about 32 as it stands).",
+   "changes": {
+    "treatment_slot.min_lead_days": 16.72,
+    "what": "Treatment-slot booking lead recalibrated so that tissue diagnosis to treatment is 37 days, the scenario's own stated target (it gives about 32 as it stands)."
+   },
+   "calibration": {
+    "target": 37.0,
+    "achieved_on_calibration_cohorts": 37.15,
+    "trace": [
+     [
+      10.0,
+      30.28
+     ],
+     [
+      16.71664595102004,
+      37.15
+     ]
+    ]
+   }
+  },
+  "L67": {
+   "file": "scenarios/experiments/finland_evidence_l67.yaml",
+   "what": "Treatment-slot booking lead recalibrated so that tissue diagnosis to treatment is 67 days (midpoint of the lung-specific Finnish medians 65 and 69). All the extra delay sits at the treatment booking step.",
+   "changes": {
+    "treatment_slot.min_lead_days": 46.72,
+    "what": "Treatment-slot booking lead recalibrated so that tissue diagnosis to treatment is 67 days (midpoint of the lung-specific Finnish medians 65 and 69). All the extra delay sits at the treatment booking step."
+   },
+   "calibration": {
+    "target": 67.0,
+    "achieved_on_calibration_cohorts": 67.16,
+    "trace": [
+     [
+      10.0,
+      30.28
+     ],
+     [
+      46.71664595102004,
+      67.16
+     ]
+    ]
+   }
+  },
+  "L92": {
+   "file": "scenarios/experiments/finland_evidence_l92.yaml",
+   "what": "Stress: as L67 with 92 days (upper quartile of the surgical group in the lung-specific study).",
+   "changes": {
+    "treatment_slot.min_lead_days": 71.72,
+    "what": "Stress: as L67 with 92 days (upper quartile of the surgical group in the lung-specific study)."
+   },
+   "calibration": {
+    "target": 92.0,
+    "achieved_on_calibration_cohorts": 92.48,
+    "trace": [
+     [
+      10.0,
+      30.28
+     ],
+     [
+      71.71664595102004,
+      92.48
+     ]
+    ]
+   }
+  },
+  "X1": {
+   "file": "scenarios/experiments/finland_evidence_x1.yaml",
+   "what": "Chest X-ray sensitivity 0.81 and specificity 0.68 (primary-care meta-analysis, BJR Open 2021); false-positive rates of every non-cancer condition scaled by one factor.",
+   "changes": {
+    "chest_xray": {
+     "chest_xray": {
+      "specificity_before": 0.899,
+      "specificity_after": 0.68,
+      "sensitivity_after": 0.81,
+      "fp_scale": 3.932
+     }
+    },
+    "what": "Chest X-ray sensitivity 0.81 and specificity 0.68 (primary-care meta-analysis, BJR Open 2021); false-positive rates of every non-cancer condition scaled by one factor."
+   },
+   "calibration": null
+  },
+  "X2": {
+   "file": "scenarios/experiments/finland_evidence_x2.yaml",
+   "what": "Chest X-ray sensitivity 0.76 and specificity 0.95 (NSCLC within one year, Leeds cohort, Bhartia 2021); false-positive rates scaled by one factor.",
+   "changes": {
+    "chest_xray": {
+     "chest_xray": {
+      "specificity_before": 0.899,
+      "specificity_after": 0.95,
+      "sensitivity_after": 0.76,
+      "fp_scale": 0.494
+     }
+    },
+    "what": "Chest X-ray sensitivity 0.76 and specificity 0.95 (NSCLC within one year, Leeds cohort, Bhartia 2021); false-positive rates scaled by one factor."
+   },
+   "calibration": null
+  },
+  "P": {
+   "file": "scenarios/experiments/finland_evidence_p.yaml",
+   "what": "PET-CT sensitivity 0.89 and specificity 0.70 (Li 2018, pulmonary nodules) instead of stand-alone PET 0.968 and 0.778; false-positive rates scaled by one factor.",
+   "changes": {
+    "pet_ct": {
+     "pet_ct": {
+      "specificity_before": 0.904,
+      "specificity_after": 0.7,
+      "sensitivity_after": 0.89,
+      "fp_scale": 3.128
+     },
+     "pet_ct_fast": {
+      "specificity_before": 0.7,
+      "specificity_after": 0.7,
+      "sensitivity_after": 0.89,
+      "fp_scale": 1.0
+     }
+    },
+    "what": "PET-CT sensitivity 0.89 and specificity 0.70 (Li 2018, pulmonary nodules) instead of stand-alone PET 0.968 and 0.778; false-positive rates scaled by one factor."
+   },
+   "calibration": null
+  },
+  "ALT": {
+   "file": "scenarios/experiments/finland_evidence_alt.yaml",
+   "what": "L67 and X2 and P together.",
+   "changes": {
+    "treatment_slot.min_lead_days": 46.72,
+    "chest_xray": {
+     "chest_xray": {
+      "specificity_before": 0.899,
+      "specificity_after": 0.95,
+      "sensitivity_after": 0.76,
+      "fp_scale": 0.494
+     }
+    },
+    "pet_ct": {
+     "pet_ct": {
+      "specificity_before": 0.904,
+      "specificity_after": 0.7,
+      "sensitivity_after": 0.89,
+      "fp_scale": 3.128
+     },
+     "pet_ct_fast": {
+      "specificity_before": 0.7,
+      "specificity_after": 0.7,
+      "sensitivity_after": 0.89,
+      "fp_scale": 1.0
+     }
+    },
+    "what": "L67 and X2 and P together."
+   },
+   "calibration": null
+  }
+ }
+}
