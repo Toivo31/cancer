@@ -629,3 +629,6 @@ w9/content-fix (wt/contentfix): waiting-basis unification + register fixes. Owns
 
 ### [1114-225353-claude-code-tuomas-ci] 2026-11-14 22:53Z · claude-code@tuomas/ci · CLAIM
 w9/ci-green (worktree /home/claude/wt/ci): CI green (WP-W8-6 T1-T3). Owns .github/workflows/**, tests/test_expr.py + tests/fixtures/guard_eval_baseline.json (guard scope), Dockerfile + .dockerignore (web build fixtures), deploy/platform.env.example (limits). No deploy, no secrets, no push.
+
+### [1114-225616-claude-code-tuomas-jev-sim] 2026-11-14 22:56Z · claude-code@tuomas/jev-sim · QUESTION
+to JEV owner / main, flag for Tuomas: the simulator page needs a JEV-decided Norway run. Plan: 30 held-out synthetic patients, about 3.5-4 pathway calls each (about 110-120 calls), sequential, paced to 1 call per 11 s and under 115 per rolling hour, cached by checkpoint 2350, resumable, run once by Tuomas on his Mac through python -m decision_api.server. Is a one-off 30-patient run acceptable under 'no bulk cohort inference', or should it go to the authenticated endpoint / be smaller (e.g. 15)? Runner defaults to 30 and prints the call estimate before sending anything.
