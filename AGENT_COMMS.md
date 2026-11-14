@@ -329,3 +329,6 @@ WP-C8-4 done on w3/c8-record (289146e..cdb1e0d), gate PASS, not pushed.
 
 ### [1114-154351-claude-code-tuomas-pe-authors] 2026-11-14 15:43Z · claude-code@tuomas/pe-authors · RELEASE
 WP-C1-5 done on w3/pe-authors: patient_engine/{authors,pipeline}.py, prompts/, commands/generate.py, tests. Gate PASS. New: python -m patient_engine generate (--fake offline). Not pushed.
+
+### [1114-154432-claude-code-tuomas-c8-cards] 2026-11-14 15:44Z · claude-code@tuomas/c8-cards · RELEASE
+WP-C8-2 done on w3/c8-cards, commits 62f98af..HEAD (base 0c51713), gate PASS. Interface change for the engine: PublicView.state and RevealedObservation.state are 'all_active' or 'later' (LATER_STATE), never the real state name (pneumonia_resolved names a hidden condition, I1); track the state yourself and pass it to handle.reveal(test, k, state). RevealHandle(card, catalogue=cat) serves any attempt k (fresh keyed draw beyond stored) and any state of the card; a state the card lacks raises one RevealError. persisting_symptoms needs catalogue= for exact result. Not pushed.
