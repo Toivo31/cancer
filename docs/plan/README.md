@@ -41,7 +41,7 @@ How to write L2 and L3 is in `03-speccing-guide.md`, with templates in `template
 | `02-execution-strategy.md` | Assessment of the first parallel wave, and the rules for the next ones: roles, lanes, integration, communication, quality gates |
 | `03-speccing-guide.md` | How to turn a component into work packages and tickets |
 | `04-status.md` | What is built, where, what is running, what is open. The only file here that changes often |
-| `components/C1-patient-engine.md` | Synthetic patients: the patient card, hidden variables, generation, storage, LLM narrative |
+| `components/C1-patient-engine.md` | Synthetic patients: the patient card, generation by a language model, validation and audit, libraries and cohorts, co-existing illness and return |
 | `components/C2-clinical-catalogue.md` | The medical content: conditions, findings, tests with accuracy, all sourced |
 | `components/C3-simulation.md` | The flowchart simulator: what exists, what changes for the new patient model |
 | `components/C4-decision-layer.md` | What sits at a decision node: probabilities, decision matrix, score, JEV |

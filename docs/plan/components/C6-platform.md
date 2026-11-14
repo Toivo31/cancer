@@ -40,12 +40,12 @@ edit decision tables, train a table from decisions, and deploy the whole thing.
 
 | # | Change | Depends on |
 |---|---|---|
-| W1 | **Cohorts as a resource**: create a cohort from a catalogue, see its checks, pick it for a run | C1 P6 |
-| W2 | **Patient card viewer**: background, what was presented, what each step revealed and when; hidden truth only in an explicit teaching view | C1 P1, P10 |
+| W1 | **Cohorts as a resource**: create a cohort from a catalogue, see its checks, pick it for a run | C1 P9 |
+| W2 | **Patient card viewer**: background, what was presented, what each step revealed and when; hidden truth only in an explicit teaching view | C1 P1, P12 |
 | W3 | **Catalogue browser**: conditions, variables and tests with their sources and grades; the ledger counts | C2 K7 |
 | W4 | **Decision matrix and score editors** on the decisions screen | C4 J5 |
 | W5 | **Criteria changes in the optimise view**: before and after rows of a decision table next to the graph diff | C5 O3 |
-| W6 | Narratives in the patient trace (the referral letter as the GP would have written it) and a link to the note reader | C1 P7, Eemeli's side |
+| W6 | Narratives in the patient trace (the referral letter as the GP would have written it) and a link to the note reader | C1 P5, Eemeli's side |
 
 ## Sub-wholes (for the spec agent)
 

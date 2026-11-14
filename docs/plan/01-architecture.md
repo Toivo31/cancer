@@ -12,8 +12,8 @@ contracts and invariants. Each component has its own file in `components/`.
                          └──────────────┬───────────────┘
                                         │ catalogue contract
                          ┌──────────────▼───────────────┐
-                         │ C1 PATIENT ENGINE            │  sample cards, pre-draw every test
-                         │ patient_engine/              │  result, store cohorts, narratives
+                         │ C1 PATIENT ENGINE            │  language model writes cards and all
+                         │ patient_engine/              │  test results; validate, audit, store
                          └──────────────┬───────────────┘
                                         │ cohort + reveal contract
 ┌───────────────────┐    ┌──────────────▼───────────────┐    ┌───────────────────────────┐
@@ -45,7 +45,7 @@ contracts and invariants. Each component has its own file in `components/`.
 | C7 | Evidence | `params/`, `docs/` | Exists; ledger and ranges in progress | `components/C7-evidence.md` |
 
 Other people's areas, outside this plan but connected: `technique_classifier/` and `note_reader/`
-(Eemeli) read clinical notes, which C1's narratives can supply; `video/dots/` and `live_demo/`
+(Eemeli) read clinical notes, which C1's generated notes can supply; `video/dots/` and `live_demo/`
 (Eemeli) show flows. See the area map at the top of the agent channel.
 
 ## Data flow, with the information boundary
@@ -83,7 +83,7 @@ architect and a decisions-log row.
 |---|---|---|---|
 | **Catalogue format** `catalogue/1` | C2 → C1, C3 | `components/C2`, then `catalogue/README.md` | to write |
 | **Patient card** `card/1` | C1 → C3, C6, note reader | `components/C1`, then `patient_engine/README.md` | to write |
-| **Cohort** `cohort/1` (manifest + storage) | C1 → C3, C6 | `components/C1` | to write |
+| **Library** `library/1` (stored, audited cards) and **cohort** `cohort/1` (a seeded draw from a library) | C1 → C3, C6 | `components/C1` | to write |
 | **Reveal API** | C1 → C3 | `components/C1`, section "Reveal" | to write; today it is `Patient.results[test][attempt]` |
 | **Flowchart document** `flowchart/1`, **world document** | C6 ↔ C3 | `docs/platform/specs/01-flowchart-model.md`, `pathway_sim/documents.py` | built |
 | **Decision contract** (`/v1/decide`) | C3 ↔ C4 | `docs/platform/specs/02-jev-interface.md`, `jev/contract.py` | built; context gains typed revealed variables |
@@ -98,10 +98,10 @@ architect and a decisions-log row.
 
 | # | Invariant | How it is checked |
 |---|---|---|
-| I1 | No hidden field reaches the decision layer, a guard, the optimiser's proposal step, or a narrative shown before the fact is revealed | Type separation; a test that scrambles hidden truth after a run and gets identical decisions and proposals (exists for the optimiser: `test_proposal_scores_ignore_hidden_truth`) |
+| I1 | No hidden field reaches the decision layer, a guard, the optimiser's proposal step, or a note shown before the fact is revealed | Type separation; a test that scrambles hidden truth after a run and gets identical decisions and proposals (exists for the optimiser: `test_proposal_scores_ignore_hidden_truth`) |
 | I2 | Same (cohort, flowchart, policy, seeds) gives a byte-identical run log | Determinism tests |
 | I3 | Changing the flowchart does not change any patient's card or any pre-drawn draw | Common-random-number tests: a patient who takes the same test in two flowcharts gets the same result |
-| I4 | Every number the simulation uses has a source id or the word `assumption`, and a grade | Catalogue validator; the ledger (`params/ledger.py`) |
+| I4 | Every reference number (catalogue, timing, capacity) has a source id or the word `assumption`. Every library of model-written cards carries an audit against the catalogue, and results say which library they used | Catalogue validator; the ledger (`params/ledger.py`); library audit |
 | I5 | Shipped scenarios keep their published check: Norway observed about 40% within 42 days | `docs/validation.md`, calibration test |
 | I6 | The optimiser accepts a change only on training patients and reports it on held-out patients, and never accepts more missed cancers than the baseline | Optimiser tests |
 | I7 | No `eval`, `exec`, unsafe YAML load or pickle of user input anywhere | Test in `tests/test_expr.py`; security review |
@@ -111,7 +111,7 @@ architect and a decisions-log row.
 
 ```
 catalogue/            C2  conditions.yaml, variables.yaml, tests.yaml, populations/*.yaml, README.md
-patient_engine/       C1  card.py, catalogue.py, sample.py, observe.py, cohort.py, narrative.py, adapter.py, checks.py
+patient_engine/       C1  card.py, catalogue.py, client.py, skeleton.py, authors.py, validate.py, audit.py, reference.py, library.py, adapter.py
 pathway_sim/          C3  engine, scenario, documents, expr, validate, flow, metrics
 jev/                  C4  contract, adapter, stub (tables), matrix, score, http backend, dataset, training
 optimiser/            C5  analysis, edits (order), criteria (decision rules), search, report
@@ -127,4 +127,5 @@ docs/plan/            this framework
 Python 3 standard library plus numpy and pyyaml for the libraries; FastAPI, SQLite and gzip JSON
 blobs for the service; React, TypeScript and React Flow for the web app; no build step for
 `demo/flow.html`; one process per job; an OpenAI-compatible endpoint for language-model calls,
-standard library only, always optional with an offline fallback.
+standard library only. Generation needs the endpoint; everything else (tests, runs on a stored
+library, the demo) works offline.

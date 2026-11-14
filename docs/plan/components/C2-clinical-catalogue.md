@@ -9,6 +9,15 @@
 | Contract it owns | `catalogue/1` |
 | Track | Platform. Review required for all medical content |
 
+## Role after decision D39
+
+The language model writes the patients and their test results (C1). The catalogue therefore has
+three jobs: (1) it defines what a card contains (the variables and tests, with types and units:
+the card's schema is generated from it); (2) its reference values (frequencies, accuracy) go into
+the model's prompts and, in `guided` mode, drive the engine's draw of which results are misses or
+false alarms; (3) it is the yardstick of the audit each library must pass. It also gains two
+files for decision D40: which illnesses occur together, and what treatment does.
+
 ## Purpose
 
 One place that holds the medical content of the simulated world, separate from any pathway:
@@ -46,7 +55,9 @@ catalogue/
     variables.yaml          hidden variables (symptoms, signs, true values, imaging truth)
     tests.yaml              tests: what they reveal, how accurately, how long, what they cost
     populations/*.yaml      who presents: background distributions
-    behaviour.yaml          patient behaviour: what is reported, who comes back
+    behaviour.yaml          patient behaviour: what is reported, who comes back and when
+    cooccurrence.yaml       which ordinary illnesses occur next to which primary condition, how often
+    treatments.yaml         treatments: which condition each resolves, response rate, time course
     constraints.yaml        combinations that cannot occur
 ```
 
@@ -114,7 +125,7 @@ catalogue/
    the optimiser and capacity changes act on.
 5. **Process steps are not tests.** Referral letters, triage of referrals, board meetings and
    bookings live in the flowchart as administrative steps. Clinician judgements become decision
-   nodes (assumption V4).
+   nodes (decision D41).
 6. **History taking and examination are tests**: they reveal symptoms and signs with their own
    sensitivity (patients forget; clinicians do not ask).
 7. **Dependencies are explicit and acyclic** (`by:` modifiers). The validator draws the graph.
@@ -189,7 +200,8 @@ Pirkanmaa pathway description. Everything else needs the research lane.
 | K3 | **Conditions and prevalence** for `lung-primary-care` | `conditions.yaml`, `populations/` | Research lane. Review required |
 | K4 | **Hidden variables** | `variables.yaml` with a distribution per condition | Research lane; the largest piece; can be split by variable kind |
 | K5 | **Tests** | `tests.yaml`: outputs, accuracy, timing, cost, harm | Research lane; carry over sourced entries first |
-| K6 | **Behaviour and constraints** | `behaviour.yaml`, `constraints.yaml` | What patients report and when they come back (C1 question Q2) |
+| K6 | **Behaviour, co-occurrence, treatments, constraints** | `behaviour.yaml`, `cooccurrence.yaml`, `treatments.yaml`, `constraints.yaml` | What patients report, when they come back, which illnesses hide a cancer, what treatment resolves (decision D40) |
+| K8 | **Audit tolerances** | Per reference value, how far a library may deviate before it fails | Used by C1 P7 |
 | K7 | **Rendered catalogue and ledger** | A readable Markdown or HTML rendering; counts of sourced, assumed and draft entries | With C7 (`params/ledger.py`) |
 
 K1 and K2 first. K3 to K6 in parallel by different research lanes once K1 is fixed (they own

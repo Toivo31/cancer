@@ -13,7 +13,10 @@
 Answer one question at every decision node: given what has been revealed about this patient and
 the options on offer, how likely is each option to be chosen next? The answer always comes
 through the same contract, whatever sits behind it. In the end that is JEV, the team's decision
-model. Until then, and next to it for comparison, simpler policies do the job.
+model, at **every** decision node (decision D41): ordering a test, a clinician's judgement,
+acting on a result, treating, referring, discharging. Until JEV exists, and next to it for
+comparison, simpler policies do the job. Steps that only perform something (a test, an
+administrative step) are nodes too, but nothing is decided in them.
 
 ## The ladder of policies (all behind the one contract)
 
@@ -45,7 +48,7 @@ Rules that hold at every level:
 | D1 | Context carries typed revealed variables (`chest_ct.size_mm`, `history.haemoptysis`) with the day each became known | Follows C3 S1. A contract change: `context` gains `revealed`; keep `history` for compatibility; bump the contract's minor version and extend the contract tests |
 | D2 | Decision matrix, extended: conditions over typed variables, an `is unknown` test, reachability and overlap warnings, row-level source notes | Mostly validation and the safe evaluator's grammar (comparisons with numbers already exist) |
 | D3 | Score-and-thresholds policy | New table shape in the flowchart document; evaluated in-process; shown as a points table in the web app |
-| D4 | The judgement nodes' first matrices (nurse, GP, specialist; C3 S4) | Content, not code: each row needs a source or `assumption`, like the catalogue. Calibrated so the Finnish scenario's published waits and shares hold |
+| D4 | The first matrices for every decision node (nurse, GP, specialist, act-on-result, treat or refer, discharge; C3 S4) | Content, not code: each row needs a source or `assumption`, like the catalogue. Calibrated so the Finnish scenario's published waits and shares hold |
 | D5 | Explanation with every answer: which row or which points produced it | The contract already has an `explanation` field; make it structured so the patient trace can show "row 3: haemoptysis and age over 40" |
 | D6 | "What would JEV need": an export of decision contexts in the dataset format for the JEV owner | Exists as decisions export; confirm the shape with the JEV owner |
 

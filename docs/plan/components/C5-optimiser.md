@@ -48,6 +48,9 @@ proposes from what was revealed, then **measures** by rerunning. Keep this split
    guardrails hold.
 4. **Report** on held-out cohorts, with the optimism (training gain minus held-out gain) shown.
 
+With patients who return (C3 S11), a decision's cost includes the episodes it causes later: a
+quick discharge that sends a cancer patient round the loop is slow, and the rerun measures that.
+
 One caveat to respect everywhere: patients share queues, so changing one patient's path changes
 others' waits. Per-patient reasoning is only a way to find candidates; acceptance is always a
 full rerun.

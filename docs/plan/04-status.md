@@ -1,7 +1,7 @@
 # Status
 
 The only file in this folder that changes often. Written by the integrator at every sync point.
-Last update: **Sat 14 Nov 2026, about 16:15 Helsinki.** Deadline: Sun 15 Nov 10:00 Helsinki.
+Last update: **Sat 14 Nov 2026, about 17:00 Helsinki.** Deadline: Sun 15 Nov 10:00 Helsinki.
 
 ## Branches
 
@@ -12,10 +12,11 @@ Last update: **Sat 14 Nov 2026, about 16:15 Helsinki.** Deadline: Sun 15 Nov 10:
 | `comms-pointer` | `scripts/comms.py` and the `CLAUDE.md` pointer to the agent channel | PR #3 into `main`, open; already inside `overnight/sim` |
 | `agent-comms` | The agent channel (`AGENT_COMMS.md`) | Live |
 | `plat/jev`, `plat/expr`, `plat/flow`, `plat/svc-a`, `plat/svc-b`, `plat/web`, `plat/ops`, `plat/ds` | First-wave lanes | Merged into `overnight/sim`; worktrees can be removed |
-| `plat/evidence`, `plat/secreview` | Evidence sweep; security review | Running |
+| `plat/evidence` | Evidence sweep | Merged |
+| `plat/secreview` | Security review | Running |
 | `platform/next` | Platform track for the patient engine and later waves | To create once the two running lanes are merged |
 
-## What is built (merged into `overnight/sim`, full suite green: 691 tests before the datasets lane, rerun pending)
+## What is built (merged into `overnight/sim`; full suite green, 718 tests)
 
 | Component | Built | Old tickets |
 |---|---|---|
@@ -23,7 +24,7 @@ Last update: **Sat 14 Nov 2026, about 16:15 Helsinki.** Deadline: Sun 15 Nov 10:
 | C4 Decision layer | Contract, adapter, stub tables, HTTP backend and stub server, local backend, command-line flags; dataset rows, frequency and local trainers, exploration mode | M1-1, 3, 5 to 8, 10; M6-1 to 4, 7, 8 |
 | C5 Optimiser | Order-of-steps search; apply a subset; works under stub tables (rule and stub give the same changes, test-locked) | M2-7 |
 | C6 Platform | Service (projects, versions, validate, decide, jobs, runs, flow endpoint, optimisations, datasets, models, access control and limits); web app (projects, canvas, decisions table, run panel, layers, playback, trace); offline flow page; deployment files (not run) | M2-3 to 10; M3-1 to 6, 10 to 13; M7-2, M7-5 |
-| C7 Evidence | As before the wave; golden check for the Norway template added | – |
+| C7 Evidence | Number sweep across documents; ledger (`docs/ledger.md`: Finland 49 input blocks, 9 sourced, 40 assumptions; Norway 25, 22 sourced); ranges (`docs/ranges.md`); booking against queue split; golden check for the Norway template | M8 partly |
 
 Fixed at integration: two different `service/runtime.py` (one is now `service/prepare.py`);
 "always choose X" allowed under stub tables and made to work there; the service catches an
@@ -40,7 +41,6 @@ progress on `plat/evidence`). See `components/C6-platform.md` for how they are r
 
 | Lane | Branch | Doing |
 |---|---|---|
-| Evidence | `plat/evidence` | Number consistency across documents, ledger, ranges, booking-versus-queue analysis, pitch templates |
 | Security review | `plat/secreview` | Read-only review of the service and the HTTP backend; report plus tests |
 
 ## Next (in order)
@@ -50,17 +50,22 @@ progress on `plat/evidence`). See `components/C6-platform.md` for how they are r
 | 1 | Merge the two running lanes; record first-wave decisions in `docs/decisions.md` (partly done: D32 to D38) | integrator | both |
 | 2 | `WP-INFRA-1`: `slow` markers, `tests/contracts/`, one gate command, golden checks | one builder | both |
 | 3 | Triage the security review into fixes | architect, then one builder | platform; anything exploitable on the hosted demo is submission track |
-| 4 | **Spec wave**: spec agents write work packages for C1, C2, C4, C5 from the component files (`03-speccing-guide.md`); C5's first package is the design spike O1 | spec agents (Tuomas starts them, or asks the architect to) | platform |
-| 5 | **Research lane** for the catalogue content (C2 K3 to K5), once K1 (the format) is fixed | research agents with web access | platform |
-| 6 | **Build wave** for C1: P1 and P2 (contracts) first, then P3, P4, P6, P7 in parallel, then P5 and P8 | builders | platform |
+| 4 | **Spec the Sunday slice** of the patient engine (C1 P1 to P10) and the first catalogue (C2 K1, K2 plus symptoms and bloodwork) | spec agents (Tuomas starts them, or tells the architect to) | platform, then submission |
+| 5 | **Build the slice**: P1, P2, P3, P8 in parallel; then P4 to P6; then P7, P9, P10 | builders | platform, then submission |
+| 6 | **Generate a first library** of about 300 cards and its audit | whoever has the endpoint and key | submission |
+| 6b | After the submission: C3 E7 (states, treatment, episodes), E4 and C4 J4 (all decisions as nodes), C5 O1 spike, C3 E8 spike | | platform |
 | 7 | Submission polish: the demo path, pitch numbers, video numbers; freeze Sunday 06:00 | Tuomas, Eemeli, their agents | submission |
 
 ## Waiting for a human
 
 | Item | Options and lean | Since |
 |---|---|---|
-| Assumptions V1 to V8 in `00-vision.md` | Used as written until corrected | 14 Nov |
-| Forks F1 to F7 (`docs/platform/README.md` section 5) | Built on the leans: F1 now proposed as (b) through V4; F2 sample; F3 our contract; F4 React; F7 off under a model | 14 Nov |
+| D42: is the patient engine part of Sunday's submission (my reading of "yes it does") | Read as yes | 14 Nov |
+| Assumptions V2, V5, V6, V8 to V11 in `00-vision.md`, above all V10 (`guided` error rates) | Used as written until corrected | 14 Nov |
+| A language-model endpoint and budget for generating patients; who runs it (the architect session has none) | Needed before any real library exists | 14 Nov |
+| Booking split in the dashboard (channel 1114-141641) and emergent booking leads (C3 S12) | Lean: say plainly that leads are inputs; rebuild after the submission | 14 Nov |
+| Stale 61% in Eemeli's `video/dots/README.md`, `docs/video_plan_draft.md` | Eemeli | 14 Nov |
+| Forks F2 to F7 (`docs/platform/README.md` section 5); F1 is settled by D41 | Built on the leans: F2 sample; F3 our contract; F4 React; F7 off under a model | 14 Nov |
 | Which page is the submission's main page (channel entry 1114-132734) | Lean: `demo/flow.html` as the AstraZeneca page and offline fallback, `live_demo/` as the hosted URL | 14 Nov |
 | Merge PR #3 (agent channel pointer) and PR #2 | Toivo or Tuomas | 14 Nov |
 | Who owns JEV; does an API exist | Unknown | 14 Nov |

@@ -50,6 +50,10 @@ The test count went from 77 to about 670.
 | **Submission** | `overnight/sim`, then `main` | What the judges see on Sunday 10:00 | Only fixes and polish to the demo path (offline flow page, dashboard, hosted demo, pitch, video numbers). **Freeze Sunday 06:00 Helsinki**: after that, only a human-approved fix. Everything on it must pass the golden checks |
 | **Platform** | `platform/next` (created from `overnight/sim` when the first wave is fully merged) | The general loop: patient engine, catalogue, decision matrix, criteria optimiser | Normal development. Something moves to the submission track only if it is complete, green and Tuomas says so |
 
+The patient engine's **Sunday slice** (`components/C1`) is built on `platform/next` and moves to the
+submission track piece by piece under that rule: the fallback demo and its golden checks are never
+put at risk for it.
+
 ### Roles
 
 | Role | Who | Does | Does not |
@@ -165,6 +169,6 @@ See `04-status.md` for the live list. In outline:
 | Wave | Goal | Lanes |
 |---|---|---|
 | 2 (now) | Close the first wave: merge, record decisions, protect the demo path, create the gate | integrator; `WP-INFRA-1`; fix the Norway template (A11) |
-| 3 | Spec the patient engine, catalogue, decision matrix and criteria optimiser | Spec agents for C1, C2, C4, C5; a clinical research lane for C2 sources |
-| 4 | Build the patient engine core against its contracts | Card and catalogue loader (contract first), sampler, observation models, cohort store, adapter to the simulator, validation checks |
-| 5 | Decision matrix, simulator changes for typed reveals, criteria optimiser, card viewer in the web app, narratives | per work package |
+| 3 | Spec the patient engine's Sunday slice and the first catalogue (short: the component files are detailed) | One spec agent for C1 P1 to P10, one for C2 K1, K2 and the slice's content |
+| 4 | Build the Sunday slice | Contracts and catalogue loader, model client, reference generator (parallel); then authors, validation, audit, store, adapter; generation itself runs where a key exists |
+| 5 | After the submission: states, treatment and episodes; every judgement as a decision node; decision matrix and score; criteria optimiser (spike first); emergent booking leads (spike first); editor and optimise screens | per work package |

@@ -45,7 +45,7 @@ checked against, and how much the result moves when the uncertain inputs move.
 | # | Change | Depends on |
 |---|---|---|
 | V1 | **The ledger covers the catalogue**: counts of entries by grade (A, B, C, assumption, draft) per catalogue, shown in the product | C2 K7; `params/ledger.py` from `plat/evidence` |
-| V2 | **Cohort checks as evidence**: each cohort's check report (marginals, derived published quantities) is stored and shown | C1 P8 |
+| V2 | **Cohort checks as evidence**: each cohort's check report (marginals, derived published quantities) is stored and shown | C1 P7 |
 | V3 | **Golden checks in the gate**: Norway through the CLI and through the service template; pitch numbers against the bundle | `WP-INFRA-1`; the first one exists as `tests/test_golden_templates.py` |
 | V4 | **Robustness of every accepted optimiser change** under the low and high values of what it depends on | C5 O6 |
 | V5 | **Calibration against Finnish published waits** as a repeatable job, rerun whenever the catalogue or the judgement matrices change | C3 E4 |
