@@ -1,0 +1,44 @@
+{
+  "delivery": "live",
+  "test": "Urgent appointment policy, two choices",
+  "created_at": "2026-11-14T23:25:33.061071+00:00",
+  "backend": {
+    "mode": "model",
+    "model": "nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-BF16",
+    "checkpoint_sha256": "22570c201a9e3d25dcdf7aa904770a568328e034ccb5ac89623784707a7323e8",
+    "step": 2350,
+    "revision": "fb0ee0bc6b3f70342afd8d84cb80dbadbaa8a1fe",
+    "training_identity": "003086694525587bde55201db3713f64f434df916492669a2836b871cc7d089d",
+    "quantization": "nf4-experts-merged-adapters"
+  },
+  "questions": [
+    {
+      "id": "website-live-check",
+      "text": "Who should receive the earliest appointment?",
+      "candidate_format": "newline",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Patient A",
+          "score": 0.3697541058063507
+        },
+        {
+          "id": "b",
+          "text": "Patient B",
+          "score": 0.6302458643913269
+        }
+      ],
+      "proposed_action_id": "b",
+      "score_margin": 0.2604917585849762
+    }
+  ],
+  "latency_ms": 3845.545,
+  "cache": {
+    "enabled": true,
+    "context_hits": 0,
+    "candidate_hits": 0,
+    "candidate_count": 2,
+    "bytes": 294912,
+    "max_bytes": 67108864
+  }
+}

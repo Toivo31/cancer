@@ -1,5 +1,5 @@
-import {createDecisionClient} from './client.js';
-import {render as renderResults} from './results.js';
+import {createDecisionClient} from './client.js?v=20261115-3';
+import {render as renderResults} from './results.js?v=20261115-3';
 const $=id=>document.getElementById(id);
 const api=createDecisionClient({baseUrl:'https://cancer123--birch-decision-1138-demo.us-east.modal.run/api/decision',fetch:(...args)=>globalThis.fetch(...args)});
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));

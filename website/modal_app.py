@@ -15,5 +15,18 @@ def web():
     from fastapi import FastAPI
     from fastapi.staticfiles import StaticFiles
     site = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
+    @site.middleware("http")
+    async def fresh_application_assets(request, call_next):
+        # Modal normalises bundled file mtimes. Avoid stale 304 responses after
+        # redeploying HTML/JS/CSS/JSON with the same Last-Modified timestamp.
+        fresh = request.url.path == "/" or request.url.path.endswith((".html", ".js", ".css", ".json"))
+        if fresh:
+            request.scope["headers"] = [(key, value) for key, value in request.scope["headers"]
+                                        if key.lower() not in (b"if-modified-since", b"if-none-match")]
+        response = await call_next(request)
+        if fresh:
+            response.headers["Cache-Control"] = "no-store"
+        return response
+
     site.mount("/", StaticFiles(directory="/site", html=True), name="website")
     return site

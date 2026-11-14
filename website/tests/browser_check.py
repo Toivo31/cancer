@@ -6,7 +6,7 @@ from pathlib import Path
 import requests
 
 BASE=os.environ.get('WEBDRIVER_URL','http://127.0.0.1:4445')
-SITE=os.environ.get('WEBSITE_URL','https://cancer123--equal-care-pathways-web.us-east.modal.run/')
+SITE=os.environ.get('WEBSITE_URL','https://cancer123--equal-care-pathways-web.us-east.modal.run/?release=20261115-3')
 profile=Path.home()/'snap/firefox/common/equal-care-slides-qa';profile.mkdir(parents=True,exist_ok=True)
 r=requests.post(BASE+'/session',json={'capabilities':{'alwaysMatch':{'browserName':'firefox','moz:firefoxOptions':{'args':['-headless','-profile',str(profile)]}}}},timeout=60)
 r.raise_for_status();sid=r.json()['value']['sessionId'];url=BASE+'/session/'+sid
@@ -25,7 +25,7 @@ def wait(s,seconds=20):
   time.sleep(.15)
  raise AssertionError(s)
 def check(name,s):
- assert js(s),name
+ assert js(s), (name,js('return [document.getElementById("custom-result").textContent,Array.from(document.scripts).map(s=>s.src)]'))
  checks.append(name)
 def click(id):js('document.getElementById('+json.dumps(id)+').click()')
 def route(s):js('location.hash='+json.dumps(s));time.sleep(.2)

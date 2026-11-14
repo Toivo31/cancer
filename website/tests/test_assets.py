@@ -25,5 +25,5 @@ class Assets(unittest.TestCase):
   self.assertTrue({('contact','nurse'),('contact','gp'),('imaging','bronch'),('imaging','biopsy')}<=pairs)
  def test_module_dependencies_exist(self):
   for path in PUBLIC.rglob('*.js'):
-   for dependency in re.findall(r"from ['\"](\./[^'\"]+)['\"]",path.read_text()):self.assertTrue((path.parent/dependency).is_file())
+   for dependency in re.findall(r"from ['\"](\./[^'\"]+)['\"]",path.read_text()):self.assertTrue((path.parent/dependency.split('?')[0]).is_file())
 if __name__=='__main__':unittest.main()

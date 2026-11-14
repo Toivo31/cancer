@@ -1,6 +1,6 @@
 # Equal Care Pathways: three-slide website
 
-Live: https://cancer123--equal-care-pathways-web.us-east.modal.run/
+Live: https://cancer123--equal-care-pathways-web.us-east.modal.run/?release=20261115-3
 
 1. **Simulation:** an automatically moving branching graph, with no visible controls. Routes are simplified from the saved synthetic Finland baseline on `content/pages`. Intermediate steps and timing are compressed for illustration; no new search or live clinical simulation runs here.
 2. **Decision Studio:** editable Text, Photo, and Custom question examples with explicit live computation. Text also contains the optional synthetic patient retrieval → context refinement → classification demonstration. Saved photo and retrieval outputs are clearly labelled and run without GPU use.
@@ -29,3 +29,5 @@ The medical text question is an authored teaching example, not a benchmark resul
 ## Checks
 
 `tests/browser_check.py` exercises the deployed UI in Firefox through local geckodriver, including real SDK paths with intercepted API responses. It verifies text, photo, custom, refinement and review contracts without paying for GPU calls. Actual live API checks are separate; never replay a scoring POST whose accepted job is pending.
+
+Actual live completion and checks: [VALIDATION.md](VALIDATION.md).
