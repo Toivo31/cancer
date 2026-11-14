@@ -37,6 +37,18 @@ Calibrated scenario used downstream: `scenarios/generated/stokstad_calibrated.ya
 Seed-averaged check on the best fit (50 × 100 patients): observed 40.6%, faster PET 59.4%,
 optimal 80.1%.
 
+**Cohort-size uncertainty** (200 simulated cohorts of 100 patients, best-fit parameters; central
+95% range), next to the paper's 95% CIs:
+
+| Flowchart | Simulated, 100-patient cohorts | Published (95% CI) |
+|---|---|---|
+| Observed | 40% (30–49) | 40% (31–50) |
+| Faster PET-CT only | 59% (50–69) | 48% (39–58) |
+| Authors' optimal | 80% (73–87) | 80% (72–87) |
+
+The observed and optimal intervals overlap the published ones almost exactly. The faster-PET
+intervals overlap only at the edge.
+
 ## What this shows, and what it does not
 
 - The simulator, calibrated only on the observed pathway, lands on the authors' optimal-pathway
@@ -62,4 +74,3 @@ optimal 80.1%.
 
 - Faster-PET over-prediction: try adding the "incomplete workup at tumour board → re-discussed
   next week" mechanism (16 patients) and within-patient correlation of delays.
-- Bootstrap 100-patient cohorts to put a CI on our simulated shares (the paper's CIs are ±9 pp).

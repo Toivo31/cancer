@@ -67,7 +67,7 @@ branch and gets merged in. Run all tests with `python -m pytest -q`.
 ## Follow-ups found overnight (not blocking the demo)
 - [ ] D6 Decision model: add revealed attributes (e.g. tumour location) to the context so it can learn the sampling-method choice; run it as `--policy model` at one choice node vs the rule policy and vs dot-product (the architecture-proof node, open Q12)
 - [ ] V4 Stokstad: model "incomplete workup at tumour board -> re-discussed next week" (16 patients) and check whether the faster-PET over-prediction shrinks
-- [ ] V5 Bootstrap 100-patient cohorts for CIs on simulated shares
+- [x] V5 Bootstrap 100-patient cohorts for CIs on simulated shares
 - [ ] U7 Dashboard: show the capacity probe ("one more slot per day here gains X pp") and the optimiser's step-by-step evidence
 
 ## Track I: integration
