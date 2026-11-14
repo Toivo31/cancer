@@ -95,7 +95,7 @@ def build(quick: bool = False, sample: int = 300) -> list[dict]:
              check=dashboard_share(bundle, "stokstad", "authors_pathway"), sample=sample),
     ]
     out.append({"id": "norway", "title": "Norwegian hospital, rebuilt from Stokstad et al. 2019", "synthetic": False,
-                "target_days": sc.target_days, "default_pair": ["authors", "suggested_faster_pet"],
+                "target_days": sc.target_days, "default_pair": ["observed", "suggested"],
                 "description": "100 early-stage lung cancer patients at one Norwegian centre, rebuilt step by step and calibrated on the "
                                "observed pathway only. Patients are simulated; the pathway and its waits are published.",
                 "published": {"observed_share": pub["observed"]["share_within_target"],

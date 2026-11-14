@@ -578,11 +578,13 @@ function validationCard() {
     (P ? `Over all ${N.all_settings.accepted} settings that fit the observed data the authors' pathway comes out at ${rng(P.optimal)}, typically about ${pct(P.optimal.median)}. ` : '') +
     `The model also over-predicts the faster scanner alone (${pct(g('faster_pet'))} against ${pct(sc.published.faster_pet_share)} published${P ? '; ' + rng(P.faster_pet) + ' across settings' : ''}). Trust the ranking of reorderings, not their exact size.</p>`;
   const nf = find('suggested_faster_pet'), ne = find('suggested');
-  if (nf && ne) {
-    const w = N && N.without_fourth;
-    h += `<p style="margin-top:8px"><b style="color:${C.text}">Our suggested change.</b> The authors' ${pct(sc.published.authors_estimate_share)} assumes a new, faster PET-CT scanner. With that same scanner our optimiser's pathway gives <b style="color:${C.mint}">${pct(g('suggested_faster_pet'))}</b> in the simulator, against ${pct(g('authors'))} for the authors' pathway. With no new equipment it gives <b style="color:${C.mint}">${pct(g('suggested'))}</b>; the two are not comparable with the published ${pct(sc.published.authors_estimate_share)}.</p>
-    <p>The optimiser found the authors' three changes plus a fourth: plan tissue sampling when the referral is triaged. That fourth change is beyond the paper and <b>needs a clinical check</b>.` +
-    (w ? ` Without it the pathway gives ${pct(w.three_changes)}, so the fourth change adds about ${Math.round((w.all_four - w.three_changes) * 100)} points; most of the lead over the authors comes from how the optimiser orders the same steps.` : '') + `</p>`;
+  const O = N && N.optimiser, ob = O && O.bands, SC = O && O.structure;
+  const rb = x => x ? `${pct(x.min)} to ${pct(x.max)}, median ${pct(x.median)}` : null;
+  if (SC) h += `<p style="margin-top:8px"><b style="color:${C.text}">Structure check.</b> Read literally (treatment does not wait for the tissue sample; PET-CT ordered at the first visit, not at triage), the authors' pathway gives a median of ${pct(SC.literal_median)} over the ${SC.settings} settings, with ${SC.literal_in_published_ci} of ${SC.settings} inside the published ${pct(SC.published_ci[0])} to ${pct(SC.published_ci[1])} (the shipped version: ${SC.shipped_in_published_ci}). Only the paper's text was read, not its figures; the observed pathway was not recalibrated under that reading; the shipped scenario is unchanged.</p>`;
+  if (nf && ne && O) {
+    h += `<p style="margin-top:8px"><b style="color:${C.text}">What our optimiser did.</b> Started from the observed pathway, without being told the answer, it arrived at the authors' redesign (their three changes) plus a fourth, overlapping change: plan tissue sampling when the referral is triaged. That fourth change <b>needs a clinical check</b>. It performs the same as the authors' redesign, not better.</p>
+    <p><b style="color:${C.text}">With no new equipment:</b> <b style="color:${C.mint}">${pct(g('suggested'))}</b> at the best fit; ${rb(ob.optimiser_no_equipment)} over the ${O.n_settings} settings that fit (today: ${rb(ob.observed)}). Better than today in ${O.counts.noeq_beats_observed} of ${O.n_settings}, but better than the faster scanner alone in only ${O.counts.noeq_beats_scanner_alone} of ${O.n_settings}.</p>
+    <p><b style="color:${C.text}">With the faster scanner:</b> ${pct(g('suggested_faster_pet'))} at the best fit; ${rb(ob.optimiser_scanner)}. It beats the scanner alone in ${O.counts.scanner_beats_scanner_alone} of ${O.n_settings}. The authors' ${pct(sc.published.authors_estimate_share)} needs that scanner, so it is not comparable with the no-equipment number. Our simulator puts the authors' pathway lower (${pct(g('authors'))}) because there treatment waits for a tissue sample that only starts after the tumour board; without that wait the two are within a few points. So the gap between those two panes is a modelling difference, not a finding about care.</p>`;
   }
   return h + '</div>';
 }
@@ -647,7 +649,14 @@ function renderNote() {
   const st = A.cohort.strata;
   h += `<b>All patients are simulated.</b> The graph counts all ${fmt(A.totals.n)} simulated patients (${fmt(A.totals.cohorts)} cohorts); the moving dots are a sample of ${A.cohort.size} (${st.cancer} with cancer${st.other ? ', ' + st.other + ' without' : ''}), so the live counters above the graph count the sample, not the whole run. Time on the slider is days since each patient's first contact. `;
   if (sc.synthetic) h += `<b>This is a synthetic Finnish county</b>, not measured Finnish data: parameters are sourced or labelled as assumptions (see the dashboard). The change shown reorders steps only (no new capacity, no fast lane).`;
-  if (sc.published) h += `<b>Norway:</b> see the check against the published study in the side panel. `;
+  if (sc.published) {
+    h += `<b>Norway:</b> see the check against the published study in the side panel. `;
+    const O = window.START_DATA && window.START_DATA.norway && window.START_DATA.norway.optimiser, bd = O && O.bands;
+    if (S.keys[0] === 'authors' && S.keys[1] === 'suggested_faster_pet')
+      h += `<b>About this pair:</b> the difference between the two panes is a modelling difference in the left pane, not a finding about care. Our simulated authors' pathway makes treatment wait for a tissue sample that only starts after the tumour board; the paper takes the sample while the patient waits for treatment. Without that wait the two perform the same. `;
+    else if (S.keys[0] === 'observed' && S.keys[1] === 'suggested' && bd)
+      h += `<b>About this pair:</b> today against the optimiser's pathway with no new equipment, at the best-fitting setting. Over the ${O.n_settings} settings that fit the observed data the optimiser gives ${pct(bd.optimiser_no_equipment.min)} to ${pct(bd.optimiser_no_equipment.max)} (median ${pct(bd.optimiser_no_equipment.median)}) against ${pct(bd.observed.min)} to ${pct(bd.observed.max)} today. `;
+  }
   h += `Findings are simulated and are not clinical advice.`;
   $('#note').innerHTML = h;
 }
