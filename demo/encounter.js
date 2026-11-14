@@ -329,7 +329,7 @@ function updateRecord() {
 function renderResults() {
   const R = D.results, o = R.overall;
   const OC = [['treatment', 'Treatment started', END_COL.h_treat], ['left_resolved', 'Left, symptoms gone', END_COL.end_resolved], ['left_with_symptoms', 'Left, symptoms persist', END_COL.end_symptoms], ['undiagnosed_at_horizon', 'Still in primary care at one year', END_COL.end_horizon]];
-  let h = `<h3 class="finding">In this one run, ${pct(o.cancer_treated_share)} of cancers reach treatment and ${pct(o.cancer_within_target_share)} within ${D.target_days} days</h3><p class="enc-small">${fmt(o.n)} simulated patients, ${fmt(o.cancers)} with lung cancer. One seed and no warm-up: see the note below for the multi-seed numbers.</p><div class="enc-res">`;
+  let h = `<h3 class="finding">What this one run shows: a description of the loop, not the numbers to quote</h3><p class="enc-small">${fmt(o.n)} simulated patients, ${fmt(o.cancers)} with lung cancer. One seed and no warm-up; the multi-seed report (next section) gives the numbers to quote.</p><div class="enc-res">`;
   [[pct(o.cancer_treated_share), 'of cancers reach treatment'], [pct(o.cancer_within_target_share), `of cancers treated within ${D.target_days} days`],
    [f1(o.cancer_median_days_to_referral), 'median days to referral (cancers)'], [f1(o.cancer_median_days_to_diagnosis), 'median days to diagnosis'],
    [f1(o.cancer_median_days_to_treatment), 'median days to treatment'], [o.cancer_left_with_symptoms + ' of ' + o.cancers, 'cancers left with symptoms, not followed up'],
