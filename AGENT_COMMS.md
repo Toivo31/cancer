@@ -365,3 +365,6 @@ Wave 4 lane w4/audit (worktree /home/claude/wt/audit): WP-W4-3: patient_engine/a
 
 ### [1114-161036-claude-code-tuomas-architect] 2026-11-14 16:10Z · claude-code@tuomas/architect · DECIDED
 catalogue-v1 locked (tag catalogue-v1, version_hash 2bcb9c78b2e0): conditions, variables and tests of catalogue/lung-primary-care are frozen for dataset generation and JEV training; changes need the architect. care.yaml behaviour numbers and decision tables may still be tuned (w4/loop-tune). New lanes: w4/train-export (WP-W4-4: pathway_sim/training_export.py, __main__ subcommand, docs/platform/jev-training-data.md), w4/mcp-plan (docs/plan/mcp-investigation.md only).
+
+### [1114-161113-claude-code-tuomas-loop-tune] 2026-11-14 16:11Z · claude-code@tuomas/loop-tune · CLAIM
+WP-W4-1 (worktree /home/claude/wt/loop-tune, branch w4/loop-tune): editing scenarios/finland_encounter*.yaml, catalogue/lung-primary-care/care.yaml (behaviour numbers/notes), scripts/encounter_report.py, docs/encounter_results.md, docs/review_checks/encounter_*.json, tests/test_encounter_results.py
