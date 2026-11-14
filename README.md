@@ -1,5 +1,7 @@
 # Equal Care Across Finland: lung cancer pathway simulator and optimiser
 
+**Start here:** `open demo/start.html` shows the demo in order (six steps, each with the one result its screen proves; numbers are read from the data bundles). Presenter script: `docs/demo_path.md`. After regenerating bundles, run `python demo/export_start.py`.
+
 Junction 2026, AstraZeneca challenge. Synthetic patients run through a configurable diagnostic
 flowchart. An optimiser proposes a better order of steps using only information a clinic would
 see. The same patients are rerun to accept a change, and held-out patients are used to report it.
