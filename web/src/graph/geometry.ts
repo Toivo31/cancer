@@ -1,5 +1,8 @@
 import type { Box, Layout } from './layout'
-import { MARGIN_X, ROW_GAP } from './layout'
+
+// the channel between rows and the left margin the long row-skipping routes use (also exported by layout.ts)
+const MARGIN_X = -40
+const ROW_GAP = 96
 
 export interface EdgeGeom {
   /** SVG path of the drawn connection */
@@ -25,7 +28,7 @@ function rounded(pts: [number, number][], R = 9): string {
 /**
  * Route of one connection. Within a row: a smooth curve from the right of the source to the left of the target.
  * Across a row break: out of the source, down to the channel between rows, back along it (by the left margin when it
- * skips a row) and down into the top of the target. `lane` (0..4) shifts parallel routes apart.
+ * skips a row) and down into the top of the target. `lane` (0..9, 4px apart) shifts parallel routes apart; see assignLanes for how lanes are chosen.
  */
 export function edgeGeometry(a: Box, b: Box, layout: Pick<Layout, 'rowTop' | 'rowBottom'>, lane: number): EdgeGeom {
   if (b.row <= a.row) {
@@ -39,7 +42,7 @@ export function edgeGeometry(a: Box, b: Box, layout: Pick<Layout, 'rowTop' | 'ro
     }
     return { d: `M ${sx} ${sy} C ${c1[0]} ${c1[1]} ${c2[0]} ${c2[1]} ${tx} ${ty}`, pts, label: pts[15] }
   }
-  const l = lane * 5
+  const l = lane * 4
   const sx = a.x + a.w, sy = a.y + a.h / 2, tx = b.x + b.w / 2, ty = b.y
   const below = layout.rowBottom[a.row] + ROW_GAP / 2 + l, above = layout.rowTop[b.row] - ROW_GAP / 2 + l
   const pts: [number, number][] = [[sx, sy], [sx + 14 + l, sy], [sx + 14 + l, below]]
