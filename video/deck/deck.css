@@ -1,0 +1,60 @@
+/* Equal Care Pathways: the video's look. Warm white paper, dark ink, Inter; blue only for the fast track. */
+:root {
+  --paper: #FBF9EF;
+  --ink: #1F1F1D;
+  --grey: #6B6B66;
+  --faint: #8A8A85;
+  --rule: #CFCBBE;
+  --blue: #195FA5;
+}
+body { font-family: 'Inter', Arial, sans-serif; color: #1F1F1D; }
+section { background: #FBF9EF; color: #1F1F1D; padding: 128px; box-sizing: border-box; display: flex; flex-direction: column; gap: 40px; }
+section.center { justify-content: center; }
+section.middle { justify-content: center; align-items: center; }
+
+.eyebrow { font-size: 26px; font-weight: 700; letter-spacing: 2px; color: #6B6B66; }
+.title { font-size: 120px; font-weight: 800; line-height: 1.05; letter-spacing: -2px; color: #1F1F1D; }
+.lead { font-size: 44px; font-weight: 500; color: #1F1F1D; }
+.statement { font-size: 80px; font-weight: 800; line-height: 1.1; letter-spacing: -1px; color: #1F1F1D; }
+.sub { font-size: 52px; font-weight: 500; line-height: 1.2; color: #6B6B66; }
+.body { font-size: 36px; font-weight: 500; line-height: 1.35; color: #6B6B66; }
+.source { font-size: 26px; color: #6B6B66; }
+.heading { font-size: 52px; font-weight: 800; line-height: 1.15; color: #1F1F1D; }
+.legend { font-size: 28px; font-weight: 600; color: #195FA5; }
+
+/* the gap */
+.nums { display: flex; gap: 120px; }
+.num { display: flex; flex-direction: column; gap: 16px; }
+.big { font-size: 150px; font-weight: 800; line-height: 1; letter-spacing: -3px; color: #1F1F1D; }
+.label { font-size: 36px; color: #6B6B66; }
+
+/* statements and steps */
+.pair { display: flex; flex-direction: column; gap: 12px; }
+.pairs { display: flex; flex-direction: column; gap: 72px; }
+.steps { display: flex; flex-direction: column; gap: 48px; }
+.step { display: flex; gap: 40px; align-items: baseline; }
+.stepn { font-size: 64px; font-weight: 700; color: #8A8A85; width: 60px; }
+.stept { font-size: 72px; font-weight: 800; line-height: 1.1; color: #1F1F1D; }
+.points { display: flex; flex-direction: column; gap: 20px; }
+.point { font-size: 52px; font-weight: 600; color: #1F1F1D; }
+
+/* a picture from the video beside its text */
+section.split { flex-direction: row; align-items: center; gap: 72px; }
+.col { display: flex; flex-direction: column; gap: 28px; width: 560px; }
+.shot { width: 1032px; height: 581px; object-fit: contain; border: 2px solid #D9D6CB; border-radius: 8px; }
+
+/* credit */
+.credits { display: flex; align-items: center; gap: 96px; }
+.credit { display: flex; flex-direction: column; gap: 12px; align-items: center; }
+.cname { font-size: 80px; font-weight: 800; color: #1F1F1D; }
+.vrule { width: 2px; height: 160px; background: #CFCBBE; }
+.challenge { font-size: 56px; font-weight: 700; color: #1F1F1D; text-align: center; }
+
+/* closing */
+.closing { font-size: 96px; font-weight: 800; line-height: 1.1; letter-spacing: -1px; text-align: center; color: #1F1F1D; width: 1500px; }
+
+/* motion: things arrive in order, as in the video; a fragment waits for the speaker's click */
+.rise { animation: rise 600ms ease-out both; animation-delay: calc(var(--i, 0) * 160ms); }
+@keyframes rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+.fragment { opacity: 0; transition: opacity 400ms ease; }
+.fragment.visible { opacity: 1; }

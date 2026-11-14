@@ -26,9 +26,9 @@
     {
       "id": "n3",
       "at": "0:00",
-      "text": "Our framework sits between: clinicians define each pipeline, the system runs it, and when the model is unsure, a doctor reviews the case.",
+      "text": "In our framework, clinicians define each pipeline, the system runs it, and when the model is unsure, a doctor reviews the case.",
       "phrases": [
-        "Our framework sits between:",
+        "In our framework,",
         "clinicians define each pipeline,",
         "the system runs it,",
         "and when the model is unsure, a doctor reviews the case."
@@ -47,12 +47,13 @@
     {
       "id": "n4b",
       "at": "0:00",
-      "text": "We believe that although much of medicine can't be automated, we could free doctors from repeating tasks to concentrate on difficult cases. Whether it's scheduling visits. Routing patients to the correct specialists.",
+      "text": "We believe that although much of medicine can't be automated, we could free doctors from repeating tasks to concentrate on difficult cases. Whether it's scheduling visits, routing patients to the correct specialists, or identifying symptoms.",
       "phrases": [
         "We believe that although much of medicine can't be automated,",
         "we could free doctors from repeating tasks to concentrate on difficult cases.",
-        "Whether it's scheduling visits.",
-        "Routing patients to the correct specialists."
+        "Whether it's scheduling visits,",
+        "routing patients to the correct specialists,",
+        "or identifying symptoms."
       ]
     },
     {
@@ -61,15 +62,6 @@
       "text": "A model reads the notes and suggests a fast track when immediate care is needed.",
       "phrases": [
         "A model reads the notes and suggests a fast track when immediate care is needed."
-      ]
-    },
-    {
-      "id": "n6",
-      "at": "0:00",
-      "text": "Built with Nemotron, powered by Verda.",
-      "phrases": [
-        "Built with Nemotron,",
-        "powered by Verda."
       ]
     },
     {

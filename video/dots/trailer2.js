@@ -72,7 +72,7 @@ const TRAILER = (() => {
     if (!ac) return; const t = ac.currentTime + 0.02;
     if (kind === "tick") { tone(2400, t, 0.04, 0.05); tone(1200, t, 0.03, 0.03); }
     else if (kind === "tock") { tone(1800, t, 0.04, 0.04); tone(900, t, 0.03, 0.03); }
-    else if (kind === "bling") { tone(1318.5, t, 1.1, 0.16); tone(1975.5, t + 0.1, 1.3, 0.14); tone(2637, t + 0.1, 0.5, 0.05); tone(3951, t + 0.2, 0.4, 0.03); }
+    else if (kind === "bling") { tone(1318.5, t, 1.1, 0.08); tone(1975.5, t + 0.1, 1.3, 0.07); tone(2637, t + 0.1, 0.5, 0.025); tone(3951, t + 0.2, 0.4, 0.015); }
     else if (kind === "bling2") { tone(1975.5, t, 1.0, 0.1); tone(2637, t + 0.05, 0.5, 0.04); }
     else { tone(110, t, 1.6, 0.5, "sine", 42); tone(55, t, 1.8, 0.35); tone(523.3, t + 0.15, 2.2, 0.05); tone(784, t + 0.15, 2.2, 0.04); tone(1046.5, t + 0.15, 2.2, 0.03); }
   }
@@ -181,8 +181,8 @@ const TRAILER = (() => {
       if (t >= m.lab) text("WHAT WE BELIEVE", x, H * 0.16, H * 0.026, GREY, 700, "left");
       if (t >= m.m1) { text("Free doctors from repeating tasks,", x, H * 0.27, H * 0.06, INK, 800, "left");
                        text("so they can concentrate on difficult cases.", x, H * 0.35, H * 0.038, GREY, 500, "left"); }
-      [[m.i1, "Scheduling visits."], [m.i2, "Routing patients to the right specialists."]].forEach(([at, l], i) => {
-        if (t >= at) text(l, x, H * (0.5 + i * 0.09), H * 0.045, INK, 600, "left"); });
+      [[m.i1, "Scheduling visits."], [m.i2, "Routing patients to the right specialists."], [m.i3, "Identifying symptoms."]].forEach(([at, l], i) => {
+        if (at !== undefined && t >= at) text(l, x, H * (0.5 + i * 0.09), H * 0.045, INK, 600, "left"); });
       return;
     }
     if (scene === "credit") {                  // the challenge, then each name on its word (with its chime)

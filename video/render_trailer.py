@@ -92,7 +92,7 @@ def mix_audio(seconds, tmp):
     for at_, kind in TL["sfx"]:
         if kind == "tick": tone(buf, 2400, at_, 0.04, 0.05); tone(buf, 1200, at_, 0.03, 0.03)
         elif kind == "tock": tone(buf, 1800, at_, 0.04, 0.04); tone(buf, 900, at_, 0.03, 0.03)
-        elif kind == "bling": tone(buf, 1318.5, at_, 1.1, 0.16); tone(buf, 1975.5, at_ + 0.1, 1.3, 0.14); tone(buf, 2637, at_ + 0.1, 0.5, 0.05); tone(buf, 3951, at_ + 0.2, 0.4, 0.03)
+        elif kind == "bling": tone(buf, 1318.5, at_, 1.1, 0.08); tone(buf, 1975.5, at_ + 0.1, 1.3, 0.07); tone(buf, 2637, at_ + 0.1, 0.5, 0.025); tone(buf, 3951, at_ + 0.2, 0.4, 0.015)
         elif kind == "bling2": tone(buf, 1975.5, at_, 1.0, 0.1); tone(buf, 2637, at_ + 0.05, 0.5, 0.04)
         else:
             tone(buf, 110, at_, 1.6, 0.5, 42); tone(buf, 55, at_, 1.8, 0.35)

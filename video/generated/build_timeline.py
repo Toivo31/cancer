@@ -117,14 +117,11 @@ def main():
     t = TL["fw"]["end"]; place("n4a", t + 0.3)                          # the visualisation: chart, then the flow, then the fast track
     TL["anim"] = {"a": t, "dots": on("n4a", 1), "fast": word("n4a", "automated", on("n4a", 2)), "end": round(end("n4a") + 1.0, 2)}
     t = TL["anim"]["end"]; place("n4b", t + 0.2)                        # the manifesto, its points on the words
-    TL["man"] = {"a": t, "lab": on("n4b", 0), "m1": on("n4b", 1), "i1": on("n4b", 2), "i2": on("n4b", 3), "end": round(end("n4b") + 2.5, 2)}
+    TL["man"] = {"a": t, "lab": on("n4b", 0), "m1": on("n4b", 1), "i1": on("n4b", 2), "i2": on("n4b", 3), "i3": on("n4b", 4), "end": round(end("n4b") + 2.5, 2)}
     t = TL["man"]["end"]; place("n5", t + 0.3)                          # a model reads the note
     TL["doc"] = {"a": t, "end": round(max(t + 8.0, end("n5") + 1.5), 2)}
-    t = TL["doc"]["end"]; place("n6", t + 0.8)                          # credit, the names on the words
-    wd = L["n6"]["words"]
-    nem = round(at["n6"] + wd["nemotron"] / rate, 2) if "nemotron" in wd else round(on("n6", 0) + 0.7 / rate, 2)
-    ver = round(at["n6"] + wd["verda"] / rate, 2) if "verda" in wd else round(on("n6", 1) + 0.75 / rate, 2)
-    TL["credit"] = {"a": t, "b1": on("n6", 0), "nem": nem, "b2": on("n6", 1), "ver": ver, "end": round(end("n6") + 1.0, 2)}
+    t = TL["doc"]["end"]; names = round(t + 1.0, 2)                    # credit, no voice: both names at once, on one soft chime
+    TL["credit"] = {"a": t, "b1": names, "nem": names, "b2": names, "ver": names, "end": round(names + 3.0, 2)}
     t = TL["credit"]["end"]; place("n7", t + 0.2)                       # the suggestion, a beat, the punchline alone
     punch = round(end("n7") + 1.5, 2); place("n8", punch)
     TL["fin"] = {"a": t, "lab": on("n7", 0), "l1": on("n7", 1), "l2": on("n7", 2), "l3": on("n7", 3), "punch": punch, "repo": round(end("n8") + 1.5, 2)}
@@ -133,7 +130,7 @@ def main():
     ticks = []; k = 0; tt = TL["anim"]["a"]                             # a clock under the waiting, stopping dead on the fast track
     while tt < TL["anim"]["fast"] - 0.05:
         ticks.append([round(tt, 2), "tick" if k % 2 == 0 else "tock"]); tt += 0.5; k += 1
-    TL["sfx"] = ticks + [[nem, "bling"], [ver, "bling2"], [punch, "hit"]]
+    TL["sfx"] = ticks + [[names, "bling"], [punch, "hit"]]
     TL["captions"] = ["n1", "n4a", "n4b", "n5"]                         # the rest is on screen in the same words
     json.dump(cues, open(ASSETS / "cues.json", "w"))
     json.dump(TL, open(ASSETS / "timeline.json", "w"), indent=1)
