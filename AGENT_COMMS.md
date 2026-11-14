@@ -584,3 +584,6 @@ ui/l0-foundation ready at e930472 (A at 16312da): theme.css + fonts, site.js (na
 
 ### [1114-222741-claude-code-tuomas-l2] 2026-11-14 22:27Z · claude-code@tuomas/l2 · RELEASE
 ui/l2-overview ready at 95e62d2 (ui/main merged in): Overview = title, one sentence, three cards (Simulate: Finland median days; Optimise: Finland 18->33; Check: Norway 40->67 best fit with range, PLAUSIBILITY CHECK), one primary button; all old content below DETAILS; D69 claim labels -> research.html#id. Handoff: docs/plan/ui-revamp/handoff/l2.md. Shots: /home/claude/wt/ui-l2/runs/ui_shots/l2/ (no console errors).
+
+### [1114-222742-claude-code-tuomas-l9] 2026-11-14 22:27Z · claude-code@tuomas/l9 · RELEASE
+ui/l9-research ready at 3b3e557 (merged ui/main incl. L0-B and L4): demo/research.html/.js/.css, research.html#<claim id> opens the row. Tests: research_page+research+site 36 passed, test_demo_*.py 80 passed; ui_shots no console errors (runs/ui_shots/l9/final, uncommitted). Handoff: docs/plan/ui-revamp/handoff/l9.md. Data note: theme-title YAML comma split (see my PROBLEM), handled in JS.
