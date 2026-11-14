@@ -113,7 +113,7 @@ def break_g2_once(role, cid, ans, user):
 def test_broken_g2_then_fixed_records_one_repair(tiny):
     design = tiny_design(tiny, 3)
     fake = reference_fake_client(tiny, design, 1, transform=break_g2_once)
-    out = generate_card(Authors(tiny), make_skeleton(tiny, 0, design, 1), fake)
+    out = generate_card(Authors(tiny, "g2@1"), make_skeleton(tiny, 0, design, 1), fake)   # g2@1: G2 writes values
     assert out.status == "accepted" and out.repairs == 1
     assert out.card["provenance"]["validation"]["repairs"] == 1
     assert len(fake.calls) == 3
@@ -153,7 +153,7 @@ def test_three_broken_answers_discard_the_card_and_log_it(tiny, tmp_path):
     design = tiny_design(tiny, 4)
     fake = reference_fake_client(tiny, design, 1, transform=always_break_g2_for(2))
     manifest, rep = generate_library_with_report(tiny, design, 1, fake, out_dir=tmp_path / "L",
-                                                 config=GenerationConfig(concurrency=1))
+                                                 config=GenerationConfig(concurrency=1), results_prompt="g2@1")
     assert rep.accepted == 3 and rep.discarded == 1 and not rep.partial
     lines = [json.loads(l) for l in (tmp_path / "L.work" / "discarded.jsonl").read_text().splitlines()]
     assert len(lines) == 1 and lines[0]["card_id"].endswith(":000002") and lines[0]["repairs"] == 2
@@ -168,7 +168,7 @@ def test_all_cards_discarded_raises_and_writes_report(tiny, tmp_path):
     design = tiny_design(tiny, 2)
     fake = reference_fake_client(tiny, design, 1, transform=lambda r, c, a, u: (break_g2_once(r, c, a, "") if r == "g2" else a))
     with pytest.raises(GenerationError):
-        generate_library(tiny, design, 1, fake, out_dir=tmp_path / "L")
+        generate_library(tiny, design, 1, fake, out_dir=tmp_path / "L", results_prompt="g2@1")
     assert not (tmp_path / "L").exists()
     assert json.loads((tmp_path / "L.work" / "generation_report.json").read_text())["accepted"] == 0
 
@@ -188,7 +188,7 @@ def test_a_note_that_names_the_diagnosis_is_repaired(tiny, lung):
               if tiny.conditions[s.primary].cls != "healthy")
     leak.label = tiny.conditions[sk.primary].label
     fake = reference_fake_client(tiny, design, 1, transform=leak)
-    out = generate_card(Authors(tiny), sk, fake)
+    out = generate_card(Authors(tiny, "g2@1"), sk, fake)
     assert out.status == "accepted" and out.repairs == 1
     assert "names the hidden primary condition" in fake.calls[2][1]
 
@@ -252,7 +252,7 @@ def reference_stub(tiny, design, seed):
 
     def echo(body):
         system, user = body["messages"][0]["content"], body["messages"][-1]["content"]
-        schema = reference_schema(authors, user) if "patient author" in system else authors.g2_schema
+        schema = reference_schema(authors, user) if "patient author" in system else authors.results_schema
         return fake._fn(system, user, schema)
     return echo
 
@@ -318,7 +318,7 @@ def test_a_broken_resolved_state_repairs_only_that_states_g2(lung):
         return ans
 
     fake = reference_fake_client(lung, design, 1, transform=break_later_once)
-    out = generate_card(Authors(lung), sk, fake)
+    out = generate_card(Authors(lung, "g2@1"), sk, fake)
     assert out.status == "accepted" and out.repairs == 1
     assert len(fake.calls) == 1 + len(sk.states) + 1
     assert f"State: {later} " in fake.calls[-1][1] and "failed validation" in fake.calls[-1][1]

@@ -25,7 +25,7 @@ def lung():
 def setup(lung):
     design = make_design(lung, {k: 2 for k in lung.conditions})
     fake = reference_fake_client(lung, design, 3)
-    authors = Authors(lung)
+    authors = Authors(lung, "g2@1")                     # the g2@1 tests below; g2@2 has its own fixture
     sk = next(k for k in (make_skeleton(lung, i, design, 3) for i in range(design.n)) if len(k.states) == 1)
     g1 = fake.complete_json(**authors.g1_request(sk), key="x")
     plan = settle_error_plan(lung, sk, authors.findings_of(g1))["all_active"]
@@ -44,7 +44,7 @@ def multi(lung):
 
 
 def test_prompt_files_exist_for_every_version():
-    for version in A.PROMPT_VERSIONS.values():
+    for version in A._STEMS:
         for part in ("system", "user"):
             assert len(load_prompt(version, part)) > 200
 
@@ -58,7 +58,7 @@ def test_fill_rejects_missing_and_unused_placeholders():
 
 
 def test_prompts_ask_for_english_synthetic_text_without_diagnosis():
-    for v in A.PROMPT_VERSIONS.values():
+    for v in A._STEMS:
         s = load_prompt(v, "system")
         assert "English" in s and "fictional" in s
         assert re.search(r"real (places|names)|No real|Do not name real", s)
@@ -155,7 +155,7 @@ def test_repair_user_contains_request_answer_and_problems(setup):
 
 def test_g1_prompt_lists_every_state_and_g2_is_asked_per_state(multi, lung):
     design, sk = multi
-    authors = Authors(lung)
+    authors = Authors(lung, "g2@1")
     req = authors.g1_request(sk)
     for st in sk.states:
         assert f"- {st}:" in req["user"]
@@ -171,7 +171,7 @@ def test_g1_prompt_lists_every_state_and_g2_is_asked_per_state(multi, lung):
 
 def test_assemble_multi_state_notes_and_plan(multi, lung):
     design, sk = multi
-    authors = Authors(lung)
+    authors = Authors(lung, "g2@1")
     fake = reference_fake_client(lung, design, 3)
     g1 = fake.complete_json(**authors.g1_request(sk), key="a")
     g2, plans = {}, {}
