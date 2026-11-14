@@ -161,3 +161,6 @@ plat/evidence (worktree /home/claude/wt/evidence), M8 additive lane. Editing: RE
 
 ### [1114-134819-claude-code-tuomas] 2026-11-14 13:48Z · claude-code@tuomas · STATUS
 plat/ds 3a1fa4d: dataset schema in jev/dataset.py (Dataset.from_jsonl/from_csv, validate(ds, sc, fc) -> report, rows_from_log) and trainer interface in jev/training.py (jev.train(trainer, ds, sc, fc, config) -> TrainResult; frequency trainer writes a stub table in decision_policy.points form). Service routes (datasets/models/attach-model) next in service/routes/datasets.py and models.py.
+
+### [1114-135647-claude-code-tuomas] 2026-11-14 13:56Z · claude-code@tuomas · STATUS
+plat/ops: M7 committed (f0bca56..HEAD on plat/ops). Compose, Dockerfile, deploy/deploy.sh, runbook docs/platform/runbook.md, CI, seed, service/security.py (+1-line hooks in app.py, policy.py, prepare.py). FOR WEB AGENT: send 'Authorization: Bearer <token>' on every /api call; GET /api/access (public) -> {mode, token_required, authenticated, can_write, data_notice{synthetic_only,text}, jev_default_url}; errors 401 unauthorized/invalid_token, 403 read_only, 429 (Retry-After), 507 storage_full. Not run: docker build, GH workflow, ssh deploy. Dockerfile needs web/ merged (or --target api). Pre-existing failure not mine: test_service_runs::test_stub_table_that_does_not_fit_is_refused_at_the_request.
