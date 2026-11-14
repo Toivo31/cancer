@@ -11,7 +11,9 @@ Per card (``generate_card``)::
     make_skeleton                      engine: condition, attributes, background, persona, nominal plan
     G1  patient author  (model)        findings with causes, what the patient reports, the account
     settle_error_plan                  engine: the plan for the findings G1 wrote (``guided`` mode)
-    G2  result author   (model)        every attempt of every test following the plan, plus a GP note
+    G2  result author                  g2@2 (default): the engine writes every value from the plan, the model
+                                       writes only the report wording and a GP note from public inputs
+                                       (review w7 B1); g2@1: the model wrote values and reports from the plan
     validate_card                      schema and rules 1 to 9; ``card_reveals_condition`` counts as an error here
     repair, at most ``max_repairs``    the failing author gets its own answer back with ``repair_prompt``;
                                        a G1 repair re-asks G2 (the findings, hence the plan, changed)
@@ -148,7 +150,7 @@ def generate_card(authors: Authors, sk: Skeleton, client, results_client=None, c
             else:
                 for st in states:
                     if st not in g2:
-                        plans[st] = settle_error_plan(cat, sk, authors.findings_of(g1, st), st)[st]
+                        plans[st] = settle_error_plan(cat, sk, authors.findings_of(g1, st), st)[st]  # engine
                         reqs[st] = authors.g2_request(sk, g1, plans[st], st)
                         g2[st] = ask(rclient, reqs[st], f"g2:{st}", cfg.g2_temperature)
                 for st in states:
@@ -157,9 +159,10 @@ def generate_card(authors: Authors, sk: Skeleton, client, results_client=None, c
                         r2[st] = ps
                 if not r2:
                     prov = {"library": None, "catalogue_id": cat.id, "catalogue_hash": cat.version_hash,
-                            "generator": "llm", "model": models, "prompts": dict(PROMPT_VERSIONS),
+                            "generator": "llm", "model": models, "prompts": dict(authors.prompt_versions),
                             "error_source": "guided", "validation": {}}
-                    card = authors.assemble(sk, g1, g2, plans, prov)
+                    merged = {st: authors.g2_merge(sk, g1, plans[st], st, g2[st]) for st in states}
+                    card = authors.assemble(sk, g1, merged, plans, prov)
                     found = _promote(validate_card(card, cat))
                     errs = [p for p in found if p.severity == ERROR]
                     warnings = [p for p in found if p.severity != ERROR]
@@ -181,12 +184,12 @@ def generate_card(authors: Authors, sk: Skeleton, client, results_client=None, c
                                    [str(p) for p in allp[:20]])
             if r1:
                 g1 = ask(client, req1, f"g1:r{rep + 1}", cfg.g1_temperature,
-                         authors.repair_user("g1", req1["user"], g1, repair_prompt({"id": sk.id}, r1)))
+                         authors.repair_user("g1", req1["user"], g1, authors.repair_text("g1", sk.id, r1)))
                 g2, plans = {}, {}
             else:
                 for st, ps in r2.items():
                     g2[st] = ask(rclient, reqs[st], f"g2:{st}:r{rep + 1}", cfg.g2_temperature,
-                                 authors.repair_user("g2", reqs[st]["user"], g2[st], repair_prompt({"id": sk.id}, ps)))
+                                 authors.repair_user("g2", reqs[st]["user"], g2[st], authors.repair_text("g2", sk.id, ps)))
     except BudgetExceeded as e:
         return CardOutcome(sk.id, "budget", reason=str(e))
     except LLMOutputError as e:
@@ -225,12 +228,14 @@ def _prepare_out(out_dir: Path, work: Path, resume: bool) -> None:
 def generate_library_with_report(catalogue: Catalogue, design: Design, seed: int, client, *,
                                  budget: Budget | None = None, out_dir, results_client=None,
                                  config: GenerationConfig | None = None, work_dir=None, resume: bool = False,
+                                 results_prompt: str | None = None,
                                  progress: Callable[[CardOutcome, int, int], None] | None = None
                                  ) -> tuple[LibraryManifest, GenerationReport]:
     """Generate the cards of ``design`` and store them as a library in ``out_dir``. See the module docstring.
 
     ``budget`` replaces the client's own budget (and the results client's) when given. ``results_client``
-    is G2's client when G2 uses another model or temperature (it should share the budget and log)."""
+    is G2's client when G2 uses another model or temperature (it should share the budget and log).
+    ``results_prompt`` picks the result-author version (default ``PROMPT_VERSIONS["results"]``, g2@2)."""
     cfg = config or GenerationConfig()
     out_dir = Path(out_dir)
     work = Path(work_dir) if work_dir else _work_dir(out_dir)
@@ -240,7 +245,7 @@ def generate_library_with_report(catalogue: Catalogue, design: Design, seed: int
         client.budget = budget
         if results_client is not None:
             results_client.budget = budget
-    authors = Authors(catalogue)
+    authors = Authors(catalogue, results_prompt)
     t0 = time.monotonic()
     stop = threading.Event()
     lock = threading.Lock()
@@ -291,7 +296,7 @@ def generate_library_with_report(catalogue: Catalogue, design: Design, seed: int
             library_id=library_id, partial=not_completed > 0, stop_reason=state["stop_reason"], requested=design.n,
             accepted=len(accepted), discarded=sum(1 for o in outcomes if o.status == "discarded"),
             failed=sum(1 for o in outcomes if o.status == "failed"), not_completed=not_completed, repairs=hist,
-            calls=snap["calls"], tokens=snap["tokens"], model=models, prompts=dict(PROMPT_VERSIONS), seed=seed,
+            calls=snap["calls"], tokens=snap["tokens"], model=models, prompts=dict(authors.prompt_versions), seed=seed,
             elapsed_s=round(time.monotonic() - t0, 1), discards=discards[:200])
 
     if not accepted:
@@ -300,7 +305,7 @@ def generate_library_with_report(catalogue: Catalogue, design: Design, seed: int
         raise GenerationError(f"no card was completed ({rep.discarded} discarded, {rep.failed} failed, "
                               f"{rep.not_completed} not completed; stop: {rep.stop_reason}); see {work}")
     manifest = write_library([o.card for o in accepted], catalogue, out_dir,
-                             {"generator": "llm", "model": models, "prompts": dict(PROMPT_VERSIONS),
+                             {"generator": "llm", "model": models, "prompts": dict(authors.prompt_versions),
                               "error_source": "guided"})
     rep = report(manifest.id)
     (work / REPORT_FILE).write_text(json.dumps(rep.to_json(), indent=2, sort_keys=True) + "\n")
@@ -340,6 +345,9 @@ def reference_fake_client(catalogue: Catalogue, design: Design, seed: int, *,
         return cache[index]
 
     def fn(system: str, user: str, schema: dict) -> dict:
+        if "reports" in schema["properties"]:                   # g2@2: written from the prompt alone (no card id)
+            ans = _fake_g2v2(catalogue, user)
+            return transform("g2", None, ans, user) if transform else ans
         m = _ID_RX.search(user)
         if not m:
             raise LLMError("reference fake: no card id in the prompt")
@@ -363,14 +371,55 @@ def reference_fake_client(catalogue: Catalogue, design: Design, seed: int, *,
     return FakeLLMClient(fn, **client_kw)
 
 
-def estimate_cost(catalogue: Catalogue, design: Design, seed: int, sample: int = 30) -> dict:
+_TEST_RX = re.compile(r"^### ([a-z0-9_]+): ", re.M)
+_ATTEMPT_RX = re.compile(r"^  attempt (\d+): (ok \| (.*)|non-diagnostic)$", re.M)
+_GP_RX = re.compile(r"^Summarise attempt 1 of these tests: (.*)$", re.M)
+
+
+def parse_results_prompt(catalogue: Catalogue, user: str) -> dict[str, list[dict]]:
+    """The attempts of a g2@2 prompt back as ``{test: [{"status", "values"}]}`` (values as the card stores them,
+    outputs that were not shown left out). Used by the offline fake and the tests."""
+    from .authors import parse_value
+    out: dict[str, list[dict]] = {}
+    parts = _TEST_RX.split(user.split("\nGP NOTE")[0])
+    for tid, body in zip(parts[1::2], parts[2::2]):
+        test = catalogue.tests[tid]
+        atts = []
+        for m in _ATTEMPT_RX.finditer(body):
+            if m.group(3) is None:
+                atts.append({"status": "non_diagnostic", "values": {}})
+                continue
+            vals = {}
+            for item in m.group(3).split("; "):
+                oid, _, text = item.partition(": ")
+                vals[oid] = parse_value(text, test.output(oid))
+            atts.append({"status": "ok", "values": vals})
+        out[tid] = atts
+    return out
+
+
+def _fake_g2v2(catalogue: Catalogue, user: str) -> dict:
+    """The reference generator's template texts for a g2@2 prompt: ``report_text`` of each attempt's values and a
+    GP note quoting attempt 1 of the first imaging test of the GP list (as ``reference._notes`` does)."""
+    from .reference import report_text
+    obs = parse_results_prompt(catalogue, user)
+    reports = {tid: [report_text(catalogue.tests[tid], a["status"], a["values"]) for a in atts]
+               for tid, atts in obs.items()}
+    gp = [t for t in _GP_RX.search(user).group(1).split(", ") if t]
+    imaging = [t for t in gp if catalogue.tests[t].category == "imaging"] or gp
+    t = imaging[0]
+    return {"reports": reports, "gp_note": {"text": f"Synthetic GP note. {reports[t][0]}", "mentions": [t]}}
+
+
+def estimate_cost(catalogue: Catalogue, design: Design, seed: int, sample: int = 30,
+                  results_prompt: str | None = None) -> dict:
     """Prompt and answer sizes for ``sample`` cards through the reference fake (no model call). Tokens are
     characters / 4. Answers of a real model are longer than the reference's template texts: count about
     1.5 times the output figure."""
     answers: list[int] = []
     fake = reference_fake_client(catalogue, design, seed, transform=lambda role, cid, ans, user: (
         answers.append(len(json.dumps(ans))) or ans))
-    authors = Authors(catalogue)
+    authors = Authors(catalogue, results_prompt)
     n = min(sample, design.n)
     for i in range(n):
         generate_card(authors, make_skeleton(catalogue, i, design, seed), fake)
