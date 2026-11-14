@@ -29,6 +29,10 @@ curl -s localhost:8000/api/projects/p_1a2b3c4d/flowcharts/baseline/versions/late
 * **A run or optimisation must fetch its flowchart with `store.get_version_for_run(p, flowchart_id, version)`**: it
   returns `(document, version)` and locks the version (`409 version_locked` on later edits). `store.get_world(p)` returns
   `(world, rev)`; keep `pathway_sim.documents.doc_hash(world)` with the run.
+* **Running a flowchart**: `service.runtime.prepare_run(world, flowchart_doc, decision_policy_override=None, seed)` returns
+  `(scenario, flowchart, policy)`; call `simulate(scenario, flowchart, patients, policy=policy, seed=seed)` with exactly
+  those (the flowchart may be a migrated copy). Documents carry stub probability tables; running one without `prepare_run`
+  (so without `jev.prepare`) would ignore them. `service.validation.validate_documents(world, [doc])` gives the problem list.
 * Errors: `raise ApiError(status, code, message, problems=None)` (`service/errors.py`); body is always
   `{"error": {"code", "message", "problems"?}}`. Documents: `pathway_sim.documents` (`documents_to_scenario(world, [flowchart])`
   gives engine objects; `decision_policy` backend `rule` is today's `RulePolicy` config).
@@ -54,7 +58,8 @@ Ids: projects `p_xxxxxxxx`. Flowchart ids are chosen by the client (`[A-Za-z0-9_
 | `POST .../flowcharts/{f}/versions` (body = document) 201 | the document as version n+1, `parent_version` n |
 | `PUT .../flowcharts/{f}/versions/{v}` | overwrite an unlocked version; 409 `version_locked` |
 | `DELETE .../flowcharts/{f}` | 204, or 409 `version_locked` if any version has been run |
-| `POST /api/projects/{p}/validate {world?, flowchart}` | `{ok, problems: [{severity, code, message, node?, hint?}]}`; stores nothing |
+| `POST /api/projects/{p}/validate {world?, flowchart}` | `{ok, problems: [{severity, code, message, flowchart, node, edge, field, hint}]}` (shape of `pathway_sim/problems.py`); stores nothing |
+| `POST /api/projects/{p}/decide {flowchart, decision_point, context?, offered?, option_leads?, decision_policy?}` | `{decision_point, backend, model, mode, explanation, options: [{id, label, offered, probability}], context_used}`. `flowchart` is `{id, version?}` or a whole (unsaved) document; `context` = `{group, age, t_days, fast_track, attributes: {name: value}, history: [{step, test, result, t_days}]}`, every key optional |
 
 Saving a document with errors gives `422 {"error": {"code": "invalid_document", "problems": [...]}}`; a body that does
 not fit the shape gives `422 invalid_request` with the same problem list. Over the size limit: `413 payload_too_large`.

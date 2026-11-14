@@ -40,11 +40,11 @@ Critical path to the first browser loop:
 | [x] | M2-1 | Document format v1: world and flowchart JSON, converters both ways, YAML import | M | M1-3 | Round trip gives byte-identical metrics for all shipped scenarios |
 | [ ] | M2-2 | Structured validation: full problem list with codes, node references, reachability and dead-end warnings | M | M2-1 | One test per code; CLI behaviour unchanged |
 | [x] | M2-3 | Service skeleton: FastAPI app, config, SQLite store, templates, generated API page | M | M2-1 | `uvicorn service.app:app` serves `/api/templates` and `/docs` |
-| [ ] | M2-4 | Projects, world, flowchart versions, validate endpoint | M | M2-2, M2-3 | CRUD tests; versions with runs are immutable |
+| [x] | M2-4 | Projects, world, flowchart versions, validate endpoint | M | M2-2, M2-3 | CRUD tests; versions with runs are immutable |
 | [ ] | M2-5 | Job runner (process pool, status, progress, cancel, limits) and engine progress hook | M | M2-3 | Progress moves during a run; cancel works; a crashing job fails alone |
 | [ ] | M2-6 | Runs: start, list, get; metrics; dashboard bundle; decisions export; identical-run cache | M | M2-4, M2-5 | Bundle opens in the existing dashboard; cache hit tested |
 | [ ] | M2-7 | Optimisations: job, result with labels and evidence, `apply` with a subset and linked changes | M | M2-6 | Applying all changes equals the optimiser's own output; subset tests |
-| [ ] | M2-8 | "Try a decision" endpoint | S | M2-4 | Returns the stub's probabilities for a hand-entered context |
+| [x] | M2-8 | "Try a decision" endpoint | S | M2-4 | Returns the stub's probabilities for a hand-entered context |
 | [ ] | M2-9 | API tests including the full loop: template → run → optimise → apply → rerun → compare | M | M2-7 | Loop test passes with small `n` and asserts same patients |
 | [ ] | M2-11 | Flow endpoint: per-step and per-edge counts, waits, critical-path share, queue series, decision shares, and a sampled cohort of patient traces for playback | M | M2-6 | Totals equal the run's metrics; sample size and seed configurable; one test on both shipped templates |
 | [ ] | M2-10 | `service/README.md` with a `curl` walkthrough of the loop | S | M2-9 | Walkthrough runs as written |
