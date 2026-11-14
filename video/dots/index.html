@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pathway Dots</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root { --bg: #fbfaf7; --ink: #2d2d2a; --dim: #6b6b66; --hot: #c87d00; --ok: #1e8755; --honey: #e8c56a; }
+  html, body { margin: 0; height: 100%; background: var(--bg); overflow: hidden; }
+  canvas { display: block; width: 100vw; height: 100vh; }
+  #help { position: fixed; right: 16px; bottom: 12px; font: 13px/1.5 "Inter", sans-serif; color: var(--dim);
+          background: rgba(0,0,0,.6); padding: 10px 14px; border: 1px solid #222; white-space: pre; }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="help">space  play / pause      r  restart
+→ / ←  switch pathway, same patients, same day
+1 2 3  pick pathway     s  split view (today vs change)
+n  Finland / Norway     g  colour by symptom group
+l  step labels          + −  speed
+h  hide this help and the UI for recording</div>
+<script src="dots_data.js?v=18"></script>
+<script>
+"use strict";
+// One dot = one simulated lung cancer patient (exported by export_dots.py from the pathway simulator).
+// Clock = days since the patient's first contact; every patient starts at day 0 together.
+// A dot waiting for a step sits in the pile above that step; a dot being tested moves along the line.
+
+const D = window.DOTS_DATA;
+const qs = new URLSearchParams(location.search);
+const cv = document.getElementById("c"), ctx = cv.getContext("2d");
+const help = document.getElementById("help");
+
+const st = {
+  scen: qs.get("s") === "norway" ? 1 : 0,
+  v: 0,                       // variant index (single view)
+  split: qs.has("split"),
+  splitPair: [0, 1],
+  day: +(qs.get("day") || 0), playing: !qs.has("paused"),
+  speed: +(qs.get("speed") || 10),     // days per second
+  endDay: +(qs.get("end") || 180),
+  groups: qs.has("groups"), labels: qs.has("labels"), ui: !qs.has("clean"),
+};
+if (qs.get("v")) { const i = keys().indexOf(qs.get("v")); if (i >= 0) st.v = i; }
+if (qs.get("split")) {
+  const p = qs.get("split").split(",").map(k => keys().indexOf(k));
+  if (p.length === 2 && p.every(i => i >= 0)) st.splitPair = p;
+}
+if (!st.ui) help.classList.add("hidden");
+
+function scen() { return D.scenarios[st.scen]; }
+function keys() { return D.scenarios[qs.get("s") === "norway" ? 1 : 0].variants.map(v => v.key); }
+
+// ---------------------------------------------------------------- sizing
+let W = 0, H = 0, DPR = 1;
+function resize() {
+  DPR = window.devicePixelRatio || 1;
+  W = window.innerWidth; H = window.innerHeight;
+  cv.width = W * DPR; cv.height = H * DPR;
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  snap = true;
+}
+window.addEventListener("resize", resize);
+
+// ---------------------------------------------------------------- per-patient random (stable)
+function rnd(i, k) { const x = Math.sin(i * 127.1 + k * 311.7) * 43758.5453; return x - Math.floor(x); }
+
+// ---------------------------------------------------------------- lane geometry
+// A lane spans the stage zones on the left and the finish area on the right.
+function laneGeom(laneIdx, laneCount) {
+  const top = H * 0.15, bottom = H * 0.95;
+  const h = (bottom - top) / laneCount;
+  const y0 = top + h * laneIdx + h * 0.72;        // baseline; piles grow up from here
+  const left = W * 0.04, finishL = W * 0.80, right = W * 0.97;
+  return { y0, h, left, finishL, right, pileTop: top + h * laneIdx + h * 0.16 };
+}
+
+function nodeX(variant, g) {
+  if (variant._nx && variant._nxW === W) return variant._nx;
+  const stages = variant.stages, zw = (g.finishL - g.left - W * 0.02) / stages.length;
+  const nx = {}, slot = {};
+  stages.forEach((s, si) => {
+    const ns = variant.nodes.filter(n => n.stage === s.id);
+    ns.forEach((n, j) => { nx[n.id] = g.left + zw * si + zw * (j + 0.5) / ns.length; slot[n.id] = zw / ns.length; });
+  });
+  variant._nx = nx; variant._nxW = W; variant._zw = zw; variant._slot = slot;
+  return nx;
+}
+
+// ---------------------------------------------------------------- dot state at a given day
+// returns {kind: 'wait'|'move'|'done'|'gone'|'start', node, from, to, frac, waitFor, ontime}
+function stateOf(p, t, target) {
+  if (p.tt !== null && t >= p.tt) return { kind: "done", ontime: p.tt <= target };
+  if (p.tt === null && p.tx !== null && t >= p.tx) return { kind: "gone" };
+  const path = p.path;
+  let k = -1;
+  for (let i = 0; i < path.length; i++) { if (path[i][2] <= t) k = i; else break; }
+  if (k < 0) return { kind: "start", node: path.length ? path[0][0] : null };
+  const e = path[k], next = path[k + 1];
+  if (t < e[3]) return { kind: "wait", node: e[0], ready: e[2], waitFor: t - e[2] };
+  const toNode = next ? next[0] : "__finish";
+  const dur = Math.max(e[4] - e[3], 1e-6);
+  return { kind: "move", from: e[0], to: toNode, frac: Math.min(1, (t - e[3]) / dur) };
+}
+
+// ---------------------------------------------------------------- per-lane layout for one frame
+function layoutLane(variant, g, t, target, dotR) {
+  const nx = nodeX(variant, g), pats = variant.patients, n = pats.length;
+  const pos = new Array(n), col = new Array(n);
+  const piles = {};               // node -> [{i, ready}]
+  const fin = { on: [], late: [], gone: [] };
+  let onCount = 0;
+  for (let i = 0; i < n; i++) {
+    const p = pats[i], s = stateOf(p, t, target);
+    if (s.kind === "done") { (s.ontime ? fin.on : fin.late).push(i); if (s.ontime) onCount++; continue; }
+    if (s.kind === "gone") { fin.gone.push(i); continue; }
+    if (s.kind === "wait") { (piles[s.node] = piles[s.node] || []).push({ i, ready: s.ready, w: s.waitFor }); continue; }
+    if (s.kind === "start") { pos[i] = [g.left - 10, g.y0 + 18 + rnd(i, 1) * 26]; col[i] = 0; continue; }
+    const x0 = nx[s.from] ?? g.left, x1 = s.to === "__finish" ? g.finishL : (nx[s.to] ?? x0);
+    const f = ease(s.frac);
+    pos[i] = [x0 + (x1 - x0) * f, g.y0 + 14 + rnd(i, 2) * (g.h * 0.16)];
+    col[i] = 0;
+  }
+  // piles: earliest arrivals at the bottom, triangular sand-pile packing
+  const step = dotR * 2.15, rowH = dotR * 1.86;
+  const pileInfo = [];
+  for (const node in piles) {
+    const arr = piles[node].sort((a, b) => a.ready - b.ready);
+    const maxBase = Math.max(2, Math.floor((variant._slot[node] || 100) * 0.92 / step));
+    const m = arr.length, tri = Math.max(1, Math.ceil((Math.sqrt(8 * m + 1) - 1) / 2));
+    const base = Math.min(tri, maxBase), column = tri > maxBase;
+    let r = 0, c = 0, inRow = base;
+    const x = nx[node] ?? g.left;
+    for (const d of arr) {
+      if (c >= inRow) { r++; c = 0; inRow = column ? base - (r % 2) : Math.max(1, base - r); }
+      const px = x + (c - (inRow - 1) / 2) * step + (r % 2 ? 0 : 0);
+      const py = g.y0 - dotR - r * rowH;
+      pos[d.i] = [px, Math.max(py, g.pileTop)];
+      col[d.i] = Math.min(1, d.w / 45);          // heat: waited 45+ days = full orange
+      c++;
+    }
+    pileInfo.push({ node, x, m, top: g.y0 - dotR - (base - 1) * rowH });
+  }
+  // finish area: two blocks (on time, late), dots stacked in columns
+  // finish blocks sized so that every patient fits: n dots in the available height and width
+  const fw = g.right - g.finishL, availH = g.y0 - g.pileTop - dotR, blockW = fw * 0.44;
+  let fstep = step;
+  while (Math.floor(blockW / fstep) * Math.floor(availH / (fstep * 0.866)) < n && fstep > 1.2) fstep *= 0.94;
+  const perRow = Math.max(4, Math.floor(blockW / fstep)), frow = fstep * 0.866;
+  const place = (list, x0, kind) => list.forEach((i, j) => {
+    const cx = x0 + (j % perRow) * fstep, cy = g.y0 - dotR - Math.floor(j / perRow) * frow;
+    pos[i] = [cx, Math.max(cy, g.pileTop)]; col[i] = kind;
+  });
+  place(fin.on, g.finishL + fstep, "on");
+  place(fin.late, g.finishL + fw * 0.52, "late");
+  fin.gone.forEach((i, j) => { pos[i] = [g.finishL + fw * 0.52 + (j % perRow) * fstep, g.y0 + dotR * 4 + Math.floor(j / perRow) * frow]; col[i] = "gone"; });
+  return { pos, col, pileInfo, onCount, n, fin, finR: Math.min(dotR, fstep * 0.47) };
+}
+
+function ease(x) { return x < .5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2; }
+
+// ---------------------------------------------------------------- drawing
+const shown = {};   // displayed positions per lane slot: key -> Float32Array
+let snap = true;
+
+function dotColor(c, group) {
+  if (c === "on") return "rgba(30,135,85,0.95)";
+  if (c === "late") return "rgba(160,160,155,0.55)";
+  if (c === "gone") return "rgba(200,45,35,0.7)";
+  if (st.groups) return group === "non_specific" ? `rgba(120,200,255,${0.75 + 0.25 * c})` : `rgba(255,220,120,${0.75 + 0.25 * c})`;
+  // heat: white -> orange with waiting time
+  const r = 70 + 150 * c, gg = 70 + 60 * c, b = 66 - 50 * c;
+  return `rgba(${r | 0},${gg | 0},${b | 0},${0.8 + 0.2 * c})`;
+}
+
+function drawLane(variant, slot, g, target, dt, laneCount) {
+  const n = variant.patients.length;
+  const dotR = Math.max(1.4, Math.min(H * 0.0062, H * (laneCount === 1 ? 0.0062 : 0.0046) * Math.sqrt(520 / n)));
+  const L = layoutLane(variant, g, st.day, target, dotR);
+  let S = shown[slot];
+  if (!S || S.length !== n * 2) { S = shown[slot] = new Float32Array(n * 2); snapLane(S, L); }
+  if (snap) snapLane(S, L);
+  const k = 1 - Math.exp(-dt * 9);
+  for (let i = 0; i < n; i++) {
+    const p = L.pos[i]; if (!p) continue;
+    S[2 * i] += (p[0] - S[2 * i]) * k; S[2 * i + 1] += (p[1] - S[2 * i + 1]) * k;
+  }
+  // stage zones
+  const nx = nodeX(variant, g), zw = variant._zw;
+  ctx.font = `${Math.round(H * 0.022)}px "Inter", sans-serif`;
+  ctx.textAlign = "center"; ctx.textBaseline = "top";
+  variant.stages.forEach((s, si) => {
+    const x = g.left + zw * si;
+    ctx.strokeStyle = "rgba(0,0,0,0.07)"; ctx.lineWidth = 1;
+    if (si) { ctx.beginPath(); ctx.moveTo(x, g.pileTop); ctx.lineTo(x, g.y0 + g.h * 0.22); ctx.stroke(); }
+    ctx.fillStyle = "rgba(45,45,42,0.75)";
+    ctx.fillText(s.label.toUpperCase(), x + zw / 2, g.y0 + g.h * 0.2);
+  });
+  // baseline and step ticks
+  ctx.strokeStyle = "rgba(45,45,42,0.25)"; ctx.lineWidth = 1.2;
+  ctx.beginPath(); ctx.moveTo(g.left, g.y0); ctx.lineTo(g.finishL, g.y0); ctx.stroke();
+  for (const id in nx) { ctx.beginPath(); ctx.moveTo(nx[id], g.y0 - 3); ctx.lineTo(nx[id], g.y0 + 3); ctx.stroke(); }
+  // finish area
+  const fw = g.right - g.finishL;
+  ctx.strokeStyle = "rgba(30,135,85,0.35)";
+  ctx.beginPath(); ctx.moveTo(g.finishL, g.pileTop); ctx.lineTo(g.finishL, g.y0 + g.h * 0.22); ctx.stroke();
+  ctx.fillStyle = "rgba(30,135,85,0.85)";
+  ctx.fillText("TREATED BY DAY " + target, g.finishL + fw * 0.24, g.y0 + g.h * 0.2);
+  ctx.fillStyle = "rgba(105,105,100,0.75)";
+  ctx.fillText("LATER", g.finishL + fw * 0.74, g.y0 + g.h * 0.2);
+  if (L.fin.gone.length) { ctx.fillStyle = "rgba(200,45,35,0.8)"; ctx.font = `${Math.round(H * 0.015)}px "Inter", sans-serif`;
+    ctx.fillText("NOT DIAGNOSED: " + L.fin.gone.length, g.finishL + fw * 0.74, g.y0 + g.h * 0.2 + H * 0.03); }
+  // labels for the biggest piles
+  if (st.labels) {
+    ctx.font = `${Math.round(H * 0.016)}px "Inter", sans-serif`; ctx.textBaseline = "bottom";
+    const byId = Object.fromEntries(variant.nodes.map(nn => [nn.id, nn.label]));
+    L.pileInfo.sort((a, b) => b.m - a.m).slice(0, 3).forEach(pi => {
+      ctx.fillStyle = "rgba(200,125,0,0.9)";
+      ctx.fillText(byId[pi.node] + " · " + pi.m, pi.x, pi.top - 8);
+    });
+  }
+  // dots (additive glow)
+  ctx.globalCompositeOperation = "source-over";
+  for (let i = 0; i < n; i++) {
+    if (!L.pos[i]) continue;
+    const x = S[2 * i], y = S[2 * i + 1];
+    const c = L.col[i];
+    ctx.fillStyle = dotColor(c, variant.patients[i].g);
+    ctx.beginPath(); ctx.arc(x, y, typeof c === "string" ? L.finR : dotR, 0, Math.PI * 2); ctx.fill();
+    if (typeof c === "number" && c > 0.35) {
+      ctx.fillStyle = `rgba(225,150,20,${0.10 * c})`;
+      ctx.beginPath(); ctx.arc(x, y, dotR * 3, 0, Math.PI * 2); ctx.fill();
+    }
+  }
+  ctx.globalCompositeOperation = "source-over";
+  // lane headline: share treated within target (counts only once a dot reaches treatment)
+  const share = Math.round(100 * L.onCount / L.n);
+  ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+  ctx.fillStyle = "rgba(45,45,42,0.9)";
+  ctx.font = `${Math.round(H * (laneCount === 1 ? 0.026 : 0.022))}px "Inter", sans-serif`;
+  ctx.fillText(variant.label, g.left, g.pileTop + H * 0.01);
+  ctx.textAlign = "right";
+  ctx.font = `600 ${Math.round(H * (laneCount === 1 ? 0.09 : 0.06))}px "Inter", sans-serif`;
+  ctx.fillStyle = "rgba(30,135,85,0.95)";
+  ctx.shadowColor = "rgba(30,135,85,0.6)"; ctx.shadowBlur = 0;
+  ctx.fillText(share + "%", g.right, g.pileTop + H * (laneCount === 1 ? 0.07 : 0.045));
+  ctx.shadowBlur = 0;
+  ctx.font = `${Math.round(H * 0.015)}px "Inter", sans-serif`;
+  ctx.fillStyle = "rgba(105,105,100,0.9)";
+  ctx.fillText("treated within " + target + " days", g.right, g.pileTop + H * (laneCount === 1 ? 0.095 : 0.065));
+}
+
+function snapLane(S, L) {
+  for (let i = 0; i < L.pos.length; i++) if (L.pos[i]) { S[2 * i] = L.pos[i][0]; S[2 * i + 1] = L.pos[i][1]; }
+}
+
+function drawHeader(sc) {
+  if (!st.ui) return;
+  ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+  ctx.font = `600 ${Math.round(H * 0.03)}px "Inter", sans-serif`;
+  ctx.fillStyle = "rgba(45,45,42,0.95)";
+  ctx.fillText(sc.title.toUpperCase(), W * 0.04, H * 0.065);
+  ctx.font = `${Math.round(H * 0.018)}px "Inter", sans-serif`;
+  ctx.fillStyle = "rgba(105,105,100,0.9)";
+  const tag = sc.synthetic ? "SIMULATED PATIENTS · SYNTHETIC DATA · " : "PATHWAY REBUILT FROM STOKSTAD ET AL. 2019 · ";
+  ctx.fillText(tag + "ONE DOT = ONE LUNG CANCER PATIENT · PILES = WAITING", W * 0.04, H * 0.1);
+}
+
+function drawClock(target) {
+  ctx.textAlign = "right"; ctx.textBaseline = "alphabetic";
+  ctx.font = `600 ${Math.round(H * 0.05)}px "Inter", sans-serif`;
+  const over = st.day >= target;
+  ctx.fillStyle = over ? "rgba(200,125,0,0.95)" : "rgba(45,45,42,0.95)";
+  ctx.fillText("DAY " + String(Math.floor(st.day)).padStart(3, "0"), W * 0.97, H * 0.075);
+  ctx.font = `${Math.round(H * 0.018)}px "Inter", sans-serif`;
+  ctx.fillStyle = "rgba(105,105,100,0.9)";
+  ctx.fillText("since first contact · target " + target + " days", W * 0.97, H * 0.105);
+}
+
+// ---------------------------------------------------------------- loop
+let last = performance.now();
+function frame(now) {
+  const dt = Math.min(0.1, (now - last) / 1000); last = now;
+  if (st.playing) st.day = Math.min(st.endDay, st.day + dt * st.speed);
+  ctx.fillStyle = "#fbfaf7"; ctx.fillRect(0, 0, W, H);
+  const mode = SHOW.active ? SHOW.update() : (qs.has("race") ? "race" : qs.has("flow") ? "flow" : qs.has("doc") ? "doc" : "lanes");
+  if (mode === "card" || mode === "race" || mode === "flow" || mode === "doc" || mode === "zoom" || mode === "pop") {
+    if (mode === "card") SHOW.drawCard();
+    else if (mode === "race") RACE.draw(st.day);
+    else if (mode === "flow") FLOW.draw(st.day, dt);
+    else if (mode === "doc") ZOOM.draw(SHOW.active ? SHOW.docT : (performance.now() / 1000) % 14);
+    else if (mode === "pop") {
+      // slow motion: the flow keeps running underneath; a popup grows out of the focused ball and fills the page
+      FLOW.draw(st.day, dt);
+      const T0 = SHOW.popT, D = SHOW.popDur, open = Math.min(1, T0 / 0.7), close = Math.min(1, Math.max(0, (D - T0) / 0.6));
+      const g = ease(Math.min(open, close));
+      ctx.fillStyle = `rgba(251,250,247,${0.82 * g})`; ctx.fillRect(0, 0, W, H);
+      const [bx, by] = FLOW.focusXY || [W * 0.73, H * 0.6];
+      const fx = W * 0.025, fy = H * 0.03, fw = W * 0.95, fh = H * 0.94;
+      const rx = bx + (fx - bx) * g, ry = by + (fy - by) * g, rw = fw * g, rh = fh * g;
+      if (rw > 4) {
+        ctx.save();
+        ctx.fillStyle = "#ffffff"; ctx.fillRect(rx, ry, rw, rh);
+        ctx.strokeStyle = "rgba(25,95,165,0.8)"; ctx.lineWidth = 2; ctx.strokeRect(rx, ry, rw, rh);
+        ctx.beginPath(); ctx.rect(rx, ry, rw, rh); ctx.clip();
+        ctx.translate(rx, ry); ctx.scale(rw / W, rh / H);
+        if (g > 0.6) ZOOM.draw(Math.max(0, T0 - 0.7) * 1.3);
+        ctx.restore();
+        // header strip: which event this is
+        if (g > 0.9) {
+          ctx.font = `600 ${Math.round(H * 0.017)}px "Inter", sans-serif`; ctx.textAlign = "left"; ctx.textBaseline = "top";
+          ctx.fillStyle = "rgba(25,95,165,0.95)";
+          ctx.fillText(`SLOW MOTION · DAY ${Math.floor(st.day)} · ONE PATIENT · HER REFERRAL IS READ AT THE HOSPITAL`, fx + 14, fy + 10);
+        }
+      }
+    }
+    else {
+      // zoom into (z > 0) or out of the flow scene towards the "Back to GP" swarm on the left
+      const z = SHOW.z, fx = W * 0.27 - 0.3 * W * 0.4, fy = H * 0.86 - (H * 0.56) * 4 / 12, sc = 1 + 7 * z * z;
+      ctx.save(); ctx.translate(fx, fy); ctx.scale(sc, sc); ctx.translate(-fx, -fy);
+      FLOW.draw(st.day, dt); ctx.restore();
+      ctx.fillStyle = `rgba(251,250,247,${Math.min(1, z * 1.3)})`; ctx.fillRect(0, 0, W, H);
+    }
+    if (SHOW.active) SHOW.drawSubs();
+    snap = true; requestAnimationFrame(frame); return;
+  }
+  const sc = scen(), target = sc.target_days;
+  drawHeader(sc);
+  drawClock(target);
+  if (st.split) {
+    st.splitPair.forEach((vi, li) => drawLane(sc.variants[vi], "lane" + li, laneGeom(li, 2), target, dt, 2));
+  } else {
+    drawLane(sc.variants[st.v], "lane0", laneGeom(0, 1), target, dt, 1);
+  }
+  if (SHOW.active) SHOW.drawSubs();
+  snap = false;
+  requestAnimationFrame(frame);
+}
+
+// ---------------------------------------------------------------- keys
+window.addEventListener("keydown", (e) => {
+  const sc = scen(), nv = sc.variants.length;
+  switch (e.key) {
+    case " ": st.playing = !st.playing; if (st.day >= st.endDay) { st.day = 0; snap = true; st.playing = true; } e.preventDefault(); break;
+    case "r": st.day = 0; snap = true; break;
+    case "ArrowRight": st.v = (st.v + 1) % nv; break;        // morph: same patients, same day
+    case "ArrowLeft": st.v = (st.v + nv - 1) % nv; break;
+    case "1": case "2": case "3": { const i = +e.key - 1; if (i < nv) st.v = i; break; }
+    case "s": st.split = !st.split; snap = true; break;
+    case "n": st.scen = 1 - st.scen; st.v = 0; st.day = 0; snap = true; for (const k in shown) delete shown[k]; break;
+    case "g": st.groups = !st.groups; break;
+    case "l": st.labels = !st.labels; break;
+    case "h": st.ui = !st.ui; help.classList.toggle("hidden", !st.ui); break;
+    case "+": case "=": st.speed = Math.min(60, st.speed * 1.25); break;
+    case "-": st.speed = Math.max(1, st.speed / 1.25); break;
+  }
+});
+
+</script>
+<script src="race.js?v=18"></script>
+<script src="flow.js?v=18"></script>
+<script src="zoom.js?v=18"></script>
+<script src="show.js?v=18"></script>
+<script>
+resize();
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
