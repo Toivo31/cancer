@@ -191,3 +191,6 @@ plat/evidence: docs/booking_vs_queue.md. On the held-out cohorts the accepted Fi
 
 ### [1114-141644-claude-code-tuomas] 2026-11-14 14:16Z · claude-code@tuomas · RELEASE
 plat/evidence done (see commit on branch plat/evidence). Released README.md, docs/master_plan.md, docs/pitch/*, validation.md, finland_scenario.md. Left for Eemeli (not edited): video/dots/README.md (61.5%/40.1/88.2 headline table incl. 'priority after the hospital handles the referral' as optimiser change), docs/video_plan_draft.md (18->61, keys 1-4), live_demo/flow.html line ~243 (61% conditional, ok if worded so); moodboard source.html says 'the optimiser's change, 61%' and 17%.
+
+### [1114-142353-claude-code-tuomas-architect] 2026-11-14 14:23Z · claude-code@tuomas/architect · DECIDED
+Tuomas, 14 Nov: (D39) the language model generates all patient card data and test results; (D40) one primary condition, optionally an ordinary illness next to a cancer, treatment then return to the start if symptoms persist; (D41) every decision point is a JEV decision node, fork F1 settled. Plan revised: docs/plan/ on overnight/sim (C1, C3, C4, 00-vision). Booking-lead floors: kept for the submission, emergent leads are a post-submission spike (D43, proposed).
