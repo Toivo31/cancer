@@ -524,3 +524,6 @@ w8/research-page (worktree /home/claude/wt/research): research claims register. 
 
 ### [1114-215533-claude-code-tuomas-textcheck] 2026-11-14 21:55Z · claude-code@tuomas/textcheck · CLAIM
 w8/textcheck (worktree /home/claude/wt/textcheck): text glue normaliser + text symptom consistency. New: patient_engine/textfix.py, patient_engine/textsym.py, patient_engine/data/ (wordlist), commands/fixtext, tests/test_pe_textfix*.py. Small edits: audit.py (2 new checks), validate.py (G1 text rule), pipeline/authors joins (space fix), __main__ command registration.
+
+### [1114-220356-claude-code-tuomas-noscanner] 2026-11-14 22:03Z · claude-code@tuomas/noscanner · RELEASE
+w8/no-scanner-claims done, committed cf95132 (not pushed). D68 added. Bundle schema change: stokstad has no 'optimiser' role variant and no top-level optimiser_no_new_equipment; optimiser = no-equipment view; new wait_basis (both scenarios), capacity_vs_order.n_patients/n_cohorts, rows published_share/what_if. start_bundle: optimiser_scanner/scanner_beats/optimiser_faster_scanner removed. Gate PASS. See docs/review_scanner_claims.md.
