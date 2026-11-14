@@ -67,6 +67,25 @@ format, `catalogue/_examples/tiny/` for a small example, `catalogue/lung-primary
 one (being built now). A JEV should read the catalogue once to know every possible variable,
 test, output, type and unit, so its input layout is fixed even when a patient has few results.
 
+## The JEV can write to the record (decision D49)
+
+The response may carry, next to `probs`, the JEV's own words; the simulator appends them to the
+patient record as an `assessment` entry right after the decision, and every later request includes
+them. This is where the JEV's enriched context lives.
+
+```json
+{"request_id": "p1042:gp_encounter:3", "probs": {"order_chest_xray": 0.7, "follow_up": 0.3},
+ "record_note": "Cough 5 weeks after antibiotics, ex-smoker 30 pack-years, CXR 4 weeks ago read as consolidation. Persisting symptoms after treatment: repeat CXR.",
+ "assessment": {"working_diagnosis": "unresolved pneumonia", "differential": ["lung cancer", "COPD"],
+                "plan": "repeat chest X-ray, refer if abnormal", "confidence": 0.5}}
+```
+
+Rules: at most 2 000 characters per note; `assessment` keys as above, all optional; the note is
+interpretation and never replaces the **mechanical log** the simulator keeps by itself (every step,
+every result with `positive` true or false). Requests carry both layers: mechanical entries in full,
+assessments newest first within a size budget. `explanation` stays a free comment that is logged but
+not put in the record.
+
 ## What is never in a request
 
 Condition names as facts, `hidden.*`, `caused_by`, the error plan, results of tests not yet done,

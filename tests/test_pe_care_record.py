@@ -63,3 +63,28 @@ def test_record_append_and_read():
         r.append(Entry(1.0, 1, "encounter"))
     with pytest.raises(ValueError):
         r.append(Entry(9.0, 1, "made_up_kind"))
+
+
+def test_two_layers_mechanical_and_assessment():
+    r = Record("c_1", {"age": 60})
+    r.append(Entry(0.0, 1, "result", observations=(Observation("chest_xray", 1, "ok", {"abnormal": False}, "Clear.", positive=False),)))
+    r.add_assessment(0.0, "gp_encounter/jev", "Cough 4 wk, CXR clear; likely post-viral, but smoker: review 3 wk.",
+                     {"working_diagnosis": "post-viral cough", "differential": ["lung cancer", "COPD"], "confidence": 0.6})
+    assert [e.kind for e in r.mechanical()] == ["result"] and len(r.assessments()) == 1
+    j = r.to_json()["entries"]
+    assert j[0]["observations"][0]["positive"] is False and j[0]["author"] == "engine"
+    assert j[1]["assessment"]["differential"] == ["lung cancer", "COPD"]
+    with pytest.raises(ValueError):
+        r.append(Entry(1.0, 1, "encounter", author="gp_encounter/jev"))      # deciders write assessments only
+    with pytest.raises(ValueError):
+        r.add_assessment(1.0, "gp/jev", "x", {"made_up": 1})
+    r.add_assessment(2.0, "gp/jev", "y" * 5000)
+    assert len(r.assessments()[-1].note) == 2000
+
+
+def test_jev_response_carries_record_note():
+    from jev.contract import DecisionResponse
+    d = {"request_id": "r", "probs": {"a": 1.0}, "record_note": "n", "assessment": {"plan": "p"}}
+    assert DecisionResponse.from_dict(d).to_dict() == d
+    with pytest.raises(Exception):
+        DecisionResponse.from_dict({"request_id": "r", "probs": {"a": 1.0}, "assessment": "text"})

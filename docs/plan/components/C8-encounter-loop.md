@@ -61,7 +61,19 @@ Rules:
 6. **The hospital part stays as it is** (Norway check untouched); hospital steps whose test maps
    to a catalogue test read the card through the handle, others keep their current behaviour, and
    the residual truth-conditioned steps there are listed as a known weakness.
-7. **Outputs per patient**: time to referral, to diagnosis, to treatment; number of encounters by
+7. **Two layers in the record (D49).** The engine writes a **mechanical log** of where the patient
+   has been and what each result was (`positive` true/false from the catalogue's `positive_when`,
+   None for non-diagnostic), never edited. A decider may add its own words: the policy interface gets
+   an optional `choose_with_note(view, options) -> (probs, note, assessment)`; the JEV returns
+   `record_note` and `assessment` (`working_diagnosis`, `differential`, `plan`, `confidence`) in its
+   response; the engine appends them as an `assessment` entry right after the decision. This is the
+   JEV's enriched context, kept in the record so later deciders (and the demo) read it. Assessments
+   are interpretation: they never change a mechanical entry, are capped at 2 000 characters each, and
+   the request builder sends all mechanical entries plus the latest assessments within a size budget.
+   Rule and table policies write a short template assessment so the record reads well without the JEV.
+   Reproducibility: with an HTTP JEV, responses are cached by request hash, so a rerun with the same
+   cache gives the same notes.
+8. **Outputs per patient**: time to referral, to diagnosis, to treatment; number of encounters by
    role; tests ordered and their cost; treatments given and whether they matched the truth; episodes;
    outcome. Aggregated by patient group (age band, sex, smoking, region).
 
