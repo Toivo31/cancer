@@ -46,8 +46,10 @@
     big(box, [w]);
     cap(box, "of <b>" + esc(o.cancers) + " cancers</b> treated within " + esc(dd(ENC.target_days)) + " days in the loop (" + esc(o.n) + " simulated patients). Median " + esc(dd(o.cancer_median_days_to_referral)) +
       " days to referral, " + esc(dd(o.cancer_median_days_to_treatment)) + " to treatment; <b>" + esc(o.cancer_left_with_symptoms) + "</b> cancers left primary care with symptoms still present.");
-    var tuned = ST && ST.encounter_results;
-    cap(box, "Run of " + esc(when(ENC.generated_at)) + (tuned ? "; tuned report found in docs/review_checks/encounter_results.json." : ". Rates are being tuned: tuned report <span class=\"pending\">pending</span>."));
+    var R = ST && ST.encounter_results, cs = R && R.consistency;
+    cap(box, "<b>One illustration run</b> of " + esc(when(ENC.generated_at)) + " (one seed, no warm-up); queues fill up as a run gets longer." + (cs && cs.within90 ?
+      " The multi-seed report (<code>docs/encounter_results.md</code>, " + esc(R.seeds.length) + " seeds of " + esc(R.n) + ", " + esc(dd(R.warmup_days)) + "-day warm-up) gives <b>" + esc(pct(cs.within90.loop.mean)) + "</b> within " + esc(dd(ENC.target_days)) + " days (range " + esc(pct(cs.within90.loop.lo)) + " to " + esc(pct(cs.within90.loop.hi)) + "), median " + esc(dd(cs.ref_med.loop.mean)) + " days to referral. Quote the report; decisions are placeholder tables."
+      : " Multi-seed report: <span class=\"pending\">pending</span>."));
     var ex = document.getElementById("ex-links");
     (ENC.examples || []).slice(0, 2).forEach(function (e) {
       var a = el("a", "btn sm", e.label); a.href = "encounter.html?p=" + encodeURIComponent(e.id); ex.appendChild(a);
@@ -132,9 +134,9 @@
     var cols = el("div", "pcols");
     var d = ex.decider_sees, t = ex.template;
     cols.appendChild(col("model", "Written by a language model: what the decider sees",
-      [["Complaint, in the patient's words", d.complaint], ["History taken", d.history], ["Test report: " + d.report.test, d.report.text]]));
+      [["Complaint, in the patient's words", d.complaint], ["History taken", d.history]]));
     cols.appendChild(col("tmpl", "Template wording of the same patient",
-      [["Complaint", t.complaint], ["History taken", t.history], ["Test report: " + d.report.test, t.report]]));
+      [["Complaint", t.complaint], ["History taken", t.history]]));
     box.appendChild(el("div", "pbg", "Patient " + ex.card + " (library " + ex.library + "): " + bgt));
     box.appendChild(cols);
     var hd = document.createElement("details"); hd.className = "hidden-side";
@@ -149,7 +151,7 @@
     function names(w) { return lib.filter(function (l) { return l.wording === w; }).map(function (l) { return l.name + ": " + l.cards; }).join("; "); }
     var pc = el("div", "pcounts");
     pc.innerHTML = "<b>" + esc(T.model_written_cards) + "</b> model-written patients (" + esc(names("model")) + ") and <b>" + esc(T.template_cards) + "</b> template-written (" + esc(names("template")) +
-      "), " + esc(T.libraries) + " libraries, counted from the library manifests on " + esc(when(C.generated_at)) + ". The patient shown is the first lung-cancer card of the largest model-written library.";
+      "), " + esc(T.libraries) + " libraries, counted from the library manifests on " + esc(when(C.generated_at)) + ". The patient shown is the first lung-cancer card of the largest model-written library (libraries made with the newer results prompt are preferred when present). Test reports are left out here on purpose.";
     box.appendChild(pc);
   });
 })();

@@ -7,8 +7,8 @@ Writes demo/data/cards_bundle.js (`window.CARDS_DATA = {...};`):
               (a language model, or the offline template generator, model "fake"), cards per condition. Counted
               from the manifests when the script runs, so libraries that arrive later are counted by a rerun.
   example     one model-written patient (the first lung-cancer card of the model-written library with the most
-              cards that has one), read with the patient_engine API:
-                what the decider sees (RevealHandle.visible: background, complaint in the patient's words, the history taken, one test report) next to the template wording of the same facts (the style of libraries/ref500),
+              cards, preferring libraries made with results prompt g2@2 when any exist), read with the patient_engine API:
+                what the decider sees (RevealHandle.visible: background, complaint in the patient's words, the history taken; no test report, see SHOW_TESTS) next to the template wording of the same facts (the style of libraries/ref500),
                 and the hidden side (true conditions), which the decision model never sees.
 
 Nothing is typed by hand. Run again after a library changes or arrives:  python demo/export_cards.py
@@ -30,8 +30,8 @@ from patient_engine.reference import report_text  # noqa: E402
 from patient_engine.reveal import RevealHandle  # noqa: E402
 
 CATALOGUES = {"lung_primary_care": "catalogue/lung-primary-care"}
-SHOW_TESTS = ("history", "chest_xray")   # what is revealed: the history taken and one test report
-REPORT_TEST = "chest_xray"
+SHOW_TESTS = ("history",)   # only the history is shown: the review found test-report wording in results prompt g2@1 gives away false alarms
+PREFERRED_RESULTS_PROMPT = "g2@2"   # libraries made with this results prompt are preferred when present
 
 
 def lower_first(s: str) -> str:
@@ -47,7 +47,7 @@ def library_rows(root: Path) -> list[dict]:
         rows.append({
             "name": m.parent.name, "cards": sum(by.values()), "generator": d.get("generator"), "model": model,
             "wording": "template" if model == "fake" or d.get("generator") != "llm" else "model",
-            "created": d.get("created"), "by_condition": by,
+            "created": d.get("created"), "by_condition": by, "results_prompt": (d.get("prompts") or {}).get("results"),
         })
     return rows
 
@@ -65,8 +65,6 @@ def example(lib_name: str, rows: list[dict]) -> dict | None:
     h = RevealHandle(card, public_id=card.id)
     view = h.visible(state, [(t, 0) for t in SHOW_TESTS])
     obs = {o.test: o for o in view.observations}
-    rep = obs[REPORT_TEST]
-    test = cat.tests[REPORT_TEST]
     labels = "; ".join(lower_first(cat.variables[v].label) for v in view.presenting.reported)
     conds = []
     for c in card.hidden.conditions:
@@ -79,12 +77,10 @@ def example(lib_name: str, rows: list[dict]) -> dict | None:
             "complaint": view.presenting.text,
             "reported": [cat.variables[v].label for v in view.presenting.reported],
             "history": obs["history"].report,
-            "report": {"test": test.label, "text": rep.report},
         },
         "template": {
             "complaint": f"Synthetic complaint: {labels}.",
             "history": report_text(cat.tests["history"], obs["history"].status, obs["history"].values),
-            "report": report_text(test, rep.status, rep.values),
         },
         "hidden": {"conditions": conds, "note": "Only the scoring code reads this."},
     }
@@ -93,7 +89,8 @@ def example(lib_name: str, rows: list[dict]) -> dict | None:
 def build() -> dict:
     rows = library_rows(ROOT / "libraries")
     model_rows = [r for r in rows if r["wording"] == "model"]
-    pick = max(model_rows, key=lambda r: r["cards"]) if model_rows else None
+    pref = [r for r in model_rows if r.get("results_prompt") == PREFERRED_RESULTS_PROMPT]
+    pick = max(pref or model_rows, key=lambda r: r["cards"]) if model_rows else None
     out = {
         "format": "cards-bundle/1",
         "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),

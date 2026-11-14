@@ -4,7 +4,7 @@ Start page: `demo/start.html` (opens from disk, no server). It shows the story i
 
 ## Before you present (2 minutes)
 
-1. Open `demo/start.html`. Check that no row says "pending" except the ones you expect (tuned encounter report, wider-grid robustness range).
+1. Open `demo/start.html`. Check that no row says "pending" (at the last build none did; the Norway range and the tuned encounter report are both found).
 2. Open each screen once in its own tab so it is warm: `demo/encounter.html`, `demo/flow.html?s=finland&compare`, `demo/index.html#stokstad/5`.
 3. If the model should be live: `BIRCH_API_KEY_FILE=... python -m decision_api.server` in a terminal, then `python -m jev.walk --pick cancer` ready in a second one. Warm calls take a few seconds, a cold start minutes: make one call before you go on stage.
 4. If any bundle was regenerated, reload the start page. One command rebuilds all of them: `python demo/export_all.py` (about 1 to 2 minutes; `python demo/export_all.py encounter` for one; run times are in `demo/README.md`). The encounter bundle is the one that changes when the encounter loop is retuned.
