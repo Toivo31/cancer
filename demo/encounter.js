@@ -36,8 +36,8 @@ const KIND_STROKE = {role: C.ink2, referral: C.ink, treat: C.ink3, start: C.ink3
 function init() {
   if (!D) { document.querySelector('main').innerHTML = '<p class="cmd">data/encounter_bundle.js not found. Run: python demo/export_encounter.py</p>'; return; }
   if (window.Site && Site.nav) Site.nav('simulator');
-  // D69 claim label: link to the research register entry (research.html#<claim id>, lane L9). Built here, like the
-  // Overview's claim links, so the static page has no link to a file that may not be merged yet.
+  // D69 claim label: the static href in encounter.html points at research.html#<claim id>; this keeps it in step
+  // with data-claim if the HTML changes.
   const st = $('#assumed'); if (st && st.dataset.claim) st.href = 'research.html#' + st.dataset.claim;
   W = D.size.w; HH = D.size.h; NW = D.size.node_w; NH = D.size.node_h;
   nodes = D.nodes; pos = {}; nid = {};
@@ -75,6 +75,9 @@ function init() {
   renderGraph(); renderResults(); renderNote(); fit();
   const p0 = q.get('p');
   if (p0 && byId[p0] != null) { S.sel = byId[p0]; renderGraph(); } renderSide();
+  // ?p=<id> (from the Patients page or the decision-model page): bring that patient's record into view in the side
+  // column, which scrolls on its own, so the reader lands on the patient and not on the example list.
+  if (S.sel != null) { const wrap = $('#side-wrap'), rc = $('#recard'); if (wrap && rc) wrap.scrollTop += rc.getBoundingClientRect().top - wrap.getBoundingClientRect().top; }
   setTruth(S.truth, true);
   if (!S.playing) $('#play').textContent = 'Play';
   requestAnimationFrame(frame);
@@ -366,7 +369,7 @@ function renderLegend() {
   $('#legend').innerHTML = h;
 }
 function renderFooter() {
-  const t = `Synthetic patients only · not clinically reviewed · decisions assumed (placeholder tables) · numbers read from data/encounter_bundle.js, run ${D.generated_at}`;
+  const t = `Synthetic patients only · not clinically reviewed · decisions assumed (placeholder tables) · numbers read from encounter_bundle.js, run ${String(D.generated_at || '').replace('T', ' ').replace(/:\d\d(\.\d+)?\+00:00$/, ' UTC')}`;
   if (window.Site && Site.footer) Site.footer(t); else $('#footer').textContent = t;
 }
 

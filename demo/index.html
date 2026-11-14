@@ -36,6 +36,10 @@ main{padding:1.6rem 2rem 3rem;max-width:1840px;margin:0 auto}
 h1{font-size:clamp(1.9rem,3.1vw,3.6rem);line-height:1.08;margin:0 0 .5rem;font-weight:700;letter-spacing:.005em;color:var(--ink);text-transform:none}
 h2{font-size:clamp(1.3rem,1.8vw,2.1rem);margin:2.2rem 0 .8rem;font-weight:700;color:var(--ink);text-transform:none;letter-spacing:0}
 .lede{color:var(--ink-2);font-size:1.15rem;max-width:62rem;margin:0 0 1.4rem}
+/* where a screen's claims come from (D69): shared .basis tags from theme.css, each linking research.html#<claim id> */
+.claims{display:flex;flex-wrap:wrap;align-items:baseline;gap:.4rem 1.2rem;margin:.6rem 0 1.2rem;font-family:var(--font-mono);font-size:.8rem;color:var(--ink-3)}
+.claims .claim{color:var(--ink-2);text-decoration:none}
+.claims .claim:hover{text-decoration:underline}
 .panel{background:var(--card);border:1px solid var(--ink);border-radius:0;padding:1.2rem 1.5rem;position:relative}
 .hero{display:grid;grid-template-columns:1fr auto 1fr;gap:1rem 2rem;align-items:center;padding:1.6rem 2rem}
 .hero .cell .lab{font-family:var(--font-mono);font-size:.85rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
@@ -96,7 +100,7 @@ footer{margin-top:2.5rem;padding-top:1rem;border-top:1px solid var(--ink);color:
 </head>
 <body>
 <header class="top">
-  <div class="brand"><b>&#9632;</b> <a href="start.html" title="Back to the demo in order" style="color:inherit;text-decoration:none">Equal care across Finland</a></div>
+  <div class="brand"><b>&#9632;</b> <a href="start.html" title="Back to the Overview" style="color:inherit;text-decoration:none">Equal care pathways</a></div>
   <span class="badge illus" id="illus" hidden>Illustrative data</span>
   <nav class="tabs" id="tabs" role="tablist" aria-label="Screens"></nav>
   <div class="spacer"></div>
@@ -105,6 +109,7 @@ footer{margin-top:2.5rem;padding-top:1rem;border-top:1px solid var(--ink);color:
 <main id="view" tabindex="-1"></main>
 
 <script src="data/start_bundle.js"></script>
+<script src="data/research_bundle.js"></script>
 <script id="bundle" type="application/json">
 {
  "generated_at": "2026-11-14T21:55:20+00:00",
@@ -6052,6 +6057,24 @@ function wrap(t,max){
 /* Norway optimiser ranges over the settings that fit (data/start_bundle.js, from demo/export_start.py) */
 function nwOpt(){var N=window.START_DATA&&window.START_DATA.norway;return N&&N.optimiser||null}
 function nwRange(b){return b?pct(b.min)+' to '+pct(b.max)+', median '+pct(b.median):''}
+/* Claim links (D69): a line of basis tags under a screen's headline, each opening its row on research.html.
+   Only ids the research register (data/research_bundle.js) lists are shown, so a missing bundle hides the line. */
+var CLAIMS=(function(){
+  var fin={2:[["sim-fi-time-is-waiting","the waiting share"],["in-fi-waits-half-published","which waits are published"],["sim-fi-primary-care-largest","most waiting at detection"]],
+           4:[["sim-fi-capacity-control","capacity against order"],["sim-fi-one-more-slot","one more slot a day"],["as-scanner-capacity","slot capacities"]]},
+      nor={2:[["sim-no-time-is-waiting","the waiting share"],["in-no-waits-published","waits from the study"]],
+           4:[["pub-order-over-capacity","the study: order over capacity"],["sim-no-faster-pet-overpredicted","faster scanner over-predicted"]]};
+  return {finland_lung:fin,stokstad:nor};
+})();
+function claimLine(sc,screen){
+  var R=window.RESEARCH_DATA,rows=g(CLAIMS,sc&&sc.id,screen)||[];
+  if(!R||!R.claims)return '';
+  var by={};R.claims.forEach(function(c){by[c.id]=c});
+  var L=R.basis_labels||{};
+  var tags=rows.filter(function(r){return by[r[0]]}).map(function(r){var c=by[r[0]];
+    return '<a class="claim" href="research.html#'+esc(r[0])+'" title="'+esc(c.claim)+'"><span class="basis basis--'+esc(c.basis)+'">'+esc(L[c.basis]||c.basis)+'</span> '+esc(r[1])+'</a>'});
+  return tags.length?'<p class="claims"><span>Where this comes from</span>'+tags.join('')+'</p>':'';
+}
 /* ---------- Screen 1 ---------- */
 function screen1(sc){
   var b=g(sc,"baseline","metrics")||{}, cv=changeVariant(sc), a=g(cv,"metrics")||{};
@@ -6175,6 +6198,7 @@ function screen2(sc){
   if(tt>0){
     var top=rows.reduce(function(p,r){return r.wait>p.wait?r:p},rows[0]);
     h+='<h1>In our model, '+Math.round(tw/tt*100)+'% of the time to treatment is waiting for bookings and queues, not the tests</h1>';
+    h+=claimLine(sc,2);
     h+=waitBasisStrip(sc);
     h+='<p class="lede">Average days per cancer patient, split into waiting for a step and being served by it. The most waiting is at <b style="color:var(--wait)">'+esc((STAGES[top.id]||human(top.id)).toLowerCase())+'</b> ('+d1(top.wait)+' days).</p>';
   }else h+='<h1>Where time is lost</h1>';
@@ -6293,6 +6317,7 @@ function screenCap(sc){
     var gc=Math.round((bestCap.share-t)*100),go=Math.round((order.share-t)*100);
     h+='<h1>'+(reorder?'Reordering the steps gains ':'The suggested change gains ')+go+' points; '+(cv.capacity_label?'the new scanner':'more capacity')+' gains '+gc+'</h1>';
   }else h+='<h1>More capacity, or a better order?</h1>';
+  h+=claimLine(sc,4);
   h+='<p class="lede">The same patients run through each option. '+(cv.capacity_label?'A faster scanner helps; in our model reordering the steps with no new equipment helps more.':(reorder?'Time is lost in queues, but a queue is often held up by the order of the steps rather than by too few slots: more slots at one step then help little.':'The suggested change keeps today\'s order: referred patients get urgent booking at every later step. Its size rests on our assumed gap between routine and urgent booking times.'))+'</p>';
   var col={today:C.today,capacity:C.wait,order:C.good};
   var bars=rows.map(function(r){return {v:r.share,label:r.label,color:col[r.kind]||C.serve}});

@@ -122,6 +122,8 @@ To be refined in a dedicated UI session. Basic principles:
 - **Show where, then what:** the stage where time is lost, then the change that fixes it.
 - **Test it:** walk a non-technical person through it in under two minutes before judging.
 
+*(Done 14 Nov, UI revamp merged at `49f96d0`, D60 to D69: the offline `demo/` site is five pages in one nav (Overview `start.html`, Simulator `flow.html`, Patients `patients.html`, Evidence `evidence.html`, Decision model `jev.html`) on a light paper theme, each with one figure, one sentence and one primary button, details below a DETAILS rule; every number carries a published / simulation / assumption tag linking `research.html#<claim id>`. What changed and what not to bring back: `docs/plan/ui-revamp/HANDOFF.md`; presenter script `docs/demo_path.md`.)*
+
 ## 9. Open questions
 
 The first two block a first run or the pitch.

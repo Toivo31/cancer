@@ -6,6 +6,7 @@ Junction 2026 entry for the AstraZeneca challenge "Equal Care Across Finland".
 - `docs/plan/README.md`: the planning framework (vision, architecture, components, execution rules for agents, status). Start here for anything on the simulator, patient engine, decision layer, optimiser or platform.
 - `docs/evidence_research.md`: evidence not yet in `params/`, including possible conflicts with current values (lung-specific Finnish diagnosis→treatment 65–69 days vs the 37 used now; lung-specific delay→mortality meta-analysis is null). Worth reading before changing parameters, calibration targets or survival claims in the pitch.
 - `docs/technique_classifier.md`: the technique classifier.
+- UI revamp (15 Nov): before touching demo/, web/src/ or the presenter script, read docs/plan/ui-revamp/HANDOFF.md, especially "Do not recreate".
 
 When a decision in the plan changes, update `docs/master_plan.md` in the same change so the team's agents stay in sync.
 

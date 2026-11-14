@@ -3,7 +3,10 @@
 # Usage: scripts/ui_shots.sh <out-dir> [url-list-file]
 #   url-list-file: one URL per line, relative to demo/ (e.g. "flow.html?s=norway&compare"); "#" lines are comments.
 #   Without a list: every page and the simulator variants below.
-# Writes <out-dir>/<page>_<w>x<h>.png and <out-dir>/console.txt. Exit code 1 if any page logs a console error.
+# Writes <out-dir>/<slug>_<w>x<h>.png and <out-dir>/console.txt. Exit code 1 if any page logs a console error.
+#   The slug keeps the query and the hash: "flow.html?s=finland" -> flow_s_finland, "jev.html#gp_visit" ->
+#   jev_h_gp_visit, so hash URLs of one page do not overwrite each other (names that still collide get _2, _3 ...).
+#   In the list file a "#" starts a comment only at the start of a line or after a space, so "index.html#stokstad/5" works.
 # Console capture needs puppeteer-core: found in web/node_modules (this checkout or the main one), /tmp/node_modules,
 # or $PUPPETEER_CORE. Without it, falls back to plain `google-chrome --screenshot` (no console capture; says so).
 set -u
@@ -36,12 +39,14 @@ DEFAULT_URLS=(
 URLS=()
 if [ -n "$LIST" ]; then
   while IFS= read -r line || [ -n "$line" ]; do
-    line="${line%%#*}"; line="$(echo "$line" | xargs)"
-    [ -n "$line" ] && URLS+=("$line")
+    read -r first _ <<< "$line" || true             # first word only; URLs have no spaces
+    case "$first" in ""|"#"*) continue ;; esac        # blank line or comment line
+    URLS+=("$first")
   done < "$LIST"
 else
   for u in "${DEFAULT_URLS[@]}"; do
-    [ -f "demo/${u%%\?*}" ] && URLS+=("$u")   # skip pages that do not exist on this branch yet
+    p="${u%%\?*}"; p="${p%%#*}"
+    [ -f "demo/$p" ] && URLS+=("$u")   # skip pages that do not exist on this branch yet
   done
 fi
 [ ${#URLS[@]} -gt 0 ] || { echo "ui_shots: no URLs" >&2; exit 2; }
@@ -69,8 +74,13 @@ if [ -n "$PP" ] && command -v node >/dev/null 2>&1; then
 fi
 
 echo "ui_shots: puppeteer-core not found; plain screenshots, NO console capture" | tee "$OUT/console.txt"
+declare -A SEEN=()
 for u in "${URLS[@]}"; do
-  s="$(echo "${u/.html/}" | sed 's/[^A-Za-z0-9]\+/_/g; s/^_//; s/_$//')"
+  base="${u%%#*}"; hash=""; [ "$base" != "$u" ] && hash="${u#*#}"
+  s="$(echo "${base/.html/}" | sed 's/[^A-Za-z0-9]\+/_/g; s/^_//; s/_$//')"
+  [ -n "$hash" ] && s="${s}_h_$(echo "$hash" | sed 's/[^A-Za-z0-9]\+/_/g; s/^_//; s/_$//')"
+  [ -n "$s" ] || s=page
+  n=${SEEN[$s]:-0}; SEEN[$s]=$((n + 1)); [ "$n" -gt 0 ] && s="${s}_$((n + 1))"
   for size in 1440,900 1920,1080; do
     timeout 60 "$CHROME" --headless=new --no-sandbox --hide-scrollbars --host-resolver-rules="MAP * ~NOTFOUND" \
       --window-size="$size" --virtual-time-budget=4000 --screenshot="$OUT/${s}_${size/,/x}.png" \

@@ -46,7 +46,7 @@
   function basisLink(id) {
     var c = CLAIMS[id], labels = (RES && RES.basis_labels) || {};
     if (!c) return null;
-    var a = el("a", "ov-basis__link ov-basis--" + c.basis, labels[c.basis] || c.basis);
+    var a = el("a", "ov-basis__link ov-basis--" + c.basis + " basis basis--" + c.basis, labels[c.basis] || c.basis);
     a.href = "research.html#" + encodeURIComponent(id);
     a.title = c.claim;
     return a;
@@ -63,7 +63,7 @@
     p.textContent = "";
     String(p.getAttribute("data-claim")).split(" ").forEach(function (id) {
       var a = basisLink(id); if (!a) return;
-      if (p.childNodes.length) p.appendChild(document.createTextNode(" · "));
+      if (p.childNodes.length) p.appendChild(document.createTextNode(" "));
       p.appendChild(a);
     });
   });
