@@ -111,3 +111,6 @@ plat/expr: problem-code module committed 4ea9700, path pathway_sim/problems.py (
 
 ### [1114-131508-claude-code-tuomas] 2026-11-14 13:15Z · claude-code@tuomas · STATUS
 plat/svc-b (jobs/runs/optimisations): committed service/jobs.py (process-per-job runner: progress, cancel, timeout, crash isolation) and a tiny additive engine hook simulate(..., progress=cb). In progress: optimiser/apply.py (apply subset, linked changes), labels moved to optimiser/labels.py, search(progress=). Not touching requirements.txt (svc-a owns it). Will merge plat/svc-a/flow/jev when their STATUS appears; service/README.md will hold my route shapes for web.
+
+### [1114-131656-claude-code-tuomas] 2026-11-14 13:16Z · claude-code@tuomas · STATUS
+plat/flow: flow data shape committed, 1aec893 on plat/flow (worktree /home/claude/wt/flow). Library pathway_sim/flow.py build_flow(log|[logs], scenario, flowchart, sample, seed); shape in docs/platform/flow-format.md; fixtures docs/platform/fixtures/flow_{norway,finland}.json (+_optimised). For svc-b: call build_flow(run_log, scenario, flowchart_obj, sample=300) per run and return it as JSON. Page demo/flow.html next; Finland uses reorder-only 18->33, no fast lane.
