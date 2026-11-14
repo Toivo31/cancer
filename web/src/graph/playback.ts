@@ -23,14 +23,19 @@ export function preparePatients(flow: FlowData, known: Set<string>): PPatient[] 
     const crit = p.v.filter((r) => r[6] === 1)
     const chain = (crit.length ? crit : p.v).slice().sort((a, b) => a[1] - b[1] || a[2] - b[2])
     const segs: Seg[] = []
+    // Visits are laid out in the order of the chain with times that never go backwards. Steps that ran in
+    // parallel (their recorded times overlap) would otherwise interleave, and the dot would hop to and fro
+    // between them along connections that do not exist.
+    let cursor = -Infinity
     for (const r of chain) {
       if (!known.has(r[0])) continue
-      segs.push({ t0: r[1], t1: r[2], node: r[0], kind: 0 })
-      segs.push({ t0: r[2], t1: Math.max(r[4], r[2]), node: r[0], kind: 1 })
+      const w0 = Math.max(r[1], cursor), s0 = Math.max(r[2], w0), s1 = Math.max(r[4], s0)
+      segs.push({ t0: w0, t1: s0, node: r[0], kind: 0 })
+      segs.push({ t0: s0, t1: s1, node: r[0], kind: 1 })
+      cursor = s0
     }
     if (p.exit && known.has(p.exit) && p.t_exit != null) segs.push({ t0: Math.max(p.t_exit, segs.length ? segs[segs.length - 1].t0 : 0), t1: Infinity, node: p.exit, kind: 2 })
     if (!segs.length) return
-    segs.sort((a, b) => a.t0 - b.t0 || a.kind - b.kind)
     const treated = p.out === 'treatment'
     out.push({
       idx, p, segs, treated,
@@ -96,6 +101,11 @@ export function jitter(idx: number, salt = 0): number {
   x = (x ^ (x >>> 13)) * 1274126177
   x = x ^ (x >>> 16)
   return ((x >>> 0) % 10007) / 10007
+}
+
+/** How visible a dot is while it moves between two steps that no drawn connection joins: it fades out where it was and in where it goes. */
+export function fadeAlpha(u: number): { at: 'from' | 'to'; alpha: number } {
+  return u < 0.5 ? { at: 'from', alpha: 1 - 2 * u } : { at: 'to', alpha: 2 * u - 1 }
 }
 
 /** Shortest chain of steps from a to b along the flowchart's connections, or null. */

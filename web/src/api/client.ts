@@ -1,4 +1,5 @@
 import type {
+  ApplyResult, Comparison, OptimiseRequest, Optimisation,
   DecisionPolicy, FlowData, Flowchart, FlowchartSummary, Job, Project, Run, RunMetrics, RunRequest,
   Template, ValidationResult, World,
 } from './types'
@@ -23,6 +24,12 @@ export interface Api {
   getJob(j: string): Promise<Job>
   cancelJob(j: string): Promise<void>
   getFlow(p: string, r: string): Promise<FlowData>
+  startOptimisation(p: string, body: OptimiseRequest): Promise<Optimisation>
+  listOptimisations(p: string): Promise<Optimisation[]>
+  getOptimisation(p: string, o: string): Promise<Optimisation>
+  cancelOptimisation(p: string, o: string): Promise<Optimisation>
+  applyOptimisation(p: string, o: string, body: { accept?: number[]; rerun?: boolean; label?: string }): Promise<ApplyResult>
+  compareRuns(p: string, a: string, b: string): Promise<Comparison>
 }
 
 export class ApiError extends Error {
@@ -133,6 +140,12 @@ export const http: Api = {
   },
   cancelJob: async (j) => { await req('POST', `/jobs/${j}/cancel`) },
   getFlow: (p, r) => req('GET', `/projects/${p}/runs/${r}/flow`),
+  startOptimisation: (p, body) => req('POST', `/projects/${p}/optimisations`, body),
+  listOptimisations: async (p) => { const r = await req<unknown>('GET', `/projects/${p}/optimisations`); return (Array.isArray(r) ? r : ((r as Obj).optimisations as Optimisation[]) ?? []) as Optimisation[] },
+  getOptimisation: (p, o) => req('GET', `/projects/${p}/optimisations/${o}`),
+  cancelOptimisation: (p, o) => req('POST', `/projects/${p}/optimisations/${o}/cancel`),
+  applyOptimisation: (p, o, body) => req('POST', `/projects/${p}/optimisations/${o}/apply`, body),
+  compareRuns: (p, a, b) => req('POST', `/projects/${p}/compare`, { runs: [a, b] }),
 }
 
 export type { DecisionPolicy }

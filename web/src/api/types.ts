@@ -206,3 +206,51 @@ export interface FlowData {
   cohort: { seed?: number; size: number; horizon: number; time_zero?: number; strata?: Record<string, number>; patients: CohortPatient[] }
   meta?: Record<string, unknown>
 }
+
+// ---- optimisations (spec 05, service/routes/optimisations.py) ----
+export interface OptChange {
+  index: number
+  kind: string
+  target: string
+  other?: string | null
+  label: string
+  records_reading?: string
+  predicted_days_saved?: number | null
+  linked_with?: number[]
+  train?: { on_time_before?: number; on_time_after?: number; median_before?: number; median_after?: number }
+  heldout_after_this_change?: { on_time?: number; median_days?: number; missed_cancers?: number; tests_per_patient?: number }
+}
+export interface OptBlocked { label?: string; kind?: string; target?: string; reason?: string; message?: string; [k: string]: unknown }
+export interface Optimisation {
+  id: string
+  status: 'queued' | 'running' | 'succeeded' | 'failed' | 'cancelled'
+  progress: number
+  message: string
+  flowchart: { id: string; version: number }
+  settings?: Record<string, unknown>
+  created_at?: string
+  error?: string | null
+  summary?: { n_changes?: number; n_blocked?: number; heldout_before?: number | null; heldout_after?: number | null } | null
+  applied?: { accepted: number[]; flowchart: { id: string; version: number }; run_id?: string | null }[]
+  changes?: OptChange[]
+  blocked?: OptBlocked[]
+  heldout?: { before?: Record<string, number | null>; after?: Record<string, number | null> }
+  selection_optimism_pp?: number | null
+  honesty?: string
+  candidates_evaluated?: number
+}
+export interface OptimiseRequest {
+  flowchart: { id: string; version: number }
+  n?: number
+  max_changes?: number
+  allow?: string[]
+}
+export interface ApplyResult {
+  flowchart: { id: string; version: number }
+  based_on: { id: string; version: number }
+  accepted: number[]
+  run_id?: string
+  baseline_run_id?: string
+}
+export interface CompareValue { a: number | null; b: number | null; delta: number | null }
+export interface Comparison { same_patients: boolean; n: number; seeds: number[]; headline: Record<string, CompareValue>; by_group: Record<string, Record<string, CompareValue>> }

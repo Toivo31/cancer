@@ -186,4 +186,11 @@ export const mock: Api = {
     if (!loader) throw new ApiError(404, 'no_flow', 'Mock mode has run layers only for the unedited Norway "observed" and Finnish "baseline" flowcharts.')
     return clone((await loader()).default as unknown as FlowData)
   },
+  // the optimiser needs the service; the demo data has no search to show
+  startOptimisation: async () => { throw new ApiError(501, 'not_in_demo', 'Optimise needs the real service; the demo data cannot run a search.') },
+  listOptimisations: async () => [],
+  getOptimisation: async (_p, o) => { throw new ApiError(404, 'not_found', `No optimisation ${o}`) },
+  cancelOptimisation: async (_p, o) => { throw new ApiError(404, 'not_found', `No optimisation ${o}`) },
+  applyOptimisation: async () => { throw new ApiError(501, 'not_in_demo', 'Optimise needs the real service.') },
+  compareRuns: async () => { throw new ApiError(501, 'not_in_demo', 'Compare needs the real service.') },
 }
