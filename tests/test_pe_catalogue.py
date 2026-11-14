@@ -363,3 +363,22 @@ def test_hash_changes_with_a_source_or_note():
     _find(raw2["variables"], "fever")["given"]["default"]["source"] = "BRADLEY2021"
     _find(raw3["variables"], "fever")["given"]["default"]["note"] = "changed"
     assert len({version_hash(raw), version_hash(raw2), version_hash(raw3)}) == 3
+
+
+# ---------------------------------------------------------------- generation order (for the skeleton and reference generator)
+
+def test_generation_order_puts_dependencies_first(tiny):
+    order = tiny.generation_order("lung_cancer")
+    assert set(order) == {"stage", "location", *tiny.variables}
+    for before, after in (("stage", "cough_3wk"), ("lung_lesion", "lesion_size_mm"), ("location", "lesion_location"),
+                          ("lung_lesion", "lesion_location")):
+        assert order.index(before) < order.index(after)
+    assert "stage" not in tiny.generation_order("healthy")
+
+
+def test_generation_order_follows_by_on_variables():
+    raw = _raw()
+    _find(raw["variables"], "cough_3wk")["given"]["default"]["by"] = {"consolidation": {True: 0.5}}
+    cat = build_catalogue(raw)
+    order = cat.generation_order("pneumonia")
+    assert order.index("consolidation") < order.index("cough_3wk")

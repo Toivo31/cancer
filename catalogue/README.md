@@ -157,7 +157,15 @@ every field listed here, and nothing hidden.
 Inside `given.<condition>`, an attribute name (`stage`) in `by` means that condition's attribute.
 Every condition must be covered, by its own entry or by `default` (`missing_given` otherwise).
 A finding on a card records which conditions cause it (`caused_by`); the catalogue gives the
-reference frequency per condition that the audit checks against.
+reference frequency per condition that the audit checks against. `given.<condition>` is the
+distribution while that condition is active; with a co-existing illness a binary finding is
+present if any active condition causes it (how generators combine continuous values is theirs to
+state).
+
+For code: `Leaf.resolve(facts)` gives the effective number for a patient, where `facts` maps
+`condition` (the primary condition id), attribute names, variable ids and background fields to
+their values; `Catalogue.generation_order(condition)` lists that condition's attributes and all
+variables in an order where everything a `by:` or `only_if` reads comes first.
 
 ## `tests.yaml`
 

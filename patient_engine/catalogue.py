@@ -217,6 +217,27 @@ class Catalogue:
     path: str | None = None
     problems: tuple[Problem, ...] = ()                         # warnings kept from loading
     raw: dict = field(default_factory=dict, repr=False, compare=False)
+    #: dependency graph from `by:` and `only_if`: node -> nodes it reads. Nodes are "condition",
+    #: "attr:<condition>.<attribute>", "var:<variable>".
+    dependencies: dict = field(default_factory=dict, repr=False, compare=False)
+
+    def generation_order(self, condition: str) -> tuple[str, ...]:
+        """The attribute names of ``condition`` and every variable id, ordered so that whatever a
+        ``by:`` or ``only_if`` reads comes before the entry that reads it (attributes first where the
+        graph allows, then catalogue order). Background fields are inputs and not listed."""
+        nodes = [f"attr:{condition}.{a}" for a in self.conditions[condition].attributes] + \
+                [f"var:{v}" for v in self.variables]
+        rank = {n: i for i, n in enumerate(nodes)}
+        deps = {n: {d for d in self.dependencies.get(n, ()) if d in rank} for n in nodes}
+        done: list[str] = []
+        placed: set[str] = set()
+        while len(done) < len(nodes):
+            ready = [n for n in nodes if n not in placed and deps[n] <= placed]
+            if not ready:                      # cannot happen for a validated catalogue
+                raise ValueError("dependency cycle")
+            done.append(ready[0])
+            placed.add(ready[0])
+        return tuple(n.split(":", 1)[1].split(".", 1)[-1] for n in done)
 
     def states(self) -> tuple[str, ...]:
         """State names a card may use: ``all_active``, ``<illness>_resolved`` for every
@@ -1132,6 +1153,14 @@ def _validate(raw: Mapping[str, Any], sources=None) -> tuple[list[Problem], _Val
 
 # ============================================================================ build
 
+def _dependencies(edges: Mapping[str, set]) -> dict[str, frozenset]:
+    deps: dict[str, set] = {}
+    for a, bs in edges.items():
+        for b in bs:
+            deps.setdefault(b, set()).add(a)
+    return {k: frozenset(v) for k, v in deps.items()}
+
+
 def _range(obj: Mapping) -> tuple[float | None, float | None]:
     r = obj.get("range") or {}
     return (float(r["min"]) if "min" in r else None, float(r["max"]) if "max" in r else None)
@@ -1169,7 +1198,7 @@ def build_catalogue(raw: Mapping[str, Any], sources=None, path: str | None = Non
         id=c["id"], version=c.get("version"), title=c["title"], status=c.get("status", "draft"),
         scope=str(c.get("scope") or "").strip(), max_attempts=cmax, background=background, conditions=conditions,
         variables=variables, tests=tests, cooccurrence=cooc, version_hash=version_hash(raw), path=path,
-        problems=tuple(problems), raw=dict(raw))
+        problems=tuple(problems), raw=dict(raw), dependencies=_dependencies(v.edges))
 
 
 def load_catalogue(path: str | Path, sources=None) -> Catalogue:
