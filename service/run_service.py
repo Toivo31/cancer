@@ -9,7 +9,8 @@ import copy
 
 from .errors import ApiError
 from .jobs import QueueFull
-from .runs_core import (ENGINE_VERSION, execute_optimisation, execute_run, min_patients, patients_key, run_key)
+from .runs_core import (ENGINE_VERSION, _scenario_for, execute_optimisation, execute_run, min_patients, patients_key, policy_for,
+                        run_key)
 from .runtime import Runtime
 from .store import NotFound
 from .validation import has_errors, validate_documents
@@ -48,6 +49,13 @@ def checked_document(world: dict, doc: dict, policy: dict | None) -> dict:
     problems = validate_documents(world, [d])
     if has_errors(problems):
         raise ApiError(422, "invalid_document", "The flowchart has problems that stop it from running", problems)
+    if (d.get("decision_policy") or {}).get("backend", "rule") != "rule":
+        try:     # fail at the request, not minutes later in the job: does the decision policy fit this flowchart?
+            sc, fc, _ = _scenario_for({"world": world, "flowchart_doc": d, "decision_policy": None})
+            policy_for(sc, fc, d, 0)
+        except ValueError as e:
+            raise ApiError(422, "invalid_decision_policy", str(e),
+                           [{"severity": "error", "code": "invalid_decision_policy", "message": str(e)}]) from None
     return d
 
 

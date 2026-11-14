@@ -216,3 +216,55 @@ def test_restart_marks_unfinished_runs_failed(tmp_path):
     with TestClient(app2) as c2:
         row = c2.get(f"/api/projects/{p}/runs/{run['id']}").json()
         assert row["status"] == "failed" and row["error"]["code"] == "service_restarted"
+
+
+def test_flow_endpoint_totals_equal_metrics(client, finished):
+    p, rid = finished
+    run = client.get(f"/api/projects/{p}/runs/{rid}").json()
+    f = client.get(f"/api/projects/{p}/runs/{rid}/flow")
+    assert f.status_code == 200, f.text
+    f = f.json()
+    assert f["format"] == "flow/1" and f["seeds"] == [1, 2] and f["meta"]["complete"] is True
+    m = run["metrics"]
+    # pooled counts over both seeds; headline metrics are the mean over cohorts, as the run's
+    assert f["metrics"]["share_within_target"] == pytest.approx(m["share_within_target"], abs=1e-3)
+    assert f["metrics"]["median_days_to_treatment"] == pytest.approx(m["median_days_to_treatment"], abs=0.02)
+    assert f["totals"]["n"] == sum(s["n"] for s in run["per_seed"])
+    assert f["totals"]["missed_cancers"] == pytest.approx(2 * m["missed_cancers"], abs=1e-6)
+    for node, v in m["node_breakdown"].items():   # critical-path waits agree with the run's node breakdown (pooled vs mean of seeds)
+        assert f["steps"][node]["critical_wait"] == pytest.approx(v["wait"], abs=1.0), node
+    assert len(f["cohort"]["patients"]) <= 300
+
+
+def test_flow_with_another_sample_and_seed_subset(client, finished):
+    p, rid = finished
+    f = client.get(f"/api/projects/{p}/runs/{rid}/flow", params={"sample": 40, "sample_seed": 3, "seeds": [2]}).json()
+    assert f["seeds"] == [2] and len(f["cohort"]["patients"]) <= 40 and f["meta"]["complete"] is False
+    assert client.get(f"/api/projects/{p}/runs/{rid}/flow", params={"seeds": [99]}).status_code == 404
+
+
+def stub(points):
+    return {"backend": "stub", "mode": "sample", "points": points}
+
+
+def test_stub_backend_probabilities_move_the_result(client):
+    p = make(client)
+
+    def go(pet_on_time):
+        r = start(client, p, n=300, seeds=[1], decision_policy=stub(
+            {"pet_timing": {"default": {"pet_on_time": pet_on_time, "pet_late": 1 - pet_on_time}}}))
+        assert r.status_code == 202, r.text
+        assert wait_job(client, r.json()["job_id"])["status"] == "succeeded"
+        return r.json()["id"]
+    early, late = go(1.0), go(0.0)
+    he = client.get(f"/api/projects/{p}/runs/{early}").json()["headline"]
+    hl = client.get(f"/api/projects/{p}/runs/{late}").json()["headline"]
+    assert he["on_time"] > hl["on_time"] and he["median_days"] < hl["median_days"]
+    rows = [json.loads(x) for x in client.get(f"/api/projects/{p}/runs/{late}/decisions", params={"point": "pet_timing"}).text.splitlines()]
+    assert rows and {r["chosen"] for r in rows} == {"pet_late"} and rows[0]["probs"]["pet_late"] == 1.0
+
+
+def test_stub_table_that_does_not_fit_is_refused_at_the_request(client):
+    p = make(client)
+    r = start(client, p, decision_policy=stub({"no_such_point": {"default": {"a": 1.0}}}))
+    assert r.status_code == 422 and r.json()["error"]["code"] == "invalid_decision_policy"
