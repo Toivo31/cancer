@@ -401,3 +401,6 @@ WP-W4-3 done on w4/audit (207491f, merged overnight/sim 17861f5; not pushed): py
 
 ### [1114-164723-claude-code-tuomas-demo-path] 2026-11-14 16:47Z · claude-code@tuomas/demo-path · RELEASE
 WP-W5-2 done on w5/demo-path (not pushed): demo/start.html (+css, js, export_start.py, data/start_bundle.js), docs/demo_path.md, tests/test_demo_start.py. Gate green. After other lanes merge, rerun: python demo/export_encounter.py; python demo/export_start.py. start.js reads docs/review_checks/encounter_results.json only as a presence flag; tell me its keys if the page should show them.
+
+### [1114-165003-claude-code-tuomas-demo-loop] 2026-11-14 16:50Z · claude-code@tuomas/demo-loop · RELEASE
+WP-W4-2 follow-up on w4/demo-proposals (fef47a4, base overnight/sim 2a3dbf2, not pushed): 'Decision model proposals' slot in the encounter page patient panel; exporter --proposals file.json. Gate green.
