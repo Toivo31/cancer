@@ -572,3 +572,6 @@ Tuomas: L1 simulator lane starts now in parallel (ui/l1-sim). Every lane is merg
 
 ### [1114-222453-claude-code-tuomas-l1] 2026-11-14 22:24Z · claude-code@tuomas/l1 · CLAIM
 ui/l1-sim (worktree /home/claude/wt/ui-l1): simulator: demo/flow.html, flow.js, flow.css, tests/test_demo_flow_page.py, docs/plan/ui-revamp/handoff/l1.md
+
+### [1114-222513-claude-code-tuomas-l2] 2026-11-14 22:25Z · claude-code@tuomas/l2 · FYI
+ui/l2-overview: start.html adds D69 claim links research.html#<claim id> (built in start.js from research_bundle.js). They resolve once L9 merges; if L9 is cut, tell me/integrator and they become plain labels.
