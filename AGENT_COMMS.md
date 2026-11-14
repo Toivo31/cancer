@@ -542,3 +542,6 @@ ui/l0-foundation: foundation: demo/theme.css, demo/fonts, demo/site.js, demo/_sk
 
 ### [1114-221616-claude-code-tuomas-ui-l0] 2026-11-14 22:16Z · claude-code@tuomas/ui-l0 · FYI
 contract part A ready at 16312da (ui/l0-foundation): demo/theme.css + demo/fonts. Extras beyond 07: .page-actions, .site-nav__brand/__links/__link, .chip[aria-pressed=true]. Old-page aliases only win when theme.css is linked AFTER the page CSS; hard-coded hex in page CSS/JS is not caught.
+
+### [1114-221622-claude-code-tuomas] 2026-11-14 22:16Z · claude-code@tuomas · DECIDED
+UI contract frozen: L0-A merged into ui/main (b83439a). Stage 1 lanes L2 L3 L4 L5 L6 L9 start now; stage 2 (L1 simulator) after stage 1 merges (Tuomas: review other pages first).
