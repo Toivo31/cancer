@@ -53,7 +53,7 @@ def stereotyped_voice(role, cid, ans, user):
 
 def test_g1v2_is_the_default_and_g1v1_stays_selectable(lung):
     assert A.PROMPT_VERSIONS["patient"] == "g1@2"
-    assert Authors(lung).prompt_versions == {"patient": "g1@2", "results": "g2@2"}
+    assert Authors(lung).prompt_versions == {"patient": "g1@2", "results": "g2@3"}
     assert Authors(lung, patient_prompt="g1@1").prompt_versions["patient"] == "g1@1"
     with pytest.raises(ValueError):
         Authors(lung, patient_prompt="g1@9")
