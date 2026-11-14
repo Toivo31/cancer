@@ -6,6 +6,9 @@ The first N-7 layers are shared, not copied. Only the unadapted suffix is copied
 from contextlib import contextmanager
 from copy import deepcopy
 from dataclasses import dataclass
+from collections import OrderedDict
+import hashlib
+import json
 
 
 @dataclass
@@ -48,6 +51,8 @@ class SharedNemotronGenerator:
     def __init__(self, full, tokenizer, reference, *, lock, max_input_tokens=4096):
         self.full,self.tokenizer,self.reference,self.lock=full,tokenizer,reference,lock
         self.max_input_tokens=max_input_tokens
+        self.response_cache=OrderedDict()
+        self.response_cache_limit=64
 
     @contextmanager
     def original_branch(self):
@@ -68,6 +73,12 @@ class SharedNemotronGenerator:
         import torch
         if type(max_new_tokens) is not int or not 1<=max_new_tokens<=512:
             raise ValueError('Invalid remaining generation token budget')
+        key=hashlib.sha256(json.dumps([messages,max_new_tokens],sort_keys=True,ensure_ascii=False).encode()).hexdigest()
+        with self.lock:
+            cached=self.response_cache.pop(key,None)
+            if cached is not None:
+                self.response_cache[key]=cached
+                return dict(cached,cache_hit=True,tokens_generated=0)
         # Show an evidence summary, not a hidden chain of thought. The vocabulary
         # head is pretrained/frozen, not a randomly initialized "untrained head".
         # Encode tool returns as user-side quoted evidence for template portability.
@@ -84,4 +95,8 @@ class SharedNemotronGenerator:
                 return_dict_in_generate=False,pad_token_id=self.tokenizer.pad_token_id,eos_token_id=self.tokenizer.eos_token_id)
             added=output[0,count:]
             text=self.tokenizer.decode(added,skip_special_tokens=True)
-            return dict(text=text,tokens_used=int(added.numel()))
+            result=dict(text=text,tokens_used=int(added.numel()),tokens_generated=int(added.numel()),cache_hit=False)
+        with self.lock:
+            self.response_cache[key]=result
+            while len(self.response_cache)>self.response_cache_limit:self.response_cache.popitem(last=False)
+        return dict(result)

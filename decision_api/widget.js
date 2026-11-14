@@ -22,7 +22,7 @@ export class BirchDecision extends HTMLElement {
     <img id="photo" hidden alt="Selected PAD-UFES-20 skin lesion example"><p id="source" class="muted"></p><h3 id="question"></h3>
     <details><summary>Available information</summary><p id="context" class="context"></p></details>
     <div class="reasoning"><label><input id="reasoning" type="checkbox"> Enable context refinement (off by default)</label>
-    <div id="reasoning-options" hidden><label for="token-budget">Generation budget (new tokens, total)</label><select id="token-budget"><option>64</option><option selected>128</option><option>256</option><option>512</option></select>
+    <div id="reasoning-options" hidden><label for="token-budget">Output budget (tokens, total)</label><select id="token-budget"><option>64</option><option selected>128</option><option>256</option><option>512</option></select>
     <label for="additional-prompt">Additional instructions (optional)</label><textarea id="additional-prompt" maxlength="2000" placeholder="Give a quick review of the available history before scoring the question."></textarea>
     <p class="muted">The question is automatically added. Retrieval is limited to the permitted synthetic record.</p><button id="preview">Preview tool flow (scripted, no GPU)</button></div><p id="reasoning-info" class="muted"></p></div>
     <details id="refinement" hidden><summary>Context refinement and tool evidence</summary><p id="refinement-info"></p><ol id="tool-trace"></ol><p id="refined-context" class="refinement"></p></details>
@@ -110,7 +110,7 @@ export class BirchDecision extends HTMLElement {
   }
   _showRefinement(refinement) {
     this.$('refinement').hidden=false;
-    this.$('refinement-info').textContent=`${refinement.mode==='scripted_tool_demo' ? 'Scripted tool preview; not Nemotron-generated text' : 'Frozen pretrained Nemotron context refinement'} · ${refinement.tokens_used}/${refinement.budget.max_tokens} generated tokens · ${refinement.tool_calls_used} tool calls · ${refinement.stop_reason}`;
+    this.$('refinement-info').textContent=`${refinement.mode==='scripted_tool_demo' ? 'Scripted tool preview; not Nemotron-generated text' : 'Frozen pretrained Nemotron context refinement'} · ${refinement.tokens_used}/${refinement.budget.max_tokens} output tokens · ${refinement.tokens_generated ?? refinement.tokens_used} newly generated · ${refinement.generation_cache_hits || 0} cached steps · ${refinement.tool_calls_used} tool calls · ${refinement.stop_reason}`;
     this.$('tool-trace').replaceChildren();
     for (const event of refinement.trace) add('li',event.tool ? `${event.tool}(patient): ${event.status} · ${(event.response?.entries || []).map(e=>e.source_id).join(', ')}` : `${event.status}${event.summary ? ': '+event.summary : ''}`,this.$('tool-trace'));
     this.$('refined-context').textContent=refinement.context;
@@ -132,7 +132,7 @@ export class BirchDecision extends HTMLElement {
     this._pending = new AbortController(); const options = {signal: this._pending.signal};
     this._busy(true);
     this.$('results').replaceChildren();
-    this.$('status').textContent = live ? 'Starting or scoring… a cold start can take about six minutes. Retry after a startup timeout.' : 'Loading saved example…';
+    this.$('status').textContent = live ? 'Starting or scoring… a cold start can take several minutes. Waiting for this request; no duplicate scoring call is sent.' : 'Loading saved example…';
     try {
       let result, delivery;
       if (!live) {

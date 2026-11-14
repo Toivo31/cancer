@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Birch · Decision review</title>
+<link rel="stylesheet" href="/demo/style.css">
+<header><span class="brand">birch<span> / decision lab</span></span><span id="mode" role="status">Checking backend…</span></header>
+<main><section class="intro"><p class="eyebrow">HUMAN REVIEW / SYNTHETIC DEMO</p><h1>The next step.<br>Yours to review.</h1><p>Compare allowed actions, inspect the evidence and record your decision.</p><p class="notice">Fixture scores are scripted integration data. Scores are relative to the supplied choices, not calibrated disease probabilities. No clinical action is executed.</p></section>
+<section class="workspace"><div class="panel"><nav aria-label="Demo task"><button data-task="pathway" aria-pressed="true">Patient pathway</button><button data-task="photo" aria-pressed="false">Skin photo</button><button data-task="generic" aria-pressed="false">Generic scoring</button></nav>
+<p id="task-help"></p><label for="request">Request JSON · edit visible evidence and allowed choices</label><textarea id="request" spellcheck="false" rows="19"></textarea>
+<div id="photo-fields" hidden><label for="sample">Choose a ready-made example</label><select id="sample"></select><img id="sample-preview" alt="Selected dataset skin lesion example"><p id="sample-source"></p><p>Diagnostic choices are separate from referral or urgency actions. Scripted fixture scores are identical for every example.</p></div>
+<details><summary>Connection settings</summary><label for="token">API bearer token (kept in memory for this page only)</label><input id="token" type="password" autocomplete="off"></details>
+<button class="primary" id="score">Propose next step</button><p id="status" role="status" aria-live="polite"></p><button id="reconnect" hidden>Reconnect to model</button></div>
+<div class="panel results"><p class="eyebrow">REVIEW DESK</p><h2>Every choice, visible.</h2><div id="results"><p>Your proposal and all candidate scores will appear here.</p></div><details id="audit" hidden><summary>Exact decision trace & provenance</summary><pre id="trace"></pre></details></div></section></main>
+<script type="module" src="/demo/app.js"></script></html>

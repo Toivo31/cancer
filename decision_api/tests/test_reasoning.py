@@ -44,6 +44,20 @@ class RefinementTests(unittest.TestCase):
         self.assertEqual(r['source_ids'],['sim:intake-01','sim:review-02'])
         self.assertEqual(result['request']['questions'],self.request['questions'])
 
+    def test_cached_generation_still_charges_output_budget_and_runs_real_tools(self):
+        class Cached:
+            mode='frozen_pretrained_nemotron'
+            def generate(_,messages,**kwargs):
+                action={'summary':'Available evidence only.'} if any(m['role']=='tool' for m in messages) else {'tool':'retrieve_information','arguments':{'patient':self.patient}}
+                return dict(text=json.dumps(action),tokens_used=8,tokens_generated=0,cache_hit=True)
+        tools=PatientTools(self.patient)
+        result=refine(self.request,options=dict(enabled=True,max_tokens=16),tools=tools,generator=Cached())['refinement']
+        self.assertEqual(result['tokens_used'],16)
+        self.assertEqual(result['tokens_generated'],0)
+        self.assertEqual(result['generation_cache_hits'],2)
+        self.assertEqual(len(tools.calls),1)
+        self.assertEqual(result['stop_reason'],'summary_complete')
+
     def test_tool_round_and_token_budgets_stop_without_invented_context(self):
         action={'tool':'retrieve_information','arguments':{'patient':self.patient}}
         gen=Script([(action,8),(action,8),(action,8)])

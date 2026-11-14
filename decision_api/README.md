@@ -1,3 +1,5 @@
+> **Hosted access:** teammates need no Modal account or inference key. See [HOSTED_API.md](HOSTED_API.md) for the URL, SDK and one-command agent client.
+
 # Decision model: teammate integration kit
 
 **For the coding model implementing the demo: start with [INTEGRATION_PROMPT.md](INTEGRATION_PROMPT.md).**
@@ -116,7 +118,7 @@ is `~/.config/birch/demo-api-key`.
 BIRCH_API_KEY_FILE=/private/path/to/key python3 -m decision_api.server
 ```
 
-`BIRCH_API_URL` defaults to the deployed checkpoint-1138 Modal endpoint. Only
+`BIRCH_API_URL` defaults to the stable authenticated Modal endpoint (live checkpoint2350). Only
 root HTTPS Modal URLs are accepted. For the existing note-reader server, its
 root `.env` loader can supply the same variables. See [.env.example](.env.example).
 Restart the proxy after changing configuration. No key is needed for saved data.
@@ -148,7 +150,7 @@ a simulator. Generic scoring requires callers to supply visible context only.
 
 ## Runtime, pausing and limitations
 
-Checkpoint1138 currently uses one RTX PRO6000 with NF4 experts (~70.7GiB loaded).
+The reasoning-enabled runtime uses one RTX PRO6000 with NF4 experts (~78.3GiB loaded). The stable URL retains1138 in its name; live identity is checkpoint2350.
 Observed warm text scoring median ~7.4s; a cold start took ~6minutes. The browser
 shows errors and allows manual retry. No automatic POST retry, health polling,
 or background keepalive is installed. Modal scales down when idle.
