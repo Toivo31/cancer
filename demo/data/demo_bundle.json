@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-14T09:00:49+00:00",
+ "generated_at": "2026-11-14T09:26:58+00:00",
  "fixture": false,
  "scenarios": [
   {
@@ -537,7 +537,7 @@
      },
      "changes": [
       "Use the faster PET-CT scanner (the same assumption the authors made)",
-      "Plan tissue sampling at the first hospital visit, not after it",
+      "Plan tissue sampling when the referral is triaged, before the first hospital visit",
       "Always order the PET-CT scan at triage or the first visit, never late",
       "Always order the exercise test early, together with the other tests",
       "Hold the tumour board without waiting for tissue sampling to finish; sampling runs alongside while treatment is booked"
@@ -1324,7 +1324,7 @@
      },
      "changes": [
       "Always order the PET-CT scan at triage or the first visit, never late",
-      "Plan tissue sampling at the first hospital visit, not after it",
+      "Plan tissue sampling when the referral is triaged, before the first hospital visit",
       "Always order the exercise test early, together with the other tests",
       "Hold the tumour board without waiting for tissue sampling to finish; sampling runs alongside while treatment is booked"
      ],
@@ -1685,7 +1685,7 @@
     "guardrails_heldout": [],
     "details": [
      {
-      "label": "Plan tissue sampling at the first hospital visit, not after it",
+      "label": "Plan tissue sampling when the referral is triaged, before the first hospital visit",
       "raw": "Tissue sampling planned?: order it at the same time as first hospital visit, not after",
       "kind": "relax",
       "records_said": "In the records, the step 'tissue sampling planned?' was held back by first hospital visit: on average 6.7 days per patient on the critical path.",
@@ -1758,7 +1758,7 @@
      },
      {
       "step": 1,
-      "label": "Plan tissue sampling at the first hospital visit, not after it",
+      "label": "Plan tissue sampling when the referral is triaged, before the first hospital visit",
       "kind": "change",
       "share": 0.697,
       "median_days": 34.08,
@@ -1882,7 +1882,7 @@
       "heldout_on_time_after": 0.5253
      },
      {
-      "label": "Plan tissue sampling at the first hospital visit, not after it",
+      "label": "Plan tissue sampling when the referral is triaged, before the first hospital visit",
       "raw": "Tissue sampling planned?: order it at the same time as first hospital visit, not after",
       "kind": "relax",
       "records_said": "In the records, the step 'tissue sampling planned?' was held back by first hospital visit: on average 5.7 days per patient on the critical path.",
@@ -1942,7 +1942,7 @@
      },
      {
       "step": 2,
-      "label": "Plan tissue sampling at the first hospital visit, not after it",
+      "label": "Plan tissue sampling when the referral is triaged, before the first hospital visit",
       "kind": "change",
       "share": 0.6097,
       "median_days": 38.7467,
@@ -4593,7 +4593,7 @@
      },
      {
       "kind": "order",
-      "label": "Suggested change: new order and a fast lane, no new capacity",
+      "label": "Suggested change: a fast lane (priority booking), same order, no new capacity",
       "share": 0.6147,
       "median_days": 80.01
      }
@@ -4954,7 +4954,7 @@
   },
   {
    "parameter": "lung cancer risk 12m self referred cxr over 50",
-   "value": "1%",
+   "value": "1.3%",
    "source": "Bradley et al. 2021",
    "url": "https://bjgp.org/content/71/705/e280",
    "status": "sourced",
@@ -4962,7 +4962,7 @@
   },
   {
    "parameter": "lung cancer risk 12m after new haemoptysis",
-   "value": "3%",
+   "value": "3.1%",
    "source": "Koo MM, Mounce LTA, Rafiq M, Callister MEJ, Singh H, Abel GA, Lyratzop",
    "url": "https://doi.org/10.1136/thorax-2022-219509",
    "status": "sourced",
@@ -4970,7 +4970,7 @@
   },
   {
    "parameter": "lung cancer risk 12m after new dyspnoea",
-   "value": "1%",
+   "value": "0.7%",
    "source": "Koo MM, Mounce LTA, Rafiq M, Callister MEJ, Singh H, Abel GA, Lyratzop",
    "url": "https://doi.org/10.1136/thorax-2022-219509",
    "status": "sourced",
@@ -4986,7 +4986,7 @@
   },
   {
    "parameter": "lung cancer risk after negative cxr 12m",
-   "value": "0%",
+   "value": "0.35%",
    "source": "Bradley et al. 2021",
    "url": "https://bjgp.org/content/71/705/e280",
    "status": "sourced",
@@ -5730,7 +5730,7 @@
   },
   {
    "parameter": "p nondiagnostic",
-   "value": "3%",
+   "value": "2.7%",
    "source": "Uzun et al. 2017",
    "url": "https://dirjournal.org/pdf/beb8919b-f013-4ea1-b1c8-40332e840fe1/articles/dir.2016.16173/Diagn%20Interv%20Radiol-23-137-En.pdf",
    "status": "sourced",
@@ -5746,7 +5746,7 @@
   },
   {
    "parameter": "pneumothorax chest tube",
-   "value": "7%",
+   "value": "6.6%",
    "source": "Wiener et al. 2011",
    "url": "https://www.healthday.com/healthpro-news/pulmonology/pneumothorax-common-after-transthoracic-needle-biopsy-655390.html",
    "status": "sourced",

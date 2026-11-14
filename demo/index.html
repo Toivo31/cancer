@@ -118,7 +118,7 @@ footer{margin-top:2.5rem;color:var(--dim);font-family:var(--mono);font-size:.78r
 
 <script id="bundle" type="application/json">
 {
- "generated_at": "2026-11-14T09:00:49+00:00",
+ "generated_at": "2026-11-14T09:26:58+00:00",
  "fixture": false,
  "scenarios": [
   {
@@ -656,7 +656,7 @@ footer{margin-top:2.5rem;color:var(--dim);font-family:var(--mono);font-size:.78r
      },
      "changes": [
       "Use the faster PET-CT scanner (the same assumption the authors made)",
-      "Plan tissue sampling at the first hospital visit, not after it",
+      "Plan tissue sampling when the referral is triaged, before the first hospital visit",
       "Always order the PET-CT scan at triage or the first visit, never late",
       "Always order the exercise test early, together with the other tests",
       "Hold the tumour board without waiting for tissue sampling to finish; sampling runs alongside while treatment is booked"
@@ -1443,7 +1443,7 @@ footer{margin-top:2.5rem;color:var(--dim);font-family:var(--mono);font-size:.78r
      },
      "changes": [
       "Always order the PET-CT scan at triage or the first visit, never late",
-      "Plan tissue sampling at the first hospital visit, not after it",
+      "Plan tissue sampling when the referral is triaged, before the first hospital visit",
       "Always order the exercise test early, together with the other tests",
       "Hold the tumour board without waiting for tissue sampling to finish; sampling runs alongside while treatment is booked"
      ],
@@ -1804,7 +1804,7 @@ footer{margin-top:2.5rem;color:var(--dim);font-family:var(--mono);font-size:.78r
     "guardrails_heldout": [],
     "details": [
      {
-      "label": "Plan tissue sampling at the first hospital visit, not after it",
+      "label": "Plan tissue sampling when the referral is triaged, before the first hospital visit",
       "raw": "Tissue sampling planned?: order it at the same time as first hospital visit, not after",
       "kind": "relax",
       "records_said": "In the records, the step 'tissue sampling planned?' was held back by first hospital visit: on average 6.7 days per patient on the critical path.",
@@ -1877,7 +1877,7 @@ footer{margin-top:2.5rem;color:var(--dim);font-family:var(--mono);font-size:.78r
      },
      {
       "step": 1,
-      "label": "Plan tissue sampling at the first hospital visit, not after it",
+      "label": "Plan tissue sampling when the referral is triaged, before the first hospital visit",
       "kind": "change",
       "share": 0.697,
       "median_days": 34.08,
@@ -2001,7 +2001,7 @@ footer{margin-top:2.5rem;color:var(--dim);font-family:var(--mono);font-size:.78r
       "heldout_on_time_after": 0.5253
      },
      {
-      "label": "Plan tissue sampling at the first hospital visit, not after it",
+      "label": "Plan tissue sampling when the referral is triaged, before the first hospital visit",
       "raw": "Tissue sampling planned?: order it at the same time as first hospital visit, not after",
       "kind": "relax",
       "records_said": "In the records, the step 'tissue sampling planned?' was held back by first hospital visit: on average 5.7 days per patient on the critical path.",
@@ -2061,7 +2061,7 @@ footer{margin-top:2.5rem;color:var(--dim);font-family:var(--mono);font-size:.78r
      },
      {
       "step": 2,
-      "label": "Plan tissue sampling at the first hospital visit, not after it",
+      "label": "Plan tissue sampling when the referral is triaged, before the first hospital visit",
       "kind": "change",
       "share": 0.6097,
       "median_days": 38.7467,
@@ -4712,7 +4712,7 @@ footer{margin-top:2.5rem;color:var(--dim);font-family:var(--mono);font-size:.78r
      },
      {
       "kind": "order",
-      "label": "Suggested change: new order and a fast lane, no new capacity",
+      "label": "Suggested change: a fast lane (priority booking), same order, no new capacity",
       "share": 0.6147,
       "median_days": 80.01
      }
@@ -5073,7 +5073,7 @@ footer{margin-top:2.5rem;color:var(--dim);font-family:var(--mono);font-size:.78r
   },
   {
    "parameter": "lung cancer risk 12m self referred cxr over 50",
-   "value": "1%",
+   "value": "1.3%",
    "source": "Bradley et al. 2021",
    "url": "https://bjgp.org/content/71/705/e280",
    "status": "sourced",
@@ -5081,7 +5081,7 @@ footer{margin-top:2.5rem;color:var(--dim);font-family:var(--mono);font-size:.78r
   },
   {
    "parameter": "lung cancer risk 12m after new haemoptysis",
-   "value": "3%",
+   "value": "3.1%",
    "source": "Koo MM, Mounce LTA, Rafiq M, Callister MEJ, Singh H, Abel GA, Lyratzop",
    "url": "https://doi.org/10.1136/thorax-2022-219509",
    "status": "sourced",
@@ -5089,7 +5089,7 @@ footer{margin-top:2.5rem;color:var(--dim);font-family:var(--mono);font-size:.78r
   },
   {
    "parameter": "lung cancer risk 12m after new dyspnoea",
-   "value": "1%",
+   "value": "0.7%",
    "source": "Koo MM, Mounce LTA, Rafiq M, Callister MEJ, Singh H, Abel GA, Lyratzop",
    "url": "https://doi.org/10.1136/thorax-2022-219509",
    "status": "sourced",
@@ -5105,7 +5105,7 @@ footer{margin-top:2.5rem;color:var(--dim);font-family:var(--mono);font-size:.78r
   },
   {
    "parameter": "lung cancer risk after negative cxr 12m",
-   "value": "0%",
+   "value": "0.35%",
    "source": "Bradley et al. 2021",
    "url": "https://bjgp.org/content/71/705/e280",
    "status": "sourced",
@@ -5849,7 +5849,7 @@ footer{margin-top:2.5rem;color:var(--dim);font-family:var(--mono);font-size:.78r
   },
   {
    "parameter": "p nondiagnostic",
-   "value": "3%",
+   "value": "2.7%",
    "source": "Uzun et al. 2017",
    "url": "https://dirjournal.org/pdf/beb8919b-f013-4ea1-b1c8-40332e840fe1/articles/dir.2016.16173/Diagn%20Interv%20Radiol-23-137-En.pdf",
    "status": "sourced",
@@ -5865,7 +5865,7 @@ footer{margin-top:2.5rem;color:var(--dim);font-family:var(--mono);font-size:.78r
   },
   {
    "parameter": "pneumothorax chest tube",
-   "value": "7%",
+   "value": "6.6%",
    "source": "Wiener et al. 2011",
    "url": "https://www.healthday.com/healthpro-news/pulmonology/pneumothorax-common-after-transthoracic-needle-biopsy-655390.html",
    "status": "sourced",
@@ -6098,7 +6098,9 @@ function screenWhy(sc){
   return h;
 }
 function tornado(sc,rows){
-  var gain=g(sc,"optimiser","cumulative");gain=gain&&gain.length>1?Math.round((gain[gain.length-1].share-gain[0].share)*1000)/10:null;
+  /* central estimate = the base gain of the comparison the sensitivity rows were computed for (review fix:
+     it used the optimiser's gain, a different comparison) */
+  var gain=null,cmp=null;rows.forEach(function(r){if(gain===null&&isNum(r.base_gain_pp)){gain=r.base_gain_pp;cmp=r.comparison}});
   rows=rows.filter(function(r){return isNum(r.low_gain_pp)&&isNum(r.high_gain_pp)}).slice();
   rows.forEach(function(r){r._lo=Math.min(r.low_gain_pp,r.high_gain_pp);r._hi=Math.max(r.low_gain_pp,r.high_gain_pp)});
   rows.sort(function(a,b){return (b._hi-b._lo)-(a._hi-a._lo)});rows=rows.slice(0,8);
@@ -6115,7 +6117,8 @@ function tornado(sc,rows){
     s+=svgText(X(r._hi)+8,y+27,d1(r._hi),{size:16,cls:"mono",fill:C.muted});
   });
   if(isNum(gain))s+='<line x1="'+X(gain)+'" x2="'+X(gain)+'" y1="0" y2="'+(H-30)+'" stroke="'+C.good+'" stroke-width="3" stroke-dasharray="6 5"/>'+svgText(X(gain),H-8,"central estimate "+d1(gain)+" points",{size:16,anchor:"middle",fill:C.good,cls:"mono"});
-  return '<h2>How sure are we? Change one assumption at a time</h2><p class="lede">Gain in points of patients treated on time when one input is set to its low and its high value. Bars that stay far above zero mean the conclusion does not hinge on that input.</p><div class="panel">'+s+'</svg></div>';
+  var CMP={"optimal vs observed":"the authors' reordered pathway against the observed one","bundled_workup vs baseline":"ordering tests together (hand-written) against today's pathway"};
+  return '<h2>How sure are we? Change one assumption at a time</h2><p class="lede">Gain in points of patients treated on time when one input is set to its low and its high value'+(cmp?', for '+esc(CMP[cmp]||cmp)+' (not the suggested change above)':'')+'. Bars that stay far above zero mean the conclusion does not hinge on that input.</p><div class="panel">'+s+'</svg></div>';
 }
 
 /* ---------- Screen 4: capacity or order ---------- */
@@ -6127,11 +6130,14 @@ function screenCap(sc){
     if(r.kind==="capacity"&&(!bestCap||r.share>bestCap.share))bestCap=r;
     if(r.kind==="order")order=r; if(r.kind==="both")both=r;
   });
+  /* the "order" row is the optimiser's result; only call it reordering if it changed the order (review fix) */
+  var oSteps=(cv.capacity_label?g(sc,"optimiser_no_new_equipment","steps"):g(sc,"optimiser","steps"))||[];
+  var reorder=!oSteps.length||oSteps.some(function(x){return x.kind!=="fast_track"});
   if(bestCap&&order){
     var gc=Math.round((bestCap.share-t)*100),go=Math.round((order.share-t)*100);
-    h+='<h1>Reordering the steps gains '+go+' points; '+(cv.capacity_label?'the new scanner':'more capacity')+' gains '+gc+'</h1>';
+    h+='<h1>'+(reorder?'Reordering the steps gains ':'The suggested change gains ')+go+' points; '+(cv.capacity_label?'the new scanner':'more capacity')+' gains '+gc+'</h1>';
   }else h+='<h1>More capacity, or a better order?</h1>';
-  h+='<p class="lede">The same patients run through each option. '+(cv.capacity_label?'A faster scanner helps, but reordering the steps with no new equipment helps more, and the two together help most.':'Time is lost in queues, but a queue is often held up by the order of the steps rather than by too few slots: more slots at one step then help little.')+'</p>';
+  h+='<p class="lede">The same patients run through each option. '+(cv.capacity_label?'A faster scanner helps, but reordering the steps with no new equipment helps more, and the two together help most.':(reorder?'Time is lost in queues, but a queue is often held up by the order of the steps rather than by too few slots: more slots at one step then help little.':'The suggested change keeps today\'s order: referred patients get urgent booking at every later step. Its size rests on our assumed gap between routine and urgent booking times.'))+'</p>';
   var col={today:C.today,capacity:C.wait,order:C.good,both:C.good};
   var bars=rows.map(function(r){return {v:r.share,label:r.label,color:col[r.kind]||C.serve}});
   var H=rows.length*92+20,X0=520,W=500,s='<svg viewBox="0 0 1240 '+H+'" role="img" aria-label="Share treated on time for capacity options and the reorder">';

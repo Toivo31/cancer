@@ -328,6 +328,36 @@ class Simulation:
                 if pr.status[o] in ("pending", "enabled"):
                     self.skip(pr, o, t, nid)
 
+    def revive_descendants(self, pr: PatientRun, fb: str) -> None:
+        """A retry fallback that had been skipped (e.g. the option not chosen) now runs after all.
+        Steps downstream of it that were skipped only because it was skipped go back to pending,
+        so they are re-evaluated once it finishes. Options skipped by a choice that was actually made
+        stay skipped."""
+        if not hasattr(self, "_children"):
+            self._children: dict[str, set[str]] = {x: set() for x in self.fc.nodes}
+            for n in self.fc.nodes.values():
+                for d in list(n.after) + list(n.after_any) + list(n.after_optional):
+                    self._children[d].add(n.id)
+                if n.kind == "choice":
+                    for o in n.options:
+                        self._children[n.id].add(o)
+        stack, seen = list(self._children[fb]), set()
+        while stack:
+            x = stack.pop()
+            if x in seen:
+                continue
+            seen.add(x)
+            if pr.status.get(x) != "skipped":
+                continue
+            c = self.option_of.get(x)
+            if c is not None and pr.status.get(c) == "done":
+                continue
+            pr.status[x] = "pending"
+            pr.t_done.pop(x, None)
+            pr.cause.pop(x, None)
+            pr.result.pop(x, None)
+            stack.extend(self._children[x])
+
     def advance(self, pr: PatientRun, t: float) -> None:
         changed = True
         while changed and pr.outcome is None:
@@ -429,6 +459,7 @@ class Simulation:
             if fb and pr.status.get(fb) in ("pending", "skipped"):
                 pr.status[nid], pr.t_done[nid], pr.result[nid] = "failed", t, None
                 pr.status[fb], pr.cause[fb] = "forced", nid
+                self.revive_descendants(pr, fb)
                 self.advance(pr, t)
                 return
         pr.status[nid], pr.t_done[nid], pr.result[nid] = "done", t, r

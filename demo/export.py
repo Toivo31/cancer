@@ -128,6 +128,16 @@ def short_cite(s: dict) -> str:
     return c.split(".")[0][:70]
 
 
+def fmt_fraction(val) -> str:
+    """0.0035 -> '0.35%', 0.013 -> '1.3%', 0.4 -> '40%' (integer rounding showed small risks as 0% or 1%)."""
+    if not isinstance(val, (int, float)):
+        return str(val)
+    pct = 100 * val
+    if pct == 0 or abs(pct) >= 10:
+        return f"{round(pct)}%"
+    return f"{pct:.2g}%"
+
+
 def assumptions() -> list[dict]:
     src = {}
     raw = yaml.safe_load((ROOT / "params" / "sources.yaml").read_text())
@@ -150,7 +160,7 @@ def assumptions() -> list[dict]:
                 s = src.get(p["source"])
                 rows.append({
                     "parameter": name.replace("_", " "),
-                    "value": f"{val} {unit}".strip() if unit not in ("fraction",) else (f"{round(100 * val)}%" if isinstance(val, (int, float)) else str(val)),
+                    "value": f"{val} {unit}".strip() if unit not in ("fraction",) else fmt_fraction(val),
                     "source": short_cite(s) if s else "Our assumption",
                     "url": s.get("url") if s else None,
                     "status": "assumption" if p["source"] == "assumption" else "sourced",
@@ -170,7 +180,9 @@ POLISHED = {
     ("detach", "diagnosis", "sampling_done"): "Hold the tumour board without waiting for tissue sampling to finish; sampling runs alongside while treatment is booked",
     ("standardise", "pet_timing", "pet_on_time"): "Always order the PET-CT scan at triage or the first visit, never late",
     ("standardise", "ex_timing", "ex_early"): "Always order the exercise test early, together with the other tests",
-    ("relax", "sample_plan", "visit"): "Plan tissue sampling at the first hospital visit, not after it",
+    # relax(sample_plan, visit): sample_plan inherits the visit's prerequisite (the baseline CT at referral
+    # receipt), so sampling is planned when the referral is triaged, BEFORE the first visit (D18).
+    ("relax", "sample_plan", "visit"): "Plan tissue sampling when the referral is triaged, before the first hospital visit",
 }
 
 
@@ -392,6 +404,16 @@ def capacity_probe(sc: Scenario, fc: Flowchart, held, base: dict) -> list[dict]:
 
 
 
+def suggested_change_label(res: dict) -> str:
+    """Bar label for the optimiser's result in the capacity-vs-order chart, from the kinds of change it accepted."""
+    kinds = {st["kind"] for st in res.get("steps", [])}
+    reorder = bool(kinds & {"detach", "relax", "standardise"})
+    fast = "fast_track" in kinds
+    what = ("new order and a fast lane" if reorder and fast else "new order" if reorder
+            else "a fast lane (priority booking), same order" if fast else "no change accepted")
+    return f"Suggested change: {what}, no new capacity"
+
+
 def capacity_vs_order(sc: Scenario, fc0: Flowchart, base: dict, probe: list[dict], hand: dict, res: dict) -> dict | None:
     """Same patients: one more slot at the busiest step, a large capacity increase, and the suggested reorder."""
     ctl = sc.flowcharts.get("baseline_plus_capacity")
@@ -415,7 +437,7 @@ def capacity_vs_order(sc: Scenario, fc0: Flowchart, base: dict, probe: list[dict
              "median_days": round(b["median_days_to_treatment"] + top["delta_median_days"], 1)},
             {"kind": "capacity", "label": "A large capacity increase, same order: " + "; ".join(parts),
              "share": big["share_within_target"], "median_days": big["median_days_to_treatment"]},
-            {"kind": "order", "label": "Suggested change: new order and a fast lane, no new capacity",
+            {"kind": "order", "label": suggested_change_label(res),
              "share": h["share_within_target"], "median_days": h["median_days_to_treatment"]},
         ],
     }
