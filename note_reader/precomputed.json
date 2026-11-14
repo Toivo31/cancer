@@ -54,7 +54,7 @@
   },
   "dropped": [],
   "next": {
-   "route": "Fast lane: urgent CT and referral",
+   "route": "Fast track suggested: immediate care needed (urgent CT and referral)",
    "urgent": true,
    "why": [
     "a warning sign is recorded without the expected test",
@@ -206,7 +206,7 @@
   },
   "dropped": [],
   "next": {
-   "route": "Fast lane: urgent CT and referral",
+   "route": "Fast track suggested: immediate care needed (urgent CT and referral)",
    "urgent": true,
    "why": [
     "reassurance without a follow-up plan",

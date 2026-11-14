@@ -50,6 +50,8 @@ export function createDecisionClient({baseUrl = '/api/decision', fetch: send = g
     },
     health: options => request('/health', undefined, options),
     score: (payload, options) => request('/score', payload, options),
+    reason: (payload, options) => request('/reason', payload, options),
+    refinePreview: (payload, options) => request('/refine-preview', payload, options),
     propose: (payload, options) => request('/pathway', payload, options),
     scoreExample: (sampleId, payload = {}, options) => {
       if (!/^example-[123]$/.test(sampleId)) throw new TypeError('Unknown photo example');

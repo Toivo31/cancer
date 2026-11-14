@@ -46,6 +46,7 @@ class DecisionAPI:
 
     def examples(self):
         return dict(mode=self.mode, credential_configured=bool(self.api_key),
+            reasoning=dict(default_enabled=False,preview_available=True,live_available=os.environ.get('BIRCH_NATIVE_REFINEMENT_ENABLED')=='1'),
             pathway=json.loads((WEB/'pathway.json').read_text()),
             score=json.loads((WEB/'score.json').read_text()),
             photos=json.loads((WEB/'samples/catalog.json').read_text()))
@@ -76,7 +77,56 @@ class DecisionAPI:
         except (URLError, TimeoutError, socket.timeout, json.JSONDecodeError):
             raise APIError(503, 'Model unavailable or still starting. Retry shortly; no substitute scores generated.') from None
 
+    def reasoning_call(self, body, *, preview=False):
+        from .reasoning import refine,settings,PatientTools,DemoGenerator
+        if not isinstance(body,dict) or set(body)-{'request','example_id','patient','as_of_step','reasoning'}:
+            raise APIError(422,'Send a request or example_id plus reasoning settings; never a raw decision')
+        if ('request' in body)==('example_id' in body):
+            raise APIError(422,'Provide exactly one of request or example_id')
+        cfg=settings(body.get('reasoning'))
+        if cfg['enabled'] and cfg['max_tool_calls'] and 'request' in body and not body.get('patient'):
+            raise APIError(422,'Bind an authorized patient record before enabling retrieval for a custom case')
+        catalog=self.examples()
+        sample=None
+        if 'request' in body:
+            request=json.loads(json.dumps(body['request']))
+        elif body['example_id']=='pathway':
+            request=catalog['pathway']
+        else:
+            sample=next((s for s in catalog['photos']['examples'] if s['id']==body['example_id']),None)
+            if sample is None: raise APIError(404,'Unknown reasoning example')
+            request=dict(catalog['score'],context=sample['context'],case_id='demo-'+sample['id'],image_ids=[])
+        if not isinstance(request,dict): raise APIError(422,'request must be an object')
+        if 'workflow' not in request:
+            if set(request)-{'context','case_id','questions','image_ids'} or any('score' in c for q in request.get('questions',[]) for c in q.get('choices',[])):
+                raise APIError(422,'Send visible context and choices, not old decisions or scores')
+        if cfg['enabled'] and not preview and self.fixture is None and not catalog['reasoning']['live_available']:
+            raise APIError(503,'Live shared-base refinement is not enabled yet; use the labelled tool preview or turn reasoning off')
+        if sample and not preview:
+            asset=self.fixture.prepare(sample) if self.fixture else self.remote('/demo/samples/'+sample['id']+'/prepare',{})
+            request['image_ids']=[asset['id']]
+        step=body.get('as_of_step',request.get('case',{}).get('step',1))
+        patient=body.get('patient','sim:demo-record')
+        if self.fixture is None and not preview and cfg['enabled']:
+            return self.remote('/v1/context/reason',dict(request=request,patient=patient,as_of_step=step,reasoning=cfg))
+        tools=generator=None
+        if cfg['enabled']:
+            if 'case' in request and step!=request['case']['step']:
+                raise APIError(422,'Retrieval step must match pathway case.step')
+            if cfg['max_tool_calls']: tools=PatientTools(patient,as_of_step=step)
+            generator=DemoGenerator(patient)
+        refined=refine(request,options=cfg,tools=tools,generator=generator)
+        if preview: return dict(delivery='scripted_tool_preview',refinement=refined['refinement'])
+        prepared=refined['request']
+        if self.fixture:
+            decision=self.fixture.propose(prepared,allow_refined_context=cfg['enabled']) if 'workflow' in prepared else self.fixture.score(prepared)
+        else:
+            decision=self.remote('/v1/pathway/propose' if 'workflow' in prepared else '/v1/score',prepared)
+        return dict(decision=decision,refinement=refined['refinement'])
+
     def call(self, method, route, body=None):
+        if method=='POST' and route in ('/reason','/refine-preview'):
+            return self.reasoning_call(body,preview=route=='/refine-preview')
         if route == '/examples' and method == 'GET':
             return self.examples()  # No remote call, including in live mode.
         saved = re.fullmatch(r'/examples/(pathway|example-[123])/decision', route)

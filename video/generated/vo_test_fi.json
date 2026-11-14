@@ -1,0 +1,10 @@
+{
+  "voice_style": "Speak English with a light, natural Finnish accent, like a young Finnish presenter: clear, friendly and conversational, with a slightly flat Nordic intonation. Not a caricature, just a light accent.",
+  "lines": [
+    {
+      "id": "vt",
+      "at": "0:00",
+      "text": "A simple, transparent framework. Clinicians define each pipeline, the system runs it automatically, and if the model is unsure, it flags the case for clinical review."
+    }
+  ]
+}

@@ -66,3 +66,13 @@ picture or pathway, and see a labelled saved model result immediately. With a
 backend key configured, Run live model obtains a fresh proposal and a human
 can record a review. Custom cases use the same client without exposing raw JSON
 to users. Original model outputs stay unchanged; reviews are separate events.
+
+## Second handoff: optional reasoning/context refinement
+
+Also read **[REASONING_HANDOFF.md](REASONING_HANDOFF.md)**. Default OFF; when ON,
+automatically append the question plus the optional additional instructions,
+use a total token budget, retrieve permitted records and refine context with
+the original frozen Nemotron generation path. Share the frozen prefix with the
+trained decision path; do not create another full model or external LLM service.
+The second handoff distinguishes the working scripted tool preview from the
+native generation hook, which still requires owner GPU preflight/deployment.

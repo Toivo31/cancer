@@ -114,6 +114,8 @@ results, `choice` nodes decided by a policy, and `exit` nodes. Resources are `se
 
 Read [the teammate setup guide](decision_api/README.md) or give
 [the integration prompt](decision_api/INTEGRATION_PROMPT.md) to your coding model.
+The follow-up [shared-Nemotron refinement handoff](decision_api/REASONING_HANDOFF.md)
+adds the optional token-budget and patient-tool design; it is off by default.
 
 ```bash
 python3 -m decision_api.server

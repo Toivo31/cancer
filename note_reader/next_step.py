@@ -46,7 +46,7 @@ def next_step(text: str, flags: list[dict]) -> dict:
     ids = {f["technique_id"] for f in flags}
     urgent = bool(ids & URGENT)
     chest = bool(CHEST.search(text))
-    route = "Fast lane: urgent CT and referral" if urgent and chest else (
+    route = "Fast track suggested: immediate care needed (urgent CT and referral)" if urgent and chest else (
         "Second look: review the note with the patient" if ids else "No change suggested")
     panels = [NEXT_TEST, BIOPSY] if (urgent and chest) else []
     why = []

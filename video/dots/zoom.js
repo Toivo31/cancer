@@ -93,6 +93,10 @@ const ZOOM = (() => {
       ctx.globalAlpha = a;
     });
     txt("NOTE READER", dx, dy - H * 0.02, H * 0.022, "rgba(25,95,165,0.95)", "DotGothic16");
+    // operator-style command line, typed in
+    const cmdTxt = "> read referral note --patient 214", nC = Math.max(0, Math.min(cmdTxt.length, Math.floor(t * 30)));
+    ctx.fillStyle = "rgba(30,30,28,0.95)"; ctx.fillRect(dx, dy - H * 0.075, W * 0.2, H * 0.032);
+    txt(cmdTxt.slice(0, nC) + (Math.floor(t * 3) % 2 ? "_" : ""), dx + W * 0.006, dy - H * 0.053, H * 0.016, "#f3f1ea");
 
     // decision model, right side
     const rx = W * 0.53, rw = W * 0.3, accent = "rgba(30,135,85,1)";
@@ -107,16 +111,26 @@ const ZOOM = (() => {
       BIOPSY.forEach(([l, v, s, b], i) => bar(l, v, s, b, rx, dy + H * 0.41 + i * H * 0.1, rw, k2, accent));
       txt("measured in our simulator, 311 synthetic cases", rx, dy + H * 0.62, H * 0.015, "rgba(105,105,100,0.9)");
     }
-    // route stamp
-    const k3 = clamp((t - 10.2) / 0.5);
+    // a clinician-validated pipeline rule: defined and validated by clinicians, it runs automatically and
+    // every step is written to a transparent audit log (no per-case click)
+    const k3 = clamp((t - 9.8) / 0.4);
     if (k3) {
-      ctx.save(); ctx.globalAlpha = a * k3;
-      ctx.translate(rx + rw * 0.55, dy + H * 0.72); ctx.rotate(-0.06);
-      ctx.strokeStyle = "rgba(25,95,165,0.95)"; ctx.lineWidth = 3;
-      ctx.strokeRect(-W * 0.16, -H * 0.045, W * 0.32, H * 0.075);
-      txt("ROUTE: FAST LANE · URGENT CT", 0, H * 0.008, H * 0.03, "rgba(25,95,165,1)", "DotGothic16", "center", "middle");
-      ctx.restore();
-      txt("A clinician confirms every step.", rx, dy + H * 0.82, H * 0.019, "rgba(45,45,42,0.9)");
+      ctx.globalAlpha = a * k3;
+      const bx = rx, by = dy + H * 0.63, bw = rw + W * 0.08, bh = H * 0.17;
+      ctx.fillStyle = "#faf9f5"; ctx.fillRect(bx, by, bw, bh);
+      ctx.strokeStyle = "rgba(30,30,28,0.95)"; ctx.lineWidth = 2.5; ctx.strokeRect(bx, by, bw, bh);
+      txt("PIPELINE RULE · DEFINED AND VALIDATED BY CLINICIANS", bx + W * 0.01, by + H * 0.035, H * 0.02, "rgba(30,30,28,1)", "DotGothic16");
+      txt("IF red flag AND no follow-up  →  fast track: immediate care needed (urgent CT)", bx + W * 0.01, by + H * 0.07, H * 0.017, "rgba(30,30,28,1)");
+      txt("Runs automatically. Clinicians define, automate and validate the rule; every run is logged.", bx + W * 0.01, by + H * 0.1, H * 0.015, "rgba(90,90,85,1)");
+      if (t > 10.8) {
+        txt("Audit log · 14:32 · rule FT-07 (validated by the lung team) → fast track started · flags: red flag, anchoring",
+            bx + W * 0.01, by + H * 0.145, H * 0.0145, "rgba(30,30,28,1)");
+        ctx.save(); ctx.globalAlpha = a * clamp((t - 11.0) / 0.3);
+        ctx.translate(bx + bw * 0.78, by - H * 0.04); ctx.rotate(-0.06);
+        ctx.strokeStyle = "rgba(30,30,28,0.95)"; ctx.lineWidth = 3; ctx.strokeRect(-W * 0.11, -H * 0.03, W * 0.22, H * 0.055);
+        txt("FAST TRACK STARTED", 0, H * 0.003, H * 0.022, "rgba(30,30,28,1)", "DotGothic16", "center", "middle");
+        ctx.restore();
+      }
     }
     ctx.globalAlpha = 1;
     if (SHOW.active) ctx.restore();

@@ -1,0 +1,54 @@
+{
+  "_about": "Narrator lines from trailer script v3 (docs/project-docs/trailer-script-v3.md on overnight/sim), tightened so each fits its slot (seconds until the next line starts, minus a breath). Numbers checked against demo_bundle.json (14 Nov 09:46): Finland waiting share 86.9%, 18% -> 33%; Norway 40.1 / 80.1. Changed from v3: the IBM line no longer claims a 1979 IBM slide (origin unverified). Run: python video/generated/tts.py",
+  "voice_style": "Read as a 1980s public-information documentary narrator: calm, dry, slightly formal. Keep a steady, slightly brisk pace with only short pauses between sentences. Say numbers clearly.",
+  "lines": [
+    {
+      "id": "vo1_word",
+      "at": "0:21",
+      "slot": 7.5,
+      "text": "Cancer is a word. Waiting is a number."
+    },
+    {
+      "id": "vo2_rule",
+      "at": "0:29",
+      "slot": 7.5,
+      "text": "A computer can never be held accountable. We agree."
+    },
+    {
+      "id": "vo3_wait",
+      "at": "0:37",
+      "slot": 10.5,
+      "text": "So ours never decides. Each dot is a simulated patient. The piles are waiting: eighty-seven percent of the days."
+    },
+    {
+      "id": "vo4_engine",
+      "at": "0:48",
+      "slot": 16.5,
+      "text": "The pathway is a flowchart. At each step, a model reads the notes, compares every option at once, and proposes the next step. A second opinion. An optimiser for the order."
+    },
+    {
+      "id": "vo5_norway",
+      "at": "1:05",
+      "slot": 11.5,
+      "text": "A real Norwegian pathway, rebuilt from the paper: forty percent on time, as published. The time goes into queues."
+    },
+    {
+      "id": "vo6_drop",
+      "at": "1:16.7",
+      "slot": 11.8,
+      "text": "Told nothing, the optimiser finds the authors' reorder. Eighty percent. More capacity barely moves it. Order does."
+    },
+    {
+      "id": "vo7_finland",
+      "at": "1:29",
+      "slot": 18.5,
+      "text": "In a synthetic Finnish county, eighteen percent are treated within ninety days. With two reorders and no new equipment, thirty-three."
+    },
+    {
+      "id": "vo8_end",
+      "at": "1:48",
+      "slot": 10.0,
+      "text": "A doctor decides every case. Waiting is a decision nobody made. Now someone can."
+    }
+  ]
+}

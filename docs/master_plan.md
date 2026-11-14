@@ -252,3 +252,18 @@ files or author raw API/decision JSON. Live inference is an explicit action and
 never silently falls back to stored scores. Owner/team handles overnight pausing;
 no new schedule or training changes are part of this integration. The teammate
 coding brief is `decision_api/INTEGRATION_PROMPT.md`.
+
+### Optional shared-backbone context refinement
+
+The follow-up demo design keeps context refinement off by default. When enabled,
+it appends the question and optional task instructions, uses a bounded total
+new-token budget, retrieves permitted available records and adds a labelled
+brief evidence summary before decision scoring. The intended generator uses the
+original frozen Nemotron vocabulary head and unadapted final blocks while
+sharing the frozen prefix with the trained decision path. The current merged
+NF4 service cannot recover that original path by swapping the head alone.
+The reference helper, explicit synthetic tool preview and owner-runtime patch
+are prepared in `decision_api/`; live native generation still needs a one-GPU
+memory/generation/concurrency preflight and deployment. No second full model,
+external generation service, training changes or new schedule is introduced.
+See `decision_api/REASONING_HANDOFF.md` for the second coding-model brief.

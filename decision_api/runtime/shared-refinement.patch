@@ -1,0 +1,85 @@
+--- a/decision_model/inference_quantized.py
++++ b/decision_model/inference_quantized.py
+@@ -45,7 +45,7 @@
+         return result.to(hidden_states.dtype)
+ 
+ 
+-def load_nf4_predictor(checkpoint):
++def load_nf4_predictor(checkpoint, *, enable_refinement=False):
+     from safetensors.torch import load_file
+     from transformers import AutoModel, AutoProcessor
+     from .nemotron import attach_nemotron_adapters, NemotronDecisionModel, guard_cuda_forward
+@@ -69,6 +69,11 @@
+     processor.tokenizer.padding_side = 'left'
+     if processor.tokenizer.pad_token_id is None:
+         processor.tokenizer.pad_token = processor.tokenizer.eos_token
++    reference = None
++    if enable_refinement:
++        from decision_api.shared_generation import capture_unadapted_branch
++        # Must precede LoRA attachment, expert merging, guards and pooling hooks.
++        reference = capture_unadapted_branch(full, last_n=config['adapt_last_n'])
+     audit = attach_nemotron_adapters(full, config)
+     full.language_model.lm_head = nn.Identity()
+     model = NemotronDecisionModel(full, processor, config).to_head_device('cpu')
+@@ -106,6 +111,11 @@
+     guard_cuda_forward(model.encoder.get_base_model().norm_f)
+     guard_cuda_forward(full.vision_model)
+     guard_cuda_forward(full.vision_projector)
++    if reference is not None:
++        from decision_api.shared_generation import prepare_nf4_reference, SharedNemotronGenerator
++        prepare_nf4_reference(reference, quantize_experts=NF4Experts, guard=guard_cuda_forward)
++        model.base_generator = SharedNemotronGenerator(full, processor.tokenizer, reference,
++            lock=model._prediction_lock, max_input_tokens=config['max_input_tokens'])
+     model.eval()
+     print(f'NF4 experts loaded: {converted} MoE layers; GPU allocated {torch.cuda.memory_allocated()/1024**3:.2f} GiB')
+     return model
+--- a/decision_model/serve.py
++++ b/decision_model/serve.py
+@@ -60,7 +60,8 @@
+ 
+     @app.get('/healthz')
+     def health():
+-        return dict(ready=True, backend=service.predictor.metadata)
++        return dict(ready=True, backend=service.predictor.metadata,
++                    capabilities=dict(context_refinement=hasattr(getattr(service.predictor, 'model', None), 'base_generator')))
+ 
+     @app.post('/v1/images', dependencies=[Depends(authorize)])
+     async def image(request: Request):
+@@ -87,6 +88,8 @@
+     def review(identifier: str, request: Review):
+         return invoke(service.store.review, identifier, request)
+ 
++    from decision_api.native_refinement import install_refinement_route
++    install_refinement_route(app, service, authorize)
+     return app
+ 
+ 
+--- a/deploy/modal_inference.py
++++ b/deploy/modal_inference.py
+@@ -38,7 +38,8 @@
+     # Include only reviewed inference source/examples, never outputs, credentials,
+     # datasets, training deployments or the working tree's other files.
+     .add_local_dir(ROOT/'decision_model', '/app/decision_model', ignore=['__pycache__', '*.pyc'])
+-    .add_local_dir(ROOT/'examples', '/app/examples'))
++    .add_local_dir(ROOT/'examples', '/app/examples')
++    .add_local_dir(ROOT/'decision_api', '/app/decision_api', ignore=['__pycache__', '*.pyc', '.env', '.env.*']))
+ 
+ 
+ def verify_checkpoint(path):
+@@ -77,6 +78,7 @@
+ 
+ @app.cls(image=image, secrets=[secret], volumes={'/weights': weights, '/data': data},
+          gpu='RTX-PRO-6000', cpu=16, memory=327680, min_containers=0,
++         env={'BIRCH_ENABLE_REFINEMENT': os.environ.get('BIRCH_ENABLE_REFINEMENT', '0')},
+          max_containers=1, scaledown_window=120, timeout=600, startup_timeout=1800,
+          enable_memory_snapshot=True, experimental_options={'enable_gpu_snapshot': True})
+ @modal.concurrent(max_inputs=1)
+@@ -91,7 +93,7 @@
+             raise RuntimeError('This deployment requires exactly one RTX PRO GPU')
+         verify_checkpoint(CHECKPOINT)
+         os.environ['HF_HUB_OFFLINE'] = '1'
+-        model = load_nf4_predictor(CHECKPOINT)
++        model = load_nf4_predictor(CHECKPOINT, enable_refinement=os.environ.get('BIRCH_ENABLE_REFINEMENT') == '1')
+         record = json.loads((CHECKPOINT/'state.json').read_text())
+         metadata = dict(model=MODEL, revision=REVISION, training_identity=record['identity'],
+                         step=1138, checkpoint_sha256=WEIGHTS_SHA256,
