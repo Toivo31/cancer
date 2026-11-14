@@ -186,7 +186,13 @@ def evidence_from_context(ctx: dict) -> tuple[list[dict], int]:
                          for k, v in found.items() if v is not None)
         items.append((-1.0, "found", f"Findings so far: {said}."))
     for i, o in enumerate(ctx.get("observations") or []):
-        text = o.get("report") or ", ".join(f"{_words(k)} {v}" for k, v in (o.get("values") or {}).items()) or o.get("status", "")
+        # values only, never the free-text report (review w7 B1: a model-written report may carry the hidden plan)
+        vals = o.get("values") or {}
+        text = ", ".join((_words(k) if v else f"no {_words(k)}") if isinstance(v, bool) else f"{_words(k)} {v}"
+                         for k, v in vals.items() if v is not None)
+        if o.get("status") not in (None, "ok"):
+            text = "not diagnostic, needs repeating"
+        text = text or str(o.get("status", ""))
         items.append((float(o.get("t_days", 0.0)), f"result{i + 1}", f"Result, {_words(o.get('test'))}: {text}"))
     for n in ctx.get("notes") or []:
         items.append((float(n.get("t_days", 0.0)), n.get("id", "note"), f"Note: {n.get('text', '')}"))
