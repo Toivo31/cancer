@@ -246,7 +246,7 @@
   label: "Self-limiting viral illness"
   class: other_illness
   prevalence:
-    value: 0.4793
+    value: 0.4493
     source: assumption
     grade: assumption
     note: >-
@@ -256,6 +256,24 @@
       and COPD so that every level adds up to 1.
     by:
       smoking_status:
-        never: {value: 0.5435, source: assumption, grade: assumption, note: "Remainder at this smoking level."}
-        former: {value: 0.4558, source: assumption, grade: assumption, note: "Remainder at this smoking level."}
-        current: {value: 0.405, source: assumption, grade: assumption, note: "Remainder at this smoking level."}
+        never: {value: 0.5135, source: assumption, grade: assumption, note: "Remainder at this smoking level."}
+        former: {value: 0.4258, source: assumption, grade: assumption, note: "Remainder at this smoking level."}
+        current: {value: 0.375, source: assumption, grade: assumption, note: "Remainder at this smoking level."}
+
+- id: worried_well
+  label: "Worried well (a random, incoherent set of symptoms, no objective findings)"
+  class: healthy
+  prevalence:
+    value: 0.03
+    source: assumption
+    grade: assumption
+    low: 0.01
+    high: 0.08
+    note: >-
+      D47 (Tuomas): a small share of presenters report an incoherent set of symptoms with nothing
+      behind them. Not a Finnish number. Context: a review cites medically unexplained symptoms as
+      about 20% of new consultations in primary care (MUS_BMJO2022, UK-type setting, all complaints,
+      cited from other studies), but most of those have a plausible ordinary explanation and are not a
+      random cluster, and this catalogue is a chest-symptom stream where such patients are already
+      partly inside no_disease_found. 3% is the chosen share of purely incoherent presenters; it is
+      taken from viral_self_limiting (the remainder) so that all shares still add up to 1.

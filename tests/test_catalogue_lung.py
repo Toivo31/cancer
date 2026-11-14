@@ -48,9 +48,9 @@ def test_loads_without_errors_or_warnings(cat):
 
 
 def test_counts_in_planned_ranges(cat):
-    assert 8 <= len(cat.conditions) <= 12
-    assert 25 <= len(cat.variables) <= 40
-    assert 15 <= len(cat.tests) <= 20
+    assert 8 <= len(cat.conditions) <= 14
+    assert 25 <= len(cat.variables) <= 55
+    assert 15 <= len(cat.tests) <= 30
 
 
 def test_every_output_measures_a_variable_of_matching_type(cat):
@@ -303,3 +303,50 @@ def test_catalogue_stats_script_runs():
     assert r.returncode == 0, r.stderr
     assert "sourced" in r.stdout and "assumption" in r.stdout
     assert "Lung cancer share among presenters" in r.stdout and "BRADLEY2021" in r.stdout
+
+
+# ---------------------------------------------------------------- WP-C8-3: care model, definitive tests, worried well
+def test_care_model_loads(cat):
+    from patient_engine.care import load_care
+    care = load_care(str(CAT), cat)
+    assert care is not None and not [p for p in care.problems if p.severity == "error"]
+    assert set(care.roles) == {"nurse", "gp"}
+    for a in care.actions.values():
+        if a.kind == "order":
+            assert a.test in cat.tests
+
+
+def test_every_non_healthy_condition_has_exactly_one_definitive_test(cat):
+    for cid, cond in cat.conditions.items():
+        owners = [t.id for t in cat.tests.values() for o in t.outputs if o.measures == f"dx_{cid}"]
+        if cond.cls == "healthy":
+            assert owners == [], cid          # absence of disease has no definitive test
+        else:
+            assert len(owners) == 1, (cid, owners)
+            assert f"dx_{cid}" in cat.variables
+
+
+def test_worried_well_exists_with_independent_symptoms(cat):
+    assert "worried_well" in cat.conditions and cat.conditions["worried_well"].cls == "healthy"
+    raw = yaml.safe_load((CAT / "variables.yaml").read_text())
+    symptoms = [v for v in raw if v["kind"] == "symptom"]
+    assert symptoms and all("worried_well" in v["given"] for v in symptoms)
+    assert all(0 < v["given"]["worried_well"]["p"] < 0.5 for v in symptoms)
+
+
+def test_every_test_has_timing_resource_and_cost_unless_in_visit(cat):
+    in_visit = {"history", "examination", "spirometry"}
+    for t in cat.tests.values():
+        assert t.resource_kind, t.id
+        assert "service_days" in t.timing and "report_days" in t.timing, t.id
+        if t.id not in in_visit:
+            assert t.cost_eur is not None, t.id
+
+
+def test_resources_file_covers_every_resource_kind(cat):
+    res = yaml.safe_load((ROOT / "scenarios" / "finland_encounter_resources.yaml").read_text())["resources"]
+    care = yaml.safe_load((CAT / "care.yaml").read_text())
+    kinds = {t.resource_kind for t in cat.tests.values()} | {r["resource"] for r in care["roles"]}
+    assert kinds <= set(res), kinds - set(res)
+    for r in res.values():
+        assert r["source"] and r["capacity_per_day"] > 0

@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 
 import pytest
+import yaml
 
 import jev
 
@@ -14,7 +15,10 @@ from pathway_sim.documents import (DocumentError, canonical_json, doc_hash, docu
                                    scenario_to_documents, yaml_text_to_documents)
 
 ROOT = Path(__file__).resolve().parent.parent
-SCENARIOS = sorted(glob.glob(str(ROOT / "scenarios/**/*.yaml"), recursive=True))
+# flowchart scenarios only: encounter worlds, decision tables, care models and resource fragments (C8) are
+# other formats that live in scenarios/ too
+SCENARIOS = sorted(f for f in glob.glob(str(ROOT / "scenarios/**/*.yaml"), recursive=True)
+                   if "flowcharts" in (yaml.safe_load(open(f)) or {}))
 
 
 def metrics_text(sc, fid, n, seed, via_jev=False):
