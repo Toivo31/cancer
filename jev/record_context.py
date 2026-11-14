@@ -4,6 +4,12 @@
 becomes request JSON. It reads the record and nothing else (invariant I1): no card, no condition, no
 hidden field can reach it, because a ``Record`` holds none. Field meanings are in
 ``docs/platform/jev-card-context.md``.
+
+``observations[].report`` is copied as the record holds it. The encounter loop fills it from
+``RevealHandle.reveal``, which serves a card's own report only when the card's results text is safe
+(``patient_engine.reveal.results_text_is_safe``: template text, or result author ``g2@2`` and later) and
+otherwise rebuilds it from the values (review w7 B1). A caller that builds a ``Record`` by hand must take its
+reports from the handle too.
 """
 
 from __future__ import annotations

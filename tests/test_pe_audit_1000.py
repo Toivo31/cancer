@@ -85,7 +85,7 @@ def test_every_cell_has_numbers_and_an_interval(baseline):
     for c in baseline[0]["checks"]:
         for x in c["cells"]:
             assert x["status"] in ("pass", "skipped", "fail")
-            if x["status"] == "pass" and x["kind"] != "share":
+            if x["status"] == "pass" and x["kind"] not in ("share", "wording"):
                 assert x["lo"] <= x["expected"] <= x["hi"]
 
 

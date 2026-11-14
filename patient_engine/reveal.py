@@ -50,6 +50,13 @@ with keyed random numbers (a hash of the card id, state, test, attempt, output),
 ``reference.report_text``. It is a pure function of the card, the catalogue and the three arguments, so I3
 holds exactly as for stored attempts. Attempts below the stored count always come from the card.
 
+Report text (review w7 B1). A card's stored report is served only when the card says its results text was written
+without the hidden side: ``provenance.generator == "reference"`` (template text from the values) or a results prompt
+in ``SAFE_RESULTS_PROMPTS`` (``g2@2``: the model saw only public inputs). For any other card (``g2@1``, whose model
+was told the error plan and wrote it into its wording) the report is rebuilt from the attempt's values with
+``reference.report_text``, and its GP notes (written by the same model) are withheld. This is the single place the
+rule lives: every simulation path reaches a card's results through ``reveal``.
+
 Standard library only.
 """
 
@@ -68,7 +75,29 @@ from .card import (
     RevealedObservation,
 )
 
-__all__ = ["RevealHandle", "RevealError", "LATER_STATE"]
+__all__ = ["RevealHandle", "RevealError", "LATER_STATE", "SAFE_RESULTS_PROMPTS", "results_text_is_safe"]
+
+#: Result-author prompt versions whose report text and GP note may reach the revealed side (I1). A version is added
+#: here only when its prompt carries nothing from the hidden side (see ``patient_engine/prompts/README.md``) and the
+#: audit's ``report_wording`` check passes on a library made with it. ``g2@1`` is deliberately absent.
+SAFE_RESULTS_PROMPTS = frozenset({"g2@2"})
+
+
+def results_text_is_safe(provenance) -> bool:
+    """True when a card's report texts and GP notes were written without the hidden side (module docstring)."""
+    if provenance.generator == "reference":
+        return True
+    return (provenance.prompts or {}).get("results") in SAFE_RESULTS_PROMPTS
+
+
+def _plain_report(test: str, status: str, values: dict) -> str:
+    """A values-only report when no catalogue is at hand (same shape as ``reference.report_text``)."""
+    name = test.replace("_", " ")
+    if status != "ok":
+        return f"{name} (synthetic report): no usable result (non-diagnostic); repeat if still indicated."
+    parts = [(k.replace("_", " ") if v else f"no {k.replace('_', ' ')}") if isinstance(v, bool)
+             else f"{k.replace('_', ' ')} {v}" for k, v in values.items() if v is not None]
+    return f"{name} (synthetic report): " + "; ".join(parts) + "."
 
 #: What ``PublicView.state`` and ``RevealedObservation.state`` say for every state but the first. A state name
 #: such as ``pneumonia_resolved`` names a hidden condition (I1), so the revealed objects never echo it; the
@@ -99,7 +128,7 @@ def _seed_of(card_id: str) -> int:
 class RevealHandle:
     """A patient as the revealed side may see them. See the module docstring."""
 
-    __slots__ = ("_card", "_public_id", "_catalogue")
+    __slots__ = ("_card", "_public_id", "_catalogue", "_text_safe")
 
     def __init__(self, card: Card, *, public_id: str | None = None, catalogue=None) -> None:
         """``public_id`` is the label the revealed side sees as ``PublicView.card_id``. The default is opaque
@@ -117,6 +146,7 @@ class RevealHandle:
         self._card = card
         self._public_id = opaque_id(card.id) if public_id is None else str(public_id)
         self._catalogue = catalogue
+        self._text_safe = results_text_is_safe(card.provenance)
 
     def __repr__(self) -> str:
         return f"RevealHandle({self._public_id!r})"
@@ -167,8 +197,17 @@ class RevealHandle:
         if attempt < len(attempts):
             a = attempts[attempt]
             return RevealedObservation(test=test, attempt=attempt, state=_label(state), status=a.status,
-                                       values=dict(a.values), report=a.report)
+                                       values=dict(a.values), report=self._report(test, a))
         return self._fresh(test, attempt, state)
+
+    def _report(self, test: str, a) -> str:
+        """The stored report when the card's results text is safe, else one rebuilt from the values (B1)."""
+        if self._text_safe:
+            return a.report
+        if self._catalogue is not None and test in self._catalogue.tests:
+            from .reference import report_text
+            return report_text(self._catalogue.tests[test], a.status, dict(a.values))
+        return _plain_report(test, a.status, dict(a.values))
 
     def _fresh(self, test: str, attempt: int, state: str) -> RevealedObservation:
         """A fresh attempt: drawn from the catalogue's accuracy given this card's findings in ``state``."""
@@ -211,6 +250,7 @@ class RevealHandle:
             RevealedNote(id=n.id, kind=n.kind, text=n.text)
             for n in self._card.notes
             if n.state == state and n.mentions and all(m in known for m in n.mentions)
+            and (self._text_safe or n.kind != "gp_note")
         )
 
     # ------------------------------------------------------------------ the view

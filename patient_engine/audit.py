@@ -30,6 +30,14 @@ Checks (ids in the report)::
     presenting                presenting complaints that are not true symptoms of that state
     diversity                 cards with identical background and findings to an earlier card
     leak                      share of notes that the validator's leak rule (``card_reveals_condition``) flags
+    report_wording            review w7 B1: does a result's report wording tell a planned-wrong result (false
+                              alarm, miss) from a planned-correct one with the same reported value? Hedging-word
+                              rate gap within (test, output, value) strata (fails when the gap is over ``pp``
+                              points and over ``z`` standard errors); report length and a leave-one-out naive
+                              Bayes on the words (its balanced accuracy minus that of the same classifier on
+                              value-only text: the part of the text's information the values do not carry) are
+                              reported, the latter failing above ``max_excess_bacc``. Skipped below ``min_n``
+                              planned-wrong cases.
 
 Not audited, and why (also written into the report): measurement error of continuous outputs; frequencies of
 findings in resolved states and on cards with a co-existing illness (the reference value there is a mixture
@@ -43,6 +51,7 @@ from __future__ import annotations
 
 import json
 import math
+import re
 import time
 from collections import defaultdict
 from pathlib import Path
@@ -77,8 +86,13 @@ DEFAULT_TOLERANCES: dict[str, Any] = {
         "accuracy": {"pp": 5.0, "min_n": 20}, "non_diagnostic": {"pp": 2.0, "min_n": 20},
         "state_consistency": {"max_share": 0.0}, "presenting": {"max_share": 0.0},
         "diversity": {"max_share": 0.02}, "leak": {"max_share": 0.02},
+        "report_wording": {"pp": 15.0, "z": 3.0, "min_n": 20, "max_excess_bacc": 0.10,
+                           "reason": "Built-in default (review w7 B1); the catalogue's tolerances file may override it."},
     },
 }
+#: check families a tolerances file may leave out (then the built-in default is used): added after catalogue-v1 was
+#: locked, and the catalogue directory (which holds the tolerances file) is not edited after the lock
+_OPTIONAL_KEYS = {"report_wording": ("pp", "z", "min_n", "max_excess_bacc")}
 
 
 class AuditError(ValueError):
@@ -113,7 +127,18 @@ def load_tolerances(path: str | Path | None = None) -> dict[str, Any]:
                 raise AuditError(f"{path}: checks.{fam}.{k} must be a non-negative number")
         if not isinstance(entry.get("reason"), str) or not entry["reason"].strip():
             raise AuditError(f"{path}: checks.{fam}.reason is required (why this tolerance)")
-    return {"z": float(z), "checks": {k: dict(v) for k, v in checks.items()}}
+    out = {k: dict(v) for k, v in checks.items()}
+    for fam, keys in _OPTIONAL_KEYS.items():
+        entry = out.get(fam)
+        if entry is None:
+            out[fam] = dict(DEFAULT_TOLERANCES["checks"][fam])
+            continue
+        for k in keys:
+            if not isinstance(entry.get(k), (int, float)) or entry[k] < 0:
+                raise AuditError(f"{path}: checks.{fam}.{k} must be a non-negative number")
+        if not isinstance(entry.get("reason"), str) or not entry["reason"].strip():
+            raise AuditError(f"{path}: checks.{fam}.reason is required (why this tolerance)")
+    return {"z": float(z), "checks": out}
 
 
 # ============================================================================ statistics
@@ -474,6 +499,167 @@ def _background_realism(cards, catalogue, tol) -> dict[str, Any]:
     return _group("background_realism", "Background realism: possible pack-years, smoking mix and age profile", cells)
 
 
+# ============================================================================ report wording (review w7 B1)
+
+#: Words a radiologist or lab uses to say "this result is probably not real" (the review's list)
+HEDGE_RX = re.compile(r"\b(likely|mimic\w*|artefact|artifact|misread|possibly|non-specific|nonspecific|reactive|"
+                      r"borderline|trace|transient\w*|technical|superimposition|overlap|cannot be (?:confirmed|excluded)|"
+                      r"indeterminate|questionable|subtle|slight|mild\w*|marginal\w*|faint)\b", re.I)
+_WORD_RX = re.compile(r"[a-z]+")
+
+
+def _wording_cases(cards, catalogue):
+    """(kind, stratum, wrong, report, value_text) per ok attempt and binary output with a planned outcome. kind is
+    ``positive`` (reported true: wrong = false_alarm) or ``negative`` (reported false: wrong = miss); right cases
+    are attempts whose binary outputs are all planned correct. stratum = (test, output)."""
+    from .reference import report_text
+    for card in cards:
+        plan = card.hidden.error_plan or {}
+        for state, tests in card.observations.items():
+            for tid, atts in tests.items():
+                test = catalogue.tests.get(tid)
+                plans = (plan.get(state) or {}).get(tid)
+                if test is None or not plans:
+                    continue
+                binary = [o.id for o in test.outputs if o.type == "binary"]
+                for k, a in enumerate(atts):
+                    if a.status != "ok" or k >= len(plans):
+                        continue
+                    outs = plans[k].outputs
+                    clean = all(outs.get(o, "correct") == "correct" for o in binary if isinstance(a.values.get(o), bool))
+                    vtext = None
+                    for o in binary:
+                        v = a.values.get(o)
+                        if not isinstance(v, bool):
+                            continue
+                        outcome = outs.get(o, "correct")
+                        wrong = outcome == ("false_alarm" if v else "miss")
+                        if not wrong and not clean:
+                            continue
+                        if vtext is None:
+                            vtext = report_text(test, a.status, dict(a.values))
+                        yield ("positive" if v else "negative"), (tid, o), wrong, a.report or "", vtext
+
+
+def _nb_bacc(groups) -> tuple[float | None, int]:
+    """Leave-one-out multinomial naive Bayes (equal priors, add-one smoothing) on the words of each text, fitted
+    within each stratum; balanced accuracy pooled over strata with at least 2 texts per class. None when none."""
+    hits = {True: [0, 0], False: [0, 0]}
+    for docs in groups.values():
+        by = {c: [d for w, d in docs if w is c] for c in (True, False)}
+        if min(len(by[True]), len(by[False])) < 2:
+            continue
+        counts = {c: defaultdict(int) for c in by}
+        totals = {c: 0 for c in by}
+        bags = {c: [] for c in by}
+        for c, ds in by.items():
+            for d in ds:
+                bag = defaultdict(int)
+                for w in _WORD_RX.findall(d.lower()):
+                    bag[w] += 1
+                bags[c].append(bag)
+                for w, n in bag.items():
+                    counts[c][w] += n
+                totals[c] += sum(bag.values())
+        vocab = len(set(counts[True]) | set(counts[False])) or 1
+        for c in (True, False):
+            for bag in bags[c]:
+                score = {}
+                for c2 in (True, False):
+                    own = c2 is c
+                    tot = totals[c2] - (sum(bag.values()) if own else 0)
+                    score[c2] = sum(n * math.log((counts[c2].get(w, 0) - (n if own else 0) + 1) / (tot + vocab))
+                                    for w, n in bag.items())
+                pred = score[True] > score[False]
+                hits[c][0] += pred is c
+                hits[c][1] += 1
+    if not hits[True][1] or not hits[False][1]:
+        return None, 0
+    return 0.5 * (hits[True][0] / hits[True][1] + hits[False][0] / hits[False][1]), hits[True][1]
+
+
+def _report_wording(cards, catalogue, tol) -> dict[str, Any]:
+    t = tol["checks"]["report_wording"]
+    pp, zmax, min_n, max_ex = float(t["pp"]), float(t["z"]), int(t["min_n"]), float(t["max_excess_bacc"])
+    cases: dict[str, list] = {"positive": [], "negative": []}
+    for kind, stratum, wrong, report, vtext in _wording_cases(cards, catalogue):
+        cases[kind].append((stratum, wrong, report, vtext))
+    cells = []
+    for kind, xs in cases.items():
+        name = {"positive": "false alarms vs true positives", "negative": "misses vs true negatives"}[kind]
+        strata: dict[Any, list] = defaultdict(list)
+        for stratum, wrong, report, vtext in xs:
+            strata[stratum].append((wrong, report, vtext))
+        num = den = var = 0.0
+        n_w = n_r = 0
+        raw = {True: [0, 0], False: [0, 0]}
+        len_num = 0.0
+        for rows in strata.values():
+            w = [r for r in rows if r[0]]
+            r_ = [r for r in rows if not r[0]]
+            for x in rows:
+                raw[x[0]][0] += bool(HEDGE_RX.search(x[1]))
+                raw[x[0]][1] += 1
+            if not w or not r_:
+                continue
+            hw = sum(bool(HEDGE_RX.search(x[1])) for x in w) / len(w)
+            hr = sum(bool(HEDGE_RX.search(x[1])) for x in r_) / len(r_)
+            p = (hw * len(w) + hr * len(r_)) / (len(w) + len(r_))
+            num += len(w) * (hw - hr)
+            den += len(w)
+            var += len(w) ** 2 * p * (1 - p) * (1 / len(w) + 1 / len(r_))
+            lw = sum(math.log(1 + len(x[1])) for x in w) / len(w)
+            lr = sum(math.log(1 + len(x[1])) for x in r_) / len(r_)
+            len_num += len(w) * (lw - lr)
+            n_w += len(w)
+            n_r += len(r_)
+        cid = f"report_wording.{kind}"
+        if n_w < min_n:
+            cells.append({"id": cid, "kind": "wording", "n": n_w, "n_right": n_r, "status": "skipped",
+                          "note": f"fewer than {min_n} planned-wrong cases with a planned-correct case of the same "
+                                  f"test, output and value", "title": name})
+            continue
+        gap = num / den
+        se = math.sqrt(var) / den
+        zval = gap / se if se > 0 else (0.0 if gap == 0 else math.inf)
+        # classifier: within each stratum, at most 400 right texts (deterministic thinning) to bound the time
+        g_rep: dict[Any, list] = defaultdict(list)
+        g_val: dict[Any, list] = defaultdict(list)
+        for s, rows in strata.items():
+            rs = [x for x in rows if not x[0]]
+            step = max(1, len(rs) // 400)
+            keep = [x for x in rows if x[0]] + rs[::step]
+            g_rep[s] = [(x[0], x[1]) for x in keep]
+            g_val[s] = [(x[0], x[2]) for x in keep]
+        b_rep, _ = _nb_bacc(g_rep)
+        b_val, _ = _nb_bacc(g_val)
+        excess = None if b_rep is None or b_val is None else b_rep - b_val
+        fail_gap = gap * 100 > pp and zval > zmax
+        fail_nb = excess is not None and excess > max_ex
+        cells.append({
+            "id": cid, "kind": "wording", "title": name, "n": n_w, "n_right": n_r,
+            "hedge_wrong": round(raw[True][0] / max(1, raw[True][1]), 4),
+            "hedge_right": round(raw[False][0] / max(1, raw[False][1]), 4),
+            "hedge_gap_pp_within_strata": round(gap * 100, 2), "z": round(zval, 2) if math.isfinite(zval) else None,
+            "log_length_diff_within_strata": round(len_num / den, 3),
+            "nb_bacc_report": None if b_rep is None else round(b_rep, 3),
+            "nb_bacc_values_only": None if b_val is None else round(b_val, 3),
+            "nb_excess_bacc": None if excess is None else round(excess, 3),
+            "status": "fail" if (fail_gap or fail_nb) else "pass"})
+    fails = [c for c in cells if c["status"] == "fail"]
+    ran = [c for c in cells if c["status"] != "skipped"]
+    status = "fail" if fails else ("pass" if ran else "skipped")
+    def short(c):
+        if c["status"] == "skipped":
+            return f"{c['id'].split('.')[1]}: skipped ({c['n']} wrong cases)"
+        return (f"{c['id'].split('.')[1]}: hedged {c['hedge_wrong']:.0%} wrong vs {c['hedge_right']:.0%} right "
+                f"(gap {c['hedge_gap_pp_within_strata']:+.0f} pp within strata, z {c['z']}), "
+                f"NB excess {c['nb_excess_bacc']}, n {c['n']}/{c['n_right']}")
+    return {"id": "report_wording", "title": "Report wording separates planned-wrong from planned-correct results (B1)",
+            "status": status, "n_cells": len(cells), "n_fail": len(fails),
+            "n_skipped": len(cells) - len(ran), "summary": "; ".join(short(c) for c in cells), "cells": cells}
+
+
 # ============================================================================ the audit
 
 def audit_library(library, catalogue, tolerances: Mapping[str, Any] | None = None) -> dict[str, Any]:
@@ -488,7 +674,7 @@ def audit_library(library, catalogue, tolerances: Mapping[str, Any] | None = Non
     acc, nd = _accuracy_and_nondiagnostic(cards, catalogue, tol, z)
     checks = [*_findings_cells(cards, catalogue, tol, z), *acc, nd, _state_consistency(cards, tol),
               _presenting(cards, catalogue, tol), _diversity(cards, tol), _leak(cards, catalogue, tol),
-              _background_realism(cards, catalogue, tol)]
+              _background_realism(cards, catalogue, tol), _report_wording(cards, catalogue, tol)]
     n_states: dict[str, int] = defaultdict(int)
     for c in cards:
         for s in c.states:
@@ -509,7 +695,7 @@ NOT_AUDITED = [
     "Measurement error of continuous outputs (reported value against the true value): not compared with the catalogue's error_sd.",
     "Frequencies of findings in resolved states and on cards with a co-existing illness: the catalogue gives no single reference number for a mixture of causes. Those cards and states are covered by accuracy.*, non_diagnostic, state_consistency and presenting.",
     "Correlation between repeated attempts of one test on one card: attempts are treated as independent, so a model-written library whose repeats agree too closely has intervals that are too narrow.",
-    "Free text (notes, reports) beyond the validator's leak rule.",
+    "Free text (notes, reports) beyond the validator's leak rule and the report_wording check (hedging words, length, a bag-of-words classifier on binary results).",
 ]
 
 
@@ -534,7 +720,11 @@ def render_markdown(report: Mapping[str, Any]) -> str:
     if fails:
         L += ["", "## Failed cells", "", "| Check | Cell | n | Expected | Observed | 99% interval | Off (pp) |", "|---|---|---|---|---|---|---|"]
         for c, x in fails:
-            if x["kind"] == "share":
+            if x["kind"] == "wording":
+                L.append(f"| `{c['id']}` | {x['id']} ({x['title']}) | {x['n']} | hedged {x['hedge_right']:.0%} of right | "
+                         f"hedged {x['hedge_wrong']:.0%} of wrong | gap {x['hedge_gap_pp_within_strata']:+.1f} pp within strata, "
+                         f"z {x['z']}; NB excess {x['nb_excess_bacc']} | |")
+            elif x["kind"] == "share":
                 L.append(f"| `{c['id']}` | {x['id']} | {x['n']} | at most {x['max_share']:.2%} | {x['share']:.2%} | | |")
                 for e in x.get("examples", []):
                     L.append(f"| | e.g. {e} | | | | | |")

@@ -22,8 +22,12 @@ What each author returns (the shapes are JSON Schemas derived from ``card_schema
     G1  {"states": {state: {"findings": {variable id: {"value", "caused_by"}},
                             "presenting": {"reported": [variable id], "text": str},
                             "account": {"text": str, "mentions": [variable id]}}}}      one call, every state
-    G2  {"observations": {test id: [{"status", "values", "report"}]},
-         "gp_note": {"text": str, "mentions": [test id | test.output id]}}              one call per state
+    G2  g2@2 (default): {"reports": {test id: [str per attempt]}, "gp_note": {"text", "mentions"}}; the values are
+        the engine's (``g2_values``) and ``g2_merge`` joins them to the reports        one call per state
+        g2@1: {"observations": {test id: [{"status", "values", "report"}]}, "gp_note": {...}}
+
+Information boundary of g2@2 (review w7 B1): the result author's prompt is ``results_user`` of public inputs only
+(age, sex, smoking, reported symptoms, every attempt's status and values), so its wording cannot carry the error plan.
 
 The skeleton fixes the background, the conditions and their attributes and the error plan; the
 authors never write those. Prompts are data files in ``patient_engine/prompts/`` (see its README).
@@ -56,9 +60,23 @@ from .states import resolved_in_state
 
 PROMPT_DIR = Path(__file__).with_name("prompts")
 
-#: role -> (version id stored in ``provenance.prompts``, file stem). A new wording is a new file and a new entry here.
-PROMPT_VERSIONS = {"patient": "g1@1", "results": "g2@1"}
-_STEMS = {"g1@1": "g1_patient.v1", "g2@1": "g2_results.v1"}
+#: role -> version id stored in ``provenance.prompts`` for new cards (the default of ``Authors``). A new wording is a
+#: new file, a new entry in ``_STEMS`` and, when it becomes the default, a new value here.
+#: ``g2@2`` (review w7 B1): the engine decides every result value from the settled plan and the model writes only the
+#: report wording and the GP note from public inputs. ``g2@1`` (the model saw the findings and the plan and wrote
+#: values and reports) is kept selectable (``Authors(cat, results_prompt="g2@1")``) for comparison only: its report
+#: text carries the error plan, and ``patient_engine.reveal`` never serves it (``SAFE_RESULTS_PROMPTS``).
+PROMPT_VERSIONS = {"patient": "g1@1", "results": "g2@2"}
+_STEMS = {"g1@1": "g1_patient.v1", "g2@1": "g2_results.v1", "g2@2": "g2_results.v2"}
+#: result-author versions this module can build
+RESULTS_VERSIONS = ("g2@1", "g2@2")
+#: g2@2: tests whose attempt 1 the GP note summarises (primary-care resources), definitive tests excluded
+FIRST_CONTACT_RESOURCES = frozenset({"gp", "gp_appt", "lab", "poc_device", "xray"})
+#: g2@2: longest report and note the schema accepts (short outputs keep the JSON intact)
+REPORT_MAX_CHARS = 600
+NOTE_MAX_CHARS = 900
+#: g2@2: background fields a reader of the results has (I1: the persona hint, region and conditions are not given)
+PUBLIC_BACKGROUND = ("age", "sex", "smoking_status", "pack_years")
 
 def state_note(cat: Catalogue, sk: Skeleton, state: str) -> str:
     """What a state means for this patient, in words for the prompt."""
@@ -200,13 +218,84 @@ def _plan_line(k: int, test: Test, planned, suggested: Mapping[str, Any]) -> str
     return f"  attempt {k}: status ok; " + "; ".join(parts)
 
 
+# ============================================================================ g2@2: public inputs only
+
+def show_value(v: Any, unit: str | None = None) -> str:
+    """A reported value as the g2@2 prompt shows it (``yes``/``no``, a number with its unit, a level)."""
+    if v is True:
+        return "yes"
+    if v is False:
+        return "no"
+    if isinstance(v, (int, float)):
+        return f"{v:g}" + (f" {unit}" if unit else "")
+    return str(v)
+
+
+def parse_value(text: str, output: TestOutput) -> Any:
+    """The inverse of ``show_value`` for one output (used by the offline fake and the tests)."""
+    t = text.strip()
+    if output.type == "binary":
+        return t == "yes"
+    if output.type in ("continuous", "size_mm"):
+        return float(t.split()[0])
+    return t
+
+
+def public_background_text(bg: Mapping[str, Any]) -> str:
+    parts = []
+    if bg.get("age") is not None:
+        parts.append(f"age {bg['age']}")
+    if bg.get("sex") is not None:
+        parts.append(f"sex {bg['sex']}")
+    if bg.get("smoking_status") is not None:
+        parts.append(f"smoking {bg['smoking_status']}")
+    if bg.get("pack_years") is not None:
+        parts.append(f"{bg['pack_years']} pack-years")
+    return ", ".join(parts) or "not recorded"
+
+
+def attempt_line(test: Test, k: int, status: str, values: Mapping[str, Any]) -> str:
+    """One attempt as the g2@2 prompt shows it: status and the reported values (outputs that are null left out)."""
+    if status != "ok":
+        return f"  attempt {k + 1}: non-diagnostic"
+    vals = "; ".join(f"{o.id}: {show_value(values[o.id], o.unit)}" for o in test.outputs if values.get(o.id) is not None)
+    return f"  attempt {k + 1}: ok | {vals}"
+
+
+def results_user(cat: Catalogue, background: Mapping[str, Any], reported: Sequence[str],
+                 observations: Mapping[str, Sequence[Mapping[str, Any]]], gp_tests: Sequence[str]) -> str:
+    """The g2@2 user prompt. Its only inputs are what a reader of the results has (I1, review w7 B1): the public
+    background fields, the symptom ids the patient reported, every attempt's status and reported values, and the
+    (fixed) list of first-contact tests. No condition, finding, error plan, state name, persona or card id can
+    reach it, because this function is not given them."""
+    bg = {k: background.get(k) for k in PUBLIC_BACKGROUND}
+    said = ", ".join(_lower(cat.variables[v].label) if v in cat.variables else v.replace("_", " ") for v in reported)
+    blocks = []
+    for t in cat.tests.values():
+        atts = observations[t.id]
+        lines = [f"### {t.id}: {t.label} ({t.category}); {len(atts)} attempt(s)"]
+        lines += [attempt_line(t, k, a["status"], a.get("values") or {}) for k, a in enumerate(atts)]
+        blocks.append("\n".join(lines))
+    return fill(load_prompt("g2@2", "user"), patient=public_background_text(bg), reported=said or "none",
+                tests="\n\n".join(blocks), gp_tests=", ".join(gp_tests), n_tests=str(len(cat.tests)))
+
+
+def _lower(s: str) -> str:
+    return s[:1].lower() + s[1:]
+
+
 # ============================================================================ the authors
 
 class Authors:
     """Schemas and prompt builders of G1 and G2 for one catalogue. Stateless after construction, thread-safe."""
 
-    def __init__(self, catalogue: Catalogue):
+    def __init__(self, catalogue: Catalogue, results_prompt: str | None = None):
         self.cat = catalogue
+        self.results_version = results_prompt or PROMPT_VERSIONS["results"]
+        if self.results_version not in RESULTS_VERSIONS:
+            raise ValueError(f"unknown result-author version {self.results_version!r}; known: {RESULTS_VERSIONS}")
+        #: what goes into ``provenance.prompts`` and the library manifest
+        self.prompt_versions = {"patient": PROMPT_VERSIONS["patient"], "results": self.results_version}
         full = card_schema(catalogue)
         self._defs = full["$defs"]
         variables = list(catalogue.variables)
@@ -226,6 +315,43 @@ class Authors:
             },
             "$defs": {k: v for k, v in self._defs.items() if k.startswith("attempt__")},
         }
+        # g2@2: the tests the GP note summarises, and the answer schema (report strings and a GP note only)
+        gp = [t.id for t in catalogue.tests.values() if t.resource_kind in FIRST_CONTACT_RESOURCES
+              and not any(o.measures.startswith("dx_") for o in t.outputs)]
+        self.gp_tests = tuple(gp or [t.id for t in catalogue.tests.values()
+                                     if not any(o.measures.startswith("dx_") for o in t.outputs)])
+        gp_ids = [*self.gp_tests, *(f"{t}.{o.id}" for t in self.gp_tests for o in catalogue.tests[t].outputs)]
+        report = {"type": "string", "minLength": 10, "maxLength": REPORT_MAX_CHARS}
+        self.g2v2_schema: dict = {
+            "type": "object", "required": ["reports", "gp_note"], "additionalProperties": False,
+            "properties": {
+                "reports": {"type": "object", "required": list(catalogue.tests), "additionalProperties": False,
+                            "properties": {t.id: {"type": "array", "minItems": t.max_attempts, "maxItems": t.max_attempts,
+                                                  "items": report} for t in catalogue.tests.values()}},
+                "gp_note": {"type": "object", "required": ["text", "mentions"], "additionalProperties": False,
+                            "properties": {"text": {"type": "string", "minLength": 10, "maxLength": NOTE_MAX_CHARS},
+                                           "mentions": {"type": "array", "uniqueItems": True, "items": {"enum": gp_ids}}}},
+            },
+        }
+        # g2@2 condition-blind name check: every non-healthy condition's label and id (the validator's rule 8
+        # patterns for any primary), so a repair request never depends on which condition the patient has
+        self._names: dict[str, re.Pattern] = {}
+        for c in catalogue.conditions.values():
+            if c.cls == "healthy":
+                continue
+            names = {c.label.lower(), c.id.replace("_", " ")}
+            self._names[c.id] = re.compile("|".join(r"(?<![a-z])" + re.escape(x) + r"(?![a-z])"
+                                                    for x in sorted(names, key=len, reverse=True)))
+        self._definitive = {t.id: {o.measures[3:] for o in t.outputs if o.measures.startswith("dx_")}
+                            for t in catalogue.tests.values()}
+
+    @property
+    def v2(self) -> bool:
+        return self.results_version == "g2@2"
+
+    @property
+    def results_schema(self) -> dict:
+        return self.g2v2_schema if self.v2 else self.g2_schema
 
     def g1_schema_for(self, states: Sequence[str]) -> dict:
         """The G1 answer schema for a card with these states."""
@@ -266,7 +392,15 @@ class Authors:
     def g2_request(self, sk: Skeleton, g1: Mapping[str, Any], plan: Mapping[str, Sequence], state: str = INITIAL_STATE
                    ) -> dict:
         """``dict(system, user, schema)`` for the result author of one ``state``. ``g1`` is the patient author's
-        (valid) answer, ``plan`` the settled error plan of that state (``settle_error_plan(...)[state]``)."""
+        (valid) answer, ``plan`` the settled error plan of that state (``settle_error_plan(...)[state]``).
+
+        g2@2 (default): the result values are the engine's (``g2_values``); the prompt is ``results_user`` of the
+        public background, the reported symptoms and those values, nothing else."""
+        if self.v2:
+            obs = self.g2_values(sk, g1, plan, state)
+            user = results_user(self.cat, sk.background, g1["states"][state]["presenting"]["reported"], obs,
+                                self.gp_tests)
+            return {"system": load_prompt("g2@2", "system"), "user": user, "schema": self.g2v2_schema}
         cat = self.cat
         findings = g1["states"][state]["findings"]
         values = self.findings_of(g1, state)
@@ -279,11 +413,39 @@ class Authors:
                 _, suggested = settle_attempt(cat, t, k, sk, values, state)
                 lines.append(_plan_line(k, t, p, suggested))
             blocks.append("\n".join(lines))
-        user = fill(load_prompt(PROMPT_VERSIONS["results"], "user"),
+        user = fill(load_prompt("g2@1", "user"),
                     card_id=sk.id, state=state, state_note=state_note(cat, sk, state),
                     background=_background_text(sk.background), conditions=_conditions_text(cat, sk), brief=sk.brief,
                     findings=_findings_text(cat, findings), tests="\n\n".join(blocks))
-        return {"system": load_prompt(PROMPT_VERSIONS["results"], "system"), "user": user, "schema": self.g2_schema}
+        return {"system": load_prompt("g2@1", "system"), "user": user, "schema": self.g2_schema}
+
+    def g2_values(self, sk: Skeleton, g1: Mapping[str, Any], plan: Mapping[str, Sequence], state: str = INITIAL_STATE
+                  ) -> dict[str, list[dict]]:
+        """g2@2: every attempt's status and reported values, decided by the engine from the findings and the settled
+        plan (``skeleton.settle_attempt``, as the reference generator does). Test id -> [{"status", "values"}]."""
+        values = self.findings_of(g1, state)
+        out: dict[str, list[dict]] = {}
+        for t in self.cat.tests.values():
+            atts = []
+            for k, p in enumerate(plan[t.id]):
+                planned, reported = settle_attempt(self.cat, t, k, sk, values, state)
+                if planned != p:                      # the plan was settled from the same findings: a pipeline bug
+                    raise AssertionError(f"{sk.id} {state} {t.id}[{k}]: settled attempt differs from the plan")
+                atts.append({"status": planned.status, "values": dict(reported)})
+            out[t.id] = atts
+        return out
+
+    def g2_merge(self, sk: Skeleton, g1: Mapping[str, Any], plan: Mapping[str, Sequence], state: str,
+                 answer: Mapping[str, Any]) -> dict:
+        """The result author's part of a card for one state, ``{"observations", "gp_note"}``: g2@1's answer as is,
+        g2@2's reports joined to the engine's values."""
+        if not self.v2:
+            return dict(answer)
+        obs = self.g2_values(sk, g1, plan, state)
+        for tid, atts in obs.items():
+            for a, text in zip(atts, answer["reports"][tid]):
+                a["report"] = text
+        return {"observations": obs, "gp_note": dict(answer["gp_note"])}
 
     # ------------------------------------------------------------------ answers
 
@@ -309,7 +471,25 @@ class Authors:
         return out
 
     def g2_problems(self, g2: Any) -> list[Problem]:
-        return schema_problems(g2, self.g2_schema)
+        """Schema problems of a G2 answer; for g2@2 also the condition-blind name check (no report or note names a
+        condition, except a definitive test's report naming what it tests for). The check reads only the answer
+        and the catalogue, so a repair it asks for says nothing about the patient."""
+        if not self.v2:
+            return schema_problems(g2, self.g2_schema)
+        probs = schema_problems(g2, self.g2v2_schema)
+        if probs:
+            return probs
+        hint = "describe the reported values only, without naming a diagnosis or disease"
+        for tid, texts in g2["reports"].items():
+            allowed = self._definitive.get(tid, set())
+            for i, text in enumerate(texts):
+                low = text.lower().replace("_", " ")
+                if any(rx.search(low) for c, rx in self._names.items() if c not in allowed):
+                    probs.append(Problem("card_reveals_condition", "the report names a diagnosis", f"reports.{tid}[{i}]", hint))
+        low = g2["gp_note"]["text"].lower().replace("_", " ")
+        if any(rx.search(low) for rx in self._names.values()):
+            probs.append(Problem("card_reveals_condition", "the note names a diagnosis", "gp_note.text", hint))
+        return probs
 
     # ------------------------------------------------------------------ the card
 
@@ -362,8 +542,46 @@ class Authors:
         m = re.match(r"(?:observations|hidden\.error_plan)\.([a-z_]+)", p)
         return "g2", (m.group(1) if m and m.group(1) in states else None)
 
+    #: g2@2 repair: codes whose validator message reads only the answer and the reported values (safe to send)
+    _SAFE_MESSAGE_CODES = frozenset({"card_schema", "card_report_contradiction", "card_mention_unknown"})
+
+    def repair_text(self, role: str, card_id: str, problems: Sequence[Problem]) -> str:
+        """The problem list of a repair request. G1 and g2@1: ``validate.repair_prompt``. g2@2: paths in the
+        author's own answer (``reports.<test>[i]``, ``gp_note``), and for any code whose message could depend on
+        the hidden side (``card_reveals_condition`` names the true condition; plan and range codes read the plan) a
+        fixed message instead. No card id and no state name (a state name like ``pneumonia_resolved`` names a
+        condition)."""
+        from .validate import repair_prompt
+        if role == "g1" or not self.v2:
+            return repair_prompt({"id": card_id}, problems)
+        lines, seen = [], set()
+        for p in problems:
+            path = p.path or ""
+            m = re.match(r"observations\.[a-z_]+\.([a-z0-9_]+)\[(\d+)\]", path)
+            if m:
+                path = f"reports.{m.group(1)}[{m.group(2)}]"
+            elif re.match(r"notes\[\d+\]", path):
+                path = "gp_note" + (".mentions" if ".mentions" in path else ".text")
+            elif not path.startswith(("reports", "gp_note")):
+                path = "answer"
+            if p.code in self._SAFE_MESSAGE_CODES:
+                msg = re.sub(r"observations\.[a-z_]+\.", "", p.message)
+            elif p.code == "card_reveals_condition":
+                msg = "the text names a diagnosis; describe the reported values only, without naming a diagnosis or disease"
+            else:
+                msg = "this part could not be accepted; describe exactly the reported values"
+            line = f"- {path}: {msg}" + (f" ({p.hint})" if p.code in self._SAFE_MESSAGE_CODES and p.hint else "")
+            if line not in seen:
+                seen.add(line)
+                lines.append(line)
+        return "Your answer failed validation. Fix every point below and return the whole JSON object again.\n" + \
+            "\n".join(lines[:20])
+
     def repair_user(self, role: str, original_user: str, previous: Mapping[str, Any], text: str) -> str:
         """The user message for a repair call: the original request, the author's own answer, the problems."""
+        if role == "g2" and self.v2:
+            return (f"{original_user}\n\n---\nYour previous answer:\n{json.dumps(previous, sort_keys=True)}\n\n"
+                    f"{text}\nThe values are final; change only the texts.")
         shape = ("`states` (each with `findings`, `presenting` and `account`)" if role == "g1"
                  else "`observations` and `gp_note`")
         mapping = ("Paths starting `hidden.findings.<state>` refer to `states.<state>.findings`, `presenting.<state>` to "

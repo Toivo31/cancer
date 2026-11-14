@@ -50,17 +50,29 @@ def _found(catalogue, found) -> str:
     return ", ".join(parts)
 
 
+#: words in output ids written as clinicians write them
+_ACRONYMS = {"fdg": "FDG", "hb": "Hb", "crp": "CRP", "alp": "ALP", "ldh": "LDH", "bnp": "BNP", "fev1": "FEV1",
+             "pct": "", "mets": "metastases"}
+
+
+def _output_name(oid: str) -> str:
+    """An output's own label: its id in words (``suspicious_for_malignancy`` -> "suspicious for malignancy").
+    Not the label of the variable it measures: a CT that is suspicious for malignancy did not show malignant
+    tissue (review w7 M3); the noisy output must not be named as the truth it estimates."""
+    return " ".join(x for x in (_ACRONYMS.get(w, w) for w in oid.split("_")) if x)
+
+
 def _values(catalogue, test: str, values) -> str:
     t = getattr(catalogue, "tests", {}).get(test) if catalogue is not None else None
     parts = []
     for k, v in values.items():
         if v is None:
             continue
-        name, unit = _words(k), ""
+        name, unit = _output_name(k), ""
         if t is not None:
             try:
                 out = t.output(k)
-                name, unit = _var(catalogue, out.measures), (f" {out.unit}" if out.unit else "")
+                unit = f" {out.unit}" if out.unit else ""
             except StopIteration:
                 pass
         if v is True:
