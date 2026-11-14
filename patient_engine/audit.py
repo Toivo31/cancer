@@ -724,7 +724,7 @@ def render_markdown(report: Mapping[str, Any]) -> str:
                 L.append(f"| `{c['id']}` | {x['id']} ({x['title']}) | {x['n']} | hedged {x['hedge_right']:.0%} of right | "
                          f"hedged {x['hedge_wrong']:.0%} of wrong | gap {x['hedge_gap_pp_within_strata']:+.1f} pp within strata, "
                          f"z {x['z']}; NB excess {x['nb_excess_bacc']} | |")
-            elif x["kind"] == "share":
+            elif x["kind"] == "share" and "max_share" in x:
                 L.append(f"| `{c['id']}` | {x['id']} | {x['n']} | at most {x['max_share']:.2%} | {x['share']:.2%} | | |")
                 for e in x.get("examples", []):
                     L.append(f"| | e.g. {e} | | | | | |")

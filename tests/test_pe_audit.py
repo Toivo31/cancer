@@ -84,3 +84,17 @@ def test_cli_writes_reports_and_sets_exit_code(built, cat, tmp_path, capsys):
     assert (out / "audit.md").read_text().startswith("# Library audit: PASS")
     assert main(["audit", str(tmp_path / "nope"), "--catalogue", str(CAT_DIR)]) == 2
     assert main(["audit", str(built[0]), "--catalogue", str(CAT_DIR), "--tolerances", str(tmp_path / "x.yaml")]) == 2
+
+
+def test_markdown_renders_failed_share_cells_without_a_limit():
+    # background_realism emits share-kind cells judged against an expected value (no max_share);
+    # a failing one used to crash render_markdown with KeyError 'max_share'.
+    from patient_engine.audit import render_markdown
+    cell = {"id": "background_realism.age_65_plus.x", "kind": "share", "n": 40, "expected": 0.6, "observed": 0.2,
+            "lo": 0.3, "hi": 0.9, "off_pp": -40.0, "status": "fail"}
+    report = {"passed": False, "library_id": "L_x", "n_cards": 40, "generator": "llm", "model": "m", "error_source": "guided",
+              "catalogue_id": "c", "catalogue_hash": "0" * 64, "states": {"all_active": 40}, "tolerances": {"z": 2.576},
+              "checks": [{"id": "background_realism", "status": "fail", "summary": "s", "cells": [cell], "n_skipped": 0}],
+              "not_audited": [], "seconds": 0.1}
+    md = render_markdown(report)
+    assert "background_realism.age_65_plus.x" in md and "-40.0" in md
