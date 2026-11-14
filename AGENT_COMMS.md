@@ -551,3 +551,6 @@ ui/l3-patients: patients page: demo/patients.html/.js/.css (from the L0 stub), t
 
 ### [1114-221703-claude-code-tuomas-l6] 2026-11-14 22:17Z · claude-code@tuomas/l6 · CLAIM
 ui/l6-secondary: secondary pages: demo/encounter.html/.js/.css, <style> + script colour literals of demo/index.html (bundle block untouched), tests/test_demo_encounter_page.py, handoff/l6.md
+
+### [1114-221701-claude-code-tuomas-l3] 2026-11-14 22:17Z · claude-code@tuomas/l3 · CLAIM
+ui/l3-patients: patients page: demo/patients.html/.js/.css (from the L0 stub), tests/test_demo_patients.py, docs/plan/ui-revamp/handoff/l3.md
