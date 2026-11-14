@@ -1,0 +1,1327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Equal Care Across Finland - pathway dashboard</title>
+<style>
+:root{
+  --bg:#0a0f14; --panel:#111a24; --panel2:#16222f; --line:#2c3f52;
+  --text:#eaf1f8; --muted:#a8b8c9; --dim:#8da0b4;
+  --wait:#ffc04d; --serve:#62b0ff; --good:#55e3b0; --warn:#ff8f70; --today:#ff9a7a;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html{font-size:clamp(15px,1vw,24px);background:var(--bg)}
+body{margin:0;color:var(--text);font-family:var(--sans);line-height:1.45;min-height:100vh;
+  background:
+    linear-gradient(rgba(98,176,255,.045) 1px,transparent 1px) 0 0/48px 48px,
+    linear-gradient(90deg,rgba(98,176,255,.045) 1px,transparent 1px) 0 0/48px 48px,
+    radial-gradient(1200px 600px at 80% -10%,#15283a 0%,transparent 60%),var(--bg);}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(transparent 0 3px,rgba(0,0,0,.10) 3px 4px);opacity:.5}
+header.top{position:sticky;top:0;z-index:10;background:rgba(10,15,20,.94);backdrop-filter:blur(6px);
+  border-bottom:1px solid var(--line);padding:.6rem 1.6rem;display:flex;flex-wrap:wrap;gap:.6rem 1.2rem;align-items:center}
+.brand{white-space:nowrap;font-family:var(--mono);font-size:.8rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.brand b{color:var(--good);font-weight:700}
+nav.tabs{display:flex;gap:.4rem;flex-wrap:wrap}
+nav.tabs button,.seg button{font:inherit;font-size:.85rem;color:var(--muted);background:transparent;border:1px solid var(--line);
+  padding:.45rem .85rem;cursor:pointer;border-radius:3px}
+nav.tabs button b{font-family:var(--mono);color:var(--good);margin-right:.45rem}
+nav.tabs button[aria-selected=true],.seg button[aria-pressed=true]{background:var(--panel2);color:var(--text);border-color:var(--good)}
+nav.tabs button:hover,.seg button:hover{color:var(--text);border-color:var(--muted)}
+button:focus-visible{outline:2px solid var(--wait);outline-offset:2px}
+.spacer{flex:1}
+.seg{display:flex;gap:.4rem;align-items:center}
+.seg span{font-family:var(--mono);font-size:.7rem;letter-spacing:.14em;color:var(--dim);text-transform:uppercase}
+.badge{font-family:var(--mono);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;padding:.25rem .55rem;border-radius:3px;border:1px solid}
+.badge.illus{color:#1a1200;background:var(--wait);border-color:var(--wait);font-weight:700}
+.badge.sourced{color:var(--good);border-color:var(--good)}
+.badge.assumption{color:var(--wait);border-color:var(--wait)}
+main{padding:1.6rem 2rem 3rem;max-width:1840px;margin:0 auto}
+.eyebrow{font-family:var(--mono);font-size:.8rem;letter-spacing:.2em;text-transform:uppercase;color:var(--good);margin:0 0 .4rem}
+h1{font-size:clamp(1.9rem,3.1vw,3.6rem);line-height:1.08;margin:0 0 .5rem;font-weight:700;letter-spacing:-.01em}
+h2{font-size:clamp(1.3rem,1.8vw,2.1rem);margin:2.2rem 0 .8rem;font-weight:700}
+.lede{color:var(--muted);font-size:1.15rem;max-width:62rem;margin:0 0 1.4rem}
+.panel{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:4px;padding:1.2rem 1.5rem;position:relative}
+.panel::before,.panel::after{content:"";position:absolute;width:14px;height:14px;border:2px solid var(--good);opacity:.75}
+.panel::before{top:-1px;left:-1px;border-right:0;border-bottom:0}
+.panel::after{bottom:-1px;right:-1px;border-left:0;border-top:0}
+.hero{display:grid;grid-template-columns:1fr auto 1fr;gap:1rem 2rem;align-items:center;padding:1.6rem 2rem}
+.hero .cell .lab{font-family:var(--mono);font-size:.85rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.big{font-family:var(--mono);font-weight:800;font-size:clamp(5rem,12vw,14rem);line-height:.95;letter-spacing:-.04em;margin:.2rem 0}
+.big small{font-size:.38em;letter-spacing:0}
+.big.today{color:var(--today)} .big.after{color:var(--good)}
+.hero .arrow{font-size:clamp(3rem,6vw,7rem);color:var(--muted);font-family:var(--mono)}
+.hero .sub{color:var(--muted);font-size:1.1rem}
+.delta{display:inline-block;margin-top:.4rem;font-family:var(--mono);font-size:1.4rem;color:var(--good);border:1px solid var(--good);padding:.2rem .7rem;border-radius:3px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(18rem,1fr));gap:1.2rem;margin-top:1.4rem}
+.card .lab{font-family:var(--mono);font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.card .val{font-family:var(--mono);font-size:clamp(2rem,3.4vw,4rem);font-weight:700;margin:.3rem 0}
+.card .val .from{color:var(--today)} .card .val .to{color:var(--good)} .card .val .sep{color:var(--dim);margin:0 .4em}
+.card .note{color:var(--muted);font-size:.95rem}
+.card.guard{border-color:var(--good)}
+.tag{display:inline-block;font-family:var(--mono);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;padding:.15rem .5rem;border-radius:3px;border:1px solid var(--good);color:var(--good);margin-left:.5rem;vertical-align:middle}
+.tag.bad{border-color:var(--warn);color:var(--warn)}
+.legend{display:flex;gap:1.6rem;flex-wrap:wrap;margin:.2rem 0 1rem;color:var(--muted);font-size:.95rem}
+.legend i{display:inline-block;width:1rem;height:1rem;border-radius:2px;margin-right:.45rem;vertical-align:-2px}
+svg{display:block;width:100%;height:auto}
+svg text{font-family:var(--sans);fill:var(--text)}
+svg .mono{font-family:var(--mono)}
+svg .muted{fill:var(--muted)}
+.scroll-x{overflow-x:auto}
+.scroll-x svg{min-width:1150px}
+ul.changes{list-style:none;padding:0;margin:0;display:grid;gap:.9rem}
+ul.changes li{display:flex;gap:1rem;font-size:1.3rem;line-height:1.35;align-items:flex-start}
+ul.changes li b{font-family:var(--mono);color:#0a0f14;background:var(--good);min-width:2rem;height:2rem;display:inline-flex;align-items:center;justify-content:center;border-radius:3px;flex:none;font-size:1rem}
+.callout{font-size:1.3rem;margin:0 0 1rem}
+.callout b{color:var(--wait)}
+table{width:100%;border-collapse:collapse;font-size:1rem}
+th{font-family:var(--mono);font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);text-align:left;padding:.5rem .7rem;border-bottom:1px solid var(--line)}
+td{padding:.65rem .7rem;border-bottom:1px solid #1d2b3a;vertical-align:top}
+a{color:var(--serve)}
+.empty{color:var(--muted);border:1px dashed var(--line);padding:1.2rem;border-radius:4px}
+.cols2{display:grid;grid-template-columns:repeat(auto-fit,minmax(26rem,1fr));gap:1.2rem}
+.gcard .name{font-size:1.5rem;font-weight:700}
+.gcard .row{display:flex;justify-content:space-between;gap:1rem;align-items:baseline;margin-top:.7rem}
+.gcard .row .lab{color:var(--muted)}
+.gcard .row .v{font-family:var(--mono);font-size:1.7rem;font-weight:700}
+.gcard .row .v .from{color:var(--today)} .gcard .row .v .to{color:var(--good)} .gcard .row .v .sep{color:var(--dim)}
+footer{margin-top:2.5rem;color:var(--dim);font-family:var(--mono);font-size:.78rem;letter-spacing:.06em}
+@media (max-width:900px){.hero{grid-template-columns:1fr}.hero .arrow{display:none}main{padding:1rem}}
+@media print{body::after{display:none}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand"><b>&#9632;</b> Equal care across Finland</div>
+  <span class="badge illus" id="illus" hidden>Illustrative data</span>
+  <nav class="tabs" id="tabs" role="tablist" aria-label="Screens"></nav>
+  <div class="spacer"></div>
+  <div class="seg" id="scen" aria-label="Scenario"></div>
+</header>
+<main id="view" tabindex="-1"></main>
+
+<script id="bundle" type="application/json">
+{
+ "fixture": true,
+ "generated_at": "2026-11-14T22:00:00Z",
+ "scenarios": [
+  {
+   "id": "stokstad",
+   "title": "Norwegian validation",
+   "description": "Rebuilt from a published Norwegian study of 100 early-stage lung cancer patients",
+   "target_days": 42,
+   "baseline": {
+    "label": "Observed pathway",
+    "metrics": {
+     "n": 100,
+     "n_cancer": 100,
+     "median_days_to_treatment": 46.5,
+     "share_within_target": 0.4,
+     "median_days_to_diagnosis": 31.0,
+     "missed_cancers": 0,
+     "tests_per_patient": 4.6,
+     "invasive_per_patient": 0.9,
+     "cost_per_patient": 5200,
+     "median_days_to_exit_noncancer": null,
+     "stage_breakdown": {
+      "detection": {
+       "wait": 4.2,
+       "service": 1.3
+      },
+      "referral": {
+       "wait": 6.5,
+       "service": 2.0
+      },
+      "diagnosis": {
+       "wait": 24.0,
+       "service": 6.5
+      },
+      "treatment_start": {
+       "wait": 9.0,
+       "service": 1.5
+      }
+     },
+     "node_breakdown": {
+      "ct": {
+       "wait": 4.2,
+       "service": 1.3,
+       "n": 100
+      },
+      "first_visit": {
+       "wait": 6.5,
+       "service": 2.0,
+       "n": 100
+      },
+      "bronch": {
+       "wait": 5.5,
+       "service": 1.5,
+       "n": 100
+      },
+      "pathology": {
+       "wait": 0.0,
+       "service": 2.0,
+       "n": 100
+      },
+      "pet": {
+       "wait": 14.5,
+       "service": 2.0,
+       "n": 100
+      },
+      "exercise_test": {
+       "wait": 4.0,
+       "service": 1.0,
+       "n": 100
+      },
+      "tumour_board": {
+       "wait": 7.5,
+       "service": 0.5,
+       "n": 100
+      },
+      "surgery": {
+       "wait": 1.5,
+       "service": 1.0,
+       "n": 100
+      }
+     }
+    }
+   },
+   "variants": [
+    {
+     "label": "Faster PET only",
+     "metrics": {
+      "n": 100,
+      "n_cancer": 100,
+      "median_days_to_treatment": 43.0,
+      "share_within_target": 0.48,
+      "median_days_to_diagnosis": 28.5,
+      "missed_cancers": 0,
+      "tests_per_patient": 4.6,
+      "invasive_per_patient": 0.9,
+      "cost_per_patient": 5200,
+      "median_days_to_exit_noncancer": null,
+      "stage_breakdown": {
+       "detection": {
+        "wait": 4.2,
+        "service": 1.3
+       },
+       "referral": {
+        "wait": 6.5,
+        "service": 2.0
+       },
+       "diagnosis": {
+        "wait": 14.5,
+        "service": 6.5
+       },
+       "treatment_start": {
+        "wait": 9.0,
+        "service": 1.5
+       }
+      },
+      "node_breakdown": {
+       "ct": {
+        "wait": 4.2,
+        "service": 1.3,
+        "n": 100
+       },
+       "first_visit": {
+        "wait": 6.5,
+        "service": 2.0,
+        "n": 100
+       },
+       "bronch": {
+        "wait": 5.5,
+        "service": 1.5,
+        "n": 100
+       },
+       "pathology": {
+        "wait": 0.0,
+        "service": 2.0,
+        "n": 100
+       },
+       "pet": {
+        "wait": 5.0,
+        "service": 2.0,
+        "n": 100
+       },
+       "exercise_test": {
+        "wait": 4.0,
+        "service": 1.0,
+        "n": 100
+       },
+       "tumour_board": {
+        "wait": 7.5,
+        "service": 0.5,
+        "n": 100
+       },
+       "surgery": {
+        "wait": 1.5,
+        "service": 1.0,
+        "n": 100
+       }
+      }
+     }
+    },
+    {
+     "label": "Optimiser proposal",
+     "metrics": {
+      "n": 100,
+      "n_cancer": 100,
+      "median_days_to_treatment": 31.0,
+      "share_within_target": 0.78,
+      "median_days_to_diagnosis": 19.5,
+      "missed_cancers": 0,
+      "tests_per_patient": 4.8,
+      "invasive_per_patient": 0.9,
+      "cost_per_patient": 5300,
+      "median_days_to_exit_noncancer": null,
+      "stage_breakdown": {
+       "detection": {
+        "wait": 4.2,
+        "service": 1.3
+       },
+       "referral": {
+        "wait": 6.5,
+        "service": 2.0
+       },
+       "diagnosis": {
+        "wait": 6.0,
+        "service": 6.5
+       },
+       "treatment_start": {
+        "wait": 4.5,
+        "service": 1.7
+       }
+      },
+      "node_breakdown": {
+       "ct": {
+        "wait": 4.2,
+        "service": 1.3,
+        "n": 100
+       },
+       "first_visit": {
+        "wait": 6.5,
+        "service": 2.0,
+        "n": 100
+       },
+       "pet": {
+        "wait": 3.0,
+        "service": 2.0,
+        "n": 100
+       },
+       "exercise_test": {
+        "wait": 1.0,
+        "service": 1.0,
+        "n": 100
+       },
+       "bronch": {
+        "wait": 2.0,
+        "service": 1.5,
+        "n": 100
+       },
+       "pathology": {
+        "wait": 0.0,
+        "service": 2.0,
+        "n": 100
+       },
+       "tumour_board": {
+        "wait": 3.0,
+        "service": 0.5,
+        "n": 100
+       },
+       "surgery": {
+        "wait": 1.5,
+        "service": 1.0,
+        "n": 100
+       },
+       "book_treatment": {
+        "wait": 0.0,
+        "service": 0.2,
+        "n": 100
+       }
+      }
+     },
+     "changes": [
+      "Order the PET-CT scan and the exercise test together at the first hospital visit, instead of one after the other",
+      "Hold the tumour board straight after those two, without waiting for the sampling result",
+      "Take the tissue sample after the tumour board decision, while the surgery slot is being booked"
+     ]
+    }
+   ],
+   "published": {
+    "baseline_share": 0.4,
+    "faster_pet_share": 0.48,
+    "optimal_share": 0.8,
+    "source": "Stokstad et al. 2019 (STOKSTAD2019)"
+   },
+   "flowchart_before": {
+    "nodes": [
+     {
+      "id": "ct",
+      "label": "CT scan of the chest",
+      "stage": "detection",
+      "test": "chest_ct"
+     },
+     {
+      "id": "first_visit",
+      "label": "First hospital visit",
+      "stage": "referral",
+      "after": [
+       "ct"
+      ]
+     },
+     {
+      "id": "bronch",
+      "label": "Sampling (bronchoscopy or needle biopsy)",
+      "stage": "diagnosis",
+      "after": [
+       "first_visit"
+      ]
+     },
+     {
+      "id": "pathology",
+      "label": "Pathology report",
+      "stage": "diagnosis",
+      "after": [
+       "bronch"
+      ]
+     },
+     {
+      "id": "pet",
+      "label": "PET-CT scan",
+      "stage": "diagnosis",
+      "after": [
+       "pathology"
+      ]
+     },
+     {
+      "id": "exercise_test",
+      "label": "Exercise test (fitness for surgery)",
+      "stage": "diagnosis",
+      "after": [
+       "pet"
+      ]
+     },
+     {
+      "id": "tumour_board",
+      "label": "Weekly tumour board decision",
+      "stage": "treatment_start",
+      "after": [
+       "exercise_test"
+      ]
+     },
+     {
+      "id": "surgery",
+      "label": "Surgery",
+      "stage": "treatment_start",
+      "after": [
+       "tumour_board"
+      ],
+      "kind": "exit"
+     }
+    ]
+   },
+   "flowchart_after": {
+    "nodes": [
+     {
+      "id": "ct",
+      "label": "CT scan of the chest",
+      "stage": "detection",
+      "test": "chest_ct"
+     },
+     {
+      "id": "first_visit",
+      "label": "First hospital visit",
+      "stage": "referral",
+      "after": [
+       "ct"
+      ]
+     },
+     {
+      "id": "pet",
+      "label": "PET-CT scan",
+      "stage": "diagnosis",
+      "after": [
+       "first_visit"
+      ]
+     },
+     {
+      "id": "exercise_test",
+      "label": "Exercise test (fitness for surgery)",
+      "stage": "diagnosis",
+      "after": [
+       "first_visit"
+      ]
+     },
+     {
+      "id": "tumour_board",
+      "label": "Tumour board decision",
+      "stage": "treatment_start",
+      "after": [
+       "pet",
+       "exercise_test"
+      ]
+     },
+     {
+      "id": "bronch",
+      "label": "Sampling (bronchoscopy or needle biopsy)",
+      "stage": "diagnosis",
+      "after": [
+       "tumour_board"
+      ]
+     },
+     {
+      "id": "book_treatment",
+      "label": "Book the surgery slot",
+      "stage": "treatment_start",
+      "after": [
+       "tumour_board"
+      ]
+     },
+     {
+      "id": "pathology",
+      "label": "Pathology report",
+      "stage": "diagnosis",
+      "after": [
+       "bronch"
+      ]
+     },
+     {
+      "id": "surgery",
+      "label": "Surgery",
+      "stage": "treatment_start",
+      "after": [
+       "pathology",
+       "book_treatment"
+      ],
+      "kind": "exit"
+     }
+    ]
+   }
+  },
+  {
+   "id": "finland_lung",
+   "title": "Finland, lung cancer",
+   "description": "Synthetic Finnish lung cancer pathway, 1,000 simulated patients",
+   "target_days": 42,
+   "baseline": {
+    "label": "Today's pathway",
+    "metrics": {
+     "n": 1000,
+     "n_cancer": 30,
+     "median_days_to_treatment": 55.0,
+     "share_within_target": 0.3333333333333333,
+     "median_days_to_diagnosis": 41.0,
+     "missed_cancers": 1,
+     "tests_per_patient": 3.4,
+     "invasive_per_patient": 0.5,
+     "cost_per_patient": 2900,
+     "median_days_to_exit_noncancer": 8.5,
+     "stage_breakdown": {
+      "detection": {
+       "wait": 9.5,
+       "service": 1.0
+      },
+      "referral": {
+       "wait": 11.0,
+       "service": 1.0
+      },
+      "diagnosis": {
+       "wait": 22.0,
+       "service": 5.3
+      },
+      "treatment_start": {
+       "wait": 10.0,
+       "service": 1.5
+      }
+     },
+     "node_breakdown": {
+      "nurse_visit": {
+       "wait": 3.0,
+       "service": 0.3,
+       "n": 30
+      },
+      "gp_visit": {
+       "wait": 5.0,
+       "service": 0.5,
+       "n": 30
+      },
+      "cxr": {
+       "wait": 1.5,
+       "service": 0.2,
+       "n": 30
+      },
+      "specialist_referral": {
+       "wait": 2.0,
+       "service": 0.5,
+       "n": 30
+      },
+      "specialist_visit": {
+       "wait": 9.0,
+       "service": 0.5,
+       "n": 30
+      },
+      "ct": {
+       "wait": 5.0,
+       "service": 0.3,
+       "n": 30
+      },
+      "pet_ct": {
+       "wait": 11.0,
+       "service": 1.0,
+       "n": 30
+      },
+      "bronch": {
+       "wait": 5.0,
+       "service": 1.0,
+       "n": 30
+      },
+      "pathology": {
+       "wait": 1.0,
+       "service": 3.0,
+       "n": 30
+      },
+      "tumour_board": {
+       "wait": 6.0,
+       "service": 0.5,
+       "n": 30
+      },
+      "treatment_booking": {
+       "wait": 4.0,
+       "service": 1.0,
+       "n": 30
+      }
+     },
+     "by_group": {
+      "site_specific": {
+       "median_days_to_treatment": 47.0,
+       "share_within_target": 0.4444444444444444,
+       "n_cancer": 18
+      },
+      "non_specific": {
+       "median_days_to_treatment": 70.0,
+       "share_within_target": 0.16666666666666666,
+       "n_cancer": 12
+      }
+     },
+     "utilisation": {
+      "ct": 0.83,
+      "pet_ct": 0.91,
+      "bronch": 0.72
+     }
+    }
+   },
+   "variants": [
+    {
+     "label": "Optimiser proposal",
+     "metrics": {
+      "n": 1000,
+      "n_cancer": 30,
+      "median_days_to_treatment": 36.0,
+      "share_within_target": 0.6,
+      "median_days_to_diagnosis": 26.0,
+      "missed_cancers": 1,
+      "tests_per_patient": 3.7,
+      "invasive_per_patient": 0.5,
+      "cost_per_patient": 3000,
+      "median_days_to_exit_noncancer": 8.9,
+      "stage_breakdown": {
+       "detection": {
+        "wait": 9.5,
+        "service": 1.0
+       },
+       "referral": {
+        "wait": 6.5,
+        "service": 1.0
+       },
+       "diagnosis": {
+        "wait": 14.0,
+        "service": 5.3
+       },
+       "treatment_start": {
+        "wait": 3.5,
+        "service": 1.5
+       }
+      },
+      "node_breakdown": {
+       "nurse_visit": {
+        "wait": 3.0,
+        "service": 0.3,
+        "n": 30
+       },
+       "gp_visit": {
+        "wait": 5.0,
+        "service": 0.5,
+        "n": 30
+       },
+       "cxr": {
+        "wait": 1.5,
+        "service": 0.2,
+        "n": 30
+       },
+       "specialist_referral": {
+        "wait": 1.5,
+        "service": 0.5,
+        "n": 30
+       },
+       "specialist_visit": {
+        "wait": 5.0,
+        "service": 0.5,
+        "n": 30
+       },
+       "ct": {
+        "wait": 3.0,
+        "service": 0.3,
+        "n": 30
+       },
+       "pet_ct": {
+        "wait": 7.0,
+        "service": 1.0,
+        "n": 30
+       },
+       "bronch": {
+        "wait": 3.0,
+        "service": 1.0,
+        "n": 30
+       },
+       "pathology": {
+        "wait": 1.0,
+        "service": 3.0,
+        "n": 30
+       },
+       "tumour_board": {
+        "wait": 3.0,
+        "service": 0.5,
+        "n": 30
+       },
+       "treatment_booking": {
+        "wait": 0.5,
+        "service": 1.0,
+        "n": 30
+       }
+      },
+      "by_group": {
+       "site_specific": {
+        "median_days_to_treatment": 30.0,
+        "share_within_target": 0.6666666666666666,
+        "n_cancer": 18
+       },
+       "non_specific": {
+        "median_days_to_treatment": 44.0,
+        "share_within_target": 0.5,
+        "n_cancer": 12
+       }
+      },
+      "utilisation": {
+       "ct": 0.86,
+       "pet_ct": 0.84,
+       "bronch": 0.66
+      }
+     },
+     "changes": [
+      "Order the CT scan together with the chest X-ray at the health centre, so the patient does not wait for a second visit",
+      "Book the PET-CT scan and the sampling at the first specialist visit, side by side instead of one after the other",
+      "Send patients with vague, non-specific symptoms through the same fast lane as clear lung symptoms",
+      "Hold the tumour board as soon as the scans are ready, without waiting for the next routine slot"
+     ]
+    }
+   ],
+   "flowchart_before": {
+    "nodes": [
+     {
+      "id": "nurse_visit",
+      "label": "Nurse appointment",
+      "stage": "detection"
+     },
+     {
+      "id": "gp_visit",
+      "label": "Health centre doctor",
+      "stage": "detection",
+      "after": [
+       "nurse_visit"
+      ]
+     },
+     {
+      "id": "cxr",
+      "label": "Chest X-ray",
+      "stage": "detection",
+      "after": [
+       "gp_visit"
+      ]
+     },
+     {
+      "id": "specialist_referral",
+      "label": "Referral to specialist care",
+      "stage": "referral",
+      "after": [
+       "cxr"
+      ]
+     },
+     {
+      "id": "specialist_visit",
+      "label": "Specialist visit",
+      "stage": "referral",
+      "after": [
+       "specialist_referral"
+      ]
+     },
+     {
+      "id": "ct",
+      "label": "CT scan",
+      "stage": "diagnosis",
+      "after": [
+       "specialist_visit"
+      ]
+     },
+     {
+      "id": "pet_ct",
+      "label": "PET-CT scan",
+      "stage": "diagnosis",
+      "after": [
+       "ct"
+      ]
+     },
+     {
+      "id": "bronch",
+      "label": "Sampling (bronchoscopy)",
+      "stage": "diagnosis",
+      "after": [
+       "pet_ct"
+      ]
+     },
+     {
+      "id": "pathology",
+      "label": "Pathology report",
+      "stage": "diagnosis",
+      "after": [
+       "bronch"
+      ]
+     },
+     {
+      "id": "tumour_board",
+      "label": "Tumour board decision",
+      "stage": "treatment_start",
+      "after": [
+       "pathology"
+      ]
+     },
+     {
+      "id": "treatment_booking",
+      "label": "Treatment start",
+      "stage": "treatment_start",
+      "after": [
+       "tumour_board"
+      ],
+      "kind": "exit"
+     }
+    ]
+   },
+   "flowchart_after": {
+    "nodes": [
+     {
+      "id": "nurse_visit",
+      "label": "Nurse appointment",
+      "stage": "detection"
+     },
+     {
+      "id": "gp_visit",
+      "label": "Health centre doctor",
+      "stage": "detection",
+      "after": [
+       "nurse_visit"
+      ]
+     },
+     {
+      "id": "cxr",
+      "label": "Chest X-ray",
+      "stage": "detection",
+      "after": [
+       "gp_visit"
+      ]
+     },
+     {
+      "id": "ct",
+      "label": "CT scan, ordered together with the X-ray",
+      "stage": "diagnosis",
+      "after": [
+       "gp_visit"
+      ]
+     },
+     {
+      "id": "specialist_referral",
+      "label": "Referral to specialist care",
+      "stage": "referral",
+      "after": [
+       "cxr",
+       "ct"
+      ]
+     },
+     {
+      "id": "specialist_visit",
+      "label": "Specialist visit",
+      "stage": "referral",
+      "after": [
+       "specialist_referral"
+      ]
+     },
+     {
+      "id": "pet_ct",
+      "label": "PET-CT scan, booked at the visit",
+      "stage": "diagnosis",
+      "after": [
+       "specialist_visit"
+      ]
+     },
+     {
+      "id": "bronch",
+      "label": "Sampling (bronchoscopy), booked at the visit",
+      "stage": "diagnosis",
+      "after": [
+       "specialist_visit"
+      ]
+     },
+     {
+      "id": "pathology",
+      "label": "Pathology report",
+      "stage": "diagnosis",
+      "after": [
+       "bronch"
+      ]
+     },
+     {
+      "id": "tumour_board",
+      "label": "Tumour board decision",
+      "stage": "treatment_start",
+      "after": [
+       "pet_ct",
+       "pathology"
+      ]
+     },
+     {
+      "id": "treatment_booking",
+      "label": "Treatment start",
+      "stage": "treatment_start",
+      "after": [
+       "tumour_board"
+      ],
+      "kind": "exit"
+     }
+    ]
+   }
+  }
+ ],
+ "assumptions": [
+  {
+   "parameter": "Share of lung patients first seen by a nurse",
+   "value": "40-60 %",
+   "source": "IHE Cancer Dashboard Finland 2026",
+   "status": "sourced"
+  },
+  {
+   "parameter": "Wait for a health centre appointment",
+   "value": "14 days",
+   "source": "Khalife et al. 2025",
+   "status": "sourced"
+  },
+  {
+   "parameter": "Wait from PET-CT referral to report (Norway)",
+   "value": "median 20.5 days",
+   "source": "Stokstad et al. 2019",
+   "status": "sourced"
+  },
+  {
+   "parameter": "Wait from sampling to pathology report (Norway)",
+   "value": "median 4.5 days",
+   "source": "Stokstad et al. 2019",
+   "status": "sourced"
+  },
+  {
+   "parameter": "Treatment target",
+   "value": "42 days from first visit",
+   "source": "Stokstad et al. 2019",
+   "status": "sourced"
+  },
+  {
+   "parameter": "Share of cancer patients with vague (non-specific) symptoms",
+   "value": "40 %",
+   "source": "Team assumption, to be checked",
+   "status": "assumption"
+  },
+  {
+   "parameter": "CT scanner capacity (Finnish synthetic pathway)",
+   "value": "83 % busy",
+   "source": "Team assumption",
+   "status": "assumption"
+  },
+  {
+   "parameter": "Wait for the tumour board",
+   "value": "6 days",
+   "source": "Team assumption",
+   "status": "assumption"
+  }
+ ]
+}
+</script>
+<script>
+(function(){
+"use strict";
+var TABS=[["1","What to change"],["2","Where time is lost"],["3","Before and after"],["4","Who waits longest"]];
+var C={wait:"#ffc04d",serve:"#62b0ff",good:"#55e3b0",today:"#ff9a7a",line:"#2c3f52",muted:"#a8b8c9",dim:"#8da0b4",ink:"#0a0f14",pub:"#c9d6e3"};
+var state={bundle:null,sid:null,tab:0,source:""};
+
+/* ---------- helpers ---------- */
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function isNum(x){return typeof x==="number"&&isFinite(x)}
+function plain(s){
+  return String(s==null?"":s)
+    .replace(/optimi[sz]er proposal/ig,"Suggested change").replace(/optimi[sz]er/ig,"suggested change")
+    .replace(/\bnodes\b/ig,"steps").replace(/\bnode\b/ig,"step").replace(/\bembeddings?\b/ig,"patterns");
+}
+function human(id){var s=String(id).replace(/_/g," ");return s.charAt(0).toUpperCase()+s.slice(1)}
+var GROUPS={site_specific:"Site-specific symptoms",non_specific:"Non-specific symptoms"};
+function groupName(g){return GROUPS[g]||human(g)}
+var STAGES={detection:"Detection",referral:"Referral",diagnosis:"Diagnosis",treatment_start:"Treatment start"};
+var STAGE_ORDER=["detection","referral","diagnosis","treatment_start"];
+function pct(x){return isNum(x)?Math.round(x*100)+"%":"n/a"}
+function pctNum(x){return isNum(x)?Math.round(x*100):null}
+function d1(x){return isNum(x)?(Math.round(x*10)/10).toString().replace(/\.0$/,""):"n/a"}
+function g(o){for(var i=1;i<arguments.length;i++){if(o==null)return undefined;o=o[arguments[i]]}return o}
+function scenario(){var s=g(state.bundle,"scenarios")||[];for(var i=0;i<s.length;i++)if(s[i].id===state.sid)return s[i];return s[0]}
+function changeVariant(sc){
+  var v=sc.variants||[];
+  for(var i=0;i<v.length;i++) if(v[i].changes&&v[i].changes.length) return v[i];
+  return v.length?v[v.length-1]:null;
+}
+function otherVariants(sc,cv){return (sc.variants||[]).filter(function(v){return v!==cv})}
+function nodeLabels(sc){
+  var m={};
+  [g(sc,"flowchart_before","nodes"),g(sc,"flowchart_after","nodes")].forEach(function(ns){
+    (ns||[]).forEach(function(n){if(n&&n.id&&n.label&&!m[n.id])m[n.id]=n.label});
+  });
+  return m;
+}
+function shortLabel(l){return plain(l).replace(/\s*\(.*?\)\s*/g," ").replace(/,.*$/,"").trim()}
+function stageTotals(m){
+  var sb=g(m,"stage_breakdown")||{},rows=[];
+  STAGE_ORDER.concat(Object.keys(sb).filter(function(k){return STAGE_ORDER.indexOf(k)<0})).forEach(function(k){
+    if(sb[k]&&(isNum(sb[k].wait)||isNum(sb[k].service)))rows.push({id:k,wait:sb[k].wait||0,service:sb[k].service||0});
+  });
+  return rows;
+}
+function svgText(x,y,t,o){
+  o=o||{};
+  return '<text x="'+x+'" y="'+y+'"'+(o.anchor?' text-anchor="'+o.anchor+'"':"")+' font-size="'+(o.size||20)+'"'+
+    (o.weight?' font-weight="'+o.weight+'"':"")+(o.fill?' fill="'+o.fill+'"':"")+(o.cls?' class="'+o.cls+'"':"")+'>'+esc(t)+'</text>';
+}
+function wrap(t,max){
+  var w=String(t).split(/\s+/),lines=[],cur="";
+  w.forEach(function(x){ if((cur+" "+x).trim().length>max&&cur){lines.push(cur);cur=x}else cur=(cur+" "+x).trim() });
+  if(cur)lines.push(cur);
+  return lines;
+}
+
+/* ---------- Screen 1 ---------- */
+function screen1(sc){
+  var b=g(sc,"baseline","metrics")||{}, cv=changeVariant(sc), a=g(cv,"metrics")||{};
+  var target=sc.target_days, ts=isNum(target)?target+" days":"the target time";
+  var s0=pctNum(b.share_within_target), s1=pctNum(a.share_within_target);
+  var h='<p class="eyebrow">1 &middot; What should we change, and what does it gain</p>';
+  if(s0!=null&&s1!=null){
+    h+='<h1>From '+s0+'% to '+s1+'% treated on time with one suggested change</h1>';
+  }else{h+='<h1>What should we change, and what does it gain</h1>'}
+  h+='<p class="lede">Share of cancer patients who start treatment within '+esc(ts)+'. '+esc(plain(sc.description||""))+'</p>';
+  h+='<div class="panel hero">';
+  h+='<div class="cell"><div class="lab">Treated on time today</div><div class="big today">'+(s0!=null?s0+'<small>%</small>':'n/a')+'</div><div class="sub">'+esc(plain(g(sc,"baseline","label")||"Today"))+'</div></div>';
+  h+='<div class="arrow" aria-hidden="true">&rarr;</div>';
+  if(cv){
+    h+='<div class="cell"><div class="lab">With the suggested change</div><div class="big after">'+(s1!=null?s1+'<small>%</small>':'n/a')+'</div>'+
+       (s0!=null&&s1!=null?'<span class="delta">'+(s1>=s0?'+':'')+(s1-s0)+' points</span>':'')+'</div>';
+  }else{h+='<div class="cell"><div class="empty">No suggested change in this bundle.</div></div>'}
+  h+='</div>';
+  var others=otherVariants(sc,cv).filter(function(v){return isNum(g(v,"metrics","share_within_target"))});
+  if(others.length){
+    h+='<p class="lede" style="margin-top:.9rem">For comparison: '+others.map(function(v){return esc(plain(v.label))+' reaches '+pct(v.metrics.share_within_target)}).join('; ')+'. Adding speed at one step is not enough.</p>';
+  }
+  h+='<div class="cards">';
+  // median days
+  h+='<div class="panel card"><div class="lab">Median days to treatment</div><div class="val"><span class="from">'+d1(b.median_days_to_treatment)+'</span><span class="sep">&rarr;</span><span class="to">'+(cv?d1(a.median_days_to_treatment):"n/a")+'</span></div>'+
+     '<div class="note">'+(isNum(b.median_days_to_treatment)&&isNum(a.median_days_to_treatment)?'<b>'+d1(b.median_days_to_treatment-a.median_days_to_treatment)+' days</b> sooner for the typical patient':'days from first visit to treatment')+'</div></div>';
+  // missed cancers guardrail
+  var m0=b.missed_cancers,m1=a.missed_cancers,ok=isNum(m0)&&isNum(m1)&&m1<=m0;
+  h+='<div class="panel card guard"><div class="lab">Cancers missed <span class="tag'+(ok||!isNum(m1)?'':' bad')+'">'+(!isNum(m1)?'n/a':ok?(m1===m0?'unchanged':'fewer'):'check')+'</span></div>'+
+     '<div class="val"><span class="from">'+(isNum(m0)?m0:'n/a')+'</span><span class="sep">&rarr;</span><span class="to">'+(isNum(m1)?m1:'n/a')+'</span></div>'+
+     '<div class="note">Safety check: a faster pathway must not send cancers home undetected'+(isNum(b.n_cancer)?' (out of '+b.n_cancer+' cancers)':'')+'</div></div>';
+  // tests per patient
+  h+='<div class="panel card"><div class="lab">Tests per patient</div><div class="val"><span class="from">'+d1(b.tests_per_patient)+'</span><span class="sep">&rarr;</span><span class="to">'+(cv?d1(a.tests_per_patient):"n/a")+'</span></div>'+
+     '<div class="note">'+(isNum(b.tests_per_patient)&&isNum(a.tests_per_patient)?(Math.abs(a.tests_per_patient-b.tests_per_patient)<=0.15*b.tests_per_patient?'Almost the same number of tests, ordered differently':(a.tests_per_patient>b.tests_per_patient?'More tests per patient: the price of running steps side by side':'Fewer tests per patient')):'Average tests ordered per patient')+'</div></div>';
+  h+='</div>';
+  return h;
+}
+
+/* ---------- Screen 2 ---------- */
+function stageChart(sc,b,a){
+  var rowsB=stageTotals(b), rowsA=a?stageTotals(a):[];
+  var mapA={};rowsA.forEach(function(r){mapA[r.id]=r});
+  var max=0;rowsB.concat(rowsA).forEach(function(r){max=Math.max(max,r.wait+r.service)});
+  if(!rowsB.length||!max)return '<div class="empty">No stage breakdown in this bundle.</div>';
+  var top=rowsB.reduce(function(p,r){return r.wait>p.wait?r:p},rowsB[0]).id;
+  var X0=360,W=640,bh=30,gap=8,gh=22,rowH=bh*2+gap+gh*2,H=rowsB.length*rowH+20;
+  var sx=W/max, s='<svg viewBox="0 0 1240 '+H+'" role="img" aria-label="Days waiting and being served at each stage">';
+  rowsB.forEach(function(r,i){
+    var y0=10+i*rowH, hl=r.id===top;
+    if(hl)s+='<rect x="2" y="'+(y0-4)+'" width="1236" height="'+(rowH-8)+'" rx="4" fill="rgba(255,192,77,.07)" stroke="'+C.wait+'" stroke-width="2"/>';
+    s+=svgText(18,y0+bh+gap/2+8,STAGES[r.id]||human(r.id),{size:28,weight:700});
+    if(hl)s+=svgText(18,y0+bh+gap/2+36,"MOST WAITING",{size:15,fill:C.wait,weight:700,cls:"mono"});
+    var items=[["Today",r,C.today]];
+    if(mapA[r.id])items.push(["With change",mapA[r.id],C.good]);
+    items.forEach(function(it,j){
+      var y=y0+j*(bh+gap), rr=it[1], ww=rr.wait*sx, sw=rr.service*sx;
+      s+=svgText(X0-12,y+bh*0.7,it[0],{size:17,anchor:"end",fill:it[2],cls:"mono"});
+      s+='<rect x="'+X0+'" y="'+y+'" width="'+Math.max(ww,0)+'" height="'+bh+'" fill="'+C.wait+'"/>';
+      s+='<rect x="'+(X0+ww)+'" y="'+y+'" width="'+Math.max(sw,0)+'" height="'+bh+'" fill="'+C.serve+'"/>';
+      if(ww>60)s+=svgText(X0+ww/2,y+bh*0.7,d1(rr.wait)+" d",{size:18,anchor:"middle",fill:C.ink,weight:700,cls:"mono"});
+      else if(rr.wait>0)s+=svgText(X0+ww+4,y+bh*0.7,d1(rr.wait),{size:15,fill:C.wait,cls:"mono"});
+      var tx=X0+ww+sw+12;
+      s+=svgText(tx,y+bh*0.7,d1(rr.wait+rr.service)+" days in total",{size:18,fill:C.text||"#eaf1f8",cls:"mono"});
+      if(sw>46)s+=svgText(X0+ww+sw/2,y+bh*0.7,d1(rr.service),{size:15,anchor:"middle",fill:C.ink,weight:700,cls:"mono"});
+    });
+  });
+  return s+'</svg>';
+}
+function stepList(sc,b){
+  var nb=g(b,"node_breakdown")||{},labels=nodeLabels(sc),rows=[];
+  Object.keys(nb).forEach(function(k){var r=nb[k];if(r&&isNum(r.wait))rows.push({id:k,wait:r.wait,service:r.service||0})});
+  rows.sort(function(x,y){return y.wait-x.wait});
+  rows=rows.slice(0,5);
+  if(!rows.length)return {html:'',top:null};
+  var max=rows[0].wait+0.0001,H=rows.length*58+10,X0=330,W=560,s='<svg viewBox="0 0 1240 '+H+'" role="img" aria-label="Steps with the longest waits">';
+  rows.forEach(function(r,i){
+    var y=8+i*58,hl=i===0,lab=shortLabel(labels[r.id]||human(r.id));
+    s+=svgText(X0-14,y+30,lab,{size:21,anchor:"end",weight:hl?700:400});
+    s+='<rect x="'+X0+'" y="'+y+'" width="'+(r.wait/max*W)+'" height="40" fill="'+C.wait+'" opacity="'+(hl?1:.6)+'"/>';
+    s+=svgText(X0+r.wait/max*W+12,y+28,d1(r.wait)+" days waiting, "+d1(r.service)+" being served",{size:18,cls:"mono",fill:hl?C.wait:"#eaf1f8"});
+  });
+  return {html:s+'</svg>',top:rows[0],label:shortLabel(labels[rows[0].id]||human(rows[0].id))};
+}
+function screen2(sc){
+  var b=g(sc,"baseline","metrics")||{}, cv=changeVariant(sc), a=g(cv,"metrics");
+  var rows=stageTotals(b), tw=0,tt=0;
+  rows.forEach(function(r){tw+=r.wait;tt+=r.wait+r.service});
+  var h='<p class="eyebrow">2 &middot; Where time is lost</p>';
+  if(tt>0){
+    var top=rows.reduce(function(p,r){return r.wait>p.wait?r:p},rows[0]);
+    h+='<h1>'+Math.round(tw/tt*100)+'% of the time to treatment is spent waiting in queues, not in the tests</h1>';
+    h+='<p class="lede">Average days per cancer patient, split into waiting for a step and being served by it. The most waiting is at <b style="color:var(--wait)">'+esc((STAGES[top.id]||human(top.id)).toLowerCase())+'</b> ('+d1(top.wait)+' days).</p>';
+  }else h+='<h1>Where time is lost</h1>';
+  h+='<div class="legend"><span><i style="background:'+C.wait+'"></i>Waiting in a queue</span><span><i style="background:'+C.serve+'"></i>Being served (the test or visit itself)</span></div>';
+  h+='<div class="panel">'+stageChart(sc,b,a)+'</div>';
+  var sl=stepList(sc,b);
+  if(sl.html){
+    h+='<h2>The longest queue is at one step: '+esc(sl.label)+'</h2><div class="panel">'+sl.html+'</div>';
+  }
+  h+='<h2>The change that fixes it</h2>';
+  if(cv&&cv.changes&&cv.changes.length){
+    h+='<div class="panel"><ul class="changes">'+cv.changes.map(function(c,i){return '<li><b>'+(i+1)+'</b><span>'+esc(plain(c))+'</span></li>'}).join('')+'</ul></div>';
+  }else h+='<div class="empty">No suggested change listed in this bundle.</div>';
+  return h;
+}
+
+/* ---------- Screen 3 ---------- */
+function layoutFlow(nodes){
+  var by={},depth={};
+  nodes.forEach(function(n){by[n.id]=n});
+  function preds(n){return (n.after||[]).concat(n.after_any||[]).filter(function(p){return by[p]})}
+  function dep(id,seen){
+    if(depth[id]!=null)return depth[id];
+    if(seen[id])return 0; seen[id]=1;
+    var p=preds(by[id]),d=0;
+    p.forEach(function(x){d=Math.max(d,dep(x,seen)+1)});
+    depth[id]=d;return d;
+  }
+  nodes.forEach(function(n){dep(n.id,{})});
+  var cols=[];
+  nodes.forEach(function(n){(cols[depth[n.id]]=cols[depth[n.id]]||[]).push(n)});
+  // order inside a column by mean row of predecessors
+  var pos={};
+  cols.forEach(function(col,ci){
+    if(ci>0)col.sort(function(a,b){return mean(a)-mean(b)});
+    col.forEach(function(n,ri){pos[n.id]={c:ci,r:ri}});
+    function mean(n){var p=preds(n);if(!p.length)return 0;var s=0;p.forEach(function(x){s+=(pos[x]?pos[x].r:0)});return s/p.length}
+  });
+  return {by:by,cols:cols,pos:pos,preds:preds};
+}
+function predKey(n){return (n?(n.after||[]).concat(n.after_any||[]).slice().sort().join("|"):"")}
+function flowSvg(fc,refNodes,isAfter){
+  var nodes=g(fc,"nodes");
+  if(!nodes||!nodes.length)return '<div class="empty">No pathway drawing in this bundle.</div>';
+  var L=layoutFlow(nodes),wide=L.cols.length>9,NW=wide?150:196,NH=wide?92:80,GX=wide?34:54,GY=24,PAD=14;
+  var maxRows=0;L.cols.forEach(function(c){maxRows=Math.max(maxRows,c?c.length:0)});
+  var W=PAD*2+L.cols.length*NW+(L.cols.length-1)*GX, H=PAD*2+maxRows*NH+(maxRows-1)*GY;
+  var ref={};(refNodes||[]).forEach(function(n){ref[n.id]=n});
+  function xy(id){var p=L.pos[id],col=L.cols[p.c],off=(maxRows-col.length)*(NH+GY)/2;
+    return {x:PAD+p.c*(NW+GX),y:PAD+off+p.r*(NH+GY)}}
+  var s='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Pathway steps from left to right"><defs><marker id="ah'+(isAfter?'a':'b')+'" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="'+C.muted+'"/></marker></defs>';
+  nodes.forEach(function(n){
+    L.preds(n).forEach(function(p){
+      var a=xy(p),b=xy(n.id),x1=a.x+NW,y1=a.y+NH/2,x2=b.x,y2=b.y+NH/2,mx=(x1+x2)/2;
+      s+='<path d="M'+x1+' '+y1+' C'+mx+' '+y1+' '+mx+' '+y2+' '+(x2-2)+' '+y2+'" fill="none" stroke="'+C.dim+'" stroke-width="2" marker-end="url(#ah'+(isAfter?'a':'b')+')"/>';
+    });
+  });
+  nodes.forEach(function(n){
+    var p=xy(n.id),changed=isAfter&&refNodes&&(!ref[n.id]||predKey(ref[n.id])!==predKey(n));
+    var exit=n.kind==="exit";
+    s+='<g><rect x="'+p.x+'" y="'+p.y+'" width="'+NW+'" height="'+NH+'" rx="'+(exit?NH/2:5)+'" fill="'+(changed?'#0f2a22':'#16222f')+'" stroke="'+(changed?C.good:C.line)+'" stroke-width="'+(changed?3:2)+'"/>';
+    var lines=wrap(plain(n.label||human(n.id)),wide?(changed?14:16):(changed?19:23)).slice(0,5),fs=wide?(lines.length>3?14:16):(lines.length>3?14:16),lh=fs+3,y0=p.y+NH/2-(lines.length-1)*lh/2+fs*0.35;
+    lines.forEach(function(t,i){s+=svgText(p.x+NW/2,y0+i*lh,t,{size:fs,anchor:"middle",weight:changed?700:400})});
+    s+='</g>';
+  });
+  return s+'</svg>';
+}
+function validation(sc,cv){
+  var pub=sc.published;if(!pub)return '';
+  var b=g(sc,"baseline","metrics"),a=g(cv,"metrics"),others=otherVariants(sc,cv);
+  var pv=null;others.forEach(function(v){if(/pet|scan/i.test(v.label||"")&&!pv)pv=v});
+  if(!pv&&others.length)pv=others[0];
+  var G=[["Observed pathway",g(b,"share_within_target"),pub.baseline_share],
+         ["Faster PET scan only",g(pv,"metrics","share_within_target"),pub.faster_pet_share],
+         ["Reordered steps (suggested change)",g(a,"share_within_target"),pub.optimal_share]]
+        .filter(function(r){return isNum(r[1])||isNum(r[2])});
+  if(!G.length)return '';
+  var H=420,X0=70,Y0=30,PH=300,gw=330,s='<svg viewBox="0 0 1240 '+H+'" role="img" aria-label="Simulated share treated on time compared with the published study">';
+  [0,20,40,60,80,100].forEach(function(t){var y=Y0+PH-PH*t/100;
+    s+='<line x1="'+X0+'" x2="1220" y1="'+y+'" y2="'+y+'" stroke="'+C.line+'" stroke-width="1"/>'+svgText(X0-10,y+6,t+"%",{size:16,anchor:"end",fill:C.muted,cls:"mono"})});
+  G.forEach(function(r,i){
+    var gx=X0+40+i*(gw+30);
+    [[r[1],C.serve,"Our simulation",0],[r[2],C.pub,"Published study",1]].forEach(function(bar){
+      var v=bar[0];if(!isNum(v))return;var bx=gx+bar[3]*(gw/2-10),h=PH*v,y=Y0+PH-h;
+      s+='<rect x="'+bx+'" y="'+y+'" width="'+(gw/2-30)+'" height="'+h+'" fill="'+bar[1]+'"/>';
+      s+=svgText(bx+(gw/2-30)/2,y-8,pct(v),{size:26,weight:700,anchor:"middle",cls:"mono"});
+    });
+    wrap(r[0],26).forEach(function(t,k){s+=svgText(gx+(gw-30)/2,Y0+PH+30+k*22,t,{size:19,anchor:"middle"})});
+  });
+  s+='</svg>';
+  var h='<h2>Does the model reproduce a real study?</h2>';
+  h+='<p class="lede">Share of patients treated within '+esc(sc.target_days||42)+' days. The numbers on the left of each pair come from our simulation, built without looking at the published result. The right bars are from '+esc(plain(pub.source||"the published study"))+'.</p>';
+  h+='<div class="legend"><span><i style="background:'+C.serve+'"></i>Our simulation</span><span><i style="background:'+C.pub+'"></i>Published study</span></div>';
+  return h+'<div class="panel">'+s+'</div>';
+}
+function screen3(sc){
+  var cv=changeVariant(sc);
+  var h='<p class="eyebrow">3 &middot; Before and after</p><h1>Before and after: what the suggested change does to the pathway</h1>';
+  h+='<p class="lede">Steps run left to right. Steps stacked in the same column happen side by side. Outlined steps are the ones the suggested change moves.</p>';
+  h+='<h2 style="margin-top:1rem">Before: today&rsquo;s pathway</h2><div class="panel scroll-x">'+flowSvg(sc.flowchart_before,null,false)+'</div>';
+  h+='<h2>After: with the suggested change</h2><div class="panel scroll-x">'+flowSvg(sc.flowchart_after,g(sc,"flowchart_before","nodes"),true)+'</div>';
+  h+=validation(sc,cv);
+  return h;
+}
+
+/* ---------- Screen 4 ---------- */
+function screen4(sc){
+  var b=g(sc,"baseline","metrics")||{},cv=changeVariant(sc),a=g(cv,"metrics")||{};
+  var bg=b.by_group,ag=a.by_group,h='<p class="eyebrow">4 &middot; Who waits longest</p>';
+  var keys=bg?Object.keys(bg).filter(function(k){return bg[k]&&isNum(bg[k].median_days_to_treatment)}):[];
+  keys.sort(function(x,y){return bg[y].median_days_to_treatment-bg[x].median_days_to_treatment});
+  if(keys.length>=2){
+    var w=bg[keys[0]].median_days_to_treatment,o=bg[keys[keys.length-1]].median_days_to_treatment;
+    h+='<h1>'+esc(groupName(keys[0]))+' wait '+d1(w-o)+' days longer for treatment</h1>';
+    h+='<p class="lede">Median days to treatment today: '+d1(w)+' against '+d1(o)+' for '+esc(groupName(keys[keys.length-1]).toLowerCase())+'.'+(ag?' The suggested change is checked for each group, so no group is left behind.':'')+'</p>';
+  }else h+='<h1>Who waits longest</h1>';
+  if(keys.length){
+    h+='<div class="cols2">';
+    keys.forEach(function(k,i){
+      var r=bg[k],r1=g(ag,k)||{};
+      h+='<div class="panel gcard"><div class="name">'+esc(groupName(k))+(i===0&&keys.length>1?'<span class="tag bad">waits longest</span>':'')+'</div>'+
+        '<div class="row"><span class="lab">Median days to treatment</span><span class="v"><span class="from">'+d1(r.median_days_to_treatment)+'</span><span class="sep"> &rarr; </span><span class="to">'+(isNum(r1.median_days_to_treatment)?d1(r1.median_days_to_treatment):'n/a')+'</span></span></div>'+
+        '<div class="row"><span class="lab">Treated on time</span><span class="v"><span class="from">'+pct(r.share_within_target)+'</span><span class="sep"> &rarr; </span><span class="to">'+(isNum(r1.share_within_target)?pct(r1.share_within_target):'n/a')+'</span></span></div>'+
+        '<div class="row"><span class="lab">Cancer patients simulated</span><span class="v" style="font-size:1.2rem">'+(isNum(r.n_cancer)?r.n_cancer:'n/a')+'</span></div></div>';
+    });
+    h+='</div>';
+    // chart
+    var max=0;keys.forEach(function(k){max=Math.max(max,bg[k].median_days_to_treatment,g(ag,k,"median_days_to_treatment")||0)});
+    var rowH=140,H=keys.length*rowH+10,X0=190,W=780,s='<svg viewBox="0 0 1240 '+H+'" role="img" aria-label="Median days to treatment by patient group">';
+    keys.forEach(function(k,i){
+      var y=8+i*rowH,v0=bg[k].median_days_to_treatment,v1=g(ag,k,"median_days_to_treatment");
+      y+=34;
+      s+=svgText(18,y-12,groupName(k),{size:24,weight:700});
+      s+=svgText(X0-14,y+24,"Today",{size:16,anchor:"end",fill:C.today,cls:"mono"});
+      s+='<rect x="'+X0+'" y="'+y+'" width="'+(v0/max*W)+'" height="34" fill="'+C.today+'"/>'+svgText(X0+v0/max*W+12,y+26,d1(v0)+" days",{size:19,cls:"mono"});
+      if(isNum(v1)){
+        s+=svgText(X0-14,y+66,"With change",{size:16,anchor:"end",fill:C.good,cls:"mono"});
+        s+='<rect x="'+X0+'" y="'+(y+42)+'" width="'+(v1/max*W)+'" height="34" fill="'+C.good+'"/>'+svgText(X0+v1/max*W+12,y+68,d1(v1)+" days",{size:19,cls:"mono"});
+      }
+    });
+    h+='<h2>Median days to treatment, by patient group</h2><div class="panel">'+s+'</svg></div>';
+  }else h+='<div class="empty" style="margin-top:1rem">This bundle has no split by patient group.</div>';
+  // assumptions
+  h+='<h2>What this rests on: sources and assumptions</h2>';
+  var as=g(state.bundle,"assumptions")||[];
+  if(as.length){
+    h+='<div class="panel scroll-x"><table><thead><tr><th>Input</th><th>Value</th><th>Source</th><th>Status</th></tr></thead><tbody>';
+    as.forEach(function(r){
+      var st=r.status==="sourced"?"sourced":"assumption",src=esc(plain(r.source||"")),url=r.url||(/^https?:\/\//.test(r.source||"")?r.source:"");
+      if(url&&/^https?:\/\//.test(url))src='<a href="'+esc(url)+'" target="_blank" rel="noopener">'+(r.url?src:esc(url))+'</a>';
+      h+='<tr><td>'+esc(plain(r.parameter))+'</td><td>'+esc(r.value)+'</td><td>'+src+'</td><td><span class="badge '+st+'">'+st+'</span></td></tr>';
+    });
+    h+='</tbody></table></div>';
+  }else h+='<div class="empty">No assumptions listed in this bundle.</div>';
+  return h;
+}
+
+/* ---------- shell ---------- */
+function render(){
+  var sc=scenario(),view=document.getElementById("view");
+  if(!sc){view.innerHTML='<div class="empty">The data file has no scenarios.</div>';return}
+  var fn=[screen1,screen2,screen3,screen4][state.tab];
+  try{view.innerHTML=fn(sc)}catch(e){view.innerHTML='<div class="empty">This screen could not be drawn from the data: '+esc(e.message)+'</div>'}
+  var f=document.createElement("footer");
+  f.textContent="Scenario: "+(sc.title||sc.id)+" | data: "+state.source+(state.bundle.generated_at?" | generated "+state.bundle.generated_at:"");
+  view.appendChild(f);
+  var tb=document.getElementById("tabs");
+  Array.prototype.forEach.call(tb.children,function(b,i){b.setAttribute("aria-selected",i===state.tab?"true":"false")});
+  var sg=document.getElementById("scen");
+  Array.prototype.forEach.call(sg.querySelectorAll("button"),function(b){b.setAttribute("aria-pressed",b.dataset.id===sc.id?"true":"false")});
+  document.getElementById("illus").hidden=!state.bundle.fixture;
+  try{history.replaceState(null,"","#"+encodeURIComponent(sc.id)+"/"+(state.tab+1))}catch(e){}
+}
+function buildChrome(){
+  var tb=document.getElementById("tabs");tb.innerHTML="";
+  TABS.forEach(function(t,i){var b=document.createElement("button");b.setAttribute("role","tab");b.innerHTML='<b>'+t[0]+'</b>'+t[1];
+    b.onclick=function(){state.tab=i;render();window.scrollTo(0,0)};tb.appendChild(b)});
+  var sg=document.getElementById("scen");sg.innerHTML="<span>Scenario</span>";
+  (state.bundle.scenarios||[]).forEach(function(s){var b=document.createElement("button");b.dataset.id=s.id;b.textContent=plain(s.title||s.id);
+    b.onclick=function(){state.sid=s.id;render()};sg.appendChild(b)});
+}
+function start(bundle,source){
+  state.bundle=bundle;state.source=source;
+  var sc=bundle.scenarios||[];state.sid=sc.length?sc[0].id:null;
+  var m=/^#([^\/]+)\/(\d)$/.exec(location.hash||"");
+  if(m){var id=decodeURIComponent(m[1]);sc.forEach(function(s){if(s.id===id)state.sid=id});var t=parseInt(m[2],10)-1;if(t>=0&&t<TABS.length)state.tab=t}
+  buildChrome();render();
+}
+function embedded(){
+  try{return JSON.parse(document.getElementById("bundle").textContent)}catch(e){return null}
+}
+document.addEventListener("keydown",function(e){
+  if(e.target&&/INPUT|SELECT|TEXTAREA/.test(e.target.tagName))return;
+  if(!state.bundle)return;
+  if(e.key==="ArrowRight"&&state.tab<TABS.length-1){state.tab++;render();window.scrollTo(0,0)}
+  else if(e.key==="ArrowLeft"&&state.tab>0){state.tab--;render();window.scrollTo(0,0)}
+  else if(/^[1-4]$/.test(e.key)){state.tab=+e.key-1;render();window.scrollTo(0,0)}
+});
+function fallback(why){
+  var b=embedded();
+  if(b)start(b,"embedded copy ("+why+")");
+  else document.getElementById("view").innerHTML='<div class="empty">Could not load demo/data/demo_bundle.json and there is no embedded copy.</div>';
+}
+if(location.protocol==="file:"){fallback("opened from disk")}
+else{
+  fetch("data/demo_bundle.json",{cache:"no-store"}).then(function(r){if(!r.ok)throw new Error(r.status);return r.json()})
+    .then(function(b){start(b,"data/demo_bundle.json")}).catch(function(){fallback("file not found")});
+}
+window.__demo={start:start};
+})();
+</script>
+</body>
+</html>
