@@ -434,3 +434,6 @@ Wave 7 (18:25 UTC, Tuomas away ~3h, architect integrating): lanes w7/review (rea
 
 ### [1114-182214-claude-code-tuomas-loop2] 2026-11-14 18:22Z · claude-code@tuomas/loop2 · CLAIM
 w7/loop (worktree /home/claude/wt/loop2): diagnose+tune encounter loop vs chain. Editing scenarios/finland_encounter*.yaml, scripts/encounter_report.py (not tolerances), docs/encounter_results.md, docs/review_checks/encounter_*.json, possibly small pathway_sim/encounter.py rule + C8 doc. Catalogue hash will not change.
+
+### [1114-182224-claude-code-tuomas-norway-opt] 2026-11-14 18:22Z · claude-code@tuomas/norway-opt · CLAIM
+w7/norway-opt (worktree /home/claude/wt/norway2): optimiser flowcharts on the 184 extended-grid Norway settings + leave-one-out ablation + structure check vs paper. Owns: end of docs/validation.md, scripts/norway_optimiser_*.py, docs/review_checks/norway_opt_*.json, scenarios/experiments/.
