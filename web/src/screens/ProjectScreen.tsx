@@ -15,10 +15,14 @@ import type { Draft } from '../lib/decisionDraft'
 import { go, replace } from '../lib/route'
 import type { Route } from '../lib/route'
 import { useRuns } from '../lib/useRuns'
+import { effectiveRun } from '../lib/runSelect'
 import { DecisionsTable } from './DecisionsTable'
 import { RunPanel } from './RunPanel'
 import { OptimisePanel } from './OptimisePanel'
 import { EditPanel } from './EditPanel'
+import { DiffDialog } from './DiffDialog'
+import { pushHistory, redoHistory, startHistory, undoHistory } from '../lib/history'
+import type { History } from '../lib/history'
 
 type Tab = 'flowchart' | 'decisions'
 
@@ -78,16 +82,19 @@ export function ProjectScreen({ pid, route }: { pid: string; route: Route }) {
       if (errs.length) return
       const saved = await api.saveFlowchart(pid, cur.id, doc)
       setList(await api.listFlowcharts(pid))
-      go(`p/${pid}`, { f: cur.id, v: saved.version, tab: 'decisions', run: selectedRun })
+      go(`p/${pid}`, { f: cur.id, v: saved.version, tab: 'decisions' })
     } catch (e) {
       const err = e as Error & { problems?: Problem[] }
       if (err.problems) setProblems(err.problems as Problem[]); else setError(err.message)
     } finally { setSaving(false) }
-  }, [api, pid, fc, initial, draft, cur, selectedRun])
+  }, [api, pid, fc, initial, draft, cur])
 
   // ---- edit mode: a working copy of the flowchart, checked by the validator as it changes ----
   const [editing, setEditing] = useState(false)
-  const [editDoc, setEditDoc] = useState<Flowchart | null>(null)
+  const [hist, setHist] = useState<History<Flowchart> | null>(null)
+  const editDoc = hist?.present ?? null
+  const setEditDoc = useCallback((d: Flowchart | null) => setHist(d ? startHistory(d) : null), [])
+  const [checkedDoc, setCheckedDoc] = useState<Flowchart | null>(null)
   const [editProblems, setEditProblems] = useState<Problem[]>([])
   const [checking, setChecking] = useState(false)
   const [editSaving, setEditSaving] = useState(false)
@@ -99,12 +106,25 @@ export function ProjectScreen({ pid, route }: { pid: string; route: Route }) {
     let live = true
     setChecking(true)
     const h = window.setTimeout(() => {
-      api.validate(pid, editDoc).then((v) => { if (live) setEditProblems(v.problems) })
-        .catch((e) => { const err = e as Error & { problems?: Problem[] }; if (live) setEditProblems(err.problems ?? [{ severity: 'error', code: 'check_failed', message: err.message }]) })
+      api.validate(pid, editDoc).then((v) => { if (live) { setEditProblems(v.problems); setCheckedDoc(editDoc) } })
+        .catch((e) => { const err = e as Error & { problems?: Problem[] }; if (live) { setEditProblems(err.problems ?? [{ severity: 'error', code: 'check_failed', message: err.message }]); setCheckedDoc(editDoc) } })
         .finally(() => { if (live) setChecking(false) })
     }, 400)
     return () => { live = false; window.clearTimeout(h) }
   }, [api, pid, editing, editDoc])
+  // undo and redo with the keyboard while editing (inside a text field the browser's own undo keeps working)
+  useEffect(() => {
+    if (!editing) return
+    const k = (e: KeyboardEvent) => {
+      if (!(e.metaKey || e.ctrlKey) || e.key.toLowerCase() !== 'z') return
+      const t = e.target as HTMLElement | null
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return
+      e.preventDefault()
+      setHist((h) => (h ? (e.shiftKey ? redoHistory(h) : undoHistory(h)) : h))
+    }
+    window.addEventListener('keydown', k)
+    return () => window.removeEventListener('keydown', k)
+  }, [editing])
   const startEdit = () => { if (fc) { setEditDoc(JSON.parse(JSON.stringify(fc))); setEditing(true); setEditProblems([]) } }
   const stopEdit = () => { setEditing(false); setEditDoc(null); setEditProblems([]); setEditError(null) }
   const saveEdit = async () => {
@@ -136,9 +156,8 @@ export function ProjectScreen({ pid, route }: { pid: string; route: Route }) {
   }, [route.q, runsLoaded, fc, cur, world, runs, api, pid, curVer, reloadRuns])
 
   // ---- run layers: the selected run's flow document drawn on the same canvas ----
-  const autoRun = cur ? runs.find((r) => r.status === 'succeeded' && r.flowchart.id === cur.id && r.flowchart.version === curVer) : undefined
-  const effRun = selectedRun ?? autoRun?.id ?? null
-  const runObj = runs.find((r) => r.id === effRun) ?? null
+  const runObj = effectiveRun(runs, selectedRun, cur?.id ?? null, curVer)
+  const effRun = runObj?.id ?? null
   const { flow, error: flowError, loading: flowLoading } = useFlow(api, pid, effRun, runObj?.status === 'succeeded')
   const layerQ = route.q.get('layer') as Layer | null
   const layer: Layer = flow ? (layerQ && LAYERS.some((l) => l.id === layerQ) ? layerQ : 'flow') : 'structure'
@@ -150,6 +169,7 @@ export function ProjectScreen({ pid, route }: { pid: string; route: Route }) {
   const adj = useMemo(() => adjacency(fc?.edges ?? []), [fc])
   const [patientIdx, setPatientIdx] = useState<number | null>(null)
   const [panelOpen, setPanelOpen] = useState(true)
+  const [compareWith, setCompareWith] = useState<number | null>(null)
   const [sideTab, setSideTab] = useState<'run' | 'time' | 'patient' | 'optimise'>('run')
   useEffect(() => { setPatientIdx(null) }, [flow])
   const pickPatient = useCallback((idx: number | null) => { setPatientIdx(idx); if (idx !== null) setSideTab('patient') }, [])
@@ -167,8 +187,8 @@ export function ProjectScreen({ pid, route }: { pid: string; route: Route }) {
     go(`p/${pid}`, { f: fid, v: version, run })
   }, [api, pid])
 
-  if (error && !fc) return <div className="page"><div className="error">{error}</div><p><a href="#/">Back to projects</a></p></div>
-  if (!fc || !cur || curVer === null || !draft || !world) return <div className="page"><div className="empty">Loading…</div></div>
+  if (error && !fc) return <div className="page"><div className="error" role="alert">Could not open this project: {error}</div><p><button className="btn" onClick={() => window.location.reload()}>Try again</button> <a href="#/" style={{ marginLeft: 10 }}>Back to projects</a></p></div>
+  if (!fc || !cur || curVer === null || !draft || !world) return <div className="page"><div className="empty" role="status">Loading the project…</div></div>
 
   const shown = editing && editDoc ? editDoc : fc
   const sel = selected ? fc.nodes.find((n) => n.id === selected) : null
@@ -178,23 +198,29 @@ export function ProjectScreen({ pid, route }: { pid: string; route: Route }) {
     <>
       <div className="subbar">
         <a href="#/" onClick={(e) => { e.preventDefault(); go('') }} className="muted">‹ Projects</a>
-        <strong>{project?.name}</strong>
+        <strong className="ellipsis" style={{ maxWidth: 260 }} title={project?.name}>{project?.name}</strong>
         <span className="sep dim">/</span>
-        <select className="field" aria-label="Flowchart" value={cur.id} onChange={(e) => nav({ f: e.target.value, v: null })}>
+        <select className="field ellipsis" style={{ maxWidth: 280 }} aria-label="Flowchart" value={cur.id} onChange={(e) => nav({ f: e.target.value, v: null, run: null })}>
           {list.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
         </select>
-        <select className="field" aria-label="Version" value={curVer} onChange={(e) => nav({ v: e.target.value })}>
+        <select className="field" aria-label="Version" value={curVer} onChange={(e) => nav({ v: e.target.value, run: null })}>
           {cur.versions.slice().reverse().map((v) => <option key={v} value={v}>version {v}{v === cur.latest_version ? ' (latest)' : ''}{cur.locked.includes(v) ? ' · has runs' : ''}</option>)}
         </select>
+        {cur.versions.length > 1 && (
+          <select className="field" aria-label="Compare with another version" value="" onChange={(e) => e.target.value && setCompareWith(Number(e.target.value))} title="Draw this version next to another one and mark what changed" style={{ maxWidth: 150 }}>
+            <option value="">Compare with…</option>
+            {cur.versions.filter((v) => v !== curVer).reverse().map((v) => <option key={v} value={v}>version {v}</option>)}
+          </select>
+        )}
         <div className="tabs" role="tablist">
           <button role="tab" aria-selected={tab === 'flowchart'} className={`tab ${tab === 'flowchart' ? 'on' : ''}`} onClick={() => nav({ tab: null })}>Flowchart</button>
           <button role="tab" aria-selected={tab === 'decisions'} className={`tab ${tab === 'decisions' ? 'on' : ''}`} onClick={() => nav({ tab: 'decisions' })}>Decisions{dirty ? ' •' : ''}</button>
-          <button role="tab" className="tab" disabled title="The dashboard report arrives with ticket M3-7">Report</button>
         </div>
         <span className="spacer" />
         <span className="dim" style={{ fontSize: 12 }}>{fc.nodes.length} steps · {fc.nodes.filter((n) => n.kind === 'decision').length} decisions{world.target_days ? ` · target ${world.target_days} days` : ''}</span>
       </div>
 
+      {error && tab === 'flowchart' && <div className="error" role="alert" style={{ margin: '8px 20px', display: 'flex', gap: 10, alignItems: 'center' }}><span style={{ flex: 1 }}>{error}</span><button className="btn small" onClick={() => setError(null)}>Dismiss</button></div>}
       {tab === 'flowchart' ? (
         <div className="workspace">
           <div className="canvas-col">
@@ -202,6 +228,7 @@ export function ProjectScreen({ pid, route }: { pid: string; route: Route }) {
               <FlowCanvas layoutKey={`${pid}/${cur.id}`} refit={`${panelOpen ? 'p' : 'c'}${flow && layer !== 'structure' ? 'b' : ''}`} flowchart={shown} world={world} selected={selected} onSelect={setSelected} overlay={editing ? null : overlay} path={editing ? null : path}
                 playback={clock && layer !== 'structure' && !editing ? { clock, patients: pps, transit, selectedPatient: patientIdx, onPick: pickPatient } : null} />
               <button className="btn small panelbtn" onClick={() => setPanelOpen((o) => !o)} aria-pressed={panelOpen} title={panelOpen ? 'Hide the side panel for more room' : 'Show the side panel'}>{panelOpen ? 'Hide panel ›' : '‹ Panel'}</button>
+              {!editing && <button className="btn small optbtn" onClick={() => { setPanelOpen(true); setSideTab('optimise') }} title="Search for changes to the order of steps that bring treatment forward" data-testid="open-optimise">Optimise…</button>}
               <button className={`btn small editbtn ${editing ? 'primary' : ''}`} onClick={() => (editing ? stopEdit() : startEdit())} aria-pressed={editing} title={editing ? 'Leave edit mode (unsaved changes are dropped)' : 'Change steps and connections and save them as a new version'}>{editing ? 'Done editing' : 'Edit'}</button>
               {flow && !editing && (
                 <>
@@ -211,13 +238,16 @@ export function ProjectScreen({ pid, route }: { pid: string; route: Route }) {
                   <div className="toolhint"><strong>{runObj ? runObj.label || runObj.id : ''}</strong> · {overlay?.legend || LAYERS.find((l) => l.id === layer)?.hint}</div>
                 </>
               )}
+              {!flow && !flowLoading && !flowError && !editing && runsLoaded && <div className="toolhint" style={{ top: 12 }} data-testid="no-run-hint">No finished run of this version yet. Press Run in the side panel to see patients flow through it, or Optimise to search for improvements.</div>}
               {!flow && (flowLoading || flowError) && <div className="toolhint" style={{ top: 12 }}>{flowLoading ? 'Loading the run…' : flowError}</div>}
             </div>
             {flow && clock && layer !== 'structure' && !editing && <PlaybackBar clock={clock} patients={pps} sampleLabel={`Dots: ${pps.length} sampled patients of ${flow.totals.n.toLocaleString('en')}. Counts and colours use everyone.`} />}
           </div>
           {panelOpen && editing && editDoc && <aside className="side" aria-label="Side panel">
-            <EditPanel doc={editDoc} world={world} selected={selected} onSelect={setSelected} onChange={setEditDoc} problems={editProblems} checking={checking} dirty={editDirty} saving={editSaving}
-              baseVersion={fc.version} latestVersion={cur.latest_version} flowchartName={cur.name} onSave={saveEdit} onDiscard={() => setEditDoc(JSON.parse(JSON.stringify(fc)))} />
+            <EditPanel doc={editDoc} world={world} selected={selected} onSelect={setSelected} onChange={(d, key) => setHist((h) => (h ? pushHistory(h, d, key) : h))}
+              canUndo={!!hist?.past.length} canRedo={!!hist?.future.length} onUndo={() => setHist((h) => (h ? undoHistory(h) : h))} onRedo={() => setHist((h) => (h ? redoHistory(h) : h))}
+              problems={editProblems} checking={checking || checkedDoc !== editDoc} dirty={editDirty} saving={editSaving}
+              baseVersion={fc.version} latestVersion={cur.latest_version} flowchartName={cur.name} onSave={saveEdit} onDiscard={() => setHist((h) => (h ? pushHistory(h, JSON.parse(JSON.stringify(fc)) as Flowchart) : h))} />
             {editError && <div className="error" role="alert">{editError}</div>}
           </aside>}
           {panelOpen && !editing && <aside className="side" aria-label="Side panel">
@@ -278,6 +308,11 @@ export function ProjectScreen({ pid, route }: { pid: string; route: Route }) {
             )}
           </div>
         </>
+      )}
+      {compareWith !== null && (
+        <DiffDialog pid={pid} onClose={() => setCompareWith(null)}
+          a={{ fid: cur.id, version: Math.min(compareWith, curVer), label: `Version ${Math.min(compareWith, curVer)}` }}
+          b={{ fid: cur.id, version: Math.max(compareWith, curVer), label: `Version ${Math.max(compareWith, curVer)}` }} />
       )}
     </>
   )

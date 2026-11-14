@@ -10,6 +10,10 @@ describe('view layout', () => {
     window.localStorage.setItem('pathway:view-layout:bad', '{"pos":{"x":{"x":"1"}}')
     expect(loadView('bad')).toEqual(emptyView())
   })
+  it('keeps sizes but drops positions made on an older automatic layout', () => {
+    window.localStorage.setItem('pathway:view-layout:old', JSON.stringify({ pos: { a: { x: 1, y: 2 } }, size: { a: { w: 200, h: 90 } } }))
+    expect(loadView('old')).toEqual({ pos: {}, size: { a: { w: 200, h: 90 } } })
+  })
   it('an empty layout removes the stored entry', () => {
     saveView('k', { pos: { x: { x: 1, y: 2 } }, size: {} }); saveView('k', emptyView())
     expect(window.localStorage.getItem('pathway:view-layout:k')).toBeNull()

@@ -27,3 +27,43 @@ describe('graph edits', () => {
     void b
   })
 })
+
+import { addOption, addStep, connectionsOf, removeOption, removeStep, uniqueId } from './graphEdit'
+
+describe('steps and options', () => {
+  const dec = fc.nodes.find((n) => n.kind === 'decision')!
+  const opts = (d: Flowchart, id: string) => d.edges.filter((e) => e.from === id && e.type === 'option')
+  it('adds a step with a unique id, optionally connected after another step', () => {
+    const a = fc.nodes.find((n) => n.kind === 'step')!
+    const { doc, id } = addStep(fc, { label: 'Chest X-ray', kind: 'step' }, a.id)
+    expect(doc.nodes.length).toBe(fc.nodes.length + 1)
+    expect(doc.edges).toContainEqual({ from: a.id, to: id, type: 'required' })
+    expect(new Set(doc.nodes.map((n) => n.id)).size).toBe(doc.nodes.length)
+    expect(addStep(doc, { label: 'Chest X-ray', kind: 'step' }).id).not.toBe(id)
+    expect(uniqueId(doc, 'Chest X-ray')).not.toBe(id)
+    expect(addStep(fc, { label: '', kind: 'exit', outcome: 'treatment' }).doc.nodes.at(-1)).toMatchObject({ kind: 'exit', outcome: 'treatment' })
+    expect(fc.nodes.length).toBe(doc.nodes.length - 1)
+  })
+  it('deletes a step with every connection and its decision table, and drops the option it was', () => {
+    const target = opts(fc, dec.id)[0].to
+    const d = removeStep(fc, target)
+    expect(d.nodes.some((n) => n.id === target)).toBe(false)
+    expect(connectionsOf(d, target)).toEqual([])
+    expect(opts(d, dec.id).length).toBe(opts(fc, dec.id).length - 1)
+    const probs = d.decision_policy.points[dec.id].default as Record<string, number>
+    expect(target in probs).toBe(false)
+    expect(Object.values(probs).reduce((a, b) => a + b, 0)).toBeCloseTo(1, 9)
+    const dd = removeStep(fc, dec.id)
+    expect(dd.decision_policy.points[dec.id]).toBeUndefined()
+  })
+  it('adds an option with a share of 0 and removes it again', () => {
+    const free = fc.nodes.find((n) => n.id !== dec.id && !fc.edges.some((e) => e.from === dec.id && e.to === n.id))!
+    const d = addOption(fc, dec.id, free.id)
+    expect(opts(d, dec.id).map((e) => e.index)).toEqual(opts(fc, dec.id).map((_, i) => i).concat(opts(fc, dec.id).length))
+    expect((d.decision_policy.points[dec.id].default as Record<string, number>)[free.id]).toBe(0)
+    expect(addOption(d, dec.id, free.id)).toBe(d)
+    const back = removeOption(d, dec.id, free.id)
+    expect(back.edges.length).toBe(fc.edges.length)
+    expect(back.decision_policy.points[dec.id].default).toEqual(fc.decision_policy.points[dec.id].default)
+  })
+})

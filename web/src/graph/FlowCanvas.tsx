@@ -6,10 +6,12 @@ import type { Flowchart, FlowNode, World } from '../api/types'
 import { defaultShares } from '../lib/policy'
 import { edgeGeometry } from './geometry'
 import type { EdgeGeom } from './geometry'
-import { layoutFlowchart, structureKey } from './layout'
+import { layoutFlowchart, nodeSize, structureKey } from './layout'
+import { placeLabels } from './layoutScore'
 import { applyView, emptyView, isEmptyView, loadView, saveView } from './viewLayout'
 import type { ViewLayout } from './viewLayout'
 import type { NodeOverlay, Overlay } from './layers'
+type NodeOverlayEdge = NonNullable<Overlay['edges'][string]>
 import { pairKey } from './layers'
 import { PlaybackLayer } from './PlaybackLayer'
 import type { PlaybackProps } from './PlaybackLayer'
@@ -93,7 +95,8 @@ interface Props {
 
 export function FlowCanvas({ flowchart, world, selected, onSelect, overlay, path, playback, showLegend = true, refit, layoutKey }: Props) {
   const key = structureKey(flowchart)
-  const labelKey = flowchart.nodes.map((n) => n.label).join('|')
+  // the layout depends on how tall each box is, not on every letter typed into a label
+  const labelKey = flowchart.nodes.map((n) => nodeSize(n).h).join('|')
   const layout = useMemo(() => layoutFlowchart(flowchart.nodes, flowchart.edges), [key, labelKey]) // eslint-disable-line react-hooks/exhaustive-deps
   const lkey = layoutKey ?? flowchart.id
   const [view, setView] = useState<ViewLayout>(() => loadView(lkey))
@@ -106,7 +109,7 @@ export function FlowCanvas({ flowchart, world, selected, onSelect, overlay, path
     const a = boxes[e.from], b = boxes[e.to]
     if (!a || !b) return null
     // a connection to a step the user moved is drawn directly; the others keep the row-wrapped routes
-    return moved.has(e.from) || moved.has(e.to) ? edgeGeometry({ ...a, row: 0 }, { ...b, row: 0 }, layout, i % 5) : edgeGeometry(a, b, layout, i % 5)
+    return moved.has(e.from) || moved.has(e.to) ? edgeGeometry({ ...a, row: 0 }, { ...b, row: 0 }, layout, 0) : edgeGeometry(a, b, layout, layout.lanes?.[i] ?? 0)
   }), [key, layout, boxes, moved]) // eslint-disable-line react-hooks/exhaustive-deps
   const routes = useMemo(() => {
     const r: Record<string, [number, number][]> = {}
@@ -126,7 +129,14 @@ export function FlowCanvas({ flowchart, world, selected, onSelect, overlay, path
   const [hover, setHover] = useState<string | null>(null)
   const focus = hover ?? selected ?? null
 
+  const labelText = (e: Flowchart['edges'][number], ov: NodeOverlayEdge | undefined): string | undefined => {
+    if (ov?.label !== undefined) return ov.label
+    if (e.type === 'option') { const p = defaultShares(flowchart.decision_policy.points[e.from])?.[e.to]; if (p !== undefined) return `${Math.round(p * 1000) / 10}%` }
+    return undefined
+  }
   const { nodes, edges } = useMemo(() => {
+    const texts = flowchart.edges.map((e) => labelText(e, overlay?.edges[pairKey(e.from, e.to)]))
+    const spots = placeLabels(geoms.map((g) => g?.pts ?? null), texts, Object.values(boxes))
     const incident = new Set<string>()
     flowchart.edges.forEach((e, i) => { if (focus && (e.from === focus || e.to === focus)) incident.add(`e${i}`) })
     const ns: Node<PData>[] = flowchart.nodes.map((n) => {
@@ -147,13 +157,10 @@ export function FlowCanvas({ flowchart, world, selected, onSelect, overlay, path
       const ov = overlay?.edges[pairKey(e.from, e.to)]
       const onPath = !!path?.edges.has(pairKey(e.from, e.to))
       const on = !focus || incident.has(id)
-      let label: string | undefined = ov?.label
-      if (label === undefined && e.type === 'option') {
-        const p = defaultShares(flowchart.decision_policy.points[e.from])?.[e.to]
-        if (p !== undefined) label = `${Math.round(p * 1000) / 10}%`
-      }
+      const label = texts[i]
       const color = onPath ? '#EAF1F8' : ov?.color ?? (on && focus ? (e.type === 'option' ? '#B79CFF' : '#62B0FF') : st.stroke)
-      const geom = geoms[i]
+      const geom0 = geoms[i]
+      const geom = geom0 && spots[i] ? { ...geom0, label: spots[i]! } : geom0
       const wrap = !!geom && boxes[e.to].row > boxes[e.from].row
       return {
         id, source: e.from, target: e.to, type: 'pf', label,
@@ -174,10 +181,15 @@ export function FlowCanvas({ flowchart, world, selected, onSelect, overlay, path
   }, [flowchart, world, boxes, geoms, selected, focus, overlay, path])
 
   return (
-    <div style={{ position: 'absolute', inset: 0 }} data-testid="canvas">
+    <div style={{ position: 'absolute', inset: 0 }} data-testid="canvas" onKeyDown={(e) => {
+      // a step reached with Tab is chosen with Enter or Space, like a click
+      if (e.key !== 'Enter' && e.key !== ' ') return
+      const el = (e.target as HTMLElement).closest?.('.react-flow__node') as HTMLElement | null
+      if (el?.dataset.id) { e.preventDefault(); onSelect?.(el.dataset.id) }
+    }}>
       <ReactFlow
         key={`${key}/${refit ?? ''}/${resetTick}`} nodes={nodes} onNodesChange={onNodesChange} edges={edges} nodeTypes={nodeTypes} edgeTypes={edgeTypes}
-        fitView fitViewOptions={{ padding: { top: '84px', right: '24px', bottom: '24px', left: '24px' } }} minZoom={0.15} maxZoom={1.8}
+        fitView fitViewOptions={{ padding: { top: '84px', right: '24px', bottom: '64px', left: '24px' } }} minZoom={0.15} maxZoom={1.8}
         nodesDraggable nodesConnectable={false} elementsSelectable
         proOptions={{ hideAttribution: true }}
         onNodeClick={(_, n) => onSelect?.(n.id)} onPaneClick={() => onSelect?.(null)}

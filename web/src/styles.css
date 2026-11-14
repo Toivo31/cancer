@@ -188,3 +188,24 @@ input[type=range] { accent-color: var(--mint); }
 .react-flow__node.selected .pnode, .react-flow__node:focus-visible .pnode { outline: none; }
 .editbtn { position: absolute; right: 236px; top: 12px; z-index: 9; background: rgba(17,26,36,.94); }
 .editbtn.primary { background: var(--mint); }
+
+/* dialogs and the version diff */
+.overlay { position: fixed; inset: 0; z-index: 50; background: rgba(5,8,11,.78); display: flex; align-items: center; justify-content: center; padding: 20px; }
+.dialog { background: var(--panel); border: 1px solid var(--hair); border-radius: 12px; padding: 16px 18px; max-width: 460px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,.5); }
+.dialog.wide { max-width: min(1500px, 98vw); max-height: 94vh; overflow: auto; }
+.diff-panes { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.diff-pane { min-width: 0; }
+.diff-title { margin-bottom: 4px; font-size: 13px; }
+.diff-scroll { height: min(58vh, 560px); overflow: auto; border: 1px solid var(--hair); border-radius: 8px; background: var(--night); }
+.diff-scroll:focus-visible { outline: 2px solid var(--blue); }
+.diff-key { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--muted); }
+.diff-key i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+.confirm { border: 1px solid rgba(255,154,122,.5); background: rgba(255,154,122,.07); border-radius: 8px; padding: 10px 12px; }
+.addstep summary { font-size: 12.5px; color: var(--blue); }
+.addstep summary:focus-visible, .btn:focus-visible, .tab:focus-visible, .runrow:focus-visible, a:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--blue); outline-offset: 1px; }
+
+/* polish */
+.optbtn { position: absolute; right: 336px; top: 12px; z-index: 9; background: rgba(17,26,36,.94); border-color: var(--violet); }
+.ellipsis { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.react-flow__node:focus-visible .pnode { box-shadow: 0 0 0 2px var(--blue); }
+.runrow:focus-visible, .lostrow:focus-visible { outline: 2px solid var(--blue); outline-offset: 1px; }

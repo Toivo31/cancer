@@ -95,7 +95,7 @@ export function RunPanel({ pid, flowchart, world, runs, runsError, selectedRun, 
           <div data-testid="run-history" className="stack" style={{ gap: 8 }}>
             {runs.map((r) => (
               <div key={r.id} className={`runrow ${selectedRun === r.id ? 'on' : ''}`} onClick={() => onSelectRun(selectedRun === r.id ? null : r.id)} role="button" tabIndex={0}
-                onKeyDown={(e) => { if (e.key === 'Enter') onSelectRun(selectedRun === r.id ? null : r.id) }}>
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelectRun(selectedRun === r.id ? null : r.id) } }} aria-pressed={selectedRun === r.id}>
                 <div className="form-row" style={{ justifyContent: 'space-between', flexWrap: 'nowrap' }}>
                   <div className="clamp2" title={r.label} style={{ fontWeight: 600 }}>{r.label || r.id}</div>
                   {r.status !== 'succeeded' && <span className={`pill ${r.status === 'failed' ? 'bad' : r.status === 'cancelled' ? 'warn' : 'run'}`}>{r.status}</span>}
