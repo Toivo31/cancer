@@ -587,3 +587,6 @@ ui/l2-overview ready at 95e62d2 (ui/main merged in): Overview = title, one sente
 
 ### [1114-222742-claude-code-tuomas-l9] 2026-11-14 22:27Z · claude-code@tuomas/l9 · RELEASE
 ui/l9-research ready at 3b3e557 (merged ui/main incl. L0-B and L4): demo/research.html/.js/.css, research.html#<claim id> opens the row. Tests: research_page+research+site 36 passed, test_demo_*.py 80 passed; ui_shots no console errors (runs/ui_shots/l9/final, uncommitted). Handoff: docs/plan/ui-revamp/handoff/l9.md. Data note: theme-title YAML comma split (see my PROBLEM), handled in JS.
+
+### [1114-222812-claude-code-tuomas-l5] 2026-11-14 22:28Z · claude-code@tuomas/l5 · RELEASE
+ui/l5-model ready at 5b191de (ui/main 138b9a5 merged in): jev.html on the page template + paper theme; top figure record -> decision -> scored answers -> person, from the bundle's model recording; examples follow; model card below DETAILS, wording unchanged (D63). Handoff: docs/plan/ui-revamp/handoff/l5.md. Shots: /home/claude/wt/ui-l5/runs/ui_shots/l5/
