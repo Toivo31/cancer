@@ -35,7 +35,7 @@
 
 .pt-record{padding:var(--s5);min-width:0}
 .pt-who{margin:0 0 var(--s3);font:400 13px/1.4 var(--font-mono);color:var(--ink-3)}
-.pt-lines{list-style:none;margin:0;padding:0;max-height:330px;overflow-y:auto;border-top:1px solid var(--line)}
+.pt-lines{list-style:none;margin:0;padding:0;max-height:300px;overflow-y:auto;border-top:1px solid var(--line)}
 .pt-line{display:grid;grid-template-columns:5.2em minmax(0,1fr);gap:0 var(--s3);padding:6px 0;border-bottom:1px solid var(--line);
   font-size:14px;line-height:1.4;color:var(--ink-2)}
 .pt-day{font:400 12px/1.6 var(--font-mono);color:var(--ink-3);font-variant-numeric:tabular-nums}

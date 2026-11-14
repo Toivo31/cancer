@@ -1,6 +1,6 @@
 """The Patients page (demo/patients.html, UI lane L3).
 
-Static checks: the shared page checks (tests/demo_pages.py, when present), link targets, no digits in the page text,
+Static checks: the shared page checks (tests/demo_pages.py), link targets, no digits in the page text,
 offline assets, the load order, and that the sealed truth is not in the static page (the truth container is empty and
 hidden; patients.js fills it only after the reader lifts the seal). Numbers are bound from bundles by patients.js."""
 import re
@@ -9,6 +9,8 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 import pytest
+
+from demo_pages import check_page
 
 ROOT = Path(__file__).resolve().parents[1]
 DEMO = ROOT / "demo"
@@ -75,26 +77,20 @@ def _local(href):
 
 
 def test_shared_page_checks():
-    helper = pytest.importorskip("demo_pages", reason="tests/demo_pages.py (L0-B) not merged yet")
-    for name in ("check_page", "check_all", "run_checks"):
-        fn = getattr(helper, name, None)
-        if callable(fn):
-            fn(PAGE)
-            return
-    pytest.skip("tests/demo_pages.py has no page-level entry point this test knows")
+    check_page("patients.html", page_id="patients")
 
 
-def test_links_and_assets_exist(page):
-    missing = []
-    for href in page.links + page.assets:
-        if not _local(href):
-            continue
-        target = (DEMO / urlsplit(href).path).resolve()
-        if not target.exists():
-            missing.append(href)
-    # research.html comes from lane L9; until it is merged its links are allowed to dangle here.
-    missing = [m for m in missing if not m.startswith("research.html")]
-    assert not missing, missing
+def test_claim_labels_are_bound_not_typed_links(page):
+    """D69 labels are spans with data-claim; patients.js links them to research.html#<id> only if the register has the id."""
+    raw = PAGE.read_text(encoding="utf-8")
+    assert 'href="research.html' not in raw
+    ids = re.findall(r'class="pt-basis" data-claim="([a-z0-9-]+)"', raw)
+    assert ids
+    import json
+    s = (DEMO / "data" / "research_bundle.js").read_text(encoding="utf-8")
+    reg = json.loads(s[s.index("{"): s.rstrip().rstrip(";").rindex("}") + 1])
+    known = {c["id"] for c in reg["claims"]}
+    assert set(ids) <= known, set(ids) - known
 
 
 def test_offline(page):
@@ -116,9 +112,7 @@ def test_theme_site_and_load_order(page):
     bundles = [x for x in a if x.startswith("data/")]
     assert bundles, "page reads no bundle"
     assert max(a.index(b) for b in bundles) < a.index("site.js") < a.index("patients.js")
-    nav = page.ids  # nav has no id; check the raw markup instead
-    assert re.search(r'<nav class="site-nav" data-page="patients">', PAGE.read_text(encoding="utf-8"))
-    assert "pt-footer" in nav and "footer-strip" in nav["pt-footer"][1].get("class", "")
+    assert "footer-strip" in page.ids["pt-footer"][1].get("class", "")
 
 
 def test_truth_is_sealed_in_static_page(page):

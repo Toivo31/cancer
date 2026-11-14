@@ -3,7 +3,7 @@
    Sources: window.ENC_DATA (data/encounter_bundle.js: patients with record lines, truth split, examples),
    window.CARDS_DATA (data/cards_bundle.js: library counts, one example card), window.FLOW_DATA (data/flow_bundle.js:
    Norway observed and suggested variants on held-out cohorts), window.START_DATA (data/start_bundle.js: range over the
-   fitting settings, catalogue counts). The sealed truth (ENC_DATA.truth) is read only after the reader lifts the seal.
+   fitting settings, catalogue counts), window.RESEARCH_DATA (data/research_bundle.js: claim ids and basis labels, D69). The sealed truth (ENC_DATA.truth) is read only after the reader lifts the seal.
    URL: ?p=<patient id> picks a patient from the bundle, ?truth opens with the seal lifted, ?theme=night via site.js. */
 (function () {
   "use strict";
@@ -23,12 +23,25 @@
 
   /* ------------------------------------------------------------------ site chrome (site.js, L0) */
   function chrome() {
-    var stamps = [ENC && ENC.generated_at, CARDS && CARDS.generated_at, FLOW && FLOW.generated_at, ST && ST.generated_at].filter(Boolean).sort();
-    var foot = "Synthetic patients only · not clinically reviewed · numbers read from encounter_bundle.js, cards_bundle.js, flow_bundle.js and start_bundle.js" +
-      (stamps.length ? ", exported " + when(stamps[stamps.length - 1]) : "");
-    var S_ = window.Site;
-    if (S_ && typeof S_.nav === "function") S_.nav("patients");
-    if (S_ && typeof S_.footer === "function") S_.footer(foot); else $("pt-footer").textContent = foot;
+    // site.js fills the nav itself (data-page="patients"); the footer gets the page's own sentence, without digits.
+    var foot = "Synthetic patients only · not clinically reviewed · numbers read from encounter_bundle.js, cards_bundle.js, flow_bundle.js and start_bundle.js";
+    if (window.Site && typeof window.Site.footer === "function") window.Site.footer(foot); else $("pt-footer").textContent = foot;
+  }
+
+  // D69 basis labels: <span class="pt-basis" data-claim="id"> becomes a link to research.html#id when the research
+  // register (research_bundle.js) lists that claim; otherwise it stays a plain label.
+  function claimLinks() {
+    var R = window.RESEARCH_DATA, known = {};
+    ((R && R.claims) || []).forEach(function (c) { known[c.id] = c; });
+    Array.prototype.forEach.call(document.querySelectorAll(".pt-basis[data-claim]"), function (sp) {
+      var c = known[sp.getAttribute("data-claim")];
+      if (!c) return;
+      var a = el("a", sp.className, (R.basis_labels && R.basis_labels[c.basis]) || sp.textContent);
+      a.href = "research.html#" + encodeURIComponent(c.id);
+      a.title = c.claim;
+      a.setAttribute("data-claim", c.id);
+      sp.parentNode.replaceChild(a, sp);
+    });
   }
 
   /* ------------------------------------------------------------------ the example patient */
@@ -226,6 +239,7 @@
 
   /* ------------------------------------------------------------------ start */
   chrome();
+  claimLinks();
   guard("pt-lines", function () {
     BYID = pickList();
     $("pt-reveal").addEventListener("click", function () { setOpen(!S.open); });
