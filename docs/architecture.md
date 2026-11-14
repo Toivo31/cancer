@@ -104,8 +104,11 @@ Node fields:
   `after_optional`: wait for these only if they run (done or skipped both satisfy it)
 - `when`: guard expression over revealed information: node ids (value `True` positive,
   `False` negative, `None` not revealed / nondiagnostic), revealed attributes, `group`,
-  `age`, `t`. Python boolean syntax only. Unknown names are rejected when the scenario
-  loads. A node whose prerequisites are met but whose guard is False is **skipped**.
+  `age`, `t`. Evaluated by the safe evaluator `pathway_sim/expr.py` (no `eval`): `and`, `or`, `not`,
+  parentheses, `==  !=  <  <=  >  >=`, `is` / `is not` with `True`, `False` or `None`, `in` / `not in`
+  with a list of constants, and text, number, `True`, `False`, `None` constants. Calls, attributes,
+  indexing, arithmetic, lambdas, comprehensions and names starting with `_` are rejected when the
+  scenario loads. Unknown names are rejected when the scenario loads. A node whose prerequisites are met but whose guard is False is **skipped**.
 - `availability` on a choice node: `{option: {p_available, weekdays}}` restricts the offer.
 - `test_overrides` / `resource_overrides` on a flowchart change a test or resource for that
   flowchart only (e.g. a faster PET-CT scanner).
@@ -118,6 +121,16 @@ Node fields:
   as soon as this node starts (treatment slot reservation while sampling runs).
 
 A patient whose cancer truth is True but who reaches `discharged` is a **missed cancer**.
+
+## Validation
+
+`pathway_sim/validate.py` returns every problem at once as `{"ok", "problems": [...]}`; the codes, severities
+and the problem object (`code, severity, message, flowchart, node, edge, field, hint`) are defined in
+`pathway_sim/problems.py`. `validate_scenario_dict(raw)` checks the world tables and every flowchart;
+`validate(world, flowchart_dict)` one flowchart. `deep=False` is the cheap error-only subset that
+`scenario.validate_flowchart` wraps (it still raises `ValueError` on the first error: CLI and optimiser
+unchanged). Warnings (`unreachable`, `possible_dead_end`, `missing_probabilities`) never block loading.
+A wrongly shaped document raises `MalformedDocument` (a `ValueError`).
 
 ## Patient card (`pathway_sim.patients.Patient`)
 

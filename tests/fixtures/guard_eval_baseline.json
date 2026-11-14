@@ -1,0 +1,452 @@
+{
+ "scenarios/experiments/stokstad_incomplete_board_all_flowcharts.yaml|faster_pet|random": {
+  "median_days_to_treatment": 54.09,
+  "metrics": "221e759274b24da74136",
+  "missed_cancers": 0,
+  "n": 120,
+  "run": "1368f20e9ee3ec42b6f2",
+  "share_within_target": 0.1917,
+  "stuck": 0
+ },
+ "scenarios/experiments/stokstad_incomplete_board_all_flowcharts.yaml|faster_pet|rules": {
+  "median_days_to_treatment": 54.47,
+  "metrics": "0fa1f54e99ebbe74ff95",
+  "missed_cancers": 0,
+  "n": 120,
+  "run": "f1c6a553ba99513fb542",
+  "share_within_target": 0.2333,
+  "stuck": 0
+ },
+ "scenarios/experiments/stokstad_incomplete_board_all_flowcharts.yaml|observed|random": {
+  "median_days_to_treatment": 68.66,
+  "metrics": "83be6eb0a2e87ff78917",
+  "missed_cancers": 0,
+  "n": 120,
+  "run": "b80185452270bdd3b026",
+  "share_within_target": 0.0833,
+  "stuck": 0
+ },
+ "scenarios/experiments/stokstad_incomplete_board_all_flowcharts.yaml|observed|rules": {
+  "median_days_to_treatment": 62.38,
+  "metrics": "daa02640da2cf8f5c643",
+  "missed_cancers": 0,
+  "n": 120,
+  "run": "3c31ccb595630f500a30",
+  "share_within_target": 0.0833,
+  "stuck": 0
+ },
+ "scenarios/experiments/stokstad_incomplete_board_all_flowcharts.yaml|optimal|random": {
+  "median_days_to_treatment": 47.24,
+  "metrics": "4290a0860d322c6fe74e",
+  "missed_cancers": 0,
+  "n": 120,
+  "run": "7ad04491eb05c0834f99",
+  "share_within_target": 0.3667,
+  "stuck": 0
+ },
+ "scenarios/experiments/stokstad_incomplete_board_all_flowcharts.yaml|optimal|rules": {
+  "median_days_to_treatment": 42.68,
+  "metrics": "8eeff4d0c58dc91b6ad0",
+  "missed_cancers": 0,
+  "n": 120,
+  "run": "8389625b2d070f44ec1c",
+  "share_within_target": 0.4583,
+  "stuck": 0
+ },
+ "scenarios/experiments/stokstad_incomplete_board_all_flowcharts_calibrated.yaml|faster_pet|random": {
+  "median_days_to_treatment": 39.77,
+  "metrics": "0b4aaef51c0979f302ee",
+  "missed_cancers": 0,
+  "n": 120,
+  "run": "58c90d6d8a2015fc06c0",
+  "share_within_target": 0.5583,
+  "stuck": 0
+ },
+ "scenarios/experiments/stokstad_incomplete_board_all_flowcharts_calibrated.yaml|faster_pet|rules": {
+  "median_days_to_treatment": 36.51,
+  "metrics": "bf0dc8949c1b9f5e0fe9",
+  "missed_cancers": 0,
+  "n": 120,
+  "run": "a82d65148565ffc48094",
+  "share_within_target": 0.6417,
+  "stuck": 0
+ },
+ "scenarios/experiments/stokstad_incomplete_board_all_flowcharts_calibrated.yaml|observed|random": {
+  "median_days_to_treatment": 54.94,
+  "metrics": "9b562e509258ded8167a",
+  "missed_cancers": 0,
+  "n": 120,
+  "run": "9c603bf3976c8cb7d87b",
+  "share_within_target": 0.25,
+  "stuck": 0
+ },
+ "scenarios/experiments/stokstad_incomplete_board_all_flowcharts_calibrated.yaml|observed|rules": {
+  "median_days_to_treatment": 45.67,
+  "metrics": "0cc2dea362051b350ec6",
+  "missed_cancers": 0,
+  "n": 120,
+  "run": "bf10091b302a23723fd8",
+  "share_within_target": 0.4167,
+  "stuck": 0
+ },
+ "scenarios/experiments/stokstad_incomplete_board_all_flowcharts_calibrated.yaml|optimal|random": {
+  "median_days_to_treatment": 34.67,
+  "metrics": "804b7ac78244bd953534",
+  "missed_cancers": 0,
+  "n": 120,
+  "run": "04cdafb8fab128064042",
+  "share_within_target": 0.7,
+  "stuck": 0
+ },
+ "scenarios/experiments/stokstad_incomplete_board_all_flowcharts_calibrated.yaml|optimal|rules": {
+  "median_days_to_treatment": 30.58,
+  "metrics": "8352a8f4e635eff466d1",
+  "missed_cancers": 0,
+  "n": 120,
+  "run": "9808d413352eb9a1987e",
+  "share_within_target": 0.7833,
+  "stuck": 0
+ },
+ "scenarios/experiments/stokstad_incomplete_board_observed_and_faster_pet.yaml|faster_pet|random": {
+  "median_days_to_treatment": 54.09,
+  "metrics": "221e759274b24da74136",
+  "missed_cancers": 0,
+  "n": 120,
+  "run": "1368f20e9ee3ec42b6f2",
+  "share_within_target": 0.1917,
+  "stuck": 0
+ },
+ "scenarios/experiments/stokstad_incomplete_board_observed_and_faster_pet.yaml|faster_pet|rules": {
+  "median_days_to_treatment": 54.47,
+  "metrics": "0fa1f54e99ebbe74ff95",
+  "missed_cancers": 0,
+  "n": 120,
+  "run": "f1c6a553ba99513fb542",
+  "share_within_target": 0.2333,
+  "stuck": 0
+ },
+ "scenarios/experiments/stokstad_incomplete_board_observed_and_faster_pet.yaml|observed|random": {
+  "median_days_to_treatment": 68.66,
+  "metrics": "83be6eb0a2e87ff78917",
+  "missed_cancers": 0,
+  "n": 120,
+  "run": "b80185452270bdd3b026",
+  "share_within_target": 0.0833,
+  "stuck": 0
+ },
+ "scenarios/experiments/stokstad_incomplete_board_observed_and_faster_pet.yaml|observed|rules": {
+  "median_days_to_treatment": 62.38,
+  "metrics": "daa02640da2cf8f5c643",
+  "missed_cancers": 0,
+  "n": 120,
+  "run": "3c31ccb595630f500a30",
+  "share_within_target": 0.0833,
+  "stuck": 0
+ },
+ "scenarios/experiments/stokstad_incomplete_board_observed_and_faster_pet.yaml|optimal|random": {
+  "median_days_to_treatment": 42.61,
+  "metrics": "e74db72f1f41bcb9718b",
+  "missed_cancers": 0,
+  "n": 120,
+  "run": "fc3922c9a0fe8cf3ed94",
+  "share_within_target": 0.475,
+  "stuck": 0
+ },
+ "scenarios/experiments/stokstad_incomplete_board_observed_and_faster_pet.yaml|optimal|rules": {
+  "median_days_to_treatment": 42.09,
+  "metrics": "a0f03382fdf15b069d12",
+  "missed_cancers": 0,
+  "n": 120,
+  "run": "a6d28e885cdac036e8a3",
+  "share_within_target": 0.4833,
+  "stuck": 0
+ },
+ "scenarios/experiments/stokstad_incomplete_board_observed_and_faster_pet_calibrated.yaml|faster_pet|random": {
+  "median_days_to_treatment": 39.77,
+  "metrics": "0b4aaef51c0979f302ee",
+  "missed_cancers": 0,
+  "n": 120,
+  "run": "58c90d6d8a2015fc06c0",
+  "share_within_target": 0.5583,
+  "stuck": 0
+ },
+ "scenarios/experiments/stokstad_incomplete_board_observed_and_faster_pet_calibrated.yaml|faster_pet|rules": {
+  "median_days_to_treatment": 36.51,
+  "metrics": "bf0dc8949c1b9f5e0fe9",
+  "missed_cancers": 0,
+  "n": 120,
+  "run": "a82d65148565ffc48094",
+  "share_within_target": 0.6417,
+  "stuck": 0
+ },
+ "scenarios/experiments/stokstad_incomplete_board_observed_and_faster_pet_calibrated.yaml|observed|random": {
+  "median_days_to_treatment": 54.94,
+  "metrics": "9b562e509258ded8167a",
+  "missed_cancers": 0,
+  "n": 120,
+  "run": "9c603bf3976c8cb7d87b",
+  "share_within_target": 0.25,
+  "stuck": 0
+ },
+ "scenarios/experiments/stokstad_incomplete_board_observed_and_faster_pet_calibrated.yaml|observed|rules": {
+  "median_days_to_treatment": 45.67,
+  "metrics": "0cc2dea362051b350ec6",
+  "missed_cancers": 0,
+  "n": 120,
+  "run": "bf10091b302a23723fd8",
+  "share_within_target": 0.4167,
+  "stuck": 0
+ },
+ "scenarios/experiments/stokstad_incomplete_board_observed_and_faster_pet_calibrated.yaml|optimal|random": {
+  "median_days_to_treatment": 30.92,
+  "metrics": "3b104a24231a1c4ebdd8",
+  "missed_cancers": 0,
+  "n": 120,
+  "run": "49bac5ea43fcb431a3ea",
+  "share_within_target": 0.75,
+  "stuck": 0
+ },
+ "scenarios/experiments/stokstad_incomplete_board_observed_and_faster_pet_calibrated.yaml|optimal|rules": {
+  "median_days_to_treatment": 29.9,
+  "metrics": "8f4cef41bda7c91bd80e",
+  "missed_cancers": 0,
+  "n": 120,
+  "run": "c61c567e1c90d1681e4f",
+  "share_within_target": 0.7917,
+  "stuck": 0
+ },
+ "scenarios/experiments/stokstad_method_availability.yaml|availability|random": {
+  "median_days_to_treatment": 37.24,
+  "metrics": "bd2f6a6677f0362071ab",
+  "missed_cancers": 0,
+  "n": 120,
+  "run": "337faf404adece059c55",
+  "share_within_target": 0.7857,
+  "stuck": 0
+ },
+ "scenarios/experiments/stokstad_method_availability.yaml|availability|rules": {
+  "median_days_to_treatment": 34.96,
+  "metrics": "a62f540ef3a8f645604f",
+  "missed_cancers": 0,
+  "n": 120,
+  "run": "f353856993f1f07937f4",
+  "share_within_target": 0.8214,
+  "stuck": 0
+ },
+ "scenarios/experiments/stokstad_method_availability.yaml|rescue_queue|random": {
+  "median_days_to_treatment": 32.01,
+  "metrics": "2bfdc6eb7268ff2d026c",
+  "missed_cancers": 0,
+  "n": 120,
+  "run": "0ec6fcef8fb1cc780b4e",
+  "share_within_target": 0.8929,
+  "stuck": 0
+ },
+ "scenarios/experiments/stokstad_method_availability.yaml|rescue_queue|rules": {
+  "median_days_to_treatment": 30.4,
+  "metrics": "d9e4017bacfb66131054",
+  "missed_cancers": 0,
+  "n": 120,
+  "run": "e1526b568f0e1023e4e6",
+  "share_within_target": 1.0,
+  "stuck": 0
+ },
+ "scenarios/finland_lung.yaml|baseline_plus_capacity|random": {
+  "median_days_to_treatment": null,
+  "metrics": "81232ea6f339eea0f0b0",
+  "missed_cancers": 0,
+  "n": 300,
+  "run": "366ab5742b03c5c2c175",
+  "share_within_target": null,
+  "stuck": 0
+ },
+ "scenarios/finland_lung.yaml|baseline_plus_capacity|rules": {
+  "median_days_to_treatment": null,
+  "metrics": "81232ea6f339eea0f0b0",
+  "missed_cancers": 0,
+  "n": 300,
+  "run": "31fbc3befcac26604b76",
+  "share_within_target": null,
+  "stuck": 0
+ },
+ "scenarios/finland_lung.yaml|baseline|random": {
+  "median_days_to_treatment": null,
+  "metrics": "a94a5cc2d8961931ce9f",
+  "missed_cancers": 0,
+  "n": 300,
+  "run": "3cdb62957c1d321e5956",
+  "share_within_target": null,
+  "stuck": 0
+ },
+ "scenarios/finland_lung.yaml|baseline|rules": {
+  "median_days_to_treatment": null,
+  "metrics": "a94a5cc2d8961931ce9f",
+  "missed_cancers": 0,
+  "n": 300,
+  "run": "6341b092f26e4a074364",
+  "share_within_target": null,
+  "stuck": 0
+ },
+ "scenarios/finland_lung.yaml|bundled_workup|random": {
+  "median_days_to_treatment": null,
+  "metrics": "0a127d5b57a8facc8581",
+  "missed_cancers": 0,
+  "n": 300,
+  "run": "8d14c933cf01ea98d533",
+  "share_within_target": null,
+  "stuck": 0
+ },
+ "scenarios/finland_lung.yaml|bundled_workup|rules": {
+  "median_days_to_treatment": null,
+  "metrics": "0a127d5b57a8facc8581",
+  "missed_cancers": 0,
+  "n": 300,
+  "run": "0f21e0dd5335bb37e6c7",
+  "share_within_target": null,
+  "stuck": 0
+ },
+ "scenarios/finland_lung.yaml|direct_ct|random": {
+  "median_days_to_treatment": null,
+  "metrics": "b1c24625822748effea8",
+  "missed_cancers": 0,
+  "n": 300,
+  "run": "7022d62ddcdf1c1b400a",
+  "share_within_target": null,
+  "stuck": 0
+ },
+ "scenarios/finland_lung.yaml|direct_ct|rules": {
+  "median_days_to_treatment": null,
+  "metrics": "b1c24625822748effea8",
+  "missed_cancers": 0,
+  "n": 300,
+  "run": "0051bc3c43831777f3d4",
+  "share_within_target": null,
+  "stuck": 0
+ },
+ "scenarios/finland_lung.yaml|fast_track_nonspecific|random": {
+  "median_days_to_treatment": null,
+  "metrics": "4815fd0a0ee9f0f01177",
+  "missed_cancers": 0,
+  "n": 300,
+  "run": "23ea32a78c29288b1518",
+  "share_within_target": null,
+  "stuck": 0
+ },
+ "scenarios/finland_lung.yaml|fast_track_nonspecific|rules": {
+  "median_days_to_treatment": null,
+  "metrics": "4815fd0a0ee9f0f01177",
+  "missed_cancers": 0,
+  "n": 300,
+  "run": "b550a13d308430d7e4a9",
+  "share_within_target": null,
+  "stuck": 0
+ },
+ "scenarios/generated/stokstad_calibrated.yaml|faster_pet|random": {
+  "median_days_to_treatment": 38.29,
+  "metrics": "fbd2da8a364cd2f94abb",
+  "missed_cancers": 0,
+  "n": 120,
+  "run": "19a90db20dad7b83a61b",
+  "share_within_target": 0.6,
+  "stuck": 0
+ },
+ "scenarios/generated/stokstad_calibrated.yaml|faster_pet|rules": {
+  "median_days_to_treatment": 37.53,
+  "metrics": "ca393ce9868d0177e664",
+  "missed_cancers": 0,
+  "n": 120,
+  "run": "c93bee092a91b302325e",
+  "share_within_target": 0.6167,
+  "stuck": 0
+ },
+ "scenarios/generated/stokstad_calibrated.yaml|observed|random": {
+  "median_days_to_treatment": 51.9,
+  "metrics": "40269223dbfc607f1f99",
+  "missed_cancers": 0,
+  "n": 120,
+  "run": "7459def3000ba6185716",
+  "share_within_target": 0.275,
+  "stuck": 0
+ },
+ "scenarios/generated/stokstad_calibrated.yaml|observed|rules": {
+  "median_days_to_treatment": 43.54,
+  "metrics": "9bf211e8d94ab757dcbc",
+  "missed_cancers": 0,
+  "n": 120,
+  "run": "431e91bb648803283496",
+  "share_within_target": 0.45,
+  "stuck": 0
+ },
+ "scenarios/generated/stokstad_calibrated.yaml|optimal|random": {
+  "median_days_to_treatment": 33.89,
+  "metrics": "0c7660d1709fc0776e32",
+  "missed_cancers": 0,
+  "n": 120,
+  "run": "7c239e7cca0b8b6d3256",
+  "share_within_target": 0.7083,
+  "stuck": 0
+ },
+ "scenarios/generated/stokstad_calibrated.yaml|optimal|rules": {
+  "median_days_to_treatment": 31.8,
+  "metrics": "f2d002f8f420bf31dc01",
+  "missed_cancers": 0,
+  "n": 120,
+  "run": "3bf600363db31c71fa4e",
+  "share_within_target": 0.8,
+  "stuck": 0
+ },
+ "scenarios/stokstad.yaml|faster_pet|random": {
+  "median_days_to_treatment": 49.47,
+  "metrics": "d79f94905773babd38e1",
+  "missed_cancers": 0,
+  "n": 120,
+  "run": "0676651370666fc1e012",
+  "share_within_target": 0.2917,
+  "stuck": 0
+ },
+ "scenarios/stokstad.yaml|faster_pet|rules": {
+  "median_days_to_treatment": 53.98,
+  "metrics": "6131468507678604d762",
+  "missed_cancers": 0,
+  "n": 120,
+  "run": "c6723dd1740a5883c7af",
+  "share_within_target": 0.2417,
+  "stuck": 0
+ },
+ "scenarios/stokstad.yaml|observed|random": {
+  "median_days_to_treatment": 63.79,
+  "metrics": "48a0b779e6f43ab1ab24",
+  "missed_cancers": 0,
+  "n": 120,
+  "run": "130f45dcd8034387e5e1",
+  "share_within_target": 0.1167,
+  "stuck": 0
+ },
+ "scenarios/stokstad.yaml|observed|rules": {
+  "median_days_to_treatment": 61.96,
+  "metrics": "2d3e99c35693b8e2770a",
+  "missed_cancers": 0,
+  "n": 120,
+  "run": "3cd6a4f8f79f5a35f9c4",
+  "share_within_target": 0.0833,
+  "stuck": 0
+ },
+ "scenarios/stokstad.yaml|optimal|random": {
+  "median_days_to_treatment": 42.61,
+  "metrics": "e751535bba1b3fb88a21",
+  "missed_cancers": 0,
+  "n": 120,
+  "run": "57dba75a9451b45679d5",
+  "share_within_target": 0.475,
+  "stuck": 0
+ },
+ "scenarios/stokstad.yaml|optimal|rules": {
+  "median_days_to_treatment": 42.09,
+  "metrics": "23f1a03cae536a800733",
+  "missed_cancers": 0,
+  "n": 120,
+  "run": "cec013427ba0958e0a35",
+  "share_within_target": 0.4833,
+  "stuck": 0
+ }
+}

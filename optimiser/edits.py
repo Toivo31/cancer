@@ -24,6 +24,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from pathway_sim.expr import parse as parse_expr
 from pathway_sim.scenario import Flowchart, Scenario, validate_flowchart
 
 SAFE_NAMES = {"group", "age", "t", "True", "False", "None"}
@@ -74,7 +75,7 @@ def names_needed(fc: Flowchart, nid: str) -> set[str]:
         exprs.append(r["when"])
     names = set()
     for e in exprs:
-        names |= set(compile(e, "<g>", "eval").co_names)
+        names |= set(parse_expr(e).names)
     return names - SAFE_NAMES
 
 

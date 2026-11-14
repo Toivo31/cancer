@@ -112,7 +112,12 @@ reaching an exit; today this shows up only at run time as `stuck`), `missing_pro
 
 `validate_scenario` keeps raising for the CLI by wrapping the new function.
 
-## Safe conditions (required before hosting)
+## Safe conditions (required before hosting) — built (M1-4), see `pathway_sim/expr.py`
+
+As built: the grammar also has `is` / `is not` (with True, False, None; the shipped scenarios use `x is not False`),
+`not in`, chained comparisons, numbers and negative numbers; ordering comparisons of unorderable values are False.
+Parsing is cached per text and `Expr` objects are immutable and picklable. Problem codes are in `pathway_sim/problems.py`;
+the validator is `pathway_sim/validate.py` (M2-2).
 
 Guards and policy rules are Python expressions evaluated with `eval` (`pathway_sim/engine.py`,
 `pathway_sim/policy.py`). With user-supplied flowcharts that is a code-execution hole even with

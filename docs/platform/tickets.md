@@ -25,7 +25,7 @@ Critical path to the first browser loop:
 | [ ] | M1-1 | `jev/` contract: request, response, backend info, `BackendPolicy` adapter, JSON examples | S | – | Types and examples match spec 02; adapter builds a request from a `PatientView`; unit tests |
 | [ ] | M1-2 | Engine decision modes `sample` and `argmax` with the common-random-number draw; choices log records mode, backend, model; `decision` accepted as a node kind | M | M1-1 | Same patient, same probabilities → same choice across flowcharts (test); existing tests pass |
 | [ ] | M1-3 | `StubBackend`: hardcoded and conditional probability tables; automatic migration of `mix`, `rules`, `prefer` | M | M1-2 | Every shipped scenario reproduces its current metrics exactly; changing one probability changes the run |
-| [ ] | M1-4 | Safe condition evaluator replacing `eval` in engine, policies and optimiser | M | – | Identical results on all scenarios; sandbox-escape strings rejected at load (test) |
+| [x] | M1-4 | Safe condition evaluator replacing `eval` in engine, policies and optimiser | M | – | Identical results on all scenarios; sandbox-escape strings rejected at load (test) |
 | [ ] | M1-5 | Stub HTTP server and `HttpBackend` (keep-alive, cache, timeout, error modes) | M | M1-3 | A run through `http://localhost` equals the in-process run; Finnish run at most 3× slower; failure modes tested |
 | [ ] | M1-6 | Contract test file runnable against any JEV address | S | M1-5 | `pytest tests/test_jev_contract.py --jev-url …` passes against the stub server |
 | [ ] | M1-7 | `LocalBackend` wrapping the numpy model in `decision_model/` | S | M1-1 | In-loop experiment runs through the contract with unchanged results |
@@ -38,7 +38,7 @@ Critical path to the first browser loop:
 | | ID | Ticket | Size | Needs | Done when |
 |---|---|---|---|---|---|
 | [ ] | M2-1 | Document format v1: world and flowchart JSON, converters both ways, YAML import | M | M1-3 | Round trip gives byte-identical metrics for all shipped scenarios |
-| [ ] | M2-2 | Structured validation: full problem list with codes, node references, reachability and dead-end warnings | M | M2-1 | One test per code; CLI behaviour unchanged |
+| [x] | M2-2 | Structured validation: full problem list with codes, node references, reachability and dead-end warnings | M | M2-1 | One test per code; CLI behaviour unchanged |
 | [ ] | M2-3 | Service skeleton: FastAPI app, config, SQLite store, templates, generated API page | M | M2-1 | `uvicorn service.app:app` serves `/api/templates` and `/docs` |
 | [ ] | M2-4 | Projects, world, flowchart versions, validate endpoint | M | M2-2, M2-3 | CRUD tests; versions with runs are immutable |
 | [ ] | M2-5 | Job runner (process pool, status, progress, cancel, limits) and engine progress hook | M | M2-3 | Progress moves during a run; cancel works; a crashing job fails alone |
