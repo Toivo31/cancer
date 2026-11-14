@@ -177,6 +177,7 @@ tests:
     note: "sensitivity 0.95 and specificity about 0.80 for diagnostic CT are assumptions (params/test_accuracy.yaml; LDCT screening sensitivity 0.846, HOREWEG2014). Report within about a week (PIRHA_PATH: usually within a week)"
   bronchoscopy: &t_bronch
     kind: test
+    confirms_diagnosis: true
     resource: bronchoscopy
     stage: diagnosis
     invasive: true
@@ -189,6 +190,7 @@ tests:
     note: "sensitivity central 0.88, peripheral 0.34-0.63 (RIVERA2013) expressed as non-diagnostic rates; a diagnostic sample is assumed specific (params/test_accuracy.yaml). Result 3-5 d after the procedure (PIRHA_PATH)"
   ttnb: &t_ttnb
     kind: test
+    confirms_diagnosis: true
     resource: ttnb_slot
     stage: diagnosis
     invasive: true

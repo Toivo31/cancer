@@ -207,3 +207,9 @@ def test_choice_availability_and_queue_state_in_view():
     assert 120 < only_pet < 280                      # ct offered about half the time
     assert all(("ct" in leads) == ("ct" in o) for o, leads in seen)   # server option gets a queue lead
     assert all(v >= 0 for _, leads in seen for v in leads.values())
+
+
+def test_guard_with_unknown_name_rejected():
+    with pytest.raises(ValueError, match="unknown names"):
+        tiny(flowcharts={"bad": {"nodes": [{"id": "a", "test": "ct"},
+                                           {"id": "x", "kind": "exit", "outcome": "treatment", "after": ["a"], "when": "ctt"}]}})

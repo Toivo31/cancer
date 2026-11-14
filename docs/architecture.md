@@ -99,12 +99,16 @@ flowcharts:
 Node fields:
 - `id` (unique), `test` (id in `tests`, optional for pure logic nodes)
 - `kind`: `step` (default) | `choice` | `milestone` | `exit`
-- `after`: all of these must be complete; `after_any`: at least one complete
-- `when`: guard expression over revealed results. Names are node ids; value is
-  `True` (positive), `False` (negative), `None` (not yet revealed / nondiagnostic).
-  Python boolean syntax only (`and`, `or`, `not`, parentheses). A node whose
-  prerequisites are done but whose guard is False is **skipped** (counts as
-  complete for downstream `after_any`, not for `after`).
+- `after`: all of these must be done (if one is skipped, this node is skipped too);
+  `after_any`: at least one must be done (skipped when all are skipped);
+  `after_optional`: wait for these only if they run (done or skipped both satisfy it)
+- `when`: guard expression over revealed information: node ids (value `True` positive,
+  `False` negative, `None` not revealed / nondiagnostic), revealed attributes, `group`,
+  `age`, `t`. Python boolean syntax only. Unknown names are rejected when the scenario
+  loads. A node whose prerequisites are met but whose guard is False is **skipped**.
+- `availability` on a choice node: `{option: {p_available, weekdays}}` restricts the offer.
+- `test_overrides` / `resource_overrides` on a flowchart change a test or resource for that
+  flowchart only (e.g. a faster PET-CT scanner).
 - `choice` nodes: the `Policy` picks one of `options`; the others are skipped.
 - `exit` nodes end the pathway: `outcome` in `treatment | discharged | diagnosis_only`.
   The first exit reached ends the patient.

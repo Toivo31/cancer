@@ -174,6 +174,8 @@ def assumptions() -> list[dict]:
 # Hand-written wording for the changes the search is known to find; anything else falls back to a
 # generator built from the edit kind and the step labels. The raw optimiser text is kept as "raw".
 POLISHED = {
+    ("relax", "book_treat", "mdt"): "Reserve the treatment slot when the case is sent to the tumour board, not after the board has met",
+    ("relax", "spec_visit", "triage"): "Book the specialist visit as soon as the referral arrives, not after it has been handled",
     ("standardise", "first_contact", "gp_visit"): "Book a GP appointment, not a nurse, at first contact",
     ("standardise", "first_contact", "nurse_visit"): "Book a nurse appointment, not a GP, at first contact",
     ("fast_track", "triage", None): "Fast lane: once the hospital has handled a referral, give that patient priority in every later queue",
@@ -446,12 +448,42 @@ def capacity_vs_order(sc: Scenario, fc0: Flowchart, base: dict, probe: list[dict
 FINLAND_SUMMARY = ("Synthetic patients with chest symptoms in one large Finnish county, followed from first contact in primary care (nurse or GP) to the start of treatment. Time to treatment is counted against a provisional 90-day target.")
 
 
+def urgent_booking_conditional(sc: Scenario, fc0: Flowchart, held) -> dict | None:
+    """Conditional finding: every referred patient booked with the urgent lead. The gain depends entirely on
+    the assumed urgent booking leads, so it is shown with 0 / 50 / 100% of the lead reduction applied."""
+    node = (sc.raw.get("optimiser") or {}).get("urgent_booking_node", "triage")
+    if node not in fc0.nodes:
+        return None
+    servers = {rid: r for rid, r in sc.resources.items()
+               if r.get("type", "server") == "server" and "urgent_lead_days" in r}
+    rows = []
+    for frac in (0.0, 0.5, 1.0):
+        fc = fc0.copy(f"urgent_{int(100 * frac)}")
+        for rid, r in servers.items():
+            lead = float(r.get("min_lead_days", 1.0)) - frac * (float(r.get("min_lead_days", 1.0)) - float(r["urgent_lead_days"]))
+            fc.resource_overrides = {**fc.resource_overrides, rid: {"min_lead_days": lead}}
+        m = metrics_on(sc, fc, held)
+        rows.append({"share_of_lead_reduction": frac, "share_within_target": m["share_within_target"],
+                     "median_days_to_treatment": m["median_days_to_treatment"], "missed_cancers": m["missed_cancers"]})
+    full = fc0.copy("urgent_booking")
+    full.nodes[node].fast_track = True
+    m = metrics_on(sc, full, held)
+    return {"label": "Urgent booking for every referred patient (depends on assumed urgent booking times)",
+            "metrics": rekey_nodes(m, sc, full), "role": "conditional_urgent_booking",
+            "conditional": rows,
+            "note": "Gives every referred patient the urgent booking lead at specialist, CT, sampling, PET-CT and "
+                    "treatment. Nobody is crowded out because everyone downstream is urgent; the gain is exactly the "
+                    "assumed lead reduction (0% of it: no gain). Needs real booking-lead data before it is a recommendation."}
+
+
 def build_capacity_scenario(path: Path, quick: bool, start: str = "baseline", compare: list[str] | None = None) -> dict:
     sc = load_scenario(path)
     n = int(sc.raw.get("default_n", 2000))
     n = max(300, n // 3) if quick else n
     cfg = Config(n_train=n, heldout_seeds=(301, 302) if not quick else (301,), n_heldout=n,
-                 allow=("detach", "relax", "standardise", "fast_track"), max_steps=6)
+                 allow=("detach", "relax", "standardise"), max_steps=6)
+    # fast_track is excluded from the headline search: applied to every referred patient it only swaps
+    # each booking lead for the assumed urgent lead (review B1). It is reported below as a conditional finding.
     held = cohorts(sc, cfg.heldout_seeds, n)
     fc0 = sc.flowcharts[start]
     res = search(sc, start, cfg, log=lambda *a: None)
@@ -469,6 +501,9 @@ def build_capacity_scenario(path: Path, quick: bool, start: str = "baseline", co
         hand[fid] = mm
         variants.append({"label": fc.description or fid.replace("_", " "), "metrics": rekey_nodes(mm, sc, fc),
                          "role": "hand_written", "flowchart_id": fid})
+    urgent = urgent_booking_conditional(sc, fc0, held)
+    if urgent:
+        variants.append(urgent)
     probe = capacity_probe(sc, fc0, held, base)
     cvo = capacity_vs_order(sc, fc0, base, probe, hand, res)
     return {

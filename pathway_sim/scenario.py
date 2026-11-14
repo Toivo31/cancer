@@ -131,6 +131,7 @@ def compile_guard(expr: str, where: str):
 def validate_flowchart(sc: Scenario, fc: Flowchart) -> None:
     ids = set(fc.nodes)
     option_of: dict[str, str] = {}
+    known_names = ids | set(sc.attributes) | {"group", "age", "t", "True", "False", "None"}
     for n in fc.nodes.values():
         where = f"{sc.id}/{fc.id}/{n.id}"
         if n.kind not in NODE_KINDS:
@@ -159,12 +160,20 @@ def validate_flowchart(sc: Scenario, fc: Flowchart) -> None:
             if fb and fb not in ids:
                 raise ValueError(f"{where}: unknown retry fallback {fb!r}")
         n.code = compile_guard(n.when, where) if n.when else None
+        if n.code is not None:
+            unknown = set(n.code.co_names) - known_names
+            if unknown:
+                raise ValueError(f"{where}: guard {n.when!r} reads unknown names {sorted(unknown)}")
     for cid, cfg in (fc.policy or {}).items():
         if cid not in fc.nodes or fc.nodes[cid].kind != "choice":
             raise ValueError(f"{sc.id}/{fc.id}: policy for {cid!r}, which is not a choice node")
         opts = set(fc.nodes[cid].options)
         named = set((cfg.get("mix") or {}).keys()) | set(cfg.get("prefer") or [])
         named |= {r["choose"] for r in cfg.get("rules") or []}
+        for r in cfg.get("rules") or []:
+            unknown = set(compile_guard(r["when"], f"{fc.id}/policy/{cid}").co_names) - known_names
+            if unknown:
+                raise ValueError(f"{sc.id}/{fc.id}: policy rule for {cid!r} reads unknown names {sorted(unknown)}")
         if cfg.get("default"):
             named.add(cfg["default"])
         bad = named - opts
