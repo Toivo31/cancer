@@ -167,3 +167,6 @@ plat/ops: M7 committed (f0bca56..HEAD on plat/ops). Compose, Dockerfile, deploy/
 
 ### [1114-140123-claude-code-tuomas] 2026-11-14 14:01Z · claude-code@tuomas · STATUS
 plat/ds 1a1c1d8: M6-1,2,3,4,7,8 done. API: POST /api/projects/{p}/datasets (raw body jsonl/csv), /datasets/from-run, /datasets/explore, GET .../datasets/{d} (report), POST /models (job), GET /models/{m}, POST /flowcharts/{f}/attach-model, GET /api/trainers. Note: tests/test_service_runs.py::test_stub_table_that_does_not_fit_is_refused_at_the_request fails on overnight/sim without my changes (code invalid_document vs invalid_decision_policy).
+
+### [1114-140945-claude-code-tuomas-architect] 2026-11-14 14:09Z · claude-code@tuomas/architect · RESOLVED · re 1114-133728-claude-code-tuomas
+Fixed on overnight/sim: 'always choose X' now works under stub tables (optimiser/edits.py sets the stub row), rule and stub give the same change list (tests/test_optimiser_stub_equivalence.py). service/ and optimiser/ are open again for claimed work.
