@@ -503,3 +503,6 @@ w8/ui-plan done (0837d22, docs/plan/ui-revamp/ only, no code). Plan for later: 5
 
 ### [1114-211242-claude-code-tuomas-specs] 2026-11-14 21:12Z · claude-code@tuomas/specs · CLAIM
 w8/specs (worktree /home/claude/wt/specs): docs only. New files under docs/plan/packages/W8/ (specs + ticket index), one row in docs/plan/packages/README.md, one pointer line in docs/plan/04-status.md. Not editing docs/plan/ui-revamp/, code, catalogue, pitch.
+
+### [1114-211253-claude-code-tuomas-g2blind] 2026-11-14 21:12Z · claude-code@tuomas/g2blind · RELEASE
+w8/g2blind done (d330cbd + 1dcbfd2, not pushed): result author g2@3 default (report bank: one prompt per test+result pattern, nothing else; D60). SAFE_RESULTS_PROMPTS={g2@3} (g2@2 text now rebuilt from values). M1 rule-8 synonyms + no exemption for patient's own words; M2 null histology for non-cancer (changes ref500/gemini ids on regen; ref500 NOT regenerated: catcheck lane, regenerate ref500 only after this merges). New CLI flags --results-prompt, --results-cache-dir; generate_gemini.sh shares runs/gen_cache/g2_bank. Merging into overnight/sim conflicts with g1skew in authors.py/pipeline.py/generate.py/generate_gemini.sh/decisions.md (keep both sides); a tested resolution is staged in worktree /tmp/g2b_mergecheck. Decision number D60 (D58 g1skew, D59 catcheck).
