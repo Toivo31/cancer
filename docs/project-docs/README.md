@@ -15,3 +15,9 @@ Copies of the team's planning documents from the "HACKJUNCTION 2026" Claude proj
 | [trailer-script-and-prompt.md](trailer-script-and-prompt.md) | Trailer script v2. Its beat structure is replaced by v3; its look, sound and "how to work" parts still stand |
 
 Related: [`../moodboards/`](../moodboards/README.md) (video mood board and demo UI moodboard), [`../platform/`](../platform/README.md) (platform plan, specs and tickets), [`../master_plan.md`](../master_plan.md).
+
+## Known stale figures in the verbatim copies (checked 14 Nov against `demo/data/demo_bundle.json`)
+
+- `platform-development-plan.md` line 57: "68% without new equipment" should read 67% (67.1% in the bundle).
+- `evidence-grounding-plan.md`: written before the code existed ("no simulator code yet"); its parameter ledger idea is now `params/ledger.py` and `docs/ledger.md`, and its "holds in X% of draws" idea is `docs/ranges.md`.
+- `trailer-script-v3.md` honesty checks list 40.1, 80.1, 88.2, 67 for the Norwegian numbers: these are the bundle's values to one decimal and are correct.

@@ -1,0 +1,655 @@
+{
+ "faster_pet_optimised": {
+  "id": "faster_pet_optimised",
+  "nodes": [
+   {
+    "id": "ct",
+    "kind": "step",
+    "test": "baseline_ct",
+    "label": "CT scan"
+   },
+   {
+    "id": "visit",
+    "kind": "step",
+    "test": "first_visit",
+    "label": "First hospital visit",
+    "after": [
+     "ct"
+    ]
+   },
+   {
+    "id": "sample_plan",
+    "kind": "choice",
+    "label": "Tissue sampling planned?",
+    "after": [
+     "ct"
+    ],
+    "options": [
+     "bronch1",
+     "no_sampling"
+    ]
+   },
+   {
+    "id": "no_sampling",
+    "kind": "step",
+    "label": "No tissue sample"
+   },
+   {
+    "id": "bronch1",
+    "kind": "step",
+    "test": "bronchoscopy",
+    "label": "Bronchoscopy"
+   },
+   {
+    "id": "after_bronch",
+    "kind": "choice",
+    "when": "not bronch1",
+    "label": "After an inconclusive bronchoscopy",
+    "after": [
+     "bronch1"
+    ],
+    "options": [
+     "ttnb",
+     "bronch2",
+     "no_more"
+    ]
+   },
+   {
+    "id": "ttnb",
+    "kind": "step",
+    "test": "ttnb",
+    "label": "Needle biopsy"
+   },
+   {
+    "id": "bronch2",
+    "kind": "step",
+    "test": "bronchoscopy_repeat",
+    "label": "Repeat bronchoscopy"
+   },
+   {
+    "id": "no_more",
+    "kind": "step",
+    "label": "Proceed without tissue"
+   },
+   {
+    "id": "sampling_done",
+    "kind": "step",
+    "label": "Sampling finished",
+    "after_optional": [
+     "sample_plan",
+     "no_sampling",
+     "bronch1",
+     "after_bronch",
+     "ttnb",
+     "bronch2",
+     "no_more"
+    ]
+   },
+   {
+    "id": "ct_redo",
+    "kind": "step",
+    "test": "ct_redo",
+    "when": "ct_inadequate == 'yes'",
+    "label": "New CT (first one inadequate)",
+    "after": [
+     "visit"
+    ]
+   },
+   {
+    "id": "pet_timing",
+    "kind": "choice",
+    "label": "When PET-CT is ordered",
+    "after": [
+     "ct"
+    ],
+    "options": [
+     "pet_on_time",
+     "pet_late"
+    ]
+   },
+   {
+    "id": "pet_on_time",
+    "kind": "choice",
+    "label": "PET-CT ordered at triage or at the first visit",
+    "options": [
+     "pet_triage",
+     "pet_early_route"
+    ]
+   },
+   {
+    "id": "pet_triage",
+    "kind": "step",
+    "test": "pet_ct",
+    "label": "PET-CT (ordered at referral triage)"
+   },
+   {
+    "id": "pet_early_route",
+    "kind": "step",
+    "label": "PET-CT ordered at first visit",
+    "after": [
+     "visit"
+    ]
+   },
+   {
+    "id": "pet_early",
+    "kind": "step",
+    "test": "pet_ct",
+    "label": "PET-CT",
+    "after": [
+     "pet_early_route"
+    ],
+    "after_optional": [
+     "ct_redo"
+    ]
+   },
+   {
+    "id": "pet_late",
+    "kind": "step",
+    "test": "pet_ct_late",
+    "label": "PET-CT (ordered late)",
+    "after": [
+     "visit"
+    ],
+    "after_optional": [
+     "ct_redo"
+    ]
+   },
+   {
+    "id": "pet_scan",
+    "kind": "step",
+    "label": "PET-CT result",
+    "after_any": [
+     "pet_triage",
+     "pet_early",
+     "pet_late"
+    ]
+   },
+   {
+    "id": "workup",
+    "kind": "step",
+    "test": "further_workup",
+    "when": "further_workup_after_pet == 'yes'",
+    "label": "Further tests after PET-CT",
+    "after": [
+     "pet_scan"
+    ]
+   },
+   {
+    "id": "pet",
+    "kind": "step",
+    "label": "PET-CT done",
+    "after": [
+     "pet_scan"
+    ],
+    "after_optional": [
+     "workup"
+    ]
+   },
+   {
+    "id": "ex_timing",
+    "kind": "choice",
+    "when": "needs_exercise_test == 'yes'",
+    "label": "When the exercise test is ordered",
+    "after": [
+     "visit"
+    ],
+    "options": [
+     "ex_early",
+     "ex_late"
+    ]
+   },
+   {
+    "id": "ex_early",
+    "kind": "step",
+    "test": "exercise_test",
+    "label": "Exercise test"
+   },
+   {
+    "id": "ex_late",
+    "kind": "step",
+    "test": "exercise_test_late",
+    "label": "Exercise test (ordered late)"
+   },
+   {
+    "id": "exercise",
+    "kind": "step",
+    "label": "Exercise test done",
+    "after": [
+     "visit"
+    ],
+    "after_optional": [
+     "ex_timing",
+     "ex_early",
+     "ex_late"
+    ]
+   },
+   {
+    "id": "diagnosis",
+    "kind": "milestone",
+    "milestone": "diagnosis",
+    "label": "Diagnostic workup complete",
+    "after": [
+     "pet"
+    ]
+   },
+   {
+    "id": "mdt",
+    "kind": "step",
+    "test": "tumour_board",
+    "label": "Tumour board",
+    "after": [
+     "diagnosis",
+     "exercise"
+    ]
+   },
+   {
+    "id": "book_surgery",
+    "kind": "step",
+    "test": "surgery_booking",
+    "when": "treatment == 'surgery'",
+    "label": "Waiting for surgery",
+    "after": [
+     "mdt"
+    ]
+   },
+   {
+    "id": "book_rt",
+    "kind": "step",
+    "test": "radiotherapy_booking",
+    "when": "treatment == 'radiotherapy'",
+    "label": "Waiting for radiotherapy",
+    "after": [
+     "mdt"
+    ]
+   },
+   {
+    "id": "treat",
+    "kind": "exit",
+    "test": "treatment",
+    "outcome": "treatment",
+    "label": "Treatment starts",
+    "after": [
+     "mdt"
+    ],
+    "after_optional": [
+     "book_surgery",
+     "book_rt",
+     "sampling_done"
+    ]
+   }
+  ],
+  "policy": {
+   "sample_plan": {
+    "mix": {
+     "bronch1": 0.78,
+     "no_sampling": 0.22
+    },
+    "source": "STOKSTAD2019"
+   },
+   "after_bronch": {
+    "mix": {
+     "ttnb": 0.3,
+     "bronch2": 0.16,
+     "no_more": 0.54
+    },
+    "source": "STOKSTAD2019"
+   },
+   "pet_timing": {
+    "prefer": [
+     "pet_on_time"
+    ],
+    "note": "standardised by optimiser"
+   },
+   "pet_on_time": {
+    "mix": {
+     "pet_triage": 1.0,
+     "pet_early_route": 0.0
+    },
+    "source": "assumption",
+    "note": "share of on-time PET referrals made when the referral letter is triaged (before the first visit); calibrated"
+   },
+   "ex_timing": {
+    "prefer": [
+     "ex_early"
+    ],
+    "note": "standardised by optimiser"
+   }
+  },
+  "test_overrides": {
+   "pet_ct": {
+    "wait": {
+     "dist": "uniform",
+     "low": 2,
+     "high": 4.5
+    }
+   },
+   "pet_ct_late": {
+    "wait": {
+     "dist": "uniform",
+     "low": 2,
+     "high": 4.5
+    }
+   }
+  },
+  "description": "Observed order, PET-CT within 7 days"
+ },
+ "observed_optimised": {
+  "id": "observed_optimised",
+  "nodes": [
+   {
+    "id": "ct",
+    "kind": "step",
+    "test": "baseline_ct",
+    "label": "CT scan"
+   },
+   {
+    "id": "visit",
+    "kind": "step",
+    "test": "first_visit",
+    "label": "First hospital visit",
+    "after": [
+     "ct"
+    ]
+   },
+   {
+    "id": "sample_plan",
+    "kind": "choice",
+    "label": "Tissue sampling planned?",
+    "after": [
+     "ct"
+    ],
+    "options": [
+     "bronch1",
+     "no_sampling"
+    ]
+   },
+   {
+    "id": "no_sampling",
+    "kind": "step",
+    "label": "No tissue sample"
+   },
+   {
+    "id": "bronch1",
+    "kind": "step",
+    "test": "bronchoscopy",
+    "label": "Bronchoscopy"
+   },
+   {
+    "id": "after_bronch",
+    "kind": "choice",
+    "when": "not bronch1",
+    "label": "After an inconclusive bronchoscopy",
+    "after": [
+     "bronch1"
+    ],
+    "options": [
+     "ttnb",
+     "bronch2",
+     "no_more"
+    ]
+   },
+   {
+    "id": "ttnb",
+    "kind": "step",
+    "test": "ttnb",
+    "label": "Needle biopsy"
+   },
+   {
+    "id": "bronch2",
+    "kind": "step",
+    "test": "bronchoscopy_repeat",
+    "label": "Repeat bronchoscopy"
+   },
+   {
+    "id": "no_more",
+    "kind": "step",
+    "label": "Proceed without tissue"
+   },
+   {
+    "id": "sampling_done",
+    "kind": "step",
+    "label": "Sampling finished",
+    "after_optional": [
+     "sample_plan",
+     "no_sampling",
+     "bronch1",
+     "after_bronch",
+     "ttnb",
+     "bronch2",
+     "no_more"
+    ]
+   },
+   {
+    "id": "ct_redo",
+    "kind": "step",
+    "test": "ct_redo",
+    "when": "ct_inadequate == 'yes'",
+    "label": "New CT (first one inadequate)",
+    "after": [
+     "visit"
+    ]
+   },
+   {
+    "id": "pet_timing",
+    "kind": "choice",
+    "label": "When PET-CT is ordered",
+    "after": [
+     "ct"
+    ],
+    "options": [
+     "pet_on_time",
+     "pet_late"
+    ]
+   },
+   {
+    "id": "pet_on_time",
+    "kind": "choice",
+    "label": "PET-CT ordered at triage or at the first visit",
+    "options": [
+     "pet_triage",
+     "pet_early_route"
+    ]
+   },
+   {
+    "id": "pet_triage",
+    "kind": "step",
+    "test": "pet_ct",
+    "label": "PET-CT (ordered at referral triage)"
+   },
+   {
+    "id": "pet_early_route",
+    "kind": "step",
+    "label": "PET-CT ordered at first visit",
+    "after": [
+     "visit"
+    ]
+   },
+   {
+    "id": "pet_early",
+    "kind": "step",
+    "test": "pet_ct",
+    "label": "PET-CT",
+    "after": [
+     "pet_early_route"
+    ],
+    "after_optional": [
+     "ct_redo"
+    ]
+   },
+   {
+    "id": "pet_late",
+    "kind": "step",
+    "test": "pet_ct_late",
+    "label": "PET-CT (ordered late)",
+    "after": [
+     "visit"
+    ],
+    "after_optional": [
+     "ct_redo"
+    ]
+   },
+   {
+    "id": "pet_scan",
+    "kind": "step",
+    "label": "PET-CT result",
+    "after_any": [
+     "pet_triage",
+     "pet_early",
+     "pet_late"
+    ]
+   },
+   {
+    "id": "workup",
+    "kind": "step",
+    "test": "further_workup",
+    "when": "further_workup_after_pet == 'yes'",
+    "label": "Further tests after PET-CT",
+    "after": [
+     "pet_scan"
+    ]
+   },
+   {
+    "id": "pet",
+    "kind": "step",
+    "label": "PET-CT done",
+    "after": [
+     "pet_scan"
+    ],
+    "after_optional": [
+     "workup"
+    ]
+   },
+   {
+    "id": "ex_timing",
+    "kind": "choice",
+    "when": "needs_exercise_test == 'yes'",
+    "label": "When the exercise test is ordered",
+    "after": [
+     "visit"
+    ],
+    "options": [
+     "ex_early",
+     "ex_late"
+    ]
+   },
+   {
+    "id": "ex_early",
+    "kind": "step",
+    "test": "exercise_test",
+    "label": "Exercise test"
+   },
+   {
+    "id": "ex_late",
+    "kind": "step",
+    "test": "exercise_test_late",
+    "label": "Exercise test (ordered late)"
+   },
+   {
+    "id": "exercise",
+    "kind": "step",
+    "label": "Exercise test done",
+    "after": [
+     "visit"
+    ],
+    "after_optional": [
+     "ex_timing",
+     "ex_early",
+     "ex_late"
+    ]
+   },
+   {
+    "id": "diagnosis",
+    "kind": "milestone",
+    "milestone": "diagnosis",
+    "label": "Diagnostic workup complete",
+    "after": [
+     "pet"
+    ]
+   },
+   {
+    "id": "mdt",
+    "kind": "step",
+    "test": "tumour_board",
+    "label": "Tumour board",
+    "after": [
+     "diagnosis",
+     "exercise"
+    ]
+   },
+   {
+    "id": "book_surgery",
+    "kind": "step",
+    "test": "surgery_booking",
+    "when": "treatment == 'surgery'",
+    "label": "Waiting for surgery",
+    "after": [
+     "mdt"
+    ]
+   },
+   {
+    "id": "book_rt",
+    "kind": "step",
+    "test": "radiotherapy_booking",
+    "when": "treatment == 'radiotherapy'",
+    "label": "Waiting for radiotherapy",
+    "after": [
+     "mdt"
+    ]
+   },
+   {
+    "id": "treat",
+    "kind": "exit",
+    "test": "treatment",
+    "outcome": "treatment",
+    "label": "Treatment starts",
+    "after": [
+     "mdt"
+    ],
+    "after_optional": [
+     "book_surgery",
+     "book_rt",
+     "sampling_done"
+    ]
+   }
+  ],
+  "policy": {
+   "sample_plan": {
+    "mix": {
+     "bronch1": 0.78,
+     "no_sampling": 0.22
+    },
+    "source": "STOKSTAD2019"
+   },
+   "after_bronch": {
+    "mix": {
+     "ttnb": 0.3,
+     "bronch2": 0.16,
+     "no_more": 0.54
+    },
+    "source": "STOKSTAD2019"
+   },
+   "pet_timing": {
+    "prefer": [
+     "pet_on_time"
+    ],
+    "note": "standardised by optimiser"
+   },
+   "pet_on_time": {
+    "mix": {
+     "pet_triage": 1.0,
+     "pet_early_route": 0.0
+    },
+    "source": "assumption",
+    "note": "share of on-time PET referrals made when the referral letter is triaged (before the first visit); calibrated"
+   },
+   "ex_timing": {
+    "prefer": [
+     "ex_early"
+    ],
+    "note": "standardised by optimiser"
+   }
+  },
+  "description": "Observed pathway (calibrated)"
+ },
+ "check_matches_bundle": true
+}

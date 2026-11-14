@@ -395,19 +395,59 @@ def count_source_tags(path: Path) -> dict[str, int]:
 
 
 def scenario_source_values(V: dict) -> None:
-    for tag, fn in (("f", "finland_lung"), ("s", "stokstad")):
-        c = count_source_tags(ROOT / "scenarios" / f"{fn}.yaml")
-        tot = sum(c.values())
-        V[f"{tag}_scn_n"] = n0(tot)
-        V[f"{tag}_scn_assumption"] = n0(c.get("assumption", 0))
-        V[f"{tag}_scn_sourced"] = n0(c.get("sourced", 0))
-        V[f"{tag}_scn_untagged"] = n0(c.get("untagged", 0))
+    """Counts come from params/ledger.py (simulator input blocks only; calibration targets and repeated
+    decision mixes are not counted as inputs). See docs/ledger.md."""
+    sys.path.insert(0, str(ROOT / "params"))
+    import ledger
+    L = {s["id"]: s for s in ledger.build()["scenarios"]}
+    for tag, sid in (("f", "finland_lung"), ("s", "stokstad")):
+        i = L[sid]["inputs"]
+        t = L[sid]["calibration_targets_and_comparators"] or {"blocks": 0}
+        V[f"{tag}_scn_n"] = n0(i["blocks"])
+        V[f"{tag}_scn_assumption"] = n0(i["assumption"])
+        V[f"{tag}_scn_sourced"] = n0(i["sourced"])
+        V[f"{tag}_scn_strict"] = n0(i["sourced_strict"])
+        V[f"{tag}_scn_targets"] = n0(t["blocks"])
+        V[f"{tag}_scn_untagged"] = "0"
     p = load(ROOT / "docs" / "review_checks" / "stokstad_pet_triage_result.json")
     if p:
         r = p["share_within_target_by_pet_triage_share"]
         V["s_auth_pet_triage_100"] = pc(r["1.0"])
         V["s_auth_pet_triage_50"] = pc(r["0.5"])
         V["s_auth_pet_first_visit"] = pc(r["0.0"])
+
+
+def range_values(V: dict) -> None:
+    """Ranges next to the headlines, from docs/ranges_finland.json and docs/ranges_norway.json
+    (docs/evidence_checks/ranges_*.py). Absent files leave the placeholders unfilled."""
+    f = load(ROOT / "docs" / "ranges_finland.json")
+    if f:
+        a = f["cohort_spread"]
+        V["r_f_cohorts"] = n0(len(a["seeds"]))
+        V["r_f_base_lo"], V["r_f_base_hi"] = pc(a["baseline_share"]["min"]), pc(a["baseline_share"]["max"])
+        V["r_f_sug_lo"], V["r_f_sug_hi"] = pc(a["suggested_share"]["min"]), pc(a["suggested_share"]["max"])
+        V["r_f_gain_mean"] = n0(a["gain_pp"]["mean"])
+        V["r_f_gain_lo"], V["r_f_gain_hi"] = n0(a["gain_pp"]["min"]), n0(a["gain_pp"]["max"])
+        V["r_f_gain_wins"] = n0(a["cohorts_where_suggested_beats_baseline"])
+        sens = (f.get("sensitivity_suggested_vs_baseline") or {})
+        j = ((sens.get("joint") or {}).get("summary") or {}).get("baseline>suggested", {}).get("all")
+        if j:
+            V["r_f_joint_draws"] = n0(j["draws"])
+            V["r_f_joint_better"] = pc(j["p_B_better_share"])
+            V["r_f_joint_p5"], V["r_f_joint_p95"] = n0(j["gain_pp"]["p5"]), n0(j["gain_pp"]["p95"])
+        rows = (sens.get("tornado") or {}).get("rows") or []
+        if rows:
+            ks = "baseline>suggested"
+            V["r_f_oat_n"] = n0(len(rows))
+            V["r_f_oat_worst"] = n0(min(r[ks]["worst_gain_pp"] for r in rows))
+            V["r_f_oat_nonpositive"] = n0(sum(1 for r in rows if r[ks]["gain_vanishes"]))
+    n = load(ROOT / "docs" / "ranges_norway.json")
+    if n:
+        c, b = n["cohorts_of_100"], n["accepted_calibration_sets"]["range"]
+        for k, tag in (("observed", "obs"), ("authors", "auth"), ("optimiser_faster_scanner", "opt"), ("optimiser_no_new_equipment", "noeq")):
+            V[f"r_n_{tag}_lo"], V[f"r_n_{tag}_hi"] = pc(c[k]["p2_5"]), pc(c[k]["p97_5"])
+            V[f"r_n_{tag}_cal_lo"], V[f"r_n_{tag}_cal_hi"] = pc(b[k]["min"]), pc(b[k]["max"])
+        V["r_n_sets"] = n0(n["accepted_calibration_sets"]["n_sets"])
 
 
 def decision_model_values(V: dict) -> None:
@@ -471,6 +511,7 @@ def build_values() -> dict:
     finland_values(V, bundle)
     decision_model_values(V)
     scenario_source_values(V)
+    range_values(V)
     sensitivity_values(V)
     return V
 

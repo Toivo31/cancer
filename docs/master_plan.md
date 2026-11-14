@@ -50,7 +50,7 @@ The delay does not always arise in the same place. In one study from Satakunta, 
 
 **Limits of reordering:** Some tests are genuinely undersized, as a London study found for imaging and endoscopy, and no reordering fixes that. Fast tracks can also lengthen waits for other patients who need the same resources, a concern raised in Sweden. The simulator therefore reports waits for all patients, not only those with cancer, and treats more waiting for others as a guardrail.
 
-**Where queues build up:** The core insight we want the demo to show is that time is lost mostly in queues, not in the tests themselves. A queue forms wherever patients arrive faster than a step can serve them, and a late or out-of-order referral makes it worse. To answer the brief directly, every flowchart node belongs to one of the brief's four stages: detection in primary care, referral to specialist care, diagnosis, and treatment start. For each stage the simulator separates waiting time from service time and shows which stage, and which step within it, holds most of the waiting. This locates the gap the way the brief asks, and it shows which change shortens it.
+**Where queues build up:** The core insight we want the demo to show is that time is lost mostly in waiting, not in the tests themselves. *(Updated 14 Nov, review M1: in the Finnish scenario most of that waiting is booking lead calibrated to published waits (about 57 of the days on the critical path in `docs/review.md`), and only a smaller part is capacity queueing. Say "waiting (booking time and queues)", not "queues".)* A queue forms wherever patients arrive faster than a step can serve them, and a late or out-of-order referral makes it worse. To answer the brief directly, every flowchart node belongs to one of the brief's four stages: detection in primary care, referral to specialist care, diagnosis, and treatment start. For each stage the simulator separates waiting time from service time and shows which stage, and which step within it, holds most of the waiting. This locates the gap the way the brief asks, and it shows which change shortens it.
 
 ## 3. The decision model
 
@@ -106,7 +106,7 @@ Dynamic simulation. It shows where queues build up across the brief's four stage
 
 ### Data quality and transparency (20%)
 
-**OPEN, needs thinking.** Our data is synthetic, and we say so. The system is built to run on real data, and calibrating against the Norwegian study shows it can reproduce a real, published pathway.
+*(Status 14 Nov: answered in `docs/pitch/data_transparency.md`; input counts from the scenario files are in `docs/ledger.md`, ranges next to the headlines in `docs/ranges.md`.)* Our data is synthetic, and we say so. The system is built to run on real data, and calibrating against the Norwegian study shows it can reproduce a real, published pathway.
 
 ### Execution (15%)
 
@@ -143,7 +143,7 @@ The first two block a first run or the pitch.
 
 ## 10. Build status and decisions taken (overnight 14 to 15 Nov)
 
-Code is on branch `overnight/sim`; how to run it is in `README.md`. Provisional decisions, each easy to change, are listed in `docs/decisions.md` (D1 to D13). Items marked *provisional* need a team call.
+Code is on branch `overnight/sim`; how to run it is in `README.md`. Provisional decisions, each easy to change, are listed in `docs/decisions.md` (D1 to D31). Items marked *provisional* need a team call.
 
 - **Flowchart format** (*provisional*): a DAG with required, any-of and optional prerequisites, guards on revealed results, choice nodes and exits. A linear sequence cannot express the Norwegian optimal pathway, which is mostly parallel ordering. See `docs/architecture.md`.
 - **Resources** (*provisional*): `server` for capacity queues (Finland), `delay` for published wait distributions (the Stokstad check, as the authors re-timed patients), and `batch` for the weekly tumour board.

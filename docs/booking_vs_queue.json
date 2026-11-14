@@ -1,0 +1,64 @@
+{
+ "baseline": {
+  "cohorts": {
+   "301": {
+    "treated_cancers": 224,
+    "mean_days_to_treatment": 104.9443856136406,
+    "max_accounting_error_days": 0.0,
+    "booking lead": 56.91417218308641,
+    "assumed extra_wait": 15.317904552620975,
+    "capacity queue": 9.35017945241158,
+    "paper / weekly board": 9.593454195326903
+   },
+   "302": {
+    "treated_cancers": 242,
+    "mean_days_to_treatment": 108.05599968647718,
+    "max_accounting_error_days": 0.0,
+    "booking lead": 56.828202733198275,
+    "assumed extra_wait": 13.876279242065776,
+    "capacity queue": 13.959033738579167,
+    "paper / weekly board": 9.626023223386087
+   }
+  },
+  "mean": {
+   "treated_cancers": 233.0,
+   "mean_days_to_treatment": 106.50019265005889,
+   "max_accounting_error_days": 0.0,
+   "booking lead": 56.871187458142344,
+   "assumed extra_wait": 14.597091897343375,
+   "capacity queue": 11.654606595495373,
+   "paper / weekly board": 9.609738709356495
+  }
+ },
+ "suggested": {
+  "cohorts": {
+   "301": {
+    "treated_cancers": 224,
+    "mean_days_to_treatment": 97.19438561364068,
+    "max_accounting_error_days": 0.0,
+    "booking lead": 57.52994252055141,
+    "assumed extra_wait": 15.317904552620975,
+    "capacity queue": 8.696055302751713,
+    "paper / weekly board": 2.3818080075216437
+   },
+   "302": {
+    "treated_cancers": 242,
+    "mean_days_to_treatment": 100.46440189033389,
+    "max_accounting_error_days": 0.0,
+    "booking lead": 57.374243326986765,
+    "assumed extra_wait": 13.876279242065776,
+    "capacity queue": 13.375175677448382,
+    "paper / weekly board": 2.5722428945851554
+   }
+  },
+  "mean": {
+   "treated_cancers": 233.0,
+   "mean_days_to_treatment": 98.82939375198728,
+   "max_accounting_error_days": 0.0,
+   "booking lead": 57.45209292376909,
+   "assumed extra_wait": 14.597091897343375,
+   "capacity queue": 11.035615490100048,
+   "paper / weekly board": 2.4770254510533993
+  }
+ }
+}
