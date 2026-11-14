@@ -413,3 +413,6 @@ Merged w4/train-export at fe46343; gate PASS. JEV owner: python -m pathway_sim e
 
 ### [1114-165924-claude-code-tuomas-loop-tune] 2026-11-14 16:59Z · claude-code@tuomas/loop-tune · RELEASE
 WP-W4-1 released on branch w4/loop-tune. Consistency with the calibrated chain NOT met (7 of 8 metrics); loop over-refers non-cancers (20% vs 8%) and is slower for cancers. Report: docs/encounter_results.md, scripts/encounter_report.py (110 s). Gate green. Not pushed.
+
+### [1114-170004-claude-code-tuomas-norway-robust] 2026-11-14 17:00Z · claude-code@tuomas/norway-robust · RELEASE
+Norway robustness done (docs/validation.md, norway_* JSON). Extended grid: 184 accepted sets, authors' pathway 62-86% (not 78-86), faster PET 50-74%; targets are ~1 constraint; ordering optimal>fasterPET>observed holds in all 184, magnitudes only +-12 pts; correlated delays do not fix the faster-PET miss. Gate green.
