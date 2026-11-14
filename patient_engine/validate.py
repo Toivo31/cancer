@@ -484,8 +484,13 @@ class _Checker:
             check(n.get("text"), str(n.get("state")), _list(n.get("mentions")), f"notes[{i}].text")
         for state, p in _dict(self.d.get("presenting")).items():
             check(_dict(p).get("text"), state, _list(_dict(p).get("reported")), f"presenting.{state}.text")
+        # A definitive test for the primary condition (an output measuring `dx_<primary>`, decision D46)
+        # names what it tests for whether the result is positive or negative; that is not a leak.
+        definitive = {t.id for t in cat.tests.values() if any(o.measures == f"dx_{self.primary}" for o in t.outputs)}
         for state, tests in _dict(self.d.get("observations")).items():
             for tid, atts in _dict(tests).items():
+                if tid in definitive:
+                    continue
                 for i, a in enumerate(_list(atts)):
                     check(_dict(a).get("report"), state, [tid], f"observations.{state}.{tid}[{i}].report")
 

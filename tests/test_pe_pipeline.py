@@ -51,12 +51,12 @@ def all_files_text(*roots):
 
 def test_50_lung_cards_offline_all_valid_and_loadable(lung, tmp_path):
     design = make_design(lung, {k: 5 for k in lung.conditions})
-    assert design.n == 50
+    assert design.n == 5 * len(lung.conditions)
     fake = reference_fake_client(lung, design, 1)
     manifest, rep = generate_library_with_report(lung, design, 1, fake, out_dir=tmp_path / "L")
     lib = load_library(tmp_path / "L", lung)
-    assert len(lib) == 50 and manifest.n_cards == 50 and not rep.partial
-    assert rep.accepted == 50 and rep.discarded == 0 and rep.calls == 50 + sum(len(c.states) for c in lib.cards) and rep.repairs == {"0": 50}
+    assert len(lib) == design.n and manifest.n_cards == design.n and not rep.partial
+    assert rep.accepted == design.n and rep.discarded == 0 and rep.calls == design.n + sum(len(c.states) for c in lib.cards) and rep.repairs == {"0": design.n}
     assert any(len(c.states) > 1 for c in lib.cards)           # multi-state cards are written too
     for c in lib.cards:
         from patient_engine.card import card_to_json
@@ -282,7 +282,7 @@ def test_no_api_key_in_files_logs_or_exceptions(tiny, tmp_path, stub_factory_fix
 def test_estimate_cost_counts_one_g1_call_and_one_g2_call_per_state(lung):
     design = make_design(lung, {k: 3 for k in lung.conditions})
     e = estimate_cost(lung, design, 1, sample=2)
-    assert 2 <= e["calls_per_card"] <= 5 and e["input_tokens_per_card"] > 1000 and e["total_calls"] == round(30 * e["calls_per_card"])
+    assert 2 <= e["calls_per_card"] <= 5 and e["input_tokens_per_card"] > 1000 and e["total_calls"] == round(design.n * e["calls_per_card"])
 
 
 def test_cli_fake_and_partial_exit_code(tmp_path, capsys):
