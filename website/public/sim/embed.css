@@ -15,3 +15,5 @@
 .sim-left,.sim-right{display:none!important}
 .sim{grid-template-columns:1fr!important;padding:0!important}
 .sim{padding-top:24px!important}
+.sim{padding-top:8px!important}
+.sim-pane__tag,.sim-graph.is-split .sim-pane__tag{display:none!important}
