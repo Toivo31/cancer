@@ -1,6 +1,6 @@
 """Walk one synthetic patient through the encounter loop, one decision at a time (demo and test tool).
 
-    python -m decision_api.server                                   # terminal 1: the owner's proxy (key via BIRCH_API_KEY_FILE)
+    python -m decision_api.server                                   # terminal 1: the owner's proxy (no key: the hosted gateway, checkpoint 2350)
     python -m jev.walk                                               # terminal 2: a random patient (blind for you too); you review each proposal
     python -m jev.walk --pick random --pick-seed 7                   # the same random patient again
     python -m jev.walk --pick cancer                                 # you choose the kind: NOT blind for the person
@@ -31,7 +31,8 @@ from patient_engine.card import CohortSpec
 from patient_engine.cohort import Cohort
 from patient_engine.record_text import render
 
-from .birch import BirchBackend, BirchError, BirchPolicy, DEFAULT_MAX_CALLS, DEFAULT_URL, parse_spec
+from .birch import (BirchBackend, BirchError, BirchPolicy, DEFAULT_CACHE_DIR, DEFAULT_MAX_CALLS, DEFAULT_URL,
+                    GATEWAY_MIN_INTERVAL, parse_spec, pinned_backend)
 from .birch_mock import MockProxy
 
 RANDOM_PICK = "random"
@@ -139,10 +140,19 @@ class StepPolicy:
                            "record": render(view.record, self.world.catalogue, self.world.care),
                            "probs": {a: round(probs[a], 6) for a in options}, "table": table, "proposed": proposed,
                            "chosen": chosen, "overridden": overridden, "explanation": expl,
-                           "cached": getattr(getattr(self.inner, "backend", None), "last_cached", None)})
+                           "cached": getattr(getattr(self.inner, "backend", None), "last_cached", None),
+                           **_identity(getattr(self.inner, "backend", None))})
         who = "Reviewer overrode the proposal" if overridden else "Reviewer accepted the proposal"
         text = f"{who} ({proposed}); chosen: {chosen}. " + (note or "")
         return {a: float(a == chosen) for a in options}, text.strip(), assess or {"plan": "{action}"}
+
+
+def _identity(be) -> dict:
+    """The answering model's identity and latency as the response states them (step, weight hash), for the saved walk."""
+    r = getattr(be, "last_response", None)
+    if not isinstance(r, dict):
+        return {}
+    return {"backend": r.get("backend"), "latency_ms": r.get("latency_ms")}
 
 
 def _call(policy, view, options):
@@ -180,9 +190,12 @@ def walk(args, out=print, input_fn=input) -> dict:
                 url, allow_non_model, cache = mock.url, True, Path(args.work_dir) / "jev_cache_mock"
             elif parse_spec(args.jev):
                 url = parse_spec(args.jev)
-            be = BirchBackend(url, max_calls=args.max_calls, cache_dir=cache, allow_non_model=allow_non_model,
-                              include_assessments=args.include_assessments, concurrency=args.concurrency,
-                              forbidden_values=frozenset(world.catalogue.conditions))
+            kw = dict(max_calls=args.max_calls, cache_dir=cache, include_assessments=args.include_assessments,
+                      concurrency=args.concurrency, forbidden_values=frozenset(world.catalogue.conditions))
+            if mock is not None:                       # the mock is not the model: no identity pin, no pacing
+                be = BirchBackend(url, allow_non_model=True, **kw)
+            else:                                      # the owner's bridge: step 2350 and its weight hash, or refused
+                be = pinned_backend(url=url, min_interval=getattr(args, "min_interval", GATEWAY_MIN_INTERVAL), **kw)
             inner = BirchPolicy(be, mode="argmax", catalogue=world.catalogue, care=world.care)
         step = StepPolicy(inner, world, table, args.auto_accept, input_fn, out)
         if pick_seed is not None:
@@ -192,7 +205,15 @@ def walk(args, out=print, input_fn=input) -> dict:
                 "Use --pick random for a blind walk.")
         out(f"Walking patient {ix} of {lib.id[:12]} (hidden truth withheld until the end); decider: {args.jev}"
             + ("; auto-accept" if args.auto_accept else ""))
-        log = run_encounter(world, 1, args.seed, policy=step, cohort=cohort)
+        try:
+            log = run_encounter(world, 1, args.seed, policy=step, cohort=cohort)
+        except BirchError as e:                    # keep what was decided before the stop (a live smoke's evidence)
+            p = Path(args.work_dir) / "walks" / f"walk_stopped_{args.pick or 'card'}{'' if pick_seed is None else pick_seed}_{ix}.json"
+            p.parent.mkdir(parents=True, exist_ok=True)
+            p.write_text(json.dumps({"format": "jev_walk/1", "decider": args.jev, "outcome": None, "stopped": str(e),
+                                     "steps": step.steps, "model_calls": step.run_summary()}, indent=1))
+            out(f"Saved the walk up to the stop: {p}")
+            raise
     finally:
         if mock is not None:
             mock.__exit__()
@@ -235,7 +256,9 @@ def main(argv=None) -> int:
     ap.add_argument("--include-assessments", action="store_true", help="send earlier assessment entries as evidence too")
     ap.add_argument("--max-calls", type=int, default=DEFAULT_MAX_CALLS, help="hard limit on model calls (default %(default)s)")
     ap.add_argument("--concurrency", type=int, default=1, help="model calls in flight, 1 to 4 (default 1; a walk asks one at a time)")
-    ap.add_argument("--cache-dir", default="runs/jev_cache")
+    ap.add_argument("--cache-dir", default=DEFAULT_CACHE_DIR, help="answer cache, one directory per checkpoint (default %(default)s)")
+    ap.add_argument("--min-interval", type=float, default=GATEWAY_MIN_INTERVAL,
+                    help="seconds between live model calls (default %(default)s: the hosted gateway takes 6 a minute; 30 keeps a long run under 120 an hour)")
     ap.add_argument("--work-dir", default="runs", help="libraries, mock cache and saved walks go here")
     ap.add_argument("--world", default=WORLD)
     ap.add_argument("--seed", type=int, default=1)

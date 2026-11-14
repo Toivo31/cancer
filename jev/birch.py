@@ -1,4 +1,4 @@
-"""The team's decision model (checkpoint 1138, the "Birch" API) as a JEV backend.
+"""The team's decision model (checkpoint 2350, the "Birch" API) as a JEV backend.
 
 The model is deployed on Modal; the owner's local proxy (``python -m decision_api.server``) holds the key
 and exposes ``POST /api/decision/pathway``. This module turns a :class:`DecisionRequest` built from a
@@ -13,6 +13,14 @@ Owner's rules (decision_api/README.md, INTEGRATION_PROMPT.md), built in as guard
 * the model proposes and a person reviews: ``python -m jev.walk`` is the review loop;
 * about 5-7 s per warm call, a cold start about 6 minutes, it costs money while it runs: failures are
   loud errors, never a silent fallback (``BirchUnavailable`` carries the proxy's own message).
+
+Checkpoint 2350 (WP-W8-1): with no key, the owner's proxy forwards to the hosted gateway, whose limits are
+6 submissions a minute and 120 an hour (shared by everyone using it), a request body of at most 32,000 bytes
+(measured as ``json.dumps``) and a case context of at most 12,000 characters; natively a node takes at most
+16 actions (checked on the pinned backend; a mock does not model it). Requests over these limits fail here,
+before sending. :func:`pinned_backend` returns the owner's
+bridge (``decision_api.jev_bridge``), which refuses any answer or cache entry not from step 2350 with the
+pinned weight hash; the factory (``birch``), :func:`policy_for_world` and ``jev.walk`` use it for live calls.
 
 The API returns scores only, no rationale. ``probs`` are the scores renormalised over the offered ids;
 ``record_note`` and ``assessment`` stay empty. :class:`BirchPolicy` writes a labelled template line into
@@ -43,11 +51,17 @@ PATH = "/api/decision/pathway"
 DEFAULT_MAX_CALLS = 50
 MAX_CONCURRENCY = 4              # the owner does not know the endpoint's limit; default 1, at most 4
 MAX_NOTE_CHARS = 2000
-DEFAULT_TIMEOUT = 160.0           # the proxy gives up on the model after 145 s (a cold start takes longer)
+DEFAULT_TIMEOUT = 660.0           # the hosted gateway's documented overall wait (a cold start takes minutes)
 MAX_FAILURES_IN_A_ROW = 2         # after this many failed calls in a row nothing more is sent
-MAX_BODY_BYTES = 480 * 1024       # the proxy refuses 512 KiB
+GATEWAY_MAX_BODY_BYTES = 32000    # decision_api/hosted.py: len(json.dumps(body)) > 32000 -> 422
+GATEWAY_MAX_CONTEXT_CHARS = 12000 # decision_api/hosted.py: case.context longer than this -> 422
+MAX_ACTIONS_PER_NODE = 16         # native schema (runtime/decision_model/inference_schema.py)
+MAX_BODY_BYTES = GATEWAY_MAX_BODY_BYTES
+GATEWAY_MIN_INTERVAL = 10.0       # seconds between live submissions: the gateway accepts 6 a minute (120 an hour)
 MAX_EVIDENCE_CHARS = 3000
-CHECKPOINT = 1138
+CHECKPOINT = 2350
+CHECKPOINT_SHA256 = "22570c201a9e3d25dcdf7aa904770a568328e034ccb5ac89623784707a7323e8"
+DEFAULT_CACHE_DIR = f"runs/jev_cache/checkpoint-{CHECKPOINT}-{CHECKPOINT_SHA256[:12]}"   # never the old 1138 cache
 WORKFLOW_ID = "primary-care-encounter"
 PROTOCOL = ("Synthetic primary-care encounter. Propose one allowed next action for a clinician to review; "
             "nothing is ordered, treated or referred automatically.")
@@ -236,6 +250,25 @@ def map_request(req: DecisionRequest, include_assessments: bool = False) -> dict
             "workflow": {"id": WORKFLOW_ID, "version": "1", "root": node, "nodes": nodes}, "node_id": node}
 
 
+def check_limits(payload: dict, rid: str = "request", max_actions: int | None = MAX_ACTIONS_PER_NODE) -> None:
+    """Refuse, before sending, a request the hosted gateway or the native model would reject (nothing is trimmed:
+    no silent change to what the model sees). The body is measured as the gateway measures it."""
+    size = len(json.dumps(payload))
+    if size > GATEWAY_MAX_BODY_BYTES:
+        raise BirchError(f"{rid}: request is {size} bytes as json.dumps; the hosted gateway refuses more than "
+                         f"{GATEWAY_MAX_BODY_BYTES} bytes (a long record: fewer or shorter evidence items, or the "
+                         "owner's authenticated endpoint); nothing was sent")
+    ctx = payload.get("case", {}).get("context", "")
+    if len(ctx) > GATEWAY_MAX_CONTEXT_CHARS:
+        raise BirchError(f"{rid}: case context is {len(ctx)} characters; the hosted gateway refuses more than "
+                         f"{GATEWAY_MAX_CONTEXT_CHARS}; nothing was sent")
+    node = payload.get("workflow", {}).get("nodes", {}).get(payload.get("node_id"), {})
+    n = len(node.get("actions", []))
+    if max_actions is not None and n > max_actions:
+        raise BirchError(f"{rid}: node {payload.get('node_id')!r} offers {n} actions; the model takes at most "
+                         f"{max_actions} per node (WP-W8-2); nothing was sent")
+
+
 def cache_key(payload: dict) -> str:
     """Hash of everything that decides the answer (the case id is left out: the same record gives the same call)."""
     p = json.loads(json.dumps(payload))
@@ -257,16 +290,17 @@ def _rationale(resp: dict, q: dict) -> str | None:
 # =============================================================================================== backend
 
 class BirchBackend:
-    """A ``DecisionBackend`` that asks the checkpoint-1138 model through the local proxy.
+    """A ``DecisionBackend`` that asks the decision model (checkpoint :data:`CHECKPOINT`) through the local proxy.
 
     ``max_calls`` is a hard limit on calls sent (failed ones count: they cost GPU time). Answers are cached on
     disk under ``cache_dir`` (``None`` = no cache); only answers whose ``backend.mode`` is ``model`` are cached
     and served unless ``allow_non_model`` (tests against a mock server, the offline demo). One call at a time.
     """
 
-    def __init__(self, url: str = DEFAULT_URL, *, max_calls: int = DEFAULT_MAX_CALLS, cache_dir: str | Path | None = "runs/jev_cache",
+    def __init__(self, url: str = DEFAULT_URL, *, max_calls: int = DEFAULT_MAX_CALLS, cache_dir: str | Path | None = DEFAULT_CACHE_DIR,
                  timeout: float = DEFAULT_TIMEOUT, include_assessments: bool = False, allow_non_model: bool = False,
-                 forbidden_values=(), checkpoint: int = CHECKPOINT, concurrency: int = 1):
+                 forbidden_values=(), checkpoint: int = CHECKPOINT, concurrency: int = 1, min_interval: float = 0.0,
+                 max_actions: int | None = None):
         u = urllib.parse.urlparse(url if "//" in url else "http://" + url)
         if u.scheme not in ("http", "https") or not u.hostname:
             raise ValueError(f"bad Birch proxy url {url!r}")
@@ -287,6 +321,11 @@ class BirchBackend:
         if not 1 <= int(concurrency) <= MAX_CONCURRENCY:
             raise ValueError(f"concurrency must be between 1 and {MAX_CONCURRENCY}")
         self.concurrency = int(concurrency)
+        if not float(min_interval) >= 0:
+            raise ValueError("min_interval must be >= 0 seconds")
+        self.min_interval = float(min_interval)       # spacing between live submissions (gateway rate limit)
+        self._last_send: float | None = None
+        self.max_actions = max_actions                # actions per node the model takes (None: not checked, e.g. a mock)
         self._slots = threading.BoundedSemaphore(self.concurrency)   # live calls in flight
         self._state = threading.RLock()               # counters, budget, cache files
         self.calls = self.failures = self.cache_hits = self.single_option = 0
@@ -332,9 +371,8 @@ class BirchBackend:
             return DecisionResponse(req.request_id, {ids[0]: 1.0}, "single option, model not asked")
         payload = map_request(req, self.include_assessments)
         check_visible(payload, self.forbidden_values, self.public_phrases)
+        check_limits(payload, req.request_id, self.max_actions)   # gateway and native limits: fail before sending
         body = json.dumps(payload, ensure_ascii=False).encode()
-        if len(body) > MAX_BODY_BYTES:
-            raise BirchError(f"{req.request_id}: request is {len(body)} bytes; the proxy accepts less than 512 KiB")
         key = cache_key(payload)
         with self._slots:
             with self._state:
@@ -374,7 +412,8 @@ class BirchBackend:
         if extra:
             raise BirchError(f"{req.request_id}: the model reports evidence we did not send: {extra}")
         lat = resp.get("latency_ms")
-        expl = (f"birch step {b.get('step')} ({b.get('mode')}); proposed {q.get('proposed_action_id')}, margin "
+        sha = str(b.get("checkpoint_sha256") or "")[:12]
+        expl = (f"birch step {b.get('step')}{' sha ' + sha if sha else ''} ({b.get('mode')}); proposed {q.get('proposed_action_id')}, margin "
                 f"{q.get('score_margin', 0):.3f}; " + ("cached" if cached else f"{lat if lat is not None else '?'} ms"))
         return DecisionResponse(req.request_id, probs, expl, record_note=_rationale(resp, q))
 
@@ -387,6 +426,11 @@ class BirchBackend:
             raise BirchBudgetExceeded(f"{rid}: call budget of {self.max_calls} used up; raise --max-calls on purpose "
                                       "(each call costs GPU time) or rerun to use the cache")
         self.calls += 1                                                   # counted before sending: failures cost too
+        if self.min_interval and self._last_send is not None:             # pace submissions (6 a minute at the gateway)
+            wait = self._last_send + self.min_interval - time.monotonic()
+            if wait > 0:
+                time.sleep(wait)
+        self._last_send = time.monotonic()
 
     def _call(self, body: bytes, rid: str) -> dict:
         t0 = time.monotonic()
@@ -526,18 +570,41 @@ def parse_spec(spec: str) -> str | None:
     return None
 
 
+def pinned_backend(**kw) -> BirchBackend:
+    """The owner's bridge (``decision_api.jev_bridge.backend``): a :class:`BirchBackend` that accepts only answers
+    and cache entries from step :data:`CHECKPOINT` with weight hash :data:`CHECKPOINT_SHA256`. Live calls are
+    paced :data:`GATEWAY_MIN_INTERVAL` seconds apart unless ``min_interval`` says otherwise."""
+    try:
+        from decision_api import jev_bridge
+    except ImportError as e:
+        raise BirchError("decision_api/jev_bridge.py is missing: bring the owner's decision_api/ from origin/main "
+                         "(docs/platform/jev-birch.md, Install and run)") from e
+    if (jev_bridge.STEP, jev_bridge.SHA256) != (CHECKPOINT, CHECKPOINT_SHA256):
+        raise BirchError(f"the owner's bridge pins step {jev_bridge.STEP} ({jev_bridge.SHA256[:12]}), jev.birch expects "
+                         f"{CHECKPOINT} ({CHECKPOINT_SHA256[:12]}): update CHECKPOINT and CHECKPOINT_SHA256 together")
+    kw.setdefault("min_interval", GATEWAY_MIN_INTERVAL)
+    kw.setdefault("max_actions", MAX_ACTIONS_PER_NODE)
+    return jev_bridge.backend(**kw)
+
+
 def backend_from_config(cfg: dict) -> BirchBackend:
-    """From a factory config: ``url``, ``max_calls``, ``cache_dir``, ``timeout``, ``include_assessments``."""
-    return BirchBackend(cfg.get("url") or DEFAULT_URL, max_calls=int(cfg.get("max_calls", DEFAULT_MAX_CALLS)),
-                        cache_dir=cfg.get("cache_dir", "runs/jev_cache"),
-                        timeout=float(cfg.get("birch_timeout", DEFAULT_TIMEOUT)),
-                        include_assessments=bool(cfg.get("include_assessments", False)),
-                        allow_non_model=bool(cfg.get("allow_non_model", False)),
-                        concurrency=int(cfg.get("concurrency", 1)))
+    """From a factory config: ``url``, ``max_calls``, ``cache_dir``, ``timeout``, ``include_assessments``,
+    ``min_interval``. The pinned bridge unless ``allow_non_model`` (a mock or test server)."""
+    kw = dict(url=cfg.get("url") or DEFAULT_URL, max_calls=int(cfg.get("max_calls", DEFAULT_MAX_CALLS)),
+              cache_dir=cfg.get("cache_dir", DEFAULT_CACHE_DIR),
+              timeout=float(cfg.get("birch_timeout", DEFAULT_TIMEOUT)),
+              include_assessments=bool(cfg.get("include_assessments", False)),
+              concurrency=int(cfg.get("concurrency", 1)))
+    if "min_interval" in cfg:
+        kw["min_interval"] = float(cfg["min_interval"])
+    if cfg.get("allow_non_model"):
+        return BirchBackend(allow_non_model=True, **kw)
+    return pinned_backend(**kw)
 
 
 def policy_for_world(world, url: str | None = None, **kw) -> BirchPolicy:
-    """A Birch policy for an encounter world (``pathway_sim.encounter.load_world``), labels from its care model."""
-    be = BirchBackend(url or DEFAULT_URL, forbidden_values=frozenset(world.catalogue.conditions), **kw)
+    """A Birch policy for an encounter world (``pathway_sim.encounter.load_world``), labels from its care model,
+    on the pinned bridge (checkpoint :data:`CHECKPOINT`)."""
+    be = pinned_backend(url=url or DEFAULT_URL, forbidden_values=frozenset(world.catalogue.conditions), **kw)
     be.public_phrases = public_phrases(world.catalogue, getattr(world, "care", None))
     return BirchPolicy(be, catalogue=world.catalogue, care=world.care)
