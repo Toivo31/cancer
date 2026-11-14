@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
-"""Serve demo/ and the decision proxy on one origin, so demo/jev.html can make live calls through the local proxy.
+"""Optional: serve demo/ and the local decision proxy on one origin.
+
+You do not need this to score live: demo/jev.html calls the team's hosted gateway straight from the browser by default
+(the gateway sends Access-Control-Allow-Origin: *, holds the model key itself, and needs no install). Open the file, pick
+an example, press "Score live". Use this server only to route calls through the local proxy instead:
 
     python demo/serve_jev.py                 # http://127.0.0.1:8772/jev.html ; choose "This server's /api/decision"
-    BIRCH_API_KEY_FILE=... python demo/serve_jev.py      # the proxy then calls the deployed model (see decision_api/README.md)
     python demo/serve_jev.py --fixture       # scripted fixture answers (the page labels them "not the model")
 
-The local proxy refuses calls from other origins (a page opened from disk is one), which is why this exists.
-The hosted team gateway allows cross-origin calls, so the page can also use it straight from disk.
+The local proxy (decision_api.server) refuses calls from other origins (a page opened from disk is one), which is why
+the page and the proxy share this origin. Without a local key the proxy relays to the hosted gateway (on main).
 Standard library only; it binds to 127.0.0.1.
 """
 from __future__ import annotations

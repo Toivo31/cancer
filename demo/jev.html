@@ -33,7 +33,7 @@
 
   <section class="jev-examples" id="examples" aria-labelledby="ex-title">
     <h2 id="ex-title">Examples</h2>
-    <p class="jev-examples__lede">Pick an example, or write your own. Every output says where it came from: a recording of the deployed model, a live call, or nothing yet.</p>
+    <p class="jev-examples__lede">Pick an example and press <b>Score live</b>, or write your own. Every output says where it came from: a recording of the deployed model, a live call, or nothing yet.</p>
     <div class="jev-endpoint inset" id="endpoint" aria-label="Where answers come from">
       <span class="label">Answers come from</span>
       <select id="ep-mode" aria-label="Endpoint"></select>
@@ -84,8 +84,8 @@
       </div>
     </section>
 
-    <h3 class="finding">Live calls need an endpoint and start only when you press a button.</h3>
-    <p>Opened from the file, the page shows recordings only and makes no network call. Choose an endpoint in the bar above the examples, or add <code>?api=hosted</code>, <code>?api=same</code> or <code>?api=&lt;url&gt;</code> to the address. To serve this folder and the decision proxy on one origin:</p>
+    <h3 class="finding">Live calls go straight to the team's hosted gateway and start only when you press a button.</h3>
+    <p>No install and no key: the gateway accepts calls from any page, including this file opened from disk, and keeps the model's key on its side. Loading the page sends nothing; each button press sends one call, and an idle model first takes minutes to start. The gateway is shared, so it limits calls per minute and refuses requests that are too large; the page shows when it does and never resends on its own. To stay offline, choose <b>Recordings only</b> or add <code>?api=recorded</code> to the address; <code>?api=same</code> or <code>?api=&lt;url&gt;</code> point it elsewhere. To serve this folder and the local decision proxy on one origin instead:</p>
     <pre class="cmd">python demo/serve_jev.py</pre>
     <p>Model code: <code>decision_api/runtime/decision_model/</code> (on main). The adapter the simulator calls: <code>jev/birch.py</code>. Page data: <code>demo/data/jev_bundle.js</code>, built by <code>demo/export_jev.py</code>.</p>
   </section>
