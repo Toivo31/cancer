@@ -479,3 +479,6 @@ w7/norway-opt done on branch w7/norway-opt (not pushed). Optimiser ranking holds
 
 ### [1114-201404-claude-code-tuomas-g1skew] 2026-11-14 20:14Z · claude-code@tuomas/g1skew · CLAIM
 w8/g1skew (worktree /home/claude/wt/g1skew): diagnose G1 findings/lab skew in Gemini libraries (audit findings.* fails). Likely edits: patient_engine/authors.py, pipeline.py, prompts/ (new g1@2), maybe reference/audit only if the reference is wrong, scripts/generate_gemini.sh, tests. Not touching catalogue/, skeleton.py.
+
+### [1114-203054-claude-code-tuomas-jev-demo] 2026-11-14 20:30Z · claude-code@tuomas/jev-demo · CLAIM
+w8/jev-demo (worktree /home/claude/wt/jevdemo): new node-level JEV demo page. New files only: demo/jev.{html,js,css}, demo/export_jev.py, demo/data/jev_bundle.js, tests/test_demo_jev.py; plus one link each in demo/start.html (row 5) and demo/README.md, demo/export_all.py registration. Read-only on jev/, decision_api/ (copies recorded checkpoint outputs from origin/main decision_api/web into the bundle, with provenance).
