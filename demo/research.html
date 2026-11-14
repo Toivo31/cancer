@@ -1,0 +1,97 @@
+<!doctype html>
+<!--
+  Research behind the numbers (UI revamp lane L9, decision D69).
+  Every claim our pages and pitch make, labelled Published research / Our simulation / Our assumption.
+  All content, numbers and claim texts are read from data/research_bundle.js (window.RESEARCH_DATA) by research.js;
+  the register itself is docs/research_claims.yaml (edit there, then the integrator regenerates the bundle).
+  Deep links: research.html#<claim id> opens and expands that claim's row.
+  Not in the nav (D60: five pages); reached from the Evidence page and from claim links. The nav marks Evidence.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Research behind the numbers · Equal care pathways</title>
+<link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="research.css">
+</head>
+<body>
+<nav class="site-nav" data-page="evidence"></nav>
+
+<main class="page rs-page">
+  <header class="page-top">
+    <p class="label rs-eyebrow">Reference page · reached from Evidence and from claim links</p>
+    <h1 class="page-title">Research behind the numbers</h1>
+    <p class="lede">The research tells us where time is lost; our simulation tests changes on top of it; here is which is which.</p>
+
+    <figure class="figure rs-figure" aria-labelledby="rs-fig-title">
+      <div class="card rs-basis">
+        <h2 class="label rs-fig-title" id="rs-fig-title">Every claim on our pages has exactly one basis</h2>
+        <div class="rs-basis-bar" id="rs-basis-bar" role="img" aria-label="Claims by basis"></div>
+        <div class="rs-basis-cards" id="rs-basis-cards"></div>
+        <p class="caption rs-basis-caption">A simulation result is not evidence: it is computed from our inputs, some published and some assumed. Open a number to see its claims.</p>
+      </div>
+
+      <div class="inset rs-worked" id="rs-worked">
+        <h2 class="label rs-fig-title">Worked example: where the simulated waiting days come from</h2>
+        <div class="rs-split" id="rs-split"></div>
+        <p class="rs-split-legend" id="rs-split-legend"></p>
+        <p class="caption rs-worked-caption">These are our inputs, not evidence: the share of simulated waiting days that sits at steps whose wait we set from a published figure, and the share that rests on our own assumptions.</p>
+      </div>
+    </figure>
+
+    <blockquote class="rs-framing" id="rs-framing"></blockquote>
+
+    <p class="page-actions">
+      <a class="btn btn--primary" href="#rs-claims">Browse every claim</a>
+      <a href="#rs-unsupported">What we could not support</a>
+      <a href="evidence.html">Back to Evidence</a>
+    </p>
+  </header>
+
+  <section class="details" aria-label="Details">
+    <h2 class="details-rule">Details</h2>
+
+    <section class="rs-section" id="rs-unsupported" aria-labelledby="rs-unsupported-h">
+      <h3 class="finding" id="rs-unsupported-h">What we could not support, and therefore do not claim</h3>
+      <p class="rs-note">These are left out of our pages or carry a conflict with the values we use. They are listed here so the gaps are visible.</p>
+      <div class="rs-unsupported" id="rs-unsupported-list"></div>
+    </section>
+
+    <section class="rs-section" id="rs-claims" aria-labelledby="rs-claims-h">
+      <h3 class="finding" id="rs-claims-h">Every claim, grouped by topic: open a row for its source, run or reason</h3>
+      <div class="rs-toolbar" role="toolbar" aria-label="Filter claims">
+        <span class="label">Show</span>
+        <span id="rs-filter"></span>
+        <span class="rs-toolbar-gap"></span>
+        <button type="button" class="btn btn--secondary rs-small" id="rs-open-all">Open all</button>
+        <button type="button" class="btn btn--secondary rs-small" id="rs-close-all">Close all</button>
+      </div>
+      <div id="rs-claim-list"></div>
+    </section>
+
+    <section class="rs-section" id="rs-waiting" aria-labelledby="rs-waiting-h">
+      <h3 class="finding" id="rs-waiting-h">Which simulated waits are set from published figures, step by step</h3>
+      <p class="rs-note">Each row is one place where a simulated patient waits: a booking lead or queue at a resource, or an extra wait at a test. Days and shares are averages over treated cancers on the critical path of one simulation run. This is an accounting of our inputs, not evidence.</p>
+      <div id="rs-waiting-tables"></div>
+    </section>
+
+    <section class="rs-section" id="rs-sources" aria-labelledby="rs-sources-h">
+      <h3 class="finding" id="rs-sources-h">Every source in our registry, and how we read it</h3>
+      <p class="rs-note">"How we read it" is recorded in the source registry: full text, abstract only, or a secondary account. Only full-text sources are described as read in full. Sources cited by a claim on this page come first.</p>
+      <div id="rs-source-table"></div>
+    </section>
+
+    <p class="rs-note rs-regen">Generated from <code>docs/research_claims.yaml</code> by <code>python demo/export_research.py</code>; text version: <code>docs/research_claims.md</code>.</p>
+  </section>
+</main>
+
+<footer class="footer-strip" id="rs-footer"></footer>
+
+<noscript><p class="page">This page is built from data/research_bundle.js by research.js; the same register is in docs/research_claims.md.</p></noscript>
+
+<script src="data/research_bundle.js"></script>
+<script src="site.js"></script>
+<script src="research.js"></script>
+</body>
+</html>
