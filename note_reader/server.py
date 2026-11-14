@@ -8,6 +8,9 @@ GET  /report/          copy of the team dashboard (live_demo/build_report.py) in
 GET  /dots/...         video/dots assets (flow.js, dots_data.js)
     .venv/bin/python -m note_reader.server --precompute   # refresh note_reader/precomputed.json
 
+GET  /decision         embeddable decision panel with local recorded examples
+GET/POST /api/decision/* server-side adapter to the separately hosted decision model
+
 GET  /api/examples     synthetic example notes
 POST /api/read         {"text": "..."} -> flags (checked against the text) + next-step estimates
 
@@ -35,6 +38,7 @@ sys.path.insert(0, str(ROOT))
 from technique_classifier import load_taxonomy  # noqa: E402
 from technique_classifier.llm import classify  # noqa: E402
 from note_reader.next_step import next_step  # noqa: E402
+from decision_api.server import handle_request as handle_decision_request  # noqa: E402
 
 PRE = HERE / "precomputed.json"
 DEMO = ROOT / "live_demo"            # flow.html (our demo page; separate from the team's demo/ folder)
@@ -98,6 +102,8 @@ class Handler(BaseHTTPRequestHandler):
         self._send(200, body, ctype)
 
     def do_GET(self):
+        if handle_decision_request(self):
+            return
         path = self.path.split("?", 1)[0].split("#", 1)[0]
         if path in ("/", "/index.html"):
             self._static(DEMO, "flow.html")                       # the demo: flowchart simulation
@@ -115,6 +121,8 @@ class Handler(BaseHTTPRequestHandler):
             self._json(404, {"error": "not found"})
 
     def do_POST(self):
+        if handle_decision_request(self):
+            return
         if self.path != "/api/read":
             return self._json(404, {"error": "not found"})
         try:

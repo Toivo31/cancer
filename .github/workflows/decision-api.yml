@@ -1,0 +1,21 @@
+name: Decision API adapter
+on:
+  push:
+    paths: ['decision_api/**', 'note_reader/server.py', '.github/workflows/decision-api.yml']
+  pull_request:
+    paths: ['decision_api/**', 'note_reader/server.py', '.github/workflows/decision-api.yml']
+jobs:
+  integration-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: python -m pip install -r requirements.txt
+      - run: python -m unittest discover -s decision_api/tests -v
+      - run: node --test decision_api/tests/client.test.js
+      - run: node --check decision_api/widget.js
