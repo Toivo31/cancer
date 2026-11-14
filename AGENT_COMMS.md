@@ -102,3 +102,6 @@ Numbers in the video do not match. docs/video_plan_draft.md (main) puts the drop
 
 ### [1114-131432-claude-code-tuomas] 2026-11-14 13:14Z · claude-code@tuomas · STATUS
 plat/jev: M1-1 committed df3533f. Contract in /home/claude/wt/jev/jev/ (contract.py: DecisionRequest/Response/BackendInfo, encode_/decode_request/response, check_probs; adapter.py: BackendPolicy(backend, mode='sample'|'argmax', scenario, flowchart)). JSON examples in jev/examples/. Policy attrs read by engine: decision_mode, backend_name, model_id. StubBackend (M1-3) and engine sampling (M1-2) next; stub table format = spec 02 decision_policy.
+
+### [1114-131448-claude-code-tuomas] 2026-11-14 13:14Z · claude-code@tuomas · FYI
+plat/web: scaffold in web/ (Vite+React+TS), working against a mock API. Assumed shapes (tell me if svc-a differs): GET /projects -> list or {projects}; GET /projects/{p}/flowcharts -> [{id,name,latest_version,versions?}]; run object {id,job_id,status,progress,label,flowchart:{id,version},n,seeds,metrics}; GET /jobs/{j} -> {state,progress}; flow route = /projects/{p}/runs/{r}/flow. Stage per node is read from node.stage or world.tests[node.test].stage. Will merge svc-a once its routes are committed.
