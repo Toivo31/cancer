@@ -1,0 +1,20 @@
+# One reverse proxy for both things on this host. Site addresses come from the environment (see docker-compose.yml):
+#   PLATFORM_SITE  the flowchart platform        e.g. platform.example.org   (a domain gets automatic HTTPS)  or  :80
+#   LIVE_SITE      Eemeli's live demo (note_reader, python -m note_reader.server --port 8770)   e.g. demo.example.org  or  :8080
+# Both upstreams listen on 127.0.0.1 only; this proxy is the only thing exposed.
+{$PLATFORM_SITE} {
+	encode zstd gzip
+	request_body {
+		max_size 2MB
+	}
+	reverse_proxy {$PLATFORM_UPSTREAM}
+}
+
+{$LIVE_SITE} {
+	encode zstd gzip
+	# The note reader calls a paid LLM per request and has no login: keep bodies small (its own limit is 2000 characters).
+	request_body {
+		max_size 16KB
+	}
+	reverse_proxy {$LIVE_UPSTREAM}
+}

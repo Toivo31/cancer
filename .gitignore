@@ -12,3 +12,7 @@ __pycache__/
 
 # Service data (SQLite and result blobs)
 data/
+
+# Deployment secrets
+deploy/*.env
+!deploy/platform.env.example

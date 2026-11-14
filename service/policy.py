@@ -7,6 +7,8 @@ would make a "JEV" run a lie).
 
 from __future__ import annotations
 
+from . import security
+
 
 class BackendUnavailable(ValueError):
     code = "backend_unavailable"
@@ -20,6 +22,7 @@ def build_policy(sc, fc, doc: dict, seed: int):
     except ImportError:
         raise BackendUnavailable(f"decision backend '{backend}' needs the jev package, which is not installed in this build") from None
     try:
+        security.check_decision_policy(dp)          # JEV hosts: allowlist only (spec 07)
         return jev.prepare(sc, fc, backend=backend, mode=dp.get("mode"), seed=seed)
     except (ValueError, jev.BackendError) as e:           # bad table, or a JEV address that cannot be reached
         raise BackendUnavailable(str(e)) from None

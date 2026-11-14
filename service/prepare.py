@@ -16,6 +16,7 @@ from jev.contract import DecisionRequest, check_responses
 from pathway_sim.documents import documents_to_scenario, normalise_flowchart_doc
 from pathway_sim.policy import PatientView, RulePolicy
 
+from . import security
 from .errors import ApiError
 
 
@@ -24,6 +25,7 @@ def prepare_run(world: dict, flowchart_doc: dict, decision_policy: dict | None =
     doc = normalise_flowchart_doc(flowchart_doc)
     if decision_policy is not None:
         doc["decision_policy"] = copy.deepcopy(decision_policy)
+    security.check_decision_policy(doc.get("decision_policy"))      # JEV hosts: allowlist only (spec 07)
     sc = documents_to_scenario(world, [doc])
     fc, policy = jev.prepare(sc, sc.flowcharts[doc["id"]], seed=seed)
     return sc, fc, policy

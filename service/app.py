@@ -16,7 +16,7 @@ from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from . import errors, routes
+from . import errors, routes, security
 from .config import Settings
 from .deps import Services
 from .store import Conflict, NotFound
@@ -104,6 +104,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             app.include_router(m.router, prefix="/api")
 
     app.add_middleware(BodyLimit, limit=app.state.services.settings.max_document_bytes)
+    security.install(app)                         # token, read-only mode, rate limits (spec 07); outermost, so it runs first
 
     web = app.state.services.settings.web_dir
     if (web / "index.html").exists():            # the built web app, when there is one (M3-1)
