@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How the patients work · Equal Care Pathways</title>
+<!-- Load order (07-parallel-lanes.md): theme.css -> page CSS -> bundles -> site.js -> page JS.
+     Every number on this page is read from the bundles by patients.js; none is typed here. -->
+<link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="patients.css">
+</head>
+<body>
+<nav class="site-nav" data-page="patients"></nav>
+
+<main class="page">
+  <header class="page-top">
+    <h1 class="page-title">How the patients work</h1>
+    <p class="lede">Every simulated patient carries a sealed truth. The system only sees what each test reveals, so the optimiser learns from the record, not from the answer.</p>
+
+    <div class="figure pt-figure">
+      <!-- One patient in two layers: the sealed truth and the visible record. -->
+      <section class="pt-patient" aria-label="One example patient">
+        <div class="pt-seal" id="pt-seal" data-state="sealed">
+          <div class="pt-head">
+            <span class="label">Sealed truth</span>
+            <span class="stamp" id="pt-seal-stamp">Sealed</span>
+          </div>
+          <p class="pt-seal-what">The true condition, and the result every test would give, drawn before the first visit.</p>
+          <ul class="pt-redact" aria-hidden="true">
+            <li><span class="label">Condition</span><i></i></li>
+            <li><span class="label">Chest X-ray</span><i></i></li>
+            <li><span class="label">CT scan</span><i></i></li>
+            <li><span class="label">Biopsy</span><i></i></li>
+          </ul>
+          <!-- Stays empty until the reader lifts the seal (patients.js fills it only then). -->
+          <div class="pt-truth" id="pt-truth" hidden></div>
+          <button class="btn btn--primary pt-reveal" id="pt-reveal" type="button" aria-pressed="false" aria-controls="pt-truth">Lift the seal</button>
+        </div>
+
+        <div class="pt-arrow" aria-hidden="true"><span class="label">only through tests</span></div>
+
+        <div class="pt-record">
+          <div class="pt-head">
+            <span class="label">Visible record</span>
+            <button class="chip" id="pt-next" type="button">Another patient</button>
+          </div>
+          <p class="pt-who" id="pt-who"></p>
+          <ol class="pt-lines" id="pt-lines" aria-live="polite"></ol>
+        </div>
+      </section>
+
+      <!-- The loop: how the optimiser uses the records. Step numbers come from CSS counters. -->
+      <section class="pt-loop" aria-label="How the optimiser uses the records">
+        <div class="pt-head"><span class="label">How a change is found</span></div>
+        <ol class="pt-steps">
+          <li class="pt-step"><b>Run</b> today's pathway on training patients, truth sealed.</li>
+          <li class="pt-step pt-step--in"><b>Read</b> the records: which step held patients back, which tests did not help.</li>
+          <li class="pt-step pt-step--in"><span class="pt-repeat" aria-hidden="true">repeat</span><b>Propose</b> one change to the order of steps.</li>
+          <li class="pt-step pt-step--in"><b>Rerun</b> the same patients. Keep the change only if faster and no more cancers missed.</li>
+          <li class="pt-step pt-step--test"><b>Test</b> on new patients, truth sealed again. This is the number we report.
+            <span class="pt-result" id="pt-result"></span>
+            <a class="pt-basis" href="research.html#sim-no-noequipment-vs-scanner">Our simulation</a>
+          </li>
+        </ol>
+      </section>
+    </div>
+
+    <p class="caption" id="pt-caption">Synthetic patients, never clinically reviewed. Rerunning the same patients is something only a simulator can do; in a hospital that step would be a pilot. <a class="pt-basis" href="research.html#as-synthetic-patients">Our assumption</a></p>
+    <div class="page-actions">
+      <a class="btn btn--secondary" id="pt-open" href="encounter.html?truth">Watch this patient visit by visit</a>
+      <a href="#details">Why this is not overfitting</a>
+    </div>
+  </header>
+
+  <section class="details" id="details" aria-label="Details">
+    <div class="details-rule">Details</div>
+
+    <h3 class="finding" id="not-overfitting">The reported number comes from patients the search never saw</h3>
+    <p>The optimiser proposes changes from revealed information only: the records, never the sealed truth. A change is kept only if a rerun of the same training patients is faster without missing more cancers. The number we report is then measured on new patients, drawn separately, whose truth stays sealed during the search. A search that tries many changes and keeps the best can look better on its own training patients than it will on new ones. That gap is called selection optimism; reporting only new patients keeps it out of the number, and the <a href="index.html">full results report</a> shows how large it was for each result.</p>
+    <p class="pt-src">The result in step five: <span id="pt-result-detail"></span></p>
+
+    <h3 class="finding" id="rerun-is-a-pilot">Rerunning the same patients is a simulator privilege; in a hospital it is a pilot</h3>
+    <p>Because every result of every test is drawn before the first visit, the simulator can send the very same patients down a changed pathway and compare like with like. A real hospital cannot rerun a patient. There, the fourth step becomes a pilot on new patients, with the noise that brings. The simulator tells you which change is worth piloting; it does not replace the pilot.</p>
+
+    <h3 class="finding" id="hindsight">Judging a test in hindsight flatters the tests that come late</h3>
+    <p>Reading the records invites the question: should the test that finally found the cancer have come first? Answered patient by patient, this misleads. That test was only run on patients whose earlier tests had failed, those earlier tests may be what kept its queue short, and it may be slow, scarce or invasive. So the optimiser reads groups of patients rather than single stories, counts a step that settles patients without cancer as useful, and proves a change only by rerunning the whole pathway.</p>
+
+    <h3 class="finding" id="cards">The same hidden facts, written two ways</h3>
+    <p>Every patient starts as a hidden set of facts: what is truly wrong, and what each test would show. A language model, or a plain template, turns those facts into the words a clinician would meet. The decision model only ever sees the words. It never sees the hidden facts.</p>
+    <div class="pt-cards" id="pt-cards"></div>
+
+    <h3 class="finding" id="catalogue">The medical content is a draft no clinician has read</h3>
+    <p>Conditions, hidden findings and tests, with each test's accuracy, turnaround and cost, live in a care catalogue. Patients are drawn from it, so the simulator is right about this catalogue's world, not about medicine.</p>
+    <p class="pt-src"><span id="pt-catalogue"></span> <a class="pt-basis" href="research.html#as-catalogue-draft">Our assumption</a></p>
+
+    <h3 class="finding" id="report-leak">The first model-written test reports gave the answer away, so their wording is not used</h3>
+    <p>In the first model-written libraries the wording of a test report revealed which results were misses or false alarms. Values, complaints and histories were fine, but the report text could not be used to train or test a model that reads text. Later libraries write report text from the values alone, with the model never seeing the true condition. Each library records which version of the results prompt wrote it.</p>
+    <p class="pt-src" id="pt-prompts"></p>
+
+    <h3 class="finding" id="audit">Each library is checked before use</h3>
+    <p>An audit compares a library against the catalogue: how often each finding and each test result appears per condition, against the frequencies the catalogue expects, plus a check that notes do not name the hidden condition. Small libraries skip some checks for too few cases. Audit results sit with each library.</p>
+
+    <h3 class="finding" id="limits">What these patients cannot tell you</h3>
+    <ul>
+      <li>They teach the catalogue, not medicine: most of its numbers are our assumptions.</li>
+      <li>Who gets which test, and when, comes from placeholder decision tables and random exploration, not from doctors.</li>
+      <li>Every library holds about the same number of cards per condition; the realistic mix is applied when patients are drawn, so rare conditions repeat the same few cards.</li>
+      <li>Findings are independent given the condition, repeated tests are independent given the patient, and disease does not progress while a patient waits.</li>
+      <li>One main condition per patient, at most one other illness, and only people who present with chest symptoms.</li>
+      <li>Template wording repeats; a model can learn the phrasing instead of the patient.</li>
+    </ul>
+
+    <h3 class="finding" id="read-more">Where to read more</h3>
+    <ul class="pt-links">
+      <li><a href="encounter.html?truth">The primary-care loop, patient by patient, with the truth switch</a></li>
+      <li><a href="flow.html">The simulator</a></li>
+      <li><a href="index.html">Full results report</a></li>
+      <li><a href="../docs/synthetic_data_for_jev.md">Synthetic data: what it is and its limits</a></li>
+      <li><a href="../catalogue/README.md">The care catalogue format</a></li>
+      <li><a href="../libraries/README.md">Patient-card libraries</a></li>
+      <li><a href="../docs/master_plan.md">Master plan: data, simulator and optimiser</a></li>
+    </ul>
+  </section>
+</main>
+
+<footer class="footer-strip" id="pt-footer">Synthetic patients only · not clinically reviewed</footer>
+
+<script src="data/encounter_bundle.js"></script>
+<script src="data/cards_bundle.js"></script>
+<script src="data/flow_bundle.js"></script>
+<script src="data/start_bundle.js"></script>
+<script src="site.js"></script>
+<script src="patients.js"></script>
+</body>
+</html>
