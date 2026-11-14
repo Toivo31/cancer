@@ -31,7 +31,7 @@ Critical path to the first browser loop:
 | [x] | M1-7 | `LocalBackend` wrapping the numpy model in `decision_model/` | S | M1-1 | In-loop experiment runs through the contract with unchanged results |
 | [x] | M1-8 | CLI: `--jev stub\|rule\|http://…`, `--decision-mode`, `--set point.option=prob` | S | M1-3 | Commands in README work |
 | [ ] | M1-9 | Turn one clinician judgement in the Finnish scenario (GP: image or wait) into a decision point | M | M1-3, T (F1) | Scenario recalibrated to the same waits; `docs/finland_scenario.md` updated |
-| [ ] | M1-10 | Update `docs/architecture.md` and `docs/master_plan.md` for the JEV contract | S | M1-3 | Docs match code |
+| [x] | M1-10 | Update `docs/architecture.md` and `docs/master_plan.md` for the JEV contract | S | M1-3 | Docs match code |
 
 ## M2 Service (specs 01, 03, 05)
 

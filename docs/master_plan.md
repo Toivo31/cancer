@@ -205,7 +205,8 @@ The end goal is an online platform, not only a hackathon demo: build your own fl
 
 - **JEV arrives as an API attached to the graph.** At each decision point it gets the revealed context and the options on offer, and returns a probability per option. Until it exists, a stub with hardcoded probabilities per decision point stands in behind the same contract.
 - **What exists becomes the engine.** `pathway_sim` and `optimiser` are reused as libraries. The lung scenarios become the first two templates. `decision_model/` becomes one optional backend, not the JEV itself.
-- **Plan, specs and tickets** are in `docs/platform/` (`README.md`, `specs/01` to `07`, `tickets.md`). Nothing there is built yet.
+- **Plan, specs and tickets** are in `docs/platform/` (`README.md`, `specs/01` to `07`, `tickets.md`). Milestone M1 (JEV in the graph) is built on branch `plat/jev`: the `jev/` package (contract, `BackendPolicy`, stub with probability tables, HTTP client and stub server, local and rule backends), engine decision modes, CLI flags `--jev`, `--decision-mode`, `--set`, and contract tests. See `docs/architecture.md` (Policy, JEV).
+- **The simulator no longer always takes the most likely option.** The engine asks the policy for probabilities and, in `sample` mode (the platform default, fork F2 provisional), draws the choice with the common-random-number uniform `(seed, patient, "mix", node)`, so a patient makes the same choice in every flowchart variant; `argmax` is switchable per run. Rule-based policies return one-hot probabilities and are unaffected: every shipped scenario reproduces its previous metrics exactly through the stub.
 - **Open forks F1 to F7** (what counts as a decision point, sample or most-likely, the JEV contract and its owner, web stack, hosting and data, the cut for Sunday, `standardise` under JEV) are listed with leans in `docs/platform/README.md` section 5 and need a team call.
 
 ## Sources

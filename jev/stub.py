@@ -89,7 +89,7 @@ class StubBackend:
     def validate_against(self, flowchart, scenario=None) -> list[str]:
         """Check the table against a flowchart: decision points exist, options exist, condition
         names are known. Returns a list of problems (empty when fine)."""
-        problems = []
+        problems: list[str] = []
         known = set(flowchart.nodes) | set(_BUILTIN)
         if scenario is not None:
             known |= set(scenario.attributes)
@@ -104,6 +104,8 @@ class StubBackend:
                 bad = sorted(set(probs) - opts)
                 if bad:
                     problems.append(f"{pt}/{label}: unknown options {bad}")
+                if abs(sum(probs.values()) - 1.0) > 1e-6:
+                    problems.append(f"{pt}/{label}: probabilities sum to {sum(probs.values()):.6g}, not 1")
             for cond, _, w in row["rules"]:
                 unk = sorted(set(cond.names) - known)
                 if unk:
