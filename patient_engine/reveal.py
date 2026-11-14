@@ -32,10 +32,19 @@ shown only when it has at least one mention and every mention is revealed. A key
 A variable id is *not* revealed by a test that measures it: a noisy result must not unlock a note that
 states the truth. A note without mentions is never shown (nothing says what it would reveal).
 
-Only the first state (``all_active``) is served now. Any other state raises the same ``RevealError`` for
-every card, so asking for ``<illness>_resolved`` cannot be used to find out whether the patient has the
-illness. Return episodes (D40) will decide how a state is derived; ``state`` is an explicit argument
-already so that the signatures do not change.
+States (C8, D40). The handle serves every state the card has and nothing else: the caller names the state.
+The caller is the engine (hidden side), which owns it and derives it with ``patient_engine.states.next_state``;
+the revealed side (decision layer, guards, request builder) must never choose a state itself, because a
+state the card lacks raises and so tells which illnesses the patient has. A state that is not served raises
+the same ``RevealError`` whatever the reason (an unknown name, a state of another card), and the handle has
+no method that lists the card's states.
+
+Fresh attempts. With a ``catalogue`` the handle also serves attempt ``k`` of a test for every ``k`` at or
+beyond the stored attempts, without limit (a patient may be re-tested again and again). Such an attempt is
+drawn by ``skeleton.settle_attempt`` from the catalogue's accuracy given the card's findings in that state,
+with keyed random numbers (a hash of the card id, state, test, attempt, output), and its report by
+``reference.report_text``. It is a pure function of the card, the catalogue and the three arguments, so I3
+holds exactly as for stored attempts. Attempts below the stored count always come from the card.
 
 Standard library only.
 """
@@ -68,9 +77,9 @@ def opaque_id(card_id: str) -> str:
     return "C" + hashlib.blake2b(card_id.encode(), digest_size=5).hexdigest()
 
 
-def _check_state(state: str) -> None:
-    if state != INITIAL_STATE:
-        raise RevealError(f"state {state!r} is not served yet; only {INITIAL_STATE!r}")
+def _seed_of(card_id: str) -> int:
+    """The keyed-random-number seed of a card for fresh attempts: a hash of its id."""
+    return int.from_bytes(hashlib.blake2b(b"fresh|" + card_id.encode(), digest_size=8).digest(), "big") >> 1
 
 
 class RevealHandle:
@@ -88,6 +97,9 @@ class RevealHandle:
         ones, each a fresh but reproducible draw (see ``reveal``). Without it only stored attempts exist."""
         if not isinstance(card, Card):
             raise TypeError("RevealHandle needs a Card")
+        if catalogue is not None and catalogue.id != card.provenance.catalogue_id:
+            raise ValueError(f"card {opaque_id(card.id)} is from catalogue {card.provenance.catalogue_id!r}, "
+                             f"not {catalogue.id!r}")
         self._card = card
         self._public_id = opaque_id(card.id) if public_id is None else str(public_id)
         self._catalogue = catalogue
@@ -108,11 +120,16 @@ class RevealHandle:
         return tuple(self._card.observations[INITIAL_STATE])
 
     def max_attempts(self, test: str, state: str = INITIAL_STATE) -> int:
-        """Number of attempts stored for ``test`` (the catalogue's ``max_attempts`` for it)."""
+        """Number of attempts stored for ``test`` (the catalogue's ``max_attempts`` for it). With a catalogue
+        attempts beyond it are served as fresh draws; this is the count of the stored ones."""
         return len(self._attempts(test, state))
 
+    def _check_state(self, state: str) -> None:
+        if not isinstance(state, str) or state not in self._card.observations:
+            raise RevealError(f"state {state!r} is not served")
+
     def _attempts(self, test: str, state: str):
-        _check_state(state)
+        self._check_state(state)
         try:
             return self._card.observations[state][test]
         except KeyError:
@@ -123,24 +140,45 @@ class RevealHandle:
     def reveal(self, test: str, attempt: int, state: str = INITIAL_STATE) -> RevealedObservation:
         """Outputs and report of attempt ``attempt`` (0-based) of ``test`` in ``state``.
 
-        A pure function of the card and the arguments (I3). Raises ``RevealError`` for an unknown test, a
-        state that is not served, or an attempt beyond the stored ones (the caller must stay within
-        ``max_attempts``; nothing is invented)."""
+        A pure function of the card (and catalogue) and the arguments (I3). Attempts below the stored count
+        come from the card. At or beyond it, with a catalogue, the attempt is a fresh keyed draw (module
+        docstring); without one it raises. Raises ``RevealError`` for an unknown test, a state that is not
+        served, a negative or non-integer attempt, or an attempt beyond the stored ones when the handle has
+        no catalogue."""
         attempts = self._attempts(test, state)
         if isinstance(attempt, bool) or not isinstance(attempt, int):
             raise RevealError(f"attempt must be an int, got {attempt!r}")
-        if not 0 <= attempt < len(attempts):
+        if attempt < 0 or (attempt >= len(attempts) and self._catalogue is None):
             raise RevealError(f"attempt {attempt} of {test!r} is not available (stored: {len(attempts)})")
-        a = attempts[attempt]
-        return RevealedObservation(test=test, attempt=attempt, state=state, status=a.status,
-                                   values=dict(a.values), report=a.report)
+        if attempt < len(attempts):
+            a = attempts[attempt]
+            return RevealedObservation(test=test, attempt=attempt, state=state, status=a.status,
+                                       values=dict(a.values), report=a.report)
+        return self._fresh(test, attempt, state)
+
+    def _fresh(self, test: str, attempt: int, state: str) -> RevealedObservation:
+        """A fresh attempt: drawn from the catalogue's accuracy given this card's findings in ``state``."""
+        from .reference import report_text
+        from .skeleton import Skeleton, finding_values, settle_attempt
+        card, cat = self._card, self._catalogue
+        primary = card.hidden.primary
+        co = next((c for c in card.hidden.conditions if c.role == "coexisting"), None)
+        skeleton = Skeleton(id=card.id, index=0, seed=_seed_of(card.id), catalogue_id=cat.id,
+                            catalogue_hash=cat.version_hash, primary=primary.id, attributes=dict(primary.attributes),
+                            coexisting=co.id if co else None,
+                            coexisting_attributes=dict(co.attributes) if co else {},
+                            background=dict(card.background), brief="", states=card.states)
+        planned, reported = settle_attempt(cat, cat.tests[test], attempt, skeleton,
+                                           finding_values(card.hidden.findings[state]), state)
+        return RevealedObservation(test=test, attempt=attempt, state=state, status=planned.status,
+                                   values=dict(reported), report=report_text(cat.tests[test], planned.status, reported))
 
     # ------------------------------------------------------------------ keys and notes
 
     def revealed_keys(self, revealed: Iterable[tuple[str, int]] = (), state: str = INITIAL_STATE) -> frozenset[str]:
         """Keys revealed so far: what the patient reported at first contact plus, for each revealed
         ``(test, attempt)`` that is ``ok``, the test id and ``test.output`` for every output that has a value."""
-        _check_state(state)
+        self._check_state(state)
         keys = set(self._card.presenting[state].reported)
         for test, attempt in revealed:
             obs = self.reveal(test, attempt, state)
@@ -153,7 +191,7 @@ class RevealHandle:
     def notes_visible(self, revealed_keys: Iterable[str] = (), state: str = INITIAL_STATE) -> tuple[RevealedNote, ...]:
         """Notes of ``state`` whose mentions are all revealed, in card order. What the patient reported at
         first contact counts as revealed; ``revealed_keys`` adds the rest (see ``revealed_keys``)."""
-        _check_state(state)
+        self._check_state(state)
         known = set(revealed_keys) | set(self._card.presenting[state].reported)
         return tuple(
             RevealedNote(id=n.id, kind=n.kind, text=n.text)
@@ -167,7 +205,7 @@ class RevealHandle:
         """What the revealed side may know: background, what the patient presents in ``state``, the
         observations for the ``(test, attempt)`` pairs in ``revealed`` (in that order, duplicates dropped)
         and the notes those unlock. With no ``revealed`` it is the picture at first contact."""
-        _check_state(state)
+        self._check_state(state)
         pairs = list(dict.fromkeys((t, a) for t, a in revealed))
         observations = tuple(self.reveal(t, a, state) for t, a in pairs)
         p = self._card.presenting[state]
