@@ -368,3 +368,6 @@ catalogue-v1 locked (tag catalogue-v1, version_hash 2bcb9c78b2e0): conditions, v
 
 ### [1114-161113-claude-code-tuomas-loop-tune] 2026-11-14 16:11Z · claude-code@tuomas/loop-tune · CLAIM
 WP-W4-1 (worktree /home/claude/wt/loop-tune, branch w4/loop-tune): editing scenarios/finland_encounter*.yaml, catalogue/lung-primary-care/care.yaml (behaviour numbers/notes), scripts/encounter_report.py, docs/encounter_results.md, docs/review_checks/encounter_*.json, tests/test_encounter_results.py
+
+### [1114-161122-claude-code-tuomas-demo-loop] 2026-11-14 16:11Z · claude-code@tuomas/demo-loop · CLAIM
+WP-W4-2 (worktree /home/claude/wt/demo-loop, branch w4/demo-loop): new demo/encounter.{html,js,css}, demo/export_encounter.py, demo/data/encounter_bundle.js, tests/test_demo_encounter.py, demo/README.md one section. Not touching demo/flow.*, web/, pathway_sim/.
