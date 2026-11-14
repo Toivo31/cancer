@@ -26,6 +26,7 @@ class Node:
     after_optional: list[str] = field(default_factory=list)   # wait for these only if they run
     when: str | None = None
     options: list[str] = field(default_factory=list)
+    availability: dict = field(default_factory=dict)          # choice: option -> {p_available, weekdays}
     outcome: str | None = None
     milestone: str | None = None
     retry: dict | None = None
@@ -40,6 +41,8 @@ class Node:
             v = getattr(self, k)
             if v:
                 d[k] = v
+        if self.availability:
+            d["availability"] = copy.deepcopy(self.availability)
         for k in ("after", "after_any", "after_optional", "options"):
             v = getattr(self, k)
             if v:
@@ -137,6 +140,9 @@ def validate_flowchart(sc: Scenario, fc: Flowchart) -> None:
         for ref in n.after + n.after_any + n.after_optional + n.options:
             if ref not in ids:
                 raise ValueError(f"{where}: unknown node reference {ref!r}")
+        for o in n.availability or {}:
+            if o not in n.options:
+                raise ValueError(f"{where}: availability for {o!r}, not an option")
         if n.kind == "choice":
             if len(n.options) < 2:
                 raise ValueError(f"{where}: choice needs >= 2 options")

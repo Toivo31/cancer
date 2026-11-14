@@ -20,6 +20,9 @@ class PatientView:
     node: str                         # the choice node being asked
     history: list[tuple] = field(default_factory=list)   # (node_id, test_id, result, t_since_start)
     attributes: dict = field(default_factory=dict)       # revealed attributes only
+    priority: bool = False                               # fast-tracked patient
+    offered: list[str] = field(default_factory=list)     # options actually on offer at this choice
+    option_leads: dict = field(default_factory=dict)     # option -> days until its earliest appointment (queue state)
 
     def names(self) -> dict:
         d = {"group": self.group, "age": self.age, "t": self.t_now}

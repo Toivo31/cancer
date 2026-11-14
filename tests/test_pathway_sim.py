@@ -186,3 +186,24 @@ def test_flowchart_copy_keeps_guards():
     a = compute_metrics(simulate(sc, "serial", pts, seed=11), sc)
     b = compute_metrics(simulate(sc, fc, pts, seed=11), sc)
     assert {k: v for k, v in a.items() if k != "flowchart"} == {k: v for k, v in b.items() if k != "flowchart"}
+
+
+def test_choice_availability_and_queue_state_in_view():
+    from pathway_sim.policy import RulePolicy
+    seen = []
+
+    class Spy(RulePolicy):
+        def choose(self, view, options):
+            seen.append((tuple(options), dict(view.option_leads)))
+            return super().choose(view, options)
+
+    sc = tiny(flowcharts={"c": {"nodes": [
+        {"id": "pick", "kind": "choice", "options": ["ct", "pet"], "availability": {"ct": {"p_available": 0.5}}},
+        {"id": "ct", "test": "ct"}, {"id": "pet", "test": "pet"},
+        {"id": "x", "kind": "exit", "outcome": "treatment", "after_any": ["ct", "pet"]}]}})
+    pts = generate_patients(sc, 400, 1)
+    simulate(sc, "c", pts, policy=Spy(), seed=1)
+    only_pet = sum(1 for o, _ in seen if o == ("pet",))
+    assert 120 < only_pet < 280                      # ct offered about half the time
+    assert all(("ct" in leads) == ("ct" in o) for o, leads in seen)   # server option gets a queue lead
+    assert all(v >= 0 for _, leads in seen for v in leads.values())

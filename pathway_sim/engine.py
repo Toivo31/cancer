@@ -118,16 +118,24 @@ class _Server:
         self.urgent_lead = float(spec.get("urgent_lead_days", self.min_lead))   # fast-track booking lead
         self.booked: dict[int, int] = {}
 
-    def book(self, t_ready: float, priority: bool) -> float:
+    def _slot(self, t_ready: float, priority: bool) -> tuple[int, int]:
         d = int(math.floor(t_ready + (self.urgent_lead if priority else self.min_lead)))
         limit = self.cap if priority else self.normal_cap
         for _ in range(100000):
             if not (self.weekdays_only and d % 7 in (5, 6)) and self.booked.get(d, 0) < limit:
-                k = self.booked.get(d, 0)
-                self.booked[d] = k + 1
-                return max(t_ready, d + DAY_START + DAY_SPAN * k / self.cap)
+                return d, self.booked.get(d, 0)
             d += 1
         raise RuntimeError(f"resource {self.rid}: no slot found")
+
+    def preview(self, t_ready: float, priority: bool) -> float:
+        """Start time the next booking would get, without booking it (queue state for policies)."""
+        d, k = self._slot(t_ready, priority)
+        return max(t_ready, d + DAY_START + DAY_SPAN * k / self.cap)
+
+    def book(self, t_ready: float, priority: bool) -> float:
+        d, k = self._slot(t_ready, priority)
+        self.booked[d] = k + 1
+        return max(t_ready, d + DAY_START + DAY_SPAN * k / self.cap)
 
     def summary(self, t0: float, t1: float) -> dict:
         days = [d for d in range(int(math.floor(t0)), int(math.ceil(t1)))
@@ -242,10 +250,43 @@ class Simulation:
             d[nid] = r
         return d
 
-    def view(self, pr: PatientRun, node: str, t: float) -> PatientView:
+    def option_leads(self, pr: PatientRun, options: list[str], t: float) -> dict[str, float]:
+        """Days until the earliest appointment for each option that starts with a capacity-limited test."""
+        out = {}
+        for o in options:
+            n = self.fc.nodes[o]
+            if not n.test:
+                continue
+            rid = self.tests[n.test].get("resource", "none")
+            if rid in self.servers:
+                out[o] = round(self.servers[rid].preview(t, pr.priority) - t, 3)
+        return out
+
+    def view(self, pr: PatientRun, node: str, t: float, options: list[str] | None = None) -> PatientView:
         a = pr.patient.arrival
         hist = [(e.node, e.test, e.result, round(e.t_result - a, 3)) for e in pr.events if e.t_result <= t + 1e-9]
-        return PatientView(pr.patient.id, pr.patient.group, pr.patient.age, t - a, node, hist, dict(pr.revealed))
+        v = PatientView(pr.patient.id, pr.patient.group, pr.patient.age, t - a, node, hist, dict(pr.revealed))
+        v.priority = pr.priority
+        v.offered = list(options or [])
+        v.option_leads = self.option_leads(pr, options or [], t)
+        return v
+
+    def offered(self, pr: PatientRun, n: Node, t: float) -> list[str]:
+        """Options on offer at a choice: ``availability: {option: {p_available: .., weekdays: [..]}}``.
+        Unavailable options are dropped (deterministic per patient); if none remain, all are offered."""
+        av = n.availability or {}
+        out = []
+        for o in n.options:
+            rule = av.get(o)
+            ok = True
+            if rule:
+                if "weekdays" in rule and int(math.floor(t)) % 7 not in set(rule["weekdays"]):
+                    ok = False
+                if "p_available" in rule and uniform(self.seed, pr.patient.id, "avail", n.id, o) >= float(rule["p_available"]):
+                    ok = False
+            if ok:
+                out.append(o)
+        return out or list(n.options)
 
     def ready_cause(self, pr: PatientRun, n: Node) -> tuple[bool, bool, str | None]:
         """(ready, dead, cause). Option nodes also need their choice to have picked them;
@@ -309,9 +350,11 @@ class Simulation:
                     self.skip(pr, nid, t)
                     continue
                 if n.kind == "choice":
-                    probs = self.policy.choose(self.view(pr, nid, t), list(n.options))
-                    pick = max(n.options, key=lambda o: (probs.get(o, 0.0), -n.options.index(o)))
+                    offered = self.offered(pr, n, t)
+                    probs = self.policy.choose(self.view(pr, nid, t, offered), offered)
+                    pick = max(offered, key=lambda o: (probs.get(o, 0.0), -n.options.index(o)))
                     pr.choices.append({"node": nid, "t": round(t - pr.patient.arrival, 4), "chosen": pick,
+                                       "offered": offered,
                                        "probs": {k: round(float(v), 4) for k, v in probs.items()}})
                     for o in n.options:
                         if o == pick:
