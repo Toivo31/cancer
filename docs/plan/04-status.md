@@ -37,39 +37,37 @@ M1-9 (GP judgement as a decision; now C3 E4 and C4 J4), M3-7, M3-8, M3-9, M4-1 t
 M5-9, M6-5, M6-6, M7-1, M7-3, M7-4 (written, never run), M7-6 web part, M8-1 to M8-6 (in
 progress on `plat/evidence`). See `components/C6-platform.md` for how they are regrouped.
 
-## Running now (14 Nov, 18:30 UTC; Tuomas away until about 21:20 UTC, the architect integrates alone)
+## Running now (14 Nov, 20:40 UTC; Tuomas back)
 
-Merged, green and pushed since 16:40: loop-tune (consistency with the chain **not** reached), library audit,
-training export, Norway robustness (band 62 to 86%, not 78 to 86%), the decision-model adapter and `jev.walk`,
-the start page and presenter's script, `main` with PR #5 (reasoning preview, off by default), the web lane
-(dot paths, draggable boxes, Optimise tab, minimal editor), a library-reader fix (libraries written on a Mac
-now load on Linux), and a patient-background fix (pack-years follows smoking status; `ref500` regenerated,
-current id `L_424fcb177237f71f` (see `libraries/ref500.md`), **training data exported from the old one is stale**).
+Merged, green and pushed since 18:30 (`d7e08e2`): g2@2 results prompt and the two new audit checks (D52), the
+population model for age and smoking (D53), the encounter loop retuned to the calibrated chain (8 of 8 tuning seeds,
+6 of 8 fresh, 7 of 8 pooled), the Norway optimiser on the 184 fitting settings (it arrives at the authors' redesign,
+it does not beat it; without new equipment it beats the scanner alone in 128 of 184), decisions D52 to D57, the
+pitch and demo lanes (ranges next to every Norway point value), and an audit-report fix.
 
-Model-written cards (Gemini, on Tuomas's Mac): `gemini_trial` (5) and `gemini_s2_30` (30) are in the repo and
-pass the audit. Five libraries of 500 (`gemini_s3_500` to `gemini_s7_500`) are being generated, about 30 cards
-a minute, expected about 19:45 UTC.
+Model-written cards: the five 500-card Gemini libraries (2,495 cards, `g1@1` + `g2@1`) are committed under
+`libraries/g2v1_audit_fail/`, outside the scanned folder. All five fail 13 of 40 audit checks: report wording
+(expected, B1), backgrounds (expected, old step) and **findings in all 11 conditions** (presentations far more
+textbook than the catalogue; unrelated labs low in nearly every card). No new real-model run until the two lanes
+below report.
 
 | Lane | What | Model |
 |---|---|---|
-| `w7/review` | Independent review: information boundary end to end, numbers, patient realism, demo path, judge questions (`docs/review_w7.md`) | Opus |
-| `w7/loop` | Encounter loop: second attempt at consistency with the calibrated chain, then rerun the primary-care finding | Opus |
-| `w7/norway-opt` | Optimiser on the 184 extended-grid settings, ablation of the four changes, structure check against the paper | Sonnet |
-| `w7/web` | Run-list bug, side-by-side graph diff, add/delete step and undo, Norway graph readability | Sonnet |
-| `w7/demo` | Regenerate bundles, honest Norway framing (67 against 80), synthetic-patients card, presenter walk-through | Sonnet |
-| `w7/train` | Library merge command, end-to-end smoke, one-command training and test sets, JEV data docs | Sonnet |
-| `w7/sec` | Service hardening: F16 first, then F2 remainder, F3, F5 to F7; security suite green | Sonnet |
-| `w7/pitch` | Numbers sheet, pitch files corrected to current results, hard questions | Sonnet |
+| `w8/g1skew` | Root cause of the findings skew in model-written patients; fix as a new patient prompt version | Opus |
+| `w8/g2blind` | Make the results prompt blind (review w8 blocker B1: g2@2 still shows all results incl. definitive ones), leak rule M1, histology M2 | Opus |
+| `w8/jev-demo` | JEV demo page: model card (Hugging Face placeholder), node-level tester, five presets incl. answer comparison | Opus |
+| `w8/fi-sens` | Finland sensitivity analysis | Sonnet |
+
+`w8/verify` (review of tonight's fixes, `docs/review_w8_fixes.md`) is finished; it is merged through `w8/g2blind`.
 
 ## Next (in order)
 
 | # | What | When |
 |---|---|---|
-| 1 | Merge the eight lanes as they finish; gate after each; push | as they finish |
-| 2 | Audit each 500-card Gemini library, commit, merge into one library, build training and held-out sets | from about 19:45 UTC |
-| 3 | Act on the review's blockers and majors (second wave of lanes) | after the review |
-| 4 | Rerun demo exports after the loop lane; final numbers into `docs/pitch/numbers_sheet.md` | after 1 |
-| 5 | 01:00 UTC checkpoint; freeze 04:00 UTC | |
+| 1 | Merge `w8/g1skew` and `w8/g2blind`; gate; push; then Tuomas runs `scripts/generate_gemini.sh trial`, audit, then `full` | as they finish |
+| 2 | Audit the new libraries, merge, build training and held-out sets; refill pitch | after 1 |
+| 3 | Merge `w8/jev-demo` and `w8/fi-sens`; regenerate demo bundles | as they finish |
+| 4 | 01:00 UTC checkpoint; freeze 04:00 UTC | |
 
 ## Waiting for a human
 
