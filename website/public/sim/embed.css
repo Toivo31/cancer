@@ -12,3 +12,6 @@
 .sim{padding-left:0;padding-right:0}
 #bar,#menu,#optcard,.sim-drawer,#lede,#pairnote,#legend,.sim-opt{display:none!important}
 .sim-body{padding-bottom:0}
+.sim-left,.sim-right{display:none!important}
+.sim{grid-template-columns:1fr!important;padding:0!important}
+.sim{padding-top:24px!important}
