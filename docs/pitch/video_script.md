@@ -1,34 +1,34 @@
-# Video script, 2 minutes (E4)
+# Video script, 2 minutes
 
-Placeholders in `[[ ]]` are filled from the final run before recording. Voice-over word count is stated at the bottom. Screens refer to `demo/index.html`; adjust names to the final UI.
+Numbers in double square brackets are filled from `demo/data/demo_bundle.json` by `fill_numbers.py`; record from `filled/video_script.md`. Screens refer to `demo/index.html` (keys 1-4). Two team decisions affect the opening: D20 (Finnish target is a provisional [[f_target]] days; alternative is to open on "[[f_median_gain]] days faster") and D17 (Norwegian headline with or without the faster scanner; both numbers are spoken below).
 
 | Time | Screen | Voice-over |
 |---|---|---|
-| 0:00-0:15 | **Headline number**, large type: `[[finland_share_base]]%` against `[[finland_share_opt]]%` treated on time | Today, `[[finland_share_base]]` percent of simulated Finnish lung cancer patients start treatment within the target time. With one change to the order of steps, `[[finland_share_opt]]` percent. |
-| 0:15-0:35 | **Where time is lost**: four stage bars (detection, referral, diagnosis, treatment start), waiting vs service time | The problem is waiting, not testing. Finland waits about fourteen days for a first appointment, and the longest queue sits between referral and diagnosis. Almost half of patients first see a nurse, and few health centres can scan. |
-| 0:35-1:00 | **The change**: flowchart before and after, PET-CT, exercise test and tumour board moving to the first visit | Our optimiser searched for a faster order, knowing only what each test had revealed. It proposed what one Norwegian study suggested: order the scan, the fitness test and the tumour board together, and take samples while treatment is booked. Same patients, same capacity, no new equipment or staff. |
-| 1:00-1:25 | **Validation**: our run of the Norwegian pathway vs the published 40% and 80% | We checked the machine against reality first. Rebuilt from the Norwegian study, our model reproduces forty percent on time, finds a similar reordering on its own, and lands near eighty. Adding scanner capacity alone barely helped. Order did. |
-| 1:25-1:45 | **Equity split**: two bars, site-specific vs non-specific symptoms, before and after | Not everyone waits equally. Patients with vague symptoms and those who see a nurse first wait longest. We show each group, and we check that the change does not make other patients wait more. A change that helps one group and hurts another would show up immediately. |
-| 1:45-2:00 | **Recommendation card**: five actions, owners | Our proposal for the national cancer strategy: order together at the first visit, give primary care direct scan access, fast-track vague symptoms with safeguards, and publish waiting times by county. Then pilot it. The data is synthetic, every number has a published source, and a doctor decides every case. |
+| 0:00-0:18 | Screen 1, headline number: [[f_share_base]]% to [[f_share_opt]]%, label "synthetic data" | In our synthetic Finnish county, [[f_share_base]] percent of lung cancer patients start treatment within [[f_target]] days of first contact. With two changes to the pathway, [[f_share_opt]] percent. All patients are simulated, and we say so. |
+| 0:18-0:38 | Screen 2, four stage bars, waiting vs service | Most of the delay is waiting, not testing: [[f_wait_share]] percent of the days. The biggest block is in primary care, about [[f_wait_detection]] days before a referral. |
+| 0:38-1:00 | Screen 3, flowchart before and after | Our optimiser proposes changes using only what each step revealed. It reruns the same patients to accept a change, and we report on patients it never saw. It suggests two: fast-track patients once the hospital has handled the referral, and send nurse-first patients to a GP appointment. Missed cancers do not rise. |
+| 1:00-1:30 | Screen 3, validation: our run vs published 40 / 48 / 80 | We checked it against a real Norwegian hospital first. Fitted only to the observed pathway, it reproduces [[s_obs_share]] percent on time, and predicts [[s_auth_share]] percent for the authors' pathway. They published [[s_pub_opt]]. It overshoots on a faster scanner alone: [[s_fast_share]] against [[s_pub_fast]]. Searching blind, it finds the authors' three changes plus one, and with no new equipment reaches [[s_noeq_share]] percent. Order beats capacity. |
+| 1:30-1:48 | Screen 4, two groups before and after | Both groups gain: vague symptoms from [[f_ns_share_base]] to [[f_ns_share_opt]] percent, alarm symptoms from [[f_ss_share_base]] to [[f_ss_share_opt]]. The gap in days narrows, the gap in shares does not. How big that gap is, is our assumption. |
+| 1:48-2:00 | Recommendation card | Our proposal: order tests together at the first specialist visit, pair direct scans with it, fast-track vague symptoms with published safeguards, monitor waits by county, and pilot in one county first. A doctor decides every case. |
 
 ## Spoken text only
 
-Today, [[finland_share_base]] percent of simulated Finnish lung cancer patients start treatment within the target time. With one change to the order of steps, [[finland_share_opt]] percent.
+In our synthetic Finnish county, [[f_share_base]] percent of lung cancer patients start treatment within [[f_target]] days of first contact. With two changes to the pathway, [[f_share_opt]] percent. All patients are simulated, and we say so.
 
-The problem is waiting, not testing. Finland waits about fourteen days for a first appointment, and the longest queue sits between referral and diagnosis. Almost half of patients first see a nurse, and few health centres can scan.
+Most of the delay is waiting, not testing: [[f_wait_share]] percent of the days. The biggest block is in primary care, about [[f_wait_detection]] days before a referral.
 
-Our optimiser searched for a faster order, knowing only what each test had revealed. It proposed what one Norwegian study suggested: order the scan, the fitness test and the tumour board together, and take samples while treatment is booked. Same patients, same capacity, no new equipment or staff.
+Our optimiser proposes changes using only what each step revealed. It reruns the same patients to accept a change, and we report on patients it never saw. It suggests two: fast-track patients once the hospital has handled the referral, and send nurse-first patients to a GP appointment. Missed cancers do not rise.
 
-We checked the machine against reality first. Rebuilt from the Norwegian study, our model reproduces forty percent on time, finds a similar reordering on its own, and lands near eighty. Adding scanner capacity alone barely helped. Order did.
+We checked it against a real Norwegian hospital first. Fitted only to the observed pathway, it reproduces [[s_obs_share]] percent on time, and predicts [[s_auth_share]] percent for the authors' pathway. They published [[s_pub_opt]]. It overshoots on a faster scanner alone: [[s_fast_share]] against [[s_pub_fast]]. Searching blind, it finds the authors' three changes plus one, and with no new equipment reaches [[s_noeq_share]] percent. Order beats capacity.
 
-Not everyone waits equally. Patients with vague symptoms and those who see a nurse first wait longest. We show each group, and we check that the change does not make other patients wait more. A change that helps one group and hurts another would show up immediately.
+Both groups gain: vague symptoms from [[f_ns_share_base]] to [[f_ns_share_opt]] percent, alarm symptoms from [[f_ss_share_base]] to [[f_ss_share_opt]]. The gap in days narrows, the gap in shares does not. How big that gap is, is our assumption.
 
-Our proposal for the national cancer strategy: order together at the first visit, give primary care direct scan access, fast-track vague symptoms with safeguards, and publish waiting times by county. Then pilot it. The data is synthetic, every number has a published source, and a doctor decides every case.
+Our proposal: order tests together at the first specialist visit, pair direct scans with it, fast-track vague symptoms with published safeguards, monitor waits by county, and pilot in one county first. A doctor decides every case.
 
 ## Claims to check before recording
 
-- "Almost half see a nurse": source says 40-60% ([Helsinki](https://www.helsinki.fi/fi/uutiset/terveys/miksi-suomessa-keuhkosyopaan-kuollaan-aiemmin-kuin-pohjoismaissa)); "about fourteen days": [IHE](https://ihe.se/app/uploads/2026/04/IHE-Cancer-Dashboard-Finland_.pdf).
-- "Few health centres can scan": fewer than 10% of primary-care units could perform CT (IHE).
-- "Longest queue sits between referral and diagnosis": a statement about our model output, to be confirmed from the run; Satakunta thesis agrees for one region ([Mattila](https://www.utupub.fi/handle/10024/180618)).
-- "Wait longest" for vague symptoms and nurse-first: **not directly sourced for Finland** (see equity note). Soften to "are most at risk of waiting" if the final run does not show it.
-- "Lands near eighty" and "finds a similar reordering": only if the validation run does. Otherwise say what happened.
+- "Missed cancers do not rise": held-out [[f_missed_base]] to [[f_missed_opt]] per cohort in the current bundle; recheck after any rerun.
+- "Biggest block in primary care": the largest stage in the current bundle is [[f_top_stage]] at [[f_top_stage_wait]] days; if a rerun changes this, change the sentence. (An earlier draft said the longest queue sat between referral and diagnosis; the run does not show that.)
+- "The gap in days narrows, in shares does not": [[f_gap_days_narrows]] and [[f_gap_pp_widens]] in this bundle; flip the wording if a rerun reverses either.
+- "Finds the authors' three changes plus one": the fourth is booking tissue sampling at the first visit, which needs a clinical check (D18); drop "plus one" if the team removes it.
+- Word count of spoken text is about 250; trim the validation paragraph first if the read runs over two minutes.
