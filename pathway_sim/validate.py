@@ -239,7 +239,8 @@ def validate_scenario_dict(raw: dict, *, deep: bool = True, samples: int = 300) 
 
 class _Check:
     def __init__(self, w: World, fc: dict, fid: str | None, deep: bool, samples: int, seed: int):
-        self.w, self.fc, self.fid, self.deep, self.samples, self.seed = w, fc, fid, deep, samples, seed
+        self.w, self.fc, self.fid, self.deep, self.seed = w, fc, fid, deep, seed
+        self.samples = max(0, min(int(samples), 5000))
         self.out: list[Problem] = []
         self.nodes: list[dict] = [n for n in (fc.get("nodes") or []) if isinstance(n, dict) and n.get("id") is not None]
         self.ids: list[str] = [str(n["id"]) for n in self.nodes]
