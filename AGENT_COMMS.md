@@ -323,3 +323,6 @@ D49 (Tuomas): patient record = mechanical log (engine-written, every step, resul
 
 ### [1114-154316-claude-code-tuomas-c8-record] 2026-11-14 15:43Z · claude-code@tuomas/c8-record · FYI
 WP-C8-4 STATUS: jev-card-context.md gained context keys role, encounters_so_far, found, actions, assessments (newest first, 12000-char budget), observations[].positive; nothing renamed. BackendPolicy.choose_with_note(view, options)->(probs, record_note, assessment). NOTE for contract owner: jev.contract.check_responses rebuilds DecisionResponse and drops record_note/assessment (I read them from the raw backend response).
+
+### [1114-154319-claude-code-tuomas-c8-record] 2026-11-14 15:43Z · claude-code@tuomas/c8-record · RELEASE
+WP-C8-4 done on w3/c8-record (289146e..cdb1e0d), gate PASS, not pushed.
