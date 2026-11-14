@@ -138,8 +138,11 @@ def cohorts(sc: Scenario, seeds, n) -> list[tuple[int, list]]:
     return [(s, generate_patients(sc, n, s)) for s in seeds]
 
 
-def search(sc: Scenario, start: Flowchart | str, cfg: Config | None = None, log=print) -> dict:
+def search(sc: Scenario, start: Flowchart | str, cfg: Config | None = None, log=print, progress=None) -> dict:
+    """``progress(done, total, message)`` (optional) is called once per search step and after the held-out reports."""
     cfg = cfg or Config()
+    total = cfg.max_steps + 1
+    note = progress or (lambda *a: None)
     fc0 = sc.flowcharts[start] if isinstance(start, str) else start
     train = cohorts(sc, cfg.train_seeds, cfg.n_train)
     servers = {rid for rid, r in sc.resources.items() if r.get("type", "server") == "server"}
@@ -148,6 +151,7 @@ def search(sc: Scenario, start: Flowchart | str, cfg: Config | None = None, log=
     steps, tried, all_rejected = [], 0, []
     log(f"start {fc0.id}: on-time {base_m['share_within_target']:.3f}, median {base_m['median_days_to_treatment']} d")
     for step in range(cfg.max_steps):
+        note(step, total, f"search step {step + 1} of at most {cfg.max_steps}")
         pts = [p for run in cur_runs for p in reveal(run, servers)]
         cands = candidates(sc, cur, set(cfg.allow))
         for c in cands:
@@ -171,7 +175,7 @@ def search(sc: Scenario, start: Flowchart | str, cfg: Config | None = None, log=
             if not bad and gain >= cfg.min_gain and (best is None or gain > best[0]):
                 best = (gain, [c], new, m, runs)
             elif bad and gain >= cfg.min_gain:
-                rejected.append({"change": c.plain, "gain_pp": round(100 * gain, 2), "blocked_by": bad})
+                rejected.append({"change": c.plain, "kind": c.kind, "target": c.target, "other": c.other, "gain_pp": round(100 * gain, 2), "blocked_by": bad})
         if best is None and cfg.lookahead:
             # two changes that only help together (e.g. move a step, then stop waiting for it)
             top = sorted(pool, key=lambda cn: -cn[0].score)[: cfg.lookahead]
@@ -202,6 +206,7 @@ def search(sc: Scenario, start: Flowchart | str, cfg: Config | None = None, log=
         log(f"step {step + 1}: accept {' + '.join(f'{c.kind}({c.target}, {c.other})' for c in cs)} -> on-time "
             f"{m['share_within_target']:.3f}, median {m['median_days_to_treatment']} d  [{' + '.join(c.plain for c in cs)}]")
         cur, cur_m, cur_runs = new, m, runs
+    note(total - 1, total, "checking on patients the search never saw")
     held = cohorts(sc, cfg.heldout_seeds, cfg.n_heldout or cfg.n_train)
     h0, _ = evaluate(sc, fc0, held)
     h1, _ = evaluate(sc, cur, held)
