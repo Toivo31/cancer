@@ -66,53 +66,112 @@ points:
       probs: {book_gp_routine: 0.8, book_gp_urgent: 0.15, advice_return: 0.05}
       source: assumption
   gp_encounter:
-    default: {advice_return: 0.414, order_crp: 0.052, order_chest_xray: 0.207, treat_antibiotics: 0.062, order_blood_count: 0.052, follow_up: 0.104, order_spirometry: 0.052,
+    default: {advice_return: 0.32, order_crp: 0.052, order_chest_xray: 0.30, treat_antibiotics: 0.062, order_blood_count: 0.052, follow_up: 0.105, order_spirometry: 0.052,
       discharge: 0.052, refer_routine: 0.005}
     source: assumption
+    note: "W7: chest X-ray 0.207 -> 0.30, advice 0.414 -> 0.32. The chain's GP images about 30% of non-cancer presenters and 45% of non-specific cancers; the loop's default row imaged too few of the presenters without suspicion features"
     rules:
     - when: found.haemoptysis and attempts.chest_xray == 0
       probs: {order_chest_xray: 0.85, refer_urgent: 0.1, order_chest_ct: 0.05}
       source: assumption
     - when: last.chest_xray.abnormal
-      probs: {refer_urgent: 0.75, refer_routine: 0.1, order_chest_ct: 0.05, follow_up: 0.1}
+      probs: {refer_urgent: 0.8, refer_routine: 0.15, order_chest_ct: 0.05}
       source: assumption
-    - when: last.nt_probnp.positive
+      note: "W7: follow-up 0.1 removed (urgent 0.75 -> 0.8, routine 0.1 -> 0.15): the chain refers every suspicious film; a GP does not wait two weeks on one"
+    - when: reason == 'result' and last.chest_xray.days is not None and last.chest_xray.days < 5 and last.chest_xray.consolidation and not treated.antibiotics
+      probs: {treat_antibiotics: 0.85, follow_up: 0.15}
+      source: assumption
+      note: "W7 NEW: consolidation on the film is treated as pneumonia (no row read the film's consolidation output before)"
+    - when: last.echocardiography.positive and ((reason == 'result' and last.echocardiography.days is not None and last.echocardiography.days < 5) or treatments == 0)
+      probs: {treat_diuretic: 0.85, refer_routine: 0.05, follow_up: 0.1}
+      source: assumption
+      note: "W7 NEW: a confirmed heart failure is treated, also when the patient comes back with symptoms (no row acted on a definitive result before)"
+    - when: last.spirometry_reversibility.positive and ((reason == 'result' and last.spirometry_reversibility.days is not None and last.spirometry_reversibility.days < 5) or treatments == 0)
+      probs: {treat_inhaler: 0.9, follow_up: 0.1}
+      source: assumption
+      note: "W7 NEW: confirmed obstructive disease is treated with an inhaler, also on return"
+    - when: reason == 'result' and last.dx_pneumonia_chest_xray.days is not None and last.dx_pneumonia_chest_xray.days < 5 and last.dx_pneumonia_chest_xray.positive
+      probs: {treat_antibiotics: 0.9, follow_up: 0.1}
+      source: assumption
+      note: "W7 NEW: confirmed pneumonia is treated"
+    - when: reason == 'result' and last.nt_probnp.days is not None and last.nt_probnp.days < 5 and last.nt_probnp.positive
       probs: {order_echo: 0.5, treat_diuretic: 0.45, refer_routine: 0.05}
       source: assumption
-    - when: last.spirometry.positive
+    - when: last.nt_probnp.positive and treatments == 0 and attempts.echocardiography == 0
+      probs: {treat_diuretic: 0.6, order_echo: 0.35, refer_routine: 0.05}
+      source: assumption
+      note: "W7: a returning patient with a raised NT-proBNP is treated first (was: echo 0.5 / diuretic 0.45 / refer 0.05 at every later visit)"
+    - when: reason == 'result' and last.spirometry.days is not None and last.spirometry.days < 5 and last.spirometry.positive
       probs: {treat_inhaler: 0.55, order_spirometry_reversibility: 0.3, follow_up: 0.15}
       source: assumption
-    - when: last.crp.crp is not None and last.crp.crp >= 50
+    - when: last.spirometry.positive and treatments == 0 and attempts.spirometry_reversibility == 0
+      probs: {treat_inhaler: 0.8, order_spirometry_reversibility: 0.1, follow_up: 0.1}
+      source: assumption
+      note: "W7: a returning patient with airflow obstruction is treated first (was: inhaler 0.55 / reversibility 0.3 / follow-up 0.15 at every later visit)"
+    - when: reason == 'result' and ((last.crp_poc.days is not None and last.crp_poc.days < 5 and last.crp_poc.crp is not None and last.crp_poc.crp >= 50) or (last.crp.days is not None and last.crp.days < 5 and last.crp.crp is not None and last.crp.crp >= 50))
       probs: {treat_antibiotics: 0.5, order_chest_xray: 0.4, follow_up: 0.1}
       source: assumption
-    - when: attempts.chest_xray >= 1 and last.chest_xray.abnormal is False and episode >= 2 and (found.weight_loss or (age >= 50 and smoking_status != 'never' and
-        (found.dyspnoea or found.fatigue or found.chest_pain or found.appetite_loss or found.hoarseness)))
-      probs: {refer_routine: 0.5, order_chest_ct: 0.05, advice_return: 0.45}
+      note: "W7: also reads the point-of-care CRP (order_crp orders crp_poc; the row read only the laboratory CRP and never fired)"
+    - when: reason == 'treatment' and not (found.cough or found.dyspnoea or found.chest_pain or found.fatigue or found.weight_loss or found.wheeze or found.haemoptysis or found.hoarseness or found.appetite_loss)
+      probs: {advice_return: 0.9, follow_up: 0.1}
       source: assumption
-    - when: attempts.chest_xray >= 1 and last.chest_xray.abnormal is False and episode >= 2
+      note: "W7 NEW: symptoms gone at the treatment review: the patient is told to come back if it recurs"
+    - when: reason == 'treatment' and attempts.chest_xray == 0
+      probs: {order_chest_xray: 0.7, advice_return: 0.2, follow_up: 0.1}
+      source: assumption
+      note: "W7 NEW: symptoms persist despite treatment and no film yet: chest X-ray (NG12-shaped)"
+    - when: reason == 'treatment'
+      probs: {advice_return: 0.6, order_chest_xray: 0.25, follow_up: 0.15}
+      source: assumption
+    - when: attempts.chest_xray >= 1 and last.chest_xray.abnormal is False and (episode >= 2 or reason == 'follow_up') and (found.weight_loss or (age >= 50 and smoking_status != 'never' and (found.dyspnoea or found.fatigue or found.chest_pain or found.appetite_loss or found.hoarseness))) and last.chest_xray.days > 21 and attempts.chest_xray < 2
+      probs: {order_chest_xray: 0.7, refer_routine: 0.05, advice_return: 0.25}
+      source: assumption
+      note: "W7: returning with cancer-like features and an negative film older than three weeks: repeat the film first (was refer 0.5 / CT 0.05 / advice 0.45)"
+    - when: attempts.chest_xray >= 1 and last.chest_xray.abnormal is False and (episode >= 2 or reason == 'follow_up') and found.dyspnoea and attempts.nt_probnp == 0
+      probs: {order_nt_probnp: 0.6, order_spirometry: 0.2, advice_return: 0.2}
+      source: assumption
+      note: "W7 NEW: breathlessness that brings the patient back after a negative film is worked up (NT-proBNP, spirometry) before referral"
+    - when: attempts.chest_xray >= 1 and last.chest_xray.abnormal is False and (episode >= 2 or reason == 'follow_up') and (found.cough or found.wheeze or found.dyspnoea) and attempts.spirometry == 0
+      probs: {order_spirometry: 0.6, advice_return: 0.4}
+      source: assumption
+      note: "W7 NEW: persisting cough or wheeze after a negative film: spirometry"
+    - when: attempts.chest_xray >= 1 and last.chest_xray.abnormal is False and (episode >= 2 or reason == 'follow_up') and (reported.weight_loss or reported.haemoptysis or reported.appetite_loss or reported.hoarseness)
+      probs: {refer_routine: 0.6, order_chest_ct: 0.02, advice_return: 0.38}
+      source: assumption
+      note: "W7: returning after a negative film with a red-flag symptom the patient brings up themselves (weight loss, haemoptysis, appetite loss, hoarseness; `reported`, which is far more specific than a symptom found on questioning): refer (was one row for all cancer-like features: refer 0.5 / CT 0.05 / advice 0.45)"
+    - when: attempts.chest_xray >= 1 and last.chest_xray.abnormal is False and (episode >= 2 or reason == 'follow_up') and age >= 50 and smoking_status != 'never' and (found.dyspnoea or found.fatigue or found.chest_pain)
+      probs: {refer_routine: 0.12, order_chest_ct: 0.01, advice_return: 0.87}
+      source: assumption
+      note: "W7: returning older smoker with breathlessness, tiredness or chest pain after a negative film and a work-up: refer less often (was 0.5); these features are about as common in COPD, asthma and heart failure as in cancer"
+    - when: attempts.chest_xray >= 1 and last.chest_xray.abnormal is False and (episode >= 2 or reason == 'follow_up') and found.cough and attempts.spirometry >= 1 and not last.spirometry.positive and not treated.ppi
+      probs: {treat_ppi: 0.5, advice_return: 0.5}
+      source: assumption
+      note: "W7 NEW: chronic cough with a normal film and normal spirometry: trial of acid suppression (no row used the PPI before)"
+    - when: attempts.chest_xray >= 1 and last.chest_xray.abnormal is False and (episode >= 2 or reason == 'follow_up')
       probs: {refer_routine: 0.02, order_chest_ct: 0.01, treat_antibiotics: 0.1, advice_return: 0.87}
       source: assumption
+    - when: reason == 'result' and last.chest_xray.abnormal is False and (found.weight_loss or (age >= 50 and smoking_status != 'never' and (found.dyspnoea or found.fatigue or found.chest_pain or found.appetite_loss or found.hoarseness)))
+      probs: {follow_up: 0.4, advice_return: 0.4, treat_antibiotics: 0.1, order_spirometry: 0.1}
+      source: assumption
+      note: "W7 NEW: negative film but cancer-like features: a planned review in two weeks (safety net) rather than only 'come back if it persists'; stands in for the chain's 'second look'"
     - when: reason == 'result' and last.chest_xray.abnormal is False
       probs: {advice_return: 0.65, follow_up: 0.15, treat_antibiotics: 0.1, order_spirometry: 0.1}
       source: assumption
+    - when: attempts.chest_xray == 0 and (found.weight_loss or (age >= 50 and smoking_status != 'never' and (found.cough or found.dyspnoea or found.fatigue or found.chest_pain or found.appetite_loss or found.hoarseness)))
+      probs: {order_chest_xray: 0.85, advice_return: 0.15}
+      source: assumption
+      note: "W7: cough added to the features (NG12 counts one unexplained feature, cough included, in an ever-smoker as enough for a film). W7: moved above the heart-failure and wheeze rows (was below them): in an older smoker the cancer question comes first, so the film is not postponed by an inhaler trial"
     - when: found.ankle_oedema and found.dyspnoea
       probs: {order_nt_probnp: 0.6, order_chest_xray: 0.2, treat_diuretic: 0.1, order_echo: 0.1}
       source: assumption
     - when: found.wheeze and attempts.spirometry == 0
       probs: {order_spirometry: 0.45, treat_inhaler: 0.35, order_crp: 0.2}
       source: assumption
-    - when: reason == 'treatment'
-      probs: {advice_return: 0.6, order_chest_xray: 0.25, follow_up: 0.15}
-      source: assumption
     - when: episode >= 3
       probs: {refer_routine: 0.35, order_chest_xray: 0.15, order_chest_ct: 0.02, advice_return: 0.48}
       source: assumption
     - when: episode >= 2 and attempts.chest_xray == 0
       probs: {order_chest_xray: 0.7, order_crp: 0.15, advice_return: 0.15}
-      source: assumption
-    - when: attempts.chest_xray == 0 and (found.weight_loss or (age >= 50 and smoking_status != 'never' and (found.dyspnoea or found.fatigue or found.chest_pain or
-        found.appetite_loss or found.hoarseness)))
-      probs: {order_chest_xray: 0.85, advice_return: 0.15}
       source: assumption
     - when: reason == 'result' and attempts.chest_xray == 0
       probs: {order_chest_xray: 0.25, treat_antibiotics: 0.15, advice_return: 0.6}
