@@ -16,6 +16,7 @@ import json
 import logging
 import math
 import socket
+import time
 import urllib.parse
 
 from .contract import (BackendError, BackendInfo, ContractError, DecisionBackend, DecisionRequest,
@@ -71,6 +72,7 @@ class HttpBackend:
         data = None if body is None else json.dumps(body).encode()
         headers = {"Content-Type": "application/json", "Accept": "application/json", "Connection": "keep-alive"}
         last = None
+        deadline = time.monotonic() + self.timeout * (self.retries + 1)   # wall limit: a socket timeout restarts on every byte
         for attempt in range(self.retries + 1):
             try:
                 if self._conn is None:
@@ -82,7 +84,17 @@ class HttpBackend:
                 if length and length.isdigit() and int(length) > MAX_RESPONSE_BYTES:
                     self.close()
                     raise BackendError(f"JEV at {self.url} sent a response over the {MAX_RESPONSE_BYTES} byte limit")
-                raw = r.read(MAX_RESPONSE_BYTES + 1)
+                chunks, got = [], 0
+                while got <= MAX_RESPONSE_BYTES:
+                    if time.monotonic() > deadline:
+                        self.close()
+                        raise BackendError(f"JEV at {self.url} answered too slowly (over {self.timeout * (self.retries + 1):g} s in total)")
+                    part = r.read1(min(65536, MAX_RESPONSE_BYTES + 1 - got))
+                    if not part:
+                        break
+                    chunks.append(part)
+                    got += len(part)
+                raw = b"".join(chunks)
                 if len(raw) > MAX_RESPONSE_BYTES:
                     self.close()
                     raise BackendError(f"JEV at {self.url} sent a response over the {MAX_RESPONSE_BYTES} byte limit")
