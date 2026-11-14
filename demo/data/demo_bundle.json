@@ -1,0 +1,2762 @@
+{
+ "generated_at": "2026-11-14T01:31:43+00:00",
+ "fixture": false,
+ "scenarios": [
+  {
+   "id": "stokstad",
+   "title": "Norwegian check: does the model reproduce a real hospital?",
+   "description": "100 early-stage lung cancer patients at one Norwegian centre (Stokstad et al. 2019), rebuilt step by step. Calibrated on the observed pathway only; everything else is a prediction.",
+   "target_days": 42.0,
+   "baseline": {
+    "label": "Observed pathway",
+    "metrics": {
+     "scenario": "stokstad",
+     "flowchart": "observed",
+     "seed": 202.0,
+     "n": 1000.0,
+     "n_cancer": 1000.0,
+     "target_days": 42.0,
+     "median_days_to_treatment": 45.6833,
+     "share_within_target": 0.401,
+     "median_days_to_diagnosis": 31.85,
+     "mean_days_to_treatment": 49.2967,
+     "missed_cancers": 0.0,
+     "confirmed_cancers": 472.0,
+     "untreated_cancers": 0.0,
+     "stuck": 0.0,
+     "false_treatments": 0.0,
+     "tests_per_patient": 2.3797,
+     "invasive_per_patient": 1.0873,
+     "cost_per_patient": 2831.6,
+     "median_days_to_exit_noncancer": null,
+     "stage_breakdown": {
+      "detection": {
+       "wait": 0.0,
+       "service": 0.0
+      },
+      "referral": {
+       "wait": 9.27,
+       "service": 0.07
+      },
+      "diagnosis": {
+       "wait": 23.02,
+       "service": 4.55
+      },
+      "treatment_start": {
+       "wait": 11.56,
+       "service": 0.5
+      }
+     },
+     "node_breakdown": {
+      "baseline_ct": {
+       "wait": 0.0,
+       "service": 0.0,
+       "n": 1000,
+       "stage": "detection"
+      },
+      "first_visit": {
+       "wait": 9.27,
+       "service": 0.07,
+       "n": 654,
+       "stage": "referral"
+      },
+      "bronchoscopy": {
+       "wait": 0.92,
+       "service": 1.5,
+       "n": 260,
+       "stage": "diagnosis"
+      },
+      "ttnb": {
+       "wait": 0.83,
+       "service": 0.52,
+       "n": 91,
+       "stage": "diagnosis"
+      },
+      "tumour_board": {
+       "wait": 3.61,
+       "service": 0.5,
+       "n": 1000,
+       "stage": "treatment_start"
+      },
+      "surgery_booking": {
+       "wait": 5.11,
+       "service": 0.0,
+       "n": 745,
+       "stage": "treatment_start"
+      },
+      "treatment": {
+       "wait": 0.0,
+       "service": 0.0,
+       "n": 1000,
+       "stage": "treatment_start"
+      },
+      "pet_ct": {
+       "wait": 8.13,
+       "service": 0.96,
+       "n": 346,
+       "stage": "diagnosis"
+      },
+      "radiotherapy_booking": {
+       "wait": 2.84,
+       "service": 0.0,
+       "n": 255,
+       "stage": "treatment_start"
+      },
+      "pet_ct_late": {
+       "wait": 8.5,
+       "service": 0.72,
+       "n": 254,
+       "stage": "diagnosis"
+      },
+      "further_workup": {
+       "wait": 0.76,
+       "service": 0.49,
+       "n": 91,
+       "stage": "diagnosis"
+      },
+      "exercise_test_late": {
+       "wait": 2.86,
+       "service": 0.12,
+       "n": 109,
+       "stage": "diagnosis"
+      },
+      "exercise_test": {
+       "wait": 0.31,
+       "service": 0.02,
+       "n": 22,
+       "stage": "diagnosis"
+      },
+      "bronchoscopy_repeat": {
+       "wait": 0.32,
+       "service": 0.21,
+       "n": 38,
+       "stage": "diagnosis"
+      },
+      "ct_redo": {
+       "wait": 0.39,
+       "service": 0.0,
+       "n": 23,
+       "stage": "diagnosis"
+      }
+     },
+     "stage_breakdown_all": {
+      "detection": {
+       "wait": 0.0,
+       "service": 0.0
+      },
+      "referral": {
+       "wait": 12.43,
+       "service": 0.1
+      },
+      "diagnosis": {
+       "wait": 34.67,
+       "service": 8.79
+      },
+      "treatment_start": {
+       "wait": 11.56,
+       "service": 0.5
+      }
+     },
+     "node_breakdown_all": {
+      "baseline_ct": {
+       "wait": 0.0,
+       "service": 0.0,
+       "n": 1000,
+       "stage": "detection"
+      },
+      "first_visit": {
+       "wait": 12.43,
+       "service": 0.1,
+       "n": 1000,
+       "stage": "referral"
+      },
+      "pet_ct": {
+       "wait": 14.27,
+       "service": 2.01,
+       "n": 729,
+       "stage": "diagnosis"
+      },
+      "bronchoscopy": {
+       "wait": 2.62,
+       "service": 4.07,
+       "n": 787,
+       "stage": "diagnosis"
+      },
+      "ttnb": {
+       "wait": 1.25,
+       "service": 0.78,
+       "n": 145,
+       "stage": "diagnosis"
+      },
+      "tumour_board": {
+       "wait": 3.61,
+       "service": 0.5,
+       "n": 1000,
+       "stage": "treatment_start"
+      },
+      "surgery_booking": {
+       "wait": 5.11,
+       "service": 0.0,
+       "n": 745,
+       "stage": "treatment_start"
+      },
+      "treatment": {
+       "wait": 0.0,
+       "service": 0.0,
+       "n": 1000,
+       "stage": "treatment_start"
+      },
+      "radiotherapy_booking": {
+       "wait": 2.84,
+       "service": 0.0,
+       "n": 255,
+       "stage": "treatment_start"
+      },
+      "pet_ct_late": {
+       "wait": 8.86,
+       "service": 0.76,
+       "n": 271,
+       "stage": "diagnosis"
+      },
+      "exercise_test": {
+       "wait": 0.74,
+       "service": 0.07,
+       "n": 65,
+       "stage": "diagnosis"
+      },
+      "further_workup": {
+       "wait": 0.92,
+       "service": 0.58,
+       "n": 113,
+       "stage": "diagnosis"
+      },
+      "exercise_test_late": {
+       "wait": 3.99,
+       "service": 0.19,
+       "n": 169,
+       "stage": "diagnosis"
+      },
+      "bronchoscopy_repeat": {
+       "wait": 0.53,
+       "service": 0.33,
+       "n": 65,
+       "stage": "diagnosis"
+      },
+      "ct_redo": {
+       "wait": 1.49,
+       "service": 0.01,
+       "n": 75,
+       "stage": "diagnosis"
+      }
+     },
+     "stage_breakdown_everyone": {
+      "detection": {
+       "wait": 0.0,
+       "service": 0.0
+      },
+      "referral": {
+       "wait": 9.27,
+       "service": 0.07
+      },
+      "diagnosis": {
+       "wait": 23.02,
+       "service": 4.55
+      },
+      "treatment_start": {
+       "wait": 11.56,
+       "service": 0.5
+      }
+     },
+     "by_group": {
+      "all": {
+       "n": 1000,
+       "n_cancer": 1000,
+       "median_days_to_treatment": 45.52,
+       "share_within_target": 0.416,
+       "median_days_to_diagnosis": 31.52,
+       "missed_cancers": 0,
+       "median_days_to_exit_all": 45.52
+      }
+     },
+     "utilisation": {}
+    }
+   },
+   "variants": [
+    {
+     "label": "Suggested change (found without seeing the authors' answer)",
+     "metrics": {
+      "scenario": "stokstad",
+      "flowchart": "faster_pet_optimised",
+      "seed": 202.0,
+      "n": 1000.0,
+      "n_cancer": 1000.0,
+      "target_days": 42.0,
+      "median_days_to_treatment": 27.0067,
+      "share_within_target": 0.882,
+      "median_days_to_diagnosis": 6.17,
+      "mean_days_to_treatment": 29.14,
+      "missed_cancers": 0.0,
+      "confirmed_cancers": 472.0,
+      "untreated_cancers": 0.0,
+      "stuck": 0.0,
+      "false_treatments": 0.0,
+      "tests_per_patient": 2.3797,
+      "invasive_per_patient": 1.0873,
+      "cost_per_patient": 2831.6,
+      "median_days_to_exit_noncancer": null,
+      "stage_breakdown": {
+       "detection": {
+        "wait": 0.0,
+        "service": 0.0
+       },
+       "referral": {
+        "wait": 10.46,
+        "service": 0.07
+       },
+       "diagnosis": {
+        "wait": 4.95,
+        "service": 2.21
+       },
+       "treatment_start": {
+        "wait": 10.8,
+        "service": 0.46
+       }
+      },
+      "node_breakdown": {
+       "baseline_ct": {
+        "wait": 0.0,
+        "service": 0.0,
+        "n": 1000,
+        "stage": "detection"
+       },
+       "first_visit": {
+        "wait": 10.46,
+        "service": 0.07,
+        "n": 732,
+        "stage": "referral"
+       },
+       "tumour_board": {
+        "wait": 3.35,
+        "service": 0.46,
+        "n": 915,
+        "stage": "treatment_start"
+       },
+       "surgery_booking": {
+        "wait": 4.7,
+        "service": 0.0,
+        "n": 668,
+        "stage": "treatment_start"
+       },
+       "treatment": {
+        "wait": 0.0,
+        "service": 0.0,
+        "n": 1000,
+        "stage": "treatment_start"
+       },
+       "radiotherapy_booking": {
+        "wait": 2.76,
+        "service": 0.0,
+        "n": 247,
+        "stage": "treatment_start"
+       },
+       "exercise_test": {
+        "wait": 2.67,
+        "service": 0.24,
+        "n": 222,
+        "stage": "diagnosis"
+       },
+       "pet_ct": {
+        "wait": 0.63,
+        "service": 0.52,
+        "n": 183,
+        "stage": "diagnosis"
+       },
+       "further_workup": {
+        "wait": 0.63,
+        "service": 0.41,
+        "n": 72,
+        "stage": "diagnosis"
+       },
+       "bronchoscopy": {
+        "wait": 0.3,
+        "service": 0.54,
+        "n": 85,
+        "stage": "diagnosis"
+       },
+       "ttnb": {
+        "wait": 0.56,
+        "service": 0.37,
+        "n": 59,
+        "stage": "diagnosis"
+       },
+       "bronchoscopy_repeat": {
+        "wait": 0.16,
+        "service": 0.12,
+        "n": 17,
+        "stage": "diagnosis"
+       }
+      },
+      "stage_breakdown_all": {
+       "detection": {
+        "wait": 0.0,
+        "service": 0.0
+       },
+       "referral": {
+        "wait": 12.43,
+        "service": 0.1
+       },
+       "diagnosis": {
+        "wait": 12.8,
+        "service": 8.8
+       },
+       "treatment_start": {
+        "wait": 11.54,
+        "service": 0.5
+       }
+      },
+      "node_breakdown_all": {
+       "baseline_ct": {
+        "wait": 0.0,
+        "service": 0.0,
+        "n": 1000,
+        "stage": "detection"
+       },
+       "first_visit": {
+        "wait": 12.43,
+        "service": 0.1,
+        "n": 1000,
+        "stage": "referral"
+       },
+       "bronchoscopy": {
+        "wait": 2.62,
+        "service": 4.07,
+        "n": 787,
+        "stage": "diagnosis"
+       },
+       "pet_ct": {
+        "wait": 3.22,
+        "service": 2.78,
+        "n": 1000,
+        "stage": "diagnosis"
+       },
+       "ttnb": {
+        "wait": 1.25,
+        "service": 0.78,
+        "n": 145,
+        "stage": "diagnosis"
+       },
+       "tumour_board": {
+        "wait": 3.6,
+        "service": 0.5,
+        "n": 1000,
+        "stage": "treatment_start"
+       },
+       "surgery_booking": {
+        "wait": 5.11,
+        "service": 0.0,
+        "n": 745,
+        "stage": "treatment_start"
+       },
+       "treatment": {
+        "wait": 0.0,
+        "service": 0.0,
+        "n": 1000,
+        "stage": "treatment_start"
+       },
+       "radiotherapy_booking": {
+        "wait": 2.84,
+        "service": 0.0,
+        "n": 255,
+        "stage": "treatment_start"
+       },
+       "exercise_test": {
+        "wait": 2.78,
+        "service": 0.26,
+        "n": 234,
+        "stage": "diagnosis"
+       },
+       "further_workup": {
+        "wait": 0.92,
+        "service": 0.58,
+        "n": 113,
+        "stage": "diagnosis"
+       },
+       "bronchoscopy_repeat": {
+        "wait": 0.53,
+        "service": 0.33,
+        "n": 65,
+        "stage": "diagnosis"
+       },
+       "ct_redo": {
+        "wait": 1.49,
+        "service": 0.01,
+        "n": 75,
+        "stage": "diagnosis"
+       }
+      },
+      "stage_breakdown_everyone": {
+       "detection": {
+        "wait": 0.0,
+        "service": 0.0
+       },
+       "referral": {
+        "wait": 10.46,
+        "service": 0.07
+       },
+       "diagnosis": {
+        "wait": 4.95,
+        "service": 2.21
+       },
+       "treatment_start": {
+        "wait": 10.8,
+        "service": 0.46
+       }
+      },
+      "by_group": {
+       "all": {
+        "n": 1000,
+        "n_cancer": 1000,
+        "median_days_to_treatment": 26.47,
+        "share_within_target": 0.881,
+        "median_days_to_diagnosis": 6.14,
+        "missed_cancers": 0,
+        "median_days_to_exit_all": 26.47
+       }
+      },
+      "utilisation": {}
+     },
+     "changes": [
+      "Use the faster PET-CT scanner (the same assumption the authors made)",
+      "Diagnostic workup complete: don't wait for sampling finished (it runs in parallel; treatment still waits for it)",
+      "When PET-CT is ordered: always pet-ct ordered at triage or at the first visit",
+      "When the exercise test is ordered: always exercise test",
+      "Tissue sampling planned?: order it at the same time as first hospital visit, not after"
+     ],
+     "role": "optimiser"
+    },
+    {
+     "label": "Faster PET-CT scan only",
+     "metrics": {
+      "scenario": "stokstad",
+      "flowchart": "faster_pet",
+      "seed": 202.0,
+      "n": 1000.0,
+      "n_cancer": 1000.0,
+      "target_days": 42.0,
+      "median_days_to_treatment": 38.2433,
+      "share_within_target": 0.603,
+      "median_days_to_diagnosis": 23.52,
+      "mean_days_to_treatment": 40.87,
+      "missed_cancers": 0.0,
+      "confirmed_cancers": 472.0,
+      "untreated_cancers": 0.0,
+      "stuck": 0.0,
+      "false_treatments": 0.0,
+      "tests_per_patient": 2.3797,
+      "invasive_per_patient": 1.0873,
+      "cost_per_patient": 2831.6,
+      "median_days_to_exit_noncancer": null,
+      "stage_breakdown": {
+       "detection": {
+        "wait": 0.0,
+        "service": 0.0
+       },
+       "referral": {
+        "wait": 12.12,
+        "service": 0.1
+       },
+       "diagnosis": {
+        "wait": 11.76,
+        "service": 4.89
+       },
+       "treatment_start": {
+        "wait": 11.58,
+        "service": 0.5
+       }
+      },
+      "node_breakdown": {
+       "baseline_ct": {
+        "wait": 0.0,
+        "service": 0.0,
+        "n": 1000,
+        "stage": "detection"
+       },
+       "first_visit": {
+        "wait": 12.12,
+        "service": 0.1,
+        "n": 954,
+        "stage": "referral"
+       },
+       "bronchoscopy": {
+        "wait": 1.69,
+        "service": 2.69,
+        "n": 498,
+        "stage": "diagnosis"
+       },
+       "ttnb": {
+        "wait": 1.04,
+        "service": 0.66,
+        "n": 118,
+        "stage": "diagnosis"
+       },
+       "tumour_board": {
+        "wait": 3.63,
+        "service": 0.5,
+        "n": 1000,
+        "stage": "treatment_start"
+       },
+       "surgery_booking": {
+        "wait": 5.11,
+        "service": 0.0,
+        "n": 745,
+        "stage": "treatment_start"
+       },
+       "treatment": {
+        "wait": 0.0,
+        "service": 0.0,
+        "n": 1000,
+        "stage": "treatment_start"
+       },
+       "radiotherapy_booking": {
+        "wait": 2.84,
+        "service": 0.0,
+        "n": 255,
+        "stage": "treatment_start"
+       },
+       "exercise_test": {
+        "wait": 0.51,
+        "service": 0.04,
+        "n": 39,
+        "stage": "diagnosis"
+       },
+       "pet_ct_late": {
+        "wait": 3.54,
+        "service": 0.6,
+        "n": 208,
+        "stage": "diagnosis"
+       },
+       "pet_ct": {
+        "wait": 0.16,
+        "service": 0.13,
+        "n": 46,
+        "stage": "diagnosis"
+       },
+       "further_workup": {
+        "wait": 0.53,
+        "service": 0.33,
+        "n": 60,
+        "stage": "diagnosis"
+       },
+       "exercise_test_late": {
+        "wait": 3.48,
+        "service": 0.15,
+        "n": 138,
+        "stage": "diagnosis"
+       },
+       "bronchoscopy_repeat": {
+        "wait": 0.45,
+        "service": 0.28,
+        "n": 54,
+        "stage": "diagnosis"
+       },
+       "ct_redo": {
+        "wait": 0.37,
+        "service": 0.0,
+        "n": 22,
+        "stage": "diagnosis"
+       }
+      },
+      "stage_breakdown_all": {
+       "detection": {
+        "wait": 0.0,
+        "service": 0.0
+       },
+       "referral": {
+        "wait": 12.43,
+        "service": 0.1
+       },
+       "diagnosis": {
+        "wait": 18.07,
+        "service": 8.79
+       },
+       "treatment_start": {
+        "wait": 11.58,
+        "service": 0.5
+       }
+      },
+      "node_breakdown_all": {
+       "baseline_ct": {
+        "wait": 0.0,
+        "service": 0.0,
+        "n": 1000,
+        "stage": "detection"
+       },
+       "first_visit": {
+        "wait": 12.43,
+        "service": 0.1,
+        "n": 1000,
+        "stage": "referral"
+       },
+       "pet_ct": {
+        "wait": 2.36,
+        "service": 2.01,
+        "n": 729,
+        "stage": "diagnosis"
+       },
+       "bronchoscopy": {
+        "wait": 2.62,
+        "service": 4.07,
+        "n": 787,
+        "stage": "diagnosis"
+       },
+       "ttnb": {
+        "wait": 1.25,
+        "service": 0.78,
+        "n": 145,
+        "stage": "diagnosis"
+       },
+       "tumour_board": {
+        "wait": 3.63,
+        "service": 0.5,
+        "n": 1000,
+        "stage": "treatment_start"
+       },
+       "surgery_booking": {
+        "wait": 5.11,
+        "service": 0.0,
+        "n": 745,
+        "stage": "treatment_start"
+       },
+       "treatment": {
+        "wait": 0.0,
+        "service": 0.0,
+        "n": 1000,
+        "stage": "treatment_start"
+       },
+       "radiotherapy_booking": {
+        "wait": 2.84,
+        "service": 0.0,
+        "n": 255,
+        "stage": "treatment_start"
+       },
+       "pet_ct_late": {
+        "wait": 4.16,
+        "service": 0.76,
+        "n": 271,
+        "stage": "diagnosis"
+       },
+       "exercise_test": {
+        "wait": 0.74,
+        "service": 0.07,
+        "n": 65,
+        "stage": "diagnosis"
+       },
+       "further_workup": {
+        "wait": 0.92,
+        "service": 0.58,
+        "n": 113,
+        "stage": "diagnosis"
+       },
+       "exercise_test_late": {
+        "wait": 3.99,
+        "service": 0.19,
+        "n": 169,
+        "stage": "diagnosis"
+       },
+       "bronchoscopy_repeat": {
+        "wait": 0.53,
+        "service": 0.33,
+        "n": 65,
+        "stage": "diagnosis"
+       },
+       "ct_redo": {
+        "wait": 1.49,
+        "service": 0.01,
+        "n": 75,
+        "stage": "diagnosis"
+       }
+      },
+      "stage_breakdown_everyone": {
+       "detection": {
+        "wait": 0.0,
+        "service": 0.0
+       },
+       "referral": {
+        "wait": 12.12,
+        "service": 0.1
+       },
+       "diagnosis": {
+        "wait": 11.76,
+        "service": 4.89
+       },
+       "treatment_start": {
+        "wait": 11.58,
+        "service": 0.5
+       }
+      },
+      "by_group": {
+       "all": {
+        "n": 1000,
+        "n_cancer": 1000,
+        "median_days_to_treatment": 38.29,
+        "share_within_target": 0.615,
+        "median_days_to_diagnosis": 23.23,
+        "missed_cancers": 0,
+        "median_days_to_exit_all": 38.29
+       }
+      },
+      "utilisation": {}
+     },
+     "role": "faster_pet"
+    },
+    {
+     "label": "Authors' reordered pathway, simulated",
+     "metrics": {
+      "scenario": "stokstad",
+      "flowchart": "optimal",
+      "seed": 202.0,
+      "n": 1000.0,
+      "n_cancer": 1000.0,
+      "target_days": 42.0,
+      "median_days_to_treatment": 31.0367,
+      "share_within_target": 0.801,
+      "median_days_to_diagnosis": 28.78,
+      "mean_days_to_treatment": 33.1,
+      "missed_cancers": 0.0,
+      "confirmed_cancers": 691.0,
+      "untreated_cancers": 0.0,
+      "stuck": 0.0,
+      "false_treatments": 0.0,
+      "tests_per_patient": 2.204,
+      "invasive_per_patient": 0.9117,
+      "cost_per_patient": 2495.5,
+      "median_days_to_exit_noncancer": null,
+      "stage_breakdown": {
+       "detection": {
+        "wait": 0.0,
+        "service": 0.0
+       },
+       "referral": {
+        "wait": 11.1,
+        "service": 0.08
+       },
+       "diagnosis": {
+        "wait": 8.96,
+        "service": 4.88
+       },
+       "treatment_start": {
+        "wait": 7.64,
+        "service": 0.5
+       }
+      },
+      "node_breakdown": {
+       "baseline_ct": {
+        "wait": 0.0,
+        "service": 0.0,
+        "n": 1000,
+        "stage": "detection"
+       },
+       "first_visit": {
+        "wait": 11.1,
+        "service": 0.08,
+        "n": 793,
+        "stage": "referral"
+       },
+       "tumour_board": {
+        "wait": 3.6,
+        "service": 0.5,
+        "n": 1000,
+        "stage": "treatment_start"
+       },
+       "ttnb": {
+        "wait": 4.37,
+        "service": 2.69,
+        "n": 474,
+        "stage": "diagnosis"
+       },
+       "treatment": {
+        "wait": 0.0,
+        "service": 0.0,
+        "n": 1000,
+        "stage": "treatment_start"
+       },
+       "bronchoscopy": {
+        "wait": 0.5,
+        "service": 0.9,
+        "n": 145,
+        "stage": "diagnosis"
+       },
+       "exercise_test": {
+        "wait": 2.71,
+        "service": 0.25,
+        "n": 227,
+        "stage": "diagnosis"
+       },
+       "surgery_booking": {
+        "wait": 2.33,
+        "service": 0.0,
+        "n": 266,
+        "stage": "treatment_start"
+       },
+       "pet_ct": {
+        "wait": 0.71,
+        "service": 0.6,
+        "n": 207,
+        "stage": "diagnosis"
+       },
+       "further_workup": {
+        "wait": 0.64,
+        "service": 0.42,
+        "n": 76,
+        "stage": "diagnosis"
+       },
+       "radiotherapy_booking": {
+        "wait": 1.72,
+        "service": 0.0,
+        "n": 136,
+        "stage": "treatment_start"
+       },
+       "bronchoscopy_repeat": {
+        "wait": 0.02,
+        "service": 0.01,
+        "n": 2,
+        "stage": "diagnosis"
+       }
+      },
+      "stage_breakdown_all": {
+       "detection": {
+        "wait": 0.0,
+        "service": 0.0
+       },
+       "referral": {
+        "wait": 12.43,
+        "service": 0.1
+       },
+       "diagnosis": {
+        "wait": 14.18,
+        "service": 8.01
+       },
+       "treatment_start": {
+        "wait": 11.54,
+        "service": 0.5
+       }
+      },
+      "node_breakdown_all": {
+       "baseline_ct": {
+        "wait": 0.0,
+        "service": 0.0,
+        "n": 1000,
+        "stage": "detection"
+       },
+       "first_visit": {
+        "wait": 12.43,
+        "service": 0.1,
+        "n": 1000,
+        "stage": "referral"
+       },
+       "pet_ct": {
+        "wait": 3.22,
+        "service": 2.78,
+        "n": 1000,
+        "stage": "diagnosis"
+       },
+       "tumour_board": {
+        "wait": 3.6,
+        "service": 0.5,
+        "n": 1000,
+        "stage": "treatment_start"
+       },
+       "surgery_booking": {
+        "wait": 5.11,
+        "service": 0.0,
+        "n": 745,
+        "stage": "treatment_start"
+       },
+       "ttnb": {
+        "wait": 4.92,
+        "service": 3.01,
+        "n": 556,
+        "stage": "diagnosis"
+       },
+       "treatment": {
+        "wait": 0.0,
+        "service": 0.0,
+        "n": 1000,
+        "stage": "treatment_start"
+       },
+       "radiotherapy_booking": {
+        "wait": 2.84,
+        "service": 0.0,
+        "n": 255,
+        "stage": "treatment_start"
+       },
+       "bronchoscopy": {
+        "wait": 0.83,
+        "service": 1.36,
+        "n": 252,
+        "stage": "diagnosis"
+       },
+       "exercise_test": {
+        "wait": 2.78,
+        "service": 0.26,
+        "n": 234,
+        "stage": "diagnosis"
+       },
+       "further_workup": {
+        "wait": 0.92,
+        "service": 0.58,
+        "n": 113,
+        "stage": "diagnosis"
+       },
+       "ct_redo": {
+        "wait": 1.49,
+        "service": 0.01,
+        "n": 75,
+        "stage": "diagnosis"
+       },
+       "bronchoscopy_repeat": {
+        "wait": 0.02,
+        "service": 0.01,
+        "n": 3,
+        "stage": "diagnosis"
+       }
+      },
+      "stage_breakdown_everyone": {
+       "detection": {
+        "wait": 0.0,
+        "service": 0.0
+       },
+       "referral": {
+        "wait": 11.1,
+        "service": 0.08
+       },
+       "diagnosis": {
+        "wait": 8.96,
+        "service": 4.88
+       },
+       "treatment_start": {
+        "wait": 7.64,
+        "service": 0.5
+       }
+      },
+      "by_group": {
+       "all": {
+        "n": 1000,
+        "n_cancer": 1000,
+        "median_days_to_treatment": 30.9,
+        "share_within_target": 0.787,
+        "median_days_to_diagnosis": 28.62,
+        "missed_cancers": 0,
+        "median_days_to_exit_all": 30.9
+       }
+      },
+      "utilisation": {}
+     },
+     "role": "authors_pathway"
+    },
+    {
+     "label": "Suggested change without any new equipment",
+     "metrics": {
+      "scenario": "stokstad",
+      "flowchart": "observed_optimised",
+      "seed": 202.0,
+      "n": 1000.0,
+      "n_cancer": 1000.0,
+      "target_days": 42.0,
+      "median_days_to_treatment": 36.9833,
+      "share_within_target": 0.671,
+      "median_days_to_diagnosis": 21.9733,
+      "mean_days_to_treatment": 38.8967,
+      "missed_cancers": 0.0,
+      "confirmed_cancers": 472.0,
+      "untreated_cancers": 0.0,
+      "stuck": 0.0,
+      "false_treatments": 0.0,
+      "tests_per_patient": 2.3797,
+      "invasive_per_patient": 1.0873,
+      "cost_per_patient": 2831.6,
+      "median_days_to_exit_noncancer": null,
+      "stage_breakdown": {
+       "detection": {
+        "wait": 0.0,
+        "service": 0.0
+       },
+       "referral": {
+        "wait": 5.01,
+        "service": 0.02
+       },
+       "diagnosis": {
+        "wait": 18.39,
+        "service": 3.0
+       },
+       "treatment_start": {
+        "wait": 11.32,
+        "service": 0.49
+       }
+      },
+      "node_breakdown": {
+       "baseline_ct": {
+        "wait": 0.0,
+        "service": 0.0,
+        "n": 1000,
+        "stage": "detection"
+       },
+       "pet_ct": {
+        "wait": 15.43,
+        "service": 2.04,
+        "n": 735,
+        "stage": "diagnosis"
+       },
+       "tumour_board": {
+        "wait": 3.49,
+        "service": 0.49,
+        "n": 981,
+        "stage": "treatment_start"
+       },
+       "surgery_booking": {
+        "wait": 5.03,
+        "service": 0.0,
+        "n": 730,
+        "stage": "treatment_start"
+       },
+       "treatment": {
+        "wait": 0.0,
+        "service": 0.0,
+        "n": 1000,
+        "stage": "treatment_start"
+       },
+       "radiotherapy_booking": {
+        "wait": 2.8,
+        "service": 0.0,
+        "n": 251,
+        "stage": "treatment_start"
+       },
+       "first_visit": {
+        "wait": 5.01,
+        "service": 0.02,
+        "n": 246,
+        "stage": "referral"
+       },
+       "exercise_test": {
+        "wait": 1.82,
+        "service": 0.15,
+        "n": 139,
+        "stage": "diagnosis"
+       },
+       "further_workup": {
+        "wait": 0.84,
+        "service": 0.54,
+        "n": 103,
+        "stage": "diagnosis"
+       },
+       "bronchoscopy": {
+        "wait": 0.08,
+        "service": 0.12,
+        "n": 19,
+        "stage": "diagnosis"
+       },
+       "bronchoscopy_repeat": {
+        "wait": 0.05,
+        "service": 0.02,
+        "n": 4,
+        "stage": "diagnosis"
+       },
+       "ttnb": {
+        "wait": 0.18,
+        "service": 0.12,
+        "n": 15,
+        "stage": "diagnosis"
+       }
+      },
+      "stage_breakdown_all": {
+       "detection": {
+        "wait": 0.0,
+        "service": 0.0
+       },
+       "referral": {
+        "wait": 12.43,
+        "service": 0.1
+       },
+       "diagnosis": {
+        "wait": 28.87,
+        "service": 8.8
+       },
+       "treatment_start": {
+        "wait": 11.49,
+        "service": 0.5
+       }
+      },
+      "node_breakdown_all": {
+       "baseline_ct": {
+        "wait": 0.0,
+        "service": 0.0,
+        "n": 1000,
+        "stage": "detection"
+       },
+       "first_visit": {
+        "wait": 12.43,
+        "service": 0.1,
+        "n": 1000,
+        "stage": "referral"
+       },
+       "bronchoscopy": {
+        "wait": 2.62,
+        "service": 4.07,
+        "n": 787,
+        "stage": "diagnosis"
+       },
+       "pet_ct": {
+        "wait": 19.29,
+        "service": 2.78,
+        "n": 1000,
+        "stage": "diagnosis"
+       },
+       "ttnb": {
+        "wait": 1.25,
+        "service": 0.78,
+        "n": 145,
+        "stage": "diagnosis"
+       },
+       "tumour_board": {
+        "wait": 3.55,
+        "service": 0.5,
+        "n": 1000,
+        "stage": "treatment_start"
+       },
+       "surgery_booking": {
+        "wait": 5.11,
+        "service": 0.0,
+        "n": 745,
+        "stage": "treatment_start"
+       },
+       "treatment": {
+        "wait": 0.0,
+        "service": 0.0,
+        "n": 1000,
+        "stage": "treatment_start"
+       },
+       "radiotherapy_booking": {
+        "wait": 2.84,
+        "service": 0.0,
+        "n": 255,
+        "stage": "treatment_start"
+       },
+       "exercise_test": {
+        "wait": 2.78,
+        "service": 0.26,
+        "n": 234,
+        "stage": "diagnosis"
+       },
+       "further_workup": {
+        "wait": 0.92,
+        "service": 0.58,
+        "n": 113,
+        "stage": "diagnosis"
+       },
+       "bronchoscopy_repeat": {
+        "wait": 0.53,
+        "service": 0.33,
+        "n": 65,
+        "stage": "diagnosis"
+       },
+       "ct_redo": {
+        "wait": 1.49,
+        "service": 0.01,
+        "n": 75,
+        "stage": "diagnosis"
+       }
+      },
+      "stage_breakdown_everyone": {
+       "detection": {
+        "wait": 0.0,
+        "service": 0.0
+       },
+       "referral": {
+        "wait": 5.01,
+        "service": 0.02
+       },
+       "diagnosis": {
+        "wait": 18.39,
+        "service": 3.0
+       },
+       "treatment_start": {
+        "wait": 11.32,
+        "service": 0.49
+       }
+      },
+      "by_group": {
+       "all": {
+        "n": 1000,
+        "n_cancer": 1000,
+        "median_days_to_treatment": 36.68,
+        "share_within_target": 0.68,
+        "median_days_to_diagnosis": 21.53,
+        "missed_cancers": 0,
+        "median_days_to_exit_all": 36.68
+       }
+      },
+      "utilisation": {}
+     },
+     "changes_detail": [
+      "When PET-CT is ordered: always pet-ct ordered at triage or at the first visit",
+      "Tissue sampling planned?: order it at the same time as first hospital visit, not after",
+      "When the exercise test is ordered: always exercise test",
+      "Diagnostic workup complete: don't wait for sampling finished (it runs in parallel; treatment still waits for it)"
+     ],
+     "role": "optimiser_no_new_equipment"
+    }
+   ],
+   "published": {
+    "baseline_share": 0.4,
+    "faster_pet_share": 0.48,
+    "optimal_share": 0.8,
+    "source": "Stokstad et al. 2019, BMC Health Services Research"
+   },
+   "flowchart_before": {
+    "id": "observed",
+    "nodes": [
+     {
+      "id": "baseline_ct",
+      "label": "CT scan",
+      "stage": "detection"
+     },
+     {
+      "id": "first_visit",
+      "label": "First hospital visit",
+      "stage": "referral",
+      "after": [
+       "baseline_ct"
+      ]
+     },
+     {
+      "id": "bronchoscopy",
+      "label": "Bronchoscopy",
+      "stage": "diagnosis",
+      "after": [
+       "first_visit"
+      ]
+     },
+     {
+      "id": "ttnb",
+      "label": "Needle biopsy",
+      "stage": "diagnosis",
+      "after": [
+       "bronchoscopy"
+      ]
+     },
+     {
+      "id": "bronchoscopy_repeat",
+      "label": "Repeat bronchoscopy",
+      "stage": "diagnosis",
+      "after": [
+       "bronchoscopy"
+      ]
+     },
+     {
+      "id": "ct_redo",
+      "label": "New CT (first one inadequate)",
+      "stage": "diagnosis",
+      "after": [
+       "first_visit"
+      ]
+     },
+     {
+      "id": "pet_ct",
+      "label": "PET-CT",
+      "stage": "diagnosis",
+      "after": [
+       "ct_redo",
+       "first_visit"
+      ]
+     },
+     {
+      "id": "pet_ct_late",
+      "label": "PET-CT (ordered late)",
+      "stage": "diagnosis",
+      "after": [
+       "ct_redo",
+       "first_visit"
+      ]
+     },
+     {
+      "id": "further_workup",
+      "label": "Further tests after PET-CT",
+      "stage": "diagnosis",
+      "after": [
+       "pet_ct",
+       "pet_ct_late"
+      ]
+     },
+     {
+      "id": "exercise_test",
+      "label": "Exercise test",
+      "stage": "diagnosis",
+      "after": [
+       "first_visit"
+      ]
+     },
+     {
+      "id": "exercise_test_late",
+      "label": "Exercise test (ordered late)",
+      "stage": "diagnosis",
+      "after": [
+       "first_visit"
+      ]
+     },
+     {
+      "id": "tumour_board",
+      "label": "Tumour board",
+      "stage": "treatment_start",
+      "after": [
+       "bronchoscopy",
+       "bronchoscopy_repeat",
+       "exercise_test",
+       "exercise_test_late",
+       "further_workup",
+       "pet_ct",
+       "pet_ct_late",
+       "ttnb"
+      ]
+     },
+     {
+      "id": "surgery_booking",
+      "label": "Waiting for surgery",
+      "stage": "treatment_start",
+      "after": [
+       "tumour_board"
+      ]
+     },
+     {
+      "id": "radiotherapy_booking",
+      "label": "Waiting for radiotherapy",
+      "stage": "treatment_start",
+      "after": [
+       "tumour_board"
+      ]
+     },
+     {
+      "id": "treat",
+      "label": "Treatment starts",
+      "stage": "treatment_start",
+      "after": [
+       "radiotherapy_booking",
+       "surgery_booking",
+       "tumour_board"
+      ],
+      "kind": "exit"
+     }
+    ]
+   },
+   "flowchart_after": {
+    "id": "suggested",
+    "nodes": [
+     {
+      "id": "baseline_ct",
+      "label": "CT scan",
+      "stage": "detection"
+     },
+     {
+      "id": "first_visit",
+      "label": "First hospital visit",
+      "stage": "referral",
+      "after": [
+       "baseline_ct"
+      ]
+     },
+     {
+      "id": "bronchoscopy",
+      "label": "Bronchoscopy",
+      "stage": "diagnosis",
+      "after": [
+       "baseline_ct"
+      ]
+     },
+     {
+      "id": "ttnb",
+      "label": "Needle biopsy",
+      "stage": "diagnosis",
+      "after": [
+       "bronchoscopy"
+      ]
+     },
+     {
+      "id": "bronchoscopy_repeat",
+      "label": "Repeat bronchoscopy",
+      "stage": "diagnosis",
+      "after": [
+       "bronchoscopy"
+      ]
+     },
+     {
+      "id": "ct_redo",
+      "label": "New CT (first one inadequate)",
+      "stage": "diagnosis",
+      "after": [
+       "first_visit"
+      ]
+     },
+     {
+      "id": "pet_ct",
+      "label": "PET-CT",
+      "stage": "diagnosis",
+      "after": [
+       "ct_redo",
+       "first_visit"
+      ]
+     },
+     {
+      "id": "pet_ct_late",
+      "label": "PET-CT (ordered late)",
+      "stage": "diagnosis",
+      "after": [
+       "ct_redo",
+       "first_visit"
+      ]
+     },
+     {
+      "id": "further_workup",
+      "label": "Further tests after PET-CT",
+      "stage": "diagnosis",
+      "after": [
+       "pet_ct",
+       "pet_ct_late"
+      ]
+     },
+     {
+      "id": "exercise_test",
+      "label": "Exercise test",
+      "stage": "diagnosis",
+      "after": [
+       "first_visit"
+      ]
+     },
+     {
+      "id": "exercise_test_late",
+      "label": "Exercise test (ordered late)",
+      "stage": "diagnosis",
+      "after": [
+       "first_visit"
+      ]
+     },
+     {
+      "id": "tumour_board",
+      "label": "Tumour board",
+      "stage": "treatment_start",
+      "after": [
+       "exercise_test",
+       "exercise_test_late",
+       "further_workup",
+       "pet_ct",
+       "pet_ct_late"
+      ]
+     },
+     {
+      "id": "surgery_booking",
+      "label": "Waiting for surgery",
+      "stage": "treatment_start",
+      "after": [
+       "tumour_board"
+      ]
+     },
+     {
+      "id": "radiotherapy_booking",
+      "label": "Waiting for radiotherapy",
+      "stage": "treatment_start",
+      "after": [
+       "tumour_board"
+      ]
+     },
+     {
+      "id": "treat",
+      "label": "Treatment starts",
+      "stage": "treatment_start",
+      "after": [
+       "bronchoscopy",
+       "bronchoscopy_repeat",
+       "radiotherapy_booking",
+       "surgery_booking",
+       "ttnb",
+       "tumour_board"
+      ],
+      "kind": "exit"
+     }
+    ]
+   },
+   "optimiser": {
+    "steps": [
+     {
+      "kind": "detach",
+      "target": "diagnosis",
+      "other": "sampling_done",
+      "plain": "Diagnostic workup complete: don't wait for sampling finished (it runs in parallel; treatment still waits for it)",
+      "score": 8.619,
+      "evidence": {
+       "predicted_days_saved": 8.62,
+       "train_on_time_before": 0.581,
+       "train_on_time_after": 0.68,
+       "train_median_before": 38.64,
+       "train_median_after": 33.54
+      }
+     },
+     {
+      "kind": "standardise",
+      "target": "pet_timing",
+      "other": "pet_on_time",
+      "plain": "When PET-CT is ordered: always pet-ct ordered at triage or at the first visit",
+      "score": 5.15,
+      "evidence": {
+       "predicted_days_saved": 5.15,
+       "train_on_time_before": 0.68,
+       "train_on_time_after": 0.779,
+       "train_median_before": 33.54,
+       "train_median_after": 29.98
+      }
+     },
+     {
+      "kind": "standardise",
+      "target": "ex_timing",
+      "other": "ex_early",
+      "plain": "When the exercise test is ordered: always exercise test",
+      "score": 2.15,
+      "evidence": {
+       "predicted_days_saved": 2.15,
+       "train_on_time_before": 0.779,
+       "train_on_time_after": 0.852,
+       "train_median_before": 29.98,
+       "train_median_after": 29.02
+      }
+     },
+     {
+      "kind": "relax",
+      "target": "sample_plan",
+      "other": "visit",
+      "plain": "Tissue sampling planned?: order it at the same time as first hospital visit, not after",
+      "score": 3.733,
+      "evidence": {
+       "predicted_days_saved": 3.73,
+       "train_on_time_before": 0.852,
+       "train_on_time_after": 0.883,
+       "train_median_before": 29.02,
+       "train_median_after": 26.79
+      }
+     }
+    ],
+    "selection_optimism_pp": 2.3,
+    "candidates_evaluated": 54,
+    "guardrails_heldout": []
+   },
+   "optimiser_no_new_equipment": {
+    "steps": [
+     {
+      "kind": "standardise",
+      "target": "pet_timing",
+      "other": "pet_on_time",
+      "plain": "When PET-CT is ordered: always pet-ct ordered at triage or at the first visit",
+      "score": 6.502,
+      "evidence": {
+       "predicted_days_saved": 6.5,
+       "train_on_time_before": 0.406,
+       "train_on_time_after": 0.518,
+       "train_median_before": 45.78,
+       "train_median_after": 41.53
+      }
+     },
+     {
+      "kind": "relax",
+      "target": "sample_plan",
+      "other": "visit",
+      "plain": "Tissue sampling planned?: order it at the same time as first hospital visit, not after",
+      "score": 5.575,
+      "evidence": {
+       "predicted_days_saved": 5.57,
+       "train_on_time_before": 0.518,
+       "train_on_time_after": 0.604,
+       "train_median_before": 41.53,
+       "train_median_after": 38.73
+      }
+     },
+     {
+      "kind": "standardise",
+      "target": "ex_timing",
+      "other": "ex_early",
+      "plain": "When the exercise test is ordered: always exercise test",
+      "score": 1.872,
+      "evidence": {
+       "predicted_days_saved": 1.87,
+       "train_on_time_before": 0.604,
+       "train_on_time_after": 0.658,
+       "train_median_before": 38.73,
+       "train_median_after": 37.57
+      }
+     },
+     {
+      "kind": "detach",
+      "target": "diagnosis",
+      "other": "sampling_done",
+      "plain": "Diagnostic workup complete: don't wait for sampling finished (it runs in parallel; treatment still waits for it)",
+      "score": 0.686,
+      "evidence": {
+       "predicted_days_saved": 0.69,
+       "train_on_time_before": 0.658,
+       "train_on_time_after": 0.671,
+       "train_median_before": 37.57,
+       "train_median_after": 37.09
+      }
+     }
+    ],
+    "selection_optimism_pp": -0.5,
+    "candidates_evaluated": 55
+   }
+  }
+ ],
+ "assumptions": [
+  {
+   "parameter": "health centre appointment",
+   "value": "14 days",
+   "source": "Khalife et al. 2025",
+   "url": "https://doi.org/10.2340/1651-226X.2025.42778",
+   "status": "sourced",
+   "file": "params/finland.yaml"
+  },
+  {
+   "parameter": "health centre appointment nordic comparator",
+   "value": "4.5 days",
+   "source": "Khalife et al. 2025",
+   "url": "https://doi.org/10.2340/1651-226X.2025.42778",
+   "status": "sourced",
+   "file": "params/finland.yaml"
+  },
+  {
+   "parameter": "specialist consultation after gp",
+   "value": "21 days",
+   "source": "Khalife et al. 2025",
+   "url": "https://doi.org/10.2340/1651-226X.2025.42778",
+   "status": "sourced",
+   "file": "params/finland.yaml"
+  },
+  {
+   "parameter": "diagnosis after specialist consultation",
+   "value": "28 days",
+   "source": "Khalife et al. 2025",
+   "url": "https://doi.org/10.2340/1651-226X.2025.42778",
+   "status": "sourced",
+   "file": "params/finland.yaml"
+  },
+  {
+   "parameter": "cumulative delay estimate first contact to diagnosis",
+   "value": "45 days",
+   "source": "Khalife et al. 2025",
+   "url": "https://doi.org/10.2340/1651-226X.2025.42778",
+   "status": "sourced",
+   "file": "params/finland.yaml"
+  },
+  {
+   "parameter": "registry diagnosis to treatment start",
+   "value": "37 days",
+   "source": "IHE",
+   "url": "https://ihe.se/app/uploads/2026/04/IHE-Cancer-Dashboard-Finland_.pdf",
+   "status": "sourced",
+   "file": "params/finland.yaml"
+  },
+  {
+   "parameter": "satakunta first primary visit to referral",
+   "value": "14 days",
+   "source": "Mattila S",
+   "url": "https://www.utupub.fi/handle/10024/180618",
+   "status": "sourced",
+   "file": "params/finland.yaml"
+  },
+  {
+   "parameter": "satakunta referral to diagnosis",
+   "value": "55 days",
+   "source": "Mattila S",
+   "url": "https://www.utupub.fi/handle/10024/180618",
+   "status": "sourced",
+   "file": "params/finland.yaml"
+  },
+  {
+   "parameter": "mot symptom onset to treatment finland",
+   "value": "155 days",
+   "source": "Yle (MOT programme), news article 23 Oct 2025, reporting an unpublishe",
+   "url": "https://yle.fi/a/74-20251023",
+   "status": "sourced",
+   "file": "params/finland.yaml"
+  },
+  {
+   "parameter": "mot primary care interval",
+   "value": "41 days",
+   "source": "Yle (MOT programme), news article 23 Oct 2025, reporting an unpublishe",
+   "url": "https://yle.fi/a/74-20251023",
+   "status": "sourced",
+   "file": "params/finland.yaml"
+  },
+  {
+   "parameter": "mot specialised care interval",
+   "value": "58 days",
+   "source": "Yle (MOT programme), news article 23 Oct 2025, reporting an unpublishe",
+   "url": "https://yle.fi/a/74-20251023",
+   "status": "sourced",
+   "file": "params/finland.yaml"
+  },
+  {
+   "parameter": "thl share waiting over 14d for doctor",
+   "value": "35%",
+   "source": "Khalife et al. 2025",
+   "url": "https://doi.org/10.2340/1651-226X.2025.42778",
+   "status": "sourced",
+   "file": "params/finland.yaml"
+  },
+  {
+   "parameter": "thl share waiting 1 to 3 months for doctor",
+   "value": "14%",
+   "source": "Khalife et al. 2025",
+   "url": "https://doi.org/10.2340/1651-226X.2025.42778",
+   "status": "sourced",
+   "file": "params/finland.yaml"
+  },
+  {
+   "parameter": "ct report turnaround typical",
+   "value": "7 days",
+   "source": "Pirkanmaa Hospital District (Pirha)",
+   "url": "https://pirha.fi/documents/d/kehitysversio/keuhkosyopapotilaan-hoitopolku",
+   "status": "sourced",
+   "file": "params/finland.yaml"
+  },
+  {
+   "parameter": "bronchoscopy result turnaround",
+   "value": "4 days",
+   "source": "Pirkanmaa Hospital District (Pirha)",
+   "url": "https://pirha.fi/documents/d/kehitysversio/keuhkosyopapotilaan-hoitopolku",
+   "status": "sourced",
+   "file": "params/finland.yaml"
+  },
+  {
+   "parameter": "referral processing",
+   "value": "1.5 days",
+   "source": "Pirkanmaa Hospital District (Pirha)",
+   "url": "https://pirha.fi/documents/d/kehitysversio/keuhkosyopapotilaan-hoitopolku",
+   "status": "sourced",
+   "file": "params/finland.yaml"
+  },
+  {
+   "parameter": "radiotherapy start after planning ct",
+   "value": "14 days",
+   "source": "Pirkanmaa Hospital District (Pirha)",
+   "url": "https://pirha.fi/documents/d/kehitysversio/keuhkosyopapotilaan-hoitopolku",
+   "status": "sourced",
+   "file": "params/finland.yaml"
+  },
+  {
+   "parameter": "pet ct wait finland",
+   "value": "20.5 days",
+   "source": "Our assumption",
+   "url": null,
+   "status": "assumption",
+   "file": "params/finland.yaml"
+  },
+  {
+   "parameter": "tumour board frequency",
+   "value": "weekly schedule",
+   "source": "Our assumption",
+   "url": null,
+   "status": "assumption",
+   "file": "params/finland.yaml"
+  },
+  {
+   "parameter": "share meeting doctor at first primary care contact",
+   "value": "50%",
+   "source": "Khalife et al. 2025",
+   "url": "https://doi.org/10.2340/1651-226X.2025.42778",
+   "status": "sourced",
+   "file": "params/finland.yaml"
+  },
+  {
+   "parameter": "share seeing nurse at first contact",
+   "value": "50%",
+   "source": "Khalife et al. 2025",
+   "url": "https://doi.org/10.2340/1651-226X.2025.42778",
+   "status": "sourced",
+   "file": "params/finland.yaml"
+  },
+  {
+   "parameter": "share primary care units with ct access",
+   "value": "10%",
+   "source": "IHE",
+   "url": "https://ihe.se/app/uploads/2026/04/IHE-Cancer-Dashboard-Finland_.pdf",
+   "status": "sourced",
+   "file": "params/finland.yaml"
+  },
+  {
+   "parameter": "ct scanners per 100k vs eu",
+   "value": "-0.34 relative difference",
+   "source": "IHE",
+   "url": "https://ihe.se/app/uploads/2026/04/IHE-Cancer-Dashboard-Finland_.pdf",
+   "status": "sourced",
+   "file": "params/finland.yaml"
+  },
+  {
+   "parameter": "lung cancer new cases per year finland",
+   "value": "2913 cases per year",
+   "source": "IARC Global Cancer Observatory",
+   "url": "https://gco.iarc.who.int/media/globocan/factsheets/populations/246-finland-fact-sheet.pdf",
+   "status": "sourced",
+   "file": "params/finland.yaml"
+  },
+  {
+   "parameter": "population finland",
+   "value": "5617316 people",
+   "source": "IARC Global Cancer Observatory",
+   "url": "https://gco.iarc.who.int/media/globocan/factsheets/populations/246-finland-fact-sheet.pdf",
+   "status": "sourced",
+   "file": "params/finland.yaml"
+  },
+  {
+   "parameter": "typical wellbeing county population",
+   "value": "250000 people",
+   "source": "Our assumption",
+   "url": null,
+   "status": "assumption",
+   "file": "params/finland.yaml"
+  },
+  {
+   "parameter": "lung cancer cases per county year",
+   "value": "130 cases per year",
+   "source": "Our assumption",
+   "url": null,
+   "status": "assumption",
+   "file": "params/finland.yaml"
+  },
+  {
+   "parameter": "share stage i at diagnosis",
+   "value": "17%",
+   "source": "Khalife et al. 2025",
+   "url": "https://doi.org/10.2340/1651-226X.2025.42778",
+   "status": "sourced",
+   "file": "params/finland.yaml"
+  },
+  {
+   "parameter": "share stage iv single centre",
+   "value": "59%",
+   "source": "IHE",
+   "url": "https://ihe.se/app/uploads/2026/04/IHE-Cancer-Dashboard-Finland_.pdf",
+   "status": "sourced",
+   "file": "params/finland.yaml"
+  },
+  {
+   "parameter": "five year relative survival men",
+   "value": "17%",
+   "source": "IHE",
+   "url": "https://ihe.se/app/uploads/2026/04/IHE-Cancer-Dashboard-Finland_.pdf",
+   "status": "sourced",
+   "file": "params/finland.yaml"
+  },
+  {
+   "parameter": "five year relative survival women",
+   "value": "29%",
+   "source": "IHE",
+   "url": "https://ihe.se/app/uploads/2026/04/IHE-Cancer-Dashboard-Finland_.pdf",
+   "status": "sourced",
+   "file": "params/finland.yaml"
+  },
+  {
+   "parameter": "lung cancer risk 12m self referred cxr over 50",
+   "value": "1%",
+   "source": "Bradley et al. 2021",
+   "url": "https://bjgp.org/content/71/705/e280",
+   "status": "sourced",
+   "file": "params/finland.yaml"
+  },
+  {
+   "parameter": "lung cancer risk 12m after new haemoptysis",
+   "value": "3%",
+   "source": "Koo MM, Mounce LTA, Rafiq M, Callister MEJ, Singh H, Abel GA, Lyratzop",
+   "url": "https://doi.org/10.1136/thorax-2022-219509",
+   "status": "sourced",
+   "file": "params/finland.yaml"
+  },
+  {
+   "parameter": "lung cancer risk 12m after new dyspnoea",
+   "value": "1%",
+   "source": "Koo MM, Mounce LTA, Rafiq M, Callister MEJ, Singh H, Abel GA, Lyratzop",
+   "url": "https://doi.org/10.1136/thorax-2022-219509",
+   "status": "sourced",
+   "file": "params/finland.yaml"
+  },
+  {
+   "parameter": "ppv single symptom other than haemoptysis",
+   "value": "1%",
+   "source": "Bradley et al. 2021",
+   "url": "https://bjgp.org/content/71/705/e280",
+   "status": "sourced",
+   "file": "params/finland.yaml"
+  },
+  {
+   "parameter": "lung cancer risk after negative cxr 12m",
+   "value": "0%",
+   "source": "Bradley et al. 2021",
+   "url": "https://bjgp.org/content/71/705/e280",
+   "status": "sourced",
+   "file": "params/finland.yaml"
+  },
+  {
+   "parameter": "cxr positive predictive value",
+   "value": "9%",
+   "source": "Bradley et al. 2021",
+   "url": "https://bjgp.org/content/71/705/e280",
+   "status": "sourced",
+   "file": "params/finland.yaml"
+  },
+  {
+   "parameter": "urgent referral cancer conversion median all cancers",
+   "value": "12%",
+   "source": "Sewell et al. 2020",
+   "url": "https://bjgp.org/content/70/692/e186",
+   "status": "sourced",
+   "file": "params/finland.yaml"
+  },
+  {
+   "parameter": "nonspecific symptoms extra wait to diagnosis",
+   "value": "34 days",
+   "source": "Sewell et al. 2020",
+   "url": "https://bjgp.org/content/70/692/e186",
+   "status": "sourced",
+   "file": "params/finland.yaml"
+  },
+  {
+   "parameter": "rapid diagnostic centre mean days usual care",
+   "value": "84.2 days",
+   "source": "Sewell et al. 2020",
+   "url": "https://bjgp.org/content/70/692/e186",
+   "status": "sourced",
+   "file": "params/finland.yaml"
+  },
+  {
+   "parameter": "rapid diagnostic centre mean days diagnosed at clinic",
+   "value": "5.9 days",
+   "source": "Sewell et al. 2020",
+   "url": "https://bjgp.org/content/70/692/e186",
+   "status": "sourced",
+   "file": "params/finland.yaml"
+  },
+  {
+   "parameter": "median diagnostic interval haemoptysis uk",
+   "value": "39 days",
+   "source": "Koo MM, Mounce LTA, Rafiq M, Callister MEJ, Singh H, Abel GA, Lyratzop",
+   "url": "https://doi.org/10.1136/thorax-2022-219509",
+   "status": "sourced",
+   "file": "params/finland.yaml"
+  },
+  {
+   "parameter": "median diagnostic interval dyspnoea uk",
+   "value": "83 days",
+   "source": "Koo MM, Mounce LTA, Rafiq M, Callister MEJ, Singh H, Abel GA, Lyratzop",
+   "url": "https://doi.org/10.1136/thorax-2022-219509",
+   "status": "sourced",
+   "file": "params/finland.yaml"
+  },
+  {
+   "parameter": "cxr miss rate",
+   "value": "20%",
+   "source": "HSIB (now HSSIB)",
+   "url": "https://hssib.org.uk/patient-safety-investigations/missed-detection-of-lung-cancer-on-chest-x-rays-of-patients-being-seen-in-primary-care/investigation-report",
+   "status": "sourced",
+   "file": "params/finland.yaml"
+  },
+  {
+   "parameter": "ct scans per day county",
+   "value": "30 scans per weekday",
+   "source": "Our assumption",
+   "url": null,
+   "status": "assumption",
+   "file": "params/finland.yaml"
+  },
+  {
+   "parameter": "bronchoscopy ebus slots per day",
+   "value": "4 slots per weekday",
+   "source": "Our assumption",
+   "url": null,
+   "status": "assumption",
+   "file": "params/finland.yaml"
+  },
+  {
+   "parameter": "pet ct slots per day region",
+   "value": "8 slots per weekday",
+   "source": "Our assumption",
+   "url": null,
+   "status": "assumption",
+   "file": "params/finland.yaml"
+  },
+  {
+   "parameter": "gp nurse first contacts per day",
+   "value": "30 contacts per day",
+   "source": "Our assumption",
+   "url": null,
+   "status": "assumption",
+   "file": "params/finland.yaml"
+  },
+  {
+   "parameter": "surgery slots thoracic per day",
+   "value": "2 operations per day",
+   "source": "Pirkanmaa Hospital District (Pirha)",
+   "url": "https://pirha.fi/documents/d/kehitysversio/keuhkosyopapotilaan-hoitopolku",
+   "status": "sourced",
+   "file": "params/finland.yaml"
+  },
+  {
+   "parameter": "n patients",
+   "value": "100 patients",
+   "source": "Stokstad et al. 2019",
+   "url": "https://doi.org/10.1186/s12913-019-4517-z",
+   "status": "sourced",
+   "file": "params/stokstad.yaml"
+  },
+  {
+   "parameter": "n diagnosed period",
+   "value": "454 patients",
+   "source": "Stokstad et al. 2019",
+   "url": "https://doi.org/10.1186/s12913-019-4517-z",
+   "status": "sourced",
+   "file": "params/stokstad.yaml"
+  },
+  {
+   "parameter": "median age",
+   "value": "70 years",
+   "source": "Stokstad et al. 2019",
+   "url": "https://doi.org/10.1186/s12913-019-4517-z",
+   "status": "sourced",
+   "file": "params/stokstad.yaml"
+  },
+  {
+   "parameter": "share stage i",
+   "value": "72%",
+   "source": "Stokstad et al. 2019",
+   "url": "https://doi.org/10.1186/s12913-019-4517-z",
+   "status": "sourced",
+   "file": "params/stokstad.yaml"
+  },
+  {
+   "parameter": "share stage ii",
+   "value": "20%",
+   "source": "Stokstad et al. 2019",
+   "url": "https://doi.org/10.1186/s12913-019-4517-z",
+   "status": "sourced",
+   "file": "params/stokstad.yaml"
+  },
+  {
+   "parameter": "share nsclc",
+   "value": "77%",
+   "source": "Stokstad et al. 2019",
+   "url": "https://doi.org/10.1186/s12913-019-4517-z",
+   "status": "sourced",
+   "file": "params/stokstad.yaml"
+  },
+  {
+   "parameter": "share no tissue diagnosis",
+   "value": "12%",
+   "source": "Stokstad et al. 2019",
+   "url": "https://doi.org/10.1186/s12913-019-4517-z",
+   "status": "sourced",
+   "file": "params/stokstad.yaml"
+  },
+  {
+   "parameter": "n treated without definitive diagnosis",
+   "value": "54 patients",
+   "source": "Stokstad et al. 2019",
+   "url": "https://doi.org/10.1186/s12913-019-4517-z",
+   "status": "sourced",
+   "file": "params/stokstad.yaml"
+  },
+  {
+   "parameter": "share treatment surgery",
+   "value": "76%",
+   "source": "Stokstad et al. 2019",
+   "url": "https://doi.org/10.1186/s12913-019-4517-z",
+   "status": "sourced",
+   "file": "params/stokstad.yaml"
+  },
+  {
+   "parameter": "share treatment curative radiotherapy",
+   "value": "8%",
+   "source": "Stokstad et al. 2019",
+   "url": "https://doi.org/10.1186/s12913-019-4517-z",
+   "status": "sourced",
+   "file": "params/stokstad.yaml"
+  },
+  {
+   "parameter": "share treatment sbrt",
+   "value": "16%",
+   "source": "Stokstad et al. 2019",
+   "url": "https://doi.org/10.1186/s12913-019-4517-z",
+   "status": "sourced",
+   "file": "params/stokstad.yaml"
+  },
+  {
+   "parameter": "target days",
+   "value": "42 days",
+   "source": "Stokstad et al. 2019",
+   "url": "https://doi.org/10.1186/s12913-019-4517-z",
+   "status": "sourced",
+   "file": "params/stokstad.yaml"
+  },
+  {
+   "parameter": "median days to treatment observed",
+   "value": "46.5 days",
+   "source": "Stokstad et al. 2019",
+   "url": "https://doi.org/10.1186/s12913-019-4517-z",
+   "status": "sourced",
+   "file": "params/stokstad.yaml"
+  },
+  {
+   "parameter": "share within 42d observed",
+   "value": "40%",
+   "source": "Stokstad et al. 2019",
+   "url": "https://doi.org/10.1186/s12913-019-4517-z",
+   "status": "sourced",
+   "file": "params/stokstad.yaml"
+  },
+  {
+   "parameter": "share within 42d pet le7d",
+   "value": "48%",
+   "source": "Stokstad et al. 2019",
+   "url": "https://doi.org/10.1186/s12913-019-4517-z",
+   "status": "sourced",
+   "file": "params/stokstad.yaml"
+  },
+  {
+   "parameter": "share within 42d optimal pathway",
+   "value": "80%",
+   "source": "Stokstad et al. 2019",
+   "url": "https://doi.org/10.1186/s12913-019-4517-z",
+   "status": "sourced",
+   "file": "params/stokstad.yaml"
+  },
+  {
+   "parameter": "share within 42d optimal pathway median intervals",
+   "value": "93%",
+   "source": "Stokstad et al. 2019",
+   "url": "https://doi.org/10.1186/s12913-019-4517-z",
+   "status": "sourced",
+   "file": "params/stokstad.yaml"
+  },
+  {
+   "parameter": "tissue sampling procedures observed",
+   "value": "112 procedures",
+   "source": "Stokstad et al. 2019",
+   "url": "https://doi.org/10.1186/s12913-019-4517-z",
+   "status": "sourced",
+   "file": "params/stokstad.yaml"
+  },
+  {
+   "parameter": "tissue sampling procedures optimal",
+   "value": "92 procedures",
+   "source": "Stokstad et al. 2019",
+   "url": "https://doi.org/10.1186/s12913-019-4517-z",
+   "status": "sourced",
+   "file": "params/stokstad.yaml"
+  },
+  {
+   "parameter": "referral to first visit",
+   "value": "7 days",
+   "source": "Our assumption",
+   "url": null,
+   "status": "assumption",
+   "file": "params/stokstad.yaml"
+  },
+  {
+   "parameter": "radiology report incomplete at first visit",
+   "value": "2 days",
+   "source": "Stokstad et al. 2019",
+   "url": "https://doi.org/10.1186/s12913-019-4517-z",
+   "status": "sourced",
+   "file": "params/stokstad.yaml"
+  },
+  {
+   "parameter": "share report incomplete at first visit",
+   "value": "39%",
+   "source": "Stokstad et al. 2019",
+   "url": "https://doi.org/10.1186/s12913-019-4517-z",
+   "status": "sourced",
+   "file": "params/stokstad.yaml"
+  },
+  {
+   "parameter": "share ct inadequate at first visit",
+   "value": "8%",
+   "source": "Stokstad et al. 2019",
+   "url": "https://doi.org/10.1186/s12913-019-4517-z",
+   "status": "sourced",
+   "file": "params/stokstad.yaml"
+  },
+  {
+   "parameter": "ct inadequate extra delay",
+   "value": "15.5 days",
+   "source": "Stokstad et al. 2019",
+   "url": "https://doi.org/10.1186/s12913-019-4517-z",
+   "status": "sourced",
+   "file": "params/stokstad.yaml"
+  },
+  {
+   "parameter": "pet referral late after first visit",
+   "value": "8 days",
+   "source": "Stokstad et al. 2019",
+   "url": "https://doi.org/10.1186/s12913-019-4517-z",
+   "status": "sourced",
+   "file": "params/stokstad.yaml"
+  },
+  {
+   "parameter": "exercise test referral late after first visit",
+   "value": "10 days",
+   "source": "Stokstad et al. 2019",
+   "url": "https://doi.org/10.1186/s12913-019-4517-z",
+   "status": "sourced",
+   "file": "params/stokstad.yaml"
+  },
+  {
+   "parameter": "pet ct referral to report outsourced",
+   "value": "20.5 days",
+   "source": "Stokstad et al. 2019",
+   "url": "https://doi.org/10.1186/s12913-019-4517-z",
+   "status": "sourced",
+   "file": "params/stokstad.yaml"
+  },
+  {
+   "parameter": "pet ct referral to report after new scanner",
+   "value": "7 days",
+   "source": "Stokstad et al. 2019",
+   "url": "https://doi.org/10.1186/s12913-019-4517-z",
+   "status": "sourced",
+   "file": "params/stokstad.yaml"
+  },
+  {
+   "parameter": "exercise test wait",
+   "value": "11 days",
+   "source": "Stokstad et al. 2019",
+   "url": "https://doi.org/10.1186/s12913-019-4517-z",
+   "status": "sourced",
+   "file": "params/stokstad.yaml"
+  },
+  {
+   "parameter": "tumour board frequency",
+   "value": "weekly schedule",
+   "source": "Stokstad et al. 2019",
+   "url": "https://doi.org/10.1186/s12913-019-4517-z",
+   "status": "sourced",
+   "file": "params/stokstad.yaml"
+  },
+  {
+   "parameter": "share incomplete workup at tumour board",
+   "value": "16%",
+   "source": "Stokstad et al. 2019",
+   "url": "https://doi.org/10.1186/s12913-019-4517-z",
+   "status": "sourced",
+   "file": "params/stokstad.yaml"
+  },
+  {
+   "parameter": "pathology report after sampling",
+   "value": "4.5 days",
+   "source": "Stokstad et al. 2019",
+   "url": "https://doi.org/10.1186/s12913-019-4517-z",
+   "status": "sourced",
+   "file": "params/stokstad.yaml"
+  },
+  {
+   "parameter": "repeat sampling wait",
+   "value": "8 days",
+   "source": "Stokstad et al. 2019",
+   "url": "https://doi.org/10.1186/s12913-019-4517-z",
+   "status": "sourced",
+   "file": "params/stokstad.yaml"
+  },
+  {
+   "parameter": "referral to treatment surgery",
+   "value": "13 days",
+   "source": "Stokstad et al. 2019",
+   "url": "https://doi.org/10.1186/s12913-019-4517-z",
+   "status": "sourced",
+   "file": "params/stokstad.yaml"
+  },
+  {
+   "parameter": "referral to treatment radiotherapy",
+   "value": "22.5 days",
+   "source": "Stokstad et al. 2019",
+   "url": "https://doi.org/10.1186/s12913-019-4517-z",
+   "status": "sourced",
+   "file": "params/stokstad.yaml"
+  },
+  {
+   "parameter": "share further workup after pet",
+   "value": "12%",
+   "source": "Stokstad et al. 2019",
+   "url": "https://doi.org/10.1186/s12913-019-4517-z",
+   "status": "sourced",
+   "file": "params/stokstad.yaml"
+  },
+  {
+   "parameter": "share treatment plan changed by pet",
+   "value": "2%",
+   "source": "Stokstad et al. 2019",
+   "url": "https://doi.org/10.1186/s12913-019-4517-z",
+   "status": "sourced",
+   "file": "params/stokstad.yaml"
+  },
+  {
+   "parameter": "late pet referral",
+   "value": "27 patients",
+   "source": "Stokstad et al. 2019",
+   "url": "https://doi.org/10.1186/s12913-019-4517-z",
+   "status": "sourced",
+   "file": "params/stokstad.yaml"
+  },
+  {
+   "parameter": "late exercise test referral",
+   "value": "16 patients",
+   "source": "Stokstad et al. 2019",
+   "url": "https://doi.org/10.1186/s12913-019-4517-z",
+   "status": "sourced",
+   "file": "params/stokstad.yaml"
+  },
+  {
+   "parameter": "repeat sampling after failed bronchoscopy",
+   "value": "15 patients",
+   "source": "Stokstad et al. 2019",
+   "url": "https://doi.org/10.1186/s12913-019-4517-z",
+   "status": "sourced",
+   "file": "params/stokstad.yaml"
+  },
+  {
+   "parameter": "extra investigations after pet",
+   "value": "11 patients",
+   "source": "Stokstad et al. 2019",
+   "url": "https://doi.org/10.1186/s12913-019-4517-z",
+   "status": "sourced",
+   "file": "params/stokstad.yaml"
+  },
+  {
+   "parameter": "first visit over 7d unexplained",
+   "value": "50 patients",
+   "source": "Stokstad et al. 2019",
+   "url": "https://doi.org/10.1186/s12913-019-4517-z",
+   "status": "sourced",
+   "file": "params/stokstad.yaml"
+  },
+  {
+   "parameter": "bronchoscopy first tissue method diagnostic",
+   "value": "27 patients",
+   "source": "Stokstad et al. 2019",
+   "url": "https://doi.org/10.1186/s12913-019-4517-z",
+   "status": "sourced",
+   "file": "params/stokstad.yaml"
+  },
+  {
+   "parameter": "ttnb diagnostic",
+   "value": "19 patients",
+   "source": "Stokstad et al. 2019",
+   "url": "https://doi.org/10.1186/s12913-019-4517-z",
+   "status": "sourced",
+   "file": "params/stokstad.yaml"
+  },
+  {
+   "parameter": "ttnb after negative bronchoscopy",
+   "value": "15 patients",
+   "source": "Stokstad et al. 2019",
+   "url": "https://doi.org/10.1186/s12913-019-4517-z",
+   "status": "sourced",
+   "file": "params/stokstad.yaml"
+  },
+  {
+   "parameter": "ct to first visit wait",
+   "value": "0 days",
+   "source": "Our assumption",
+   "url": null,
+   "status": "assumption",
+   "file": "params/stokstad.yaml"
+  },
+  {
+   "parameter": "bronchoscopy wait after referral",
+   "value": "7 days",
+   "source": "Our assumption",
+   "url": null,
+   "status": "assumption",
+   "file": "params/stokstad.yaml"
+  },
+  {
+   "parameter": "ttnb wait after referral",
+   "value": "8 days",
+   "source": "Our assumption",
+   "url": null,
+   "status": "assumption",
+   "file": "params/stokstad.yaml"
+  },
+  {
+   "parameter": "tumour board wait after workup complete",
+   "value": "3.5 days",
+   "source": "Our assumption",
+   "url": null,
+   "status": "assumption",
+   "file": "params/stokstad.yaml"
+  },
+  {
+   "parameter": "treatment decision to start surgery",
+   "value": "13 days",
+   "source": "Stokstad et al. 2019",
+   "url": "https://doi.org/10.1186/s12913-019-4517-z",
+   "status": "sourced",
+   "file": "params/stokstad.yaml"
+  },
+  {
+   "parameter": "treatment decision to start radiotherapy",
+   "value": "22.5 days",
+   "source": "Stokstad et al. 2019",
+   "url": "https://doi.org/10.1186/s12913-019-4517-z",
+   "status": "sourced",
+   "file": "params/stokstad.yaml"
+  },
+  {
+   "parameter": "sensitivity symptomatic",
+   "value": "75%",
+   "source": "Bradley et al. 2021",
+   "url": "https://bjgp.org/content/71/705/e280",
+   "status": "sourced",
+   "file": "params/test_accuracy.yaml"
+  },
+  {
+   "parameter": "specificity symptomatic",
+   "value": "90%",
+   "source": "Bradley et al. 2021",
+   "url": "https://bjgp.org/content/71/705/e280",
+   "status": "sourced",
+   "file": "params/test_accuracy.yaml"
+  },
+  {
+   "parameter": "negative predictive value",
+   "value": "100%",
+   "source": "Bradley et al. 2021",
+   "url": "https://bjgp.org/content/71/705/e280",
+   "status": "sourced",
+   "file": "params/test_accuracy.yaml"
+  },
+  {
+   "parameter": "miss rate hssib",
+   "value": "20%",
+   "source": "HSIB (now HSSIB)",
+   "url": "https://hssib.org.uk/patient-safety-investigations/missed-detection-of-lung-cancer-on-chest-x-rays-of-patients-being-seen-in-primary-care/investigation-report",
+   "status": "sourced",
+   "file": "params/test_accuracy.yaml"
+  },
+  {
+   "parameter": "sensitivity screening",
+   "value": "85%",
+   "source": "Horeweg et al. 2014",
+   "url": "https://www.news-medical.net/news/20141119/CT-screening-highly-sensitive-specific-for-lung-cancer-detection.aspx",
+   "status": "sourced",
+   "file": "params/test_accuracy.yaml"
+  },
+  {
+   "parameter": "specificity screening",
+   "value": "99%",
+   "source": "Horeweg et al. 2014",
+   "url": "https://www.news-medical.net/news/20141119/CT-screening-highly-sensitive-specific-for-lung-cancer-detection.aspx",
+   "status": "sourced",
+   "file": "params/test_accuracy.yaml"
+  },
+  {
+   "parameter": "positive predictive value screening",
+   "value": "40%",
+   "source": "Horeweg et al. 2014",
+   "url": "https://www.news-medical.net/news/20141119/CT-screening-highly-sensitive-specific-for-lung-cancer-detection.aspx",
+   "status": "sourced",
+   "file": "params/test_accuracy.yaml"
+  },
+  {
+   "parameter": "sensitivity detect primary tumour",
+   "value": "95%",
+   "source": "Our assumption",
+   "url": null,
+   "status": "assumption",
+   "file": "params/test_accuracy.yaml"
+  },
+  {
+   "parameter": "specificity for cancer",
+   "value": "80%",
+   "source": "Our assumption",
+   "url": null,
+   "status": "assumption",
+   "file": "params/test_accuracy.yaml"
+  },
+  {
+   "parameter": "sensitivity malignant lesion",
+   "value": "97%",
+   "source": "Gould et al. 2001",
+   "url": "https://www.qxmd.com/r/11180735",
+   "status": "sourced",
+   "file": "params/test_accuracy.yaml"
+  },
+  {
+   "parameter": "specificity malignant lesion",
+   "value": "78%",
+   "source": "Gould et al. 2001",
+   "url": "https://www.qxmd.com/r/11180735",
+   "status": "sourced",
+   "file": "params/test_accuracy.yaml"
+  },
+  {
+   "parameter": "treatment plan changed by pet ct",
+   "value": "2%",
+   "source": "Stokstad et al. 2019",
+   "url": "https://doi.org/10.1186/s12913-019-4517-z",
+   "status": "sourced",
+   "file": "params/test_accuracy.yaml"
+  },
+  {
+   "parameter": "ct sensitivity",
+   "value": "55%",
+   "source": "Gelberg J, Grondin S, Tremblay A",
+   "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC4128458",
+   "status": "sourced",
+   "file": "params/test_accuracy.yaml"
+  },
+  {
+   "parameter": "ct specificity",
+   "value": "81%",
+   "source": "Gelberg J, Grondin S, Tremblay A",
+   "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC4128458",
+   "status": "sourced",
+   "file": "params/test_accuracy.yaml"
+  },
+  {
+   "parameter": "pet sensitivity",
+   "value": "80%",
+   "source": "Gelberg J, Grondin S, Tremblay A",
+   "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC4128458",
+   "status": "sourced",
+   "file": "params/test_accuracy.yaml"
+  },
+  {
+   "parameter": "pet specificity",
+   "value": "88%",
+   "source": "Gelberg J, Grondin S, Tremblay A",
+   "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC4128458",
+   "status": "sourced",
+   "file": "params/test_accuracy.yaml"
+  },
+  {
+   "parameter": "ebus tbna sensitivity",
+   "value": "89%",
+   "source": "Gelberg J, Grondin S, Tremblay A",
+   "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC4128458",
+   "status": "sourced",
+   "file": "params/test_accuracy.yaml"
+  },
+  {
+   "parameter": "ebus tbna sensitivity unselected",
+   "value": "76%",
+   "source": "Almeida FA",
+   "url": "https://www.mdedge.com/ccjm/article/95807/bronchoscopy-and-endobronchial-ultrasound-diagnosis-and-staging-lung-cancer/page/0/1",
+   "status": "sourced",
+   "file": "params/test_accuracy.yaml"
+  },
+  {
+   "parameter": "ebus tbna specificity",
+   "value": "100%",
+   "source": "Gelberg J, Grondin S, Tremblay A",
+   "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC4128458",
+   "status": "sourced",
+   "file": "params/test_accuracy.yaml"
+  },
+  {
+   "parameter": "ebus tbna npv",
+   "value": "91%",
+   "source": "Gelberg J, Grondin S, Tremblay A",
+   "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC4128458",
+   "status": "sourced",
+   "file": "params/test_accuracy.yaml"
+  },
+  {
+   "parameter": "sensitivity central endobronchial",
+   "value": "88%",
+   "source": "Rivera MP, Mehta AC, Wahidi MM",
+   "url": "https://pubmed.ncbi.nlm.nih.gov/23649436/",
+   "status": "sourced",
+   "file": "params/test_accuracy.yaml"
+  },
+  {
+   "parameter": "sensitivity peripheral over 2cm",
+   "value": "63%",
+   "source": "Rivera MP, Mehta AC, Wahidi MM",
+   "url": "https://pubmed.ncbi.nlm.nih.gov/23649436/",
+   "status": "sourced",
+   "file": "params/test_accuracy.yaml"
+  },
+  {
+   "parameter": "sensitivity peripheral under 2cm",
+   "value": "34%",
+   "source": "Rivera MP, Mehta AC, Wahidi MM",
+   "url": "https://pubmed.ncbi.nlm.nih.gov/23649436/",
+   "status": "sourced",
+   "file": "params/test_accuracy.yaml"
+  },
+  {
+   "parameter": "radial ebus diagnostic yield peripheral",
+   "value": "73%",
+   "source": "Rivera MP, Mehta AC, Wahidi MM",
+   "url": "https://pubmed.ncbi.nlm.nih.gov/23649436/",
+   "status": "sourced",
+   "file": "params/test_accuracy.yaml"
+  },
+  {
+   "parameter": "specificity",
+   "value": "100%",
+   "source": "Our assumption",
+   "url": null,
+   "status": "assumption",
+   "file": "params/test_accuracy.yaml"
+  },
+  {
+   "parameter": "p nondiagnostic peripheral",
+   "value": "40%",
+   "source": "Our assumption",
+   "url": null,
+   "status": "assumption",
+   "file": "params/test_accuracy.yaml"
+  },
+  {
+   "parameter": "complication pneumothorax",
+   "value": "1%",
+   "source": "Our assumption",
+   "url": null,
+   "status": "assumption",
+   "file": "params/test_accuracy.yaml"
+  },
+  {
+   "parameter": "sensitivity",
+   "value": "90%",
+   "source": "Rivera MP, Mehta AC, Wahidi MM",
+   "url": "https://pubmed.ncbi.nlm.nih.gov/23649436/",
+   "status": "sourced",
+   "file": "params/test_accuracy.yaml"
+  },
+  {
+   "parameter": "p nondiagnostic",
+   "value": "3%",
+   "source": "Uzun et al. 2017",
+   "url": "https://dirjournal.org/pdf/beb8919b-f013-4ea1-b1c8-40332e840fe1/articles/dir.2016.16173/Diagn%20Interv%20Radiol-23-137-En.pdf",
+   "status": "sourced",
+   "file": "params/test_accuracy.yaml"
+  },
+  {
+   "parameter": "pneumothorax any",
+   "value": "15%",
+   "source": "Wiener et al. 2011",
+   "url": "https://www.healthday.com/healthpro-news/pulmonology/pneumothorax-common-after-transthoracic-needle-biopsy-655390.html",
+   "status": "sourced",
+   "file": "params/test_accuracy.yaml"
+  },
+  {
+   "parameter": "pneumothorax chest tube",
+   "value": "7%",
+   "source": "Wiener et al. 2011",
+   "url": "https://www.healthday.com/healthpro-news/pulmonology/pneumothorax-common-after-transthoracic-needle-biopsy-655390.html",
+   "status": "sourced",
+   "file": "params/test_accuracy.yaml"
+  }
+ ]
+}

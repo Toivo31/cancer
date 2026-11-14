@@ -62,7 +62,10 @@ def test_stage_breakdown_sums_to_node_breakdown():
 
 
 def test_embedded_copy_matches_fixture():
+    """The embedded offline copy equals the real bundle if one exists, else the fixture."""
     html = INDEX.read_text(encoding="utf-8")
     m = re.search(r'<script id="bundle" type="application/json">\n(.*?)\n</script>', html, re.S)
     assert m, "embedded bundle not found"
-    assert json.loads(m.group(1)) == load()
+    real = INDEX.parent / "data" / "demo_bundle.json"
+    expected = json.loads(real.read_text()) if real.exists() else load()
+    assert json.loads(m.group(1)) == expected
