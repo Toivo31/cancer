@@ -3,84 +3,131 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Equal Care Across Finland: the demo in order</title>
+<title>Overview · Equal Care Pathways</title>
+<link rel="stylesheet" href="theme.css">
 <link rel="stylesheet" href="start.css">
 </head>
 <body>
-<header class="top">
-  <div><span class="eyebrow">Equal Care Across Finland · lung cancer · the demo in order</span>
-    <h1>Where time is lost, what reordering wins, why you can trust it, and who decides</h1>
-    <p class="sub">Six steps, one sentence each, and the one result each screen proves. Every number on this page is read from the data files behind the screens when the page opens; "pending" means the file is not there yet.</p></div>
-  <span class="badge" title="Every patient in this demo is simulated. No real patient data.">Synthetic patients only</span>
-</header>
+<nav class="site-nav" data-page="overview"></nav>
 
-<main>
-  <section class="row" id="s-problem">
-    <div><h2>The problem</h2>
-      <p class="what">Finland is slower than its Nordic neighbours at the first steps of the lung-cancer pathway and survives least (IHE Cancer Dashboard Finland, a survey of typical waits). In our synthetic Finnish county, few cancers reach treatment inside the target.</p></div>
-    <div class="proof" id="p-problem"></div>
-    <div class="go"><a class="btn main" href="index.html#finland_lung/2">Where the time goes</a>
-      <a class="btn sm" href="../docs/finland_scenario.md">The Finnish scenario</a></div>
-  </section>
+<main class="page">
+  <!-- Top: one sentence, three cards (one bound number each), one primary button. About eighty words. -->
+  <header class="page-top ov-top">
+    <h1 class="page-title">Equal care pathways</h1>
+    <p class="lede">Finland's lung-cancer pathway is slow. We simulate it with synthetic patients, let an optimiser reorder the steps, and check the method against a published Norwegian hospital.</p>
 
-  <section class="row" id="s-primary">
-    <div><h2>Where time is lost in primary care</h2>
-      <p class="what">Watch the loop: nurse, GP, tests, home, back again. Pick an example patient and read the record the clinician saw, not what was true. Look at the cancer treated as an infection.</p></div>
-    <div class="proof" id="p-primary"></div>
-    <div class="go"><a class="btn main" href="encounter.html">The encounter loop</a><div class="btnrow" id="ex-links"></div></div>
-  </section>
+    <div class="figure ov-cards">
+      <section class="card ov-card" id="c-simulate">
+        <h2 class="ov-card__title"><span class="ov-card__n"></span>Simulate</h2>
+        <div class="inset ov-card__graphic">
+          <svg class="ov-path" viewBox="0 0 240 120" role="img" aria-label="A pathway of five steps with patients piling up at one step">
+            <polyline class="ov-path__edge" points="20,60 70,60 120,30 170,60 220,60"/>
+            <polyline class="ov-path__edge" points="70,60 120,90 170,60"/>
+            <g class="ov-path__pile"><circle cx="112" cy="18" r="3.4"/><circle cx="120" cy="16" r="3.4"/><circle cx="128" cy="18" r="3.4"/><circle cx="116" cy="11" r="3.4"/><circle cx="124" cy="11" r="3.4"/></g>
+            <circle class="ov-path__step" cx="20" cy="60" r="6"/><circle class="ov-path__step" cx="70" cy="60" r="6"/>
+            <circle class="ov-path__step ov-path__step--wait" cx="120" cy="30" r="6"/><circle class="ov-path__step" cx="120" cy="90" r="6"/>
+            <circle class="ov-path__step" cx="170" cy="60" r="6"/><circle class="ov-path__step" cx="220" cy="60" r="6"/>
+          </svg>
+        </div>
+        <div class="ov-card__num"><span class="num" id="n-sim-days">pending</span> <span class="ov-card__unit">days</span></div>
+        <p class="ov-card__text">median from first contact to treatment today, in a synthetic Finnish county.</p>
+        <p class="ov-basis" data-claim="sim-fi-median-days"></p>
+      </section>
 
-  <section class="row" id="s-order">
-    <div><h2>What reordering wins</h2>
-      <p class="what">Same patients, two orders of the same steps, no new capacity. Compare mode shows the change per step. The optimiser saw only what the records showed; these are held-out patients.</p></div>
-    <div class="proof" id="p-order"></div>
-    <div class="go" id="go-order"><a class="btn main" href="flow.html?s=finland&amp;compare">Finland: today vs suggested</a></div>
-  </section>
+      <section class="card ov-card" id="c-optimise">
+        <h2 class="ov-card__title"><span class="ov-card__n"></span>Optimise</h2>
+        <div class="inset ov-card__graphic">
+          <div class="ov-bars" id="g-bars" aria-label="Share treated on time, today and after the change">
+            <div class="ov-bars__col"><div class="ov-bars__track"><div class="ov-bars__bar ov-bars__bar--today" id="b-today"></div></div><span class="label">today</span></div>
+            <div class="ov-bars__col"><div class="ov-bars__track"><div class="ov-bars__bar ov-bars__bar--after" id="b-after"></div></div><span class="label">reordered</span></div>
+          </div>
+        </div>
+        <div class="ov-card__num"><span class="num" id="n-opt-today">pending</span><span class="ov-arrow">→</span><span class="num" id="n-opt-after">pending</span></div>
+        <p class="ov-card__text" id="t-opt">treated on time after two reorders, no new equipment, on held-out patients.</p>
+        <p class="ov-basis" data-claim="sim-fi-reorder-headline"></p>
+      </section>
 
-  <section class="row" id="s-trust">
-    <div><h2>Why we trust the engine</h2>
-      <p class="what">We rebuilt a published Norwegian pathway, fitted only the observed order, and let the engine predict the reordered one. It is consistent with the authors' estimate, within a wide range, and over-states the faster-scanner-only gain. We show both.</p></div>
-    <div class="proof" id="p-trust"></div>
-    <div class="go"><a class="btn main" href="index.html#stokstad/5">Norway check on screen</a>
-      <a class="btn sm" href="../docs/validation.md">Method and limits</a></div>
-  </section>
+      <section class="card ov-card" id="c-check">
+        <h2 class="ov-card__title"><span class="ov-card__n"></span>Check against a real hospital</h2>
+        <div class="inset ov-card__graphic">
+          <span class="stamp ov-card__stamp">Plausibility check</span>
+          <div class="ov-range" id="g-range" aria-label="Norwegian hospital: published and simulated share treated on time">
+            <div class="ov-range__row"><span class="label">today</span><div class="ov-range__axis"><span class="ov-range__ring" id="r-pub"></span><span class="ov-range__dot ov-range__dot--fit" id="r-fit"></span></div></div>
+            <div class="ov-range__row"><span class="label">reordered</span><div class="ov-range__axis ov-range__axis--scale"><span class="ov-range__bar" id="r-bar"></span><span class="ov-range__dot" id="r-opt"></span></div></div>
+            <div class="ov-range__key label"><span class="ov-range__ring ov-range__ring--key"></span>published <span class="ov-range__dot ov-range__dot--key"></span>our model <span class="ov-range__bar ov-range__bar--key"></span>range</div>
+          </div>
+        </div>
+        <div class="ov-card__num"><span class="num" id="n-chk-today">pending</span><span class="ov-arrow">→</span><span class="num" id="n-chk-after">pending</span></div>
+        <p class="ov-card__text">Fitted only to its observed pathway. Not told the answer, the optimiser found the authors' reordering.</p>
+        <p class="ov-card__range label" id="t-chk-range"></p>
+        <p class="ov-basis" data-claim="pub-stokstad-observed-40 sim-no-optimiser-found-redesign"></p>
+      </section>
+    </div>
 
-  <section class="row" id="s-model">
-    <div><h2>The decision model at the nodes</h2>
-      <p class="what">At every clinician decision the team's model scores the allowed next steps from the visible record; a person accepts or overrides. Live when the GPU is up, saved examples otherwise, always labelled as which.</p></div>
-    <div class="proof" id="p-model">
+    <p class="caption" id="cap-top">All patients are synthetic and nothing has been clinically reviewed. Numbers are read from the data files; ranges and caveats are below.</p>
+    <div class="page-actions">
+      <a class="btn btn--primary" href="flow.html">Open the simulator</a>
+      <a class="ov-link" href="evidence.html">Does it hold up?</a> <a class="ov-link" href="start.html#details">Ranges and caveats</a>
+    </div>
+  </header>
+
+  <!-- DETAILS: findings as headings. Nothing from the old page is deleted; it moved here. -->
+  <section class="details" id="details">
+    <div class="details-rule">Details</div>
+
+    <h3 class="finding" id="d-finland">In our synthetic Finnish county, two reorders move more cancers into treatment on time, with no new capacity.</h3>
+    <div class="ov-detail" id="p-problem"></div>
+    <div class="ov-detail" id="p-order"></div>
+    <p class="ov-links" id="go-order"><a href="flow.html?s=finland&amp;compare">Finland: today and suggested, side by side</a> · <a href="index.html#finland_lung/2">Where the time goes</a> · <a href="../docs/finland_scenario.md">The Finnish scenario</a></p>
+
+    <h3 class="finding" id="d-norway">On the Norwegian hospital, the model ranks the authors' redesign correctly but over-states the faster scanner. Trust the ranking, not the exact size.</h3>
+    <div class="ov-detail" id="p-trust"></div>
+    <p class="ov-links"><a href="index.html#stokstad/5">Norway check on screen</a> · <a href="../docs/validation.md">Method and limits</a> · <a href="../docs/norway_case_study.md">Norway case study</a> · <a href="evidence.html">Evidence page: does it hold up?</a></p>
+
+    <h3 class="finding" id="d-primary">Primary care is a separate model, and its behaviour is assumed, not measured.</h3>
+    <p class="ov-what">The loop: nurse, GP, tests, home, back again. Pick an example patient and read the record the clinician saw, not what was true. Look at the cancer treated as an infection.</p>
+    <div class="ov-detail" id="p-primary"></div>
+    <p class="ov-links" id="ex-links"><a href="encounter.html">The encounter loop</a></p>
+
+    <h3 class="finding" id="d-model">At each clinical decision a model scores the allowed next steps from the visible record; a person decides.</h3>
+    <p class="ov-what">Live when the GPU is up, saved examples otherwise, always labelled as which. Scores are relative to the offered options, not probabilities.</p>
+    <div class="ov-cmds">
       <span class="cmd">python -m decision_api.server</span>
       <span class="cmd">python -m jev.walk --pick cancer</span>
-      <span class="cap">Open <code>http://127.0.0.1:8771/decision</code> for the panel. Scores are relative to the offered options, not probabilities. Without the key: <code>--jev mock</code>.</span></div>
-    <div class="go"><a class="btn main" href="jev.html">Try it at one node</a>
-      <a class="btn sm" href="../decision_api/README.md">Decision model kit</a>
-      <a class="btn sm" href="../live_demo/flow.html">Live demo (needs its server)</a></div>
-  </section>
+    </div>
+    <p class="ov-what">Open <code>http://127.0.0.1:8771/decision</code> for the panel. Without the key: <code>--jev mock</code>.</p>
+    <p class="ov-links"><a href="jev.html">Try it at one node</a> · <a href="../decision_api/README.md">Decision model kit</a> · <a href="../live_demo/flow.html">Live demo (needs its server)</a></p>
 
-  <section class="row" id="s-honest">
-    <div><h2>Data and honesty</h2>
-      <p class="what">Synthetic patients only. Each input is either sourced or marked as an assumption, and the counts come from the ledger. Primary-care behaviour is assumed, not measured.</p></div>
-    <div class="proof" id="p-honest"></div>
-    <div class="go"><a class="btn main" href="../docs/ledger.md">Evidence ledger</a>
-      <a class="btn sm" href="../docs/pitch/data_transparency.md">Data and transparency</a>
-      <a class="btn sm" href="../docs/parameters.md">Every parameter</a></div>
-  </section>
+    <h3 class="finding" id="d-patients">Every simulated patient carries a hidden truth that the decision model never sees.</h3>
+    <p class="ov-what" id="p-cards">Two ways of writing the same patient, and the hidden side: on the Patients page.</p>
 
-  <section class="card-block" id="s-cards">
-    <h2>Synthetic patients: two ways of writing the same patient</h2>
-    <p class="what">Every patient starts as a hidden set of facts: what is truly wrong, and what each test would show. A language model, or a plain template, turns those facts into the words a clinician would meet. The decision model only ever sees the words. It never sees the hidden facts.</p>
-    <div id="p-cards"></div>
+    <h3 class="finding" id="d-honest">Most inputs of the Finnish scenario are our assumptions, and each one is marked.</h3>
+    <div class="ov-detail" id="p-honest"></div>
+    <p class="ov-links"><a href="../docs/ledger.md">Evidence ledger</a> · <a href="../docs/pitch/data_transparency.md">Data and transparency</a> · <a href="../docs/parameters.md">Every parameter</a></p>
+
+    <h3 class="finding" id="d-read">Read these numbers with four caveats.</h3>
+    <ul class="ov-honest" id="honest">
+      <li><b>Synthetic data.</b> No real patient is used anywhere.</li>
+      <li><b>Primary-care behaviour is assumed.</b> The encounter loop's decision rates are tuned to plausible practice, not measured in Finland.</li>
+      <li><b>The Norway check supports the ranking of reorderings, not exact magnitudes.</b></li>
+      <li><b>Decision-model scores</b> are relative candidate scores, not probabilities.</li>
+    </ul>
+
+    <h3 class="finding" id="d-run">The platform behind it, and the presenter's commands.</h3>
+    <p class="ov-what">The web app builds or edits a flowchart, runs it, optimises and reruns it (needs Node and the API requirements; <code>docs/commands.md</code> section four).</p>
+    <div class="ov-cmds"><span class="cmd">uvicorn service.app:app --port 8000</span></div>
+    <p class="ov-what">Walkthrough script: <code>docs/demo_path.md</code>. Night colours for a dark room: add <code>?theme=night</code> to the address.</p>
   </section>
 </main>
 
-<div class="honest" id="honest">
-  <b>Read these with the numbers.</b> <span class="v">Synthetic data</span>: no real patient is used anywhere. <span class="v">Primary-care behaviour is assumed</span>: the encounter loop's decision rates are tuned to plausible practice, not measured in Finland. <span class="v">The Norway check supports the ranking of reorderings, not exact magnitudes.</span> <span class="v">Decision-model scores</span> are relative candidate scores, not probabilities. Walkthrough script: <code>docs/demo_path.md</code>.
-</div>
+<footer class="footer-strip">Synthetic patients only · not clinically reviewed · numbers read from the data files when the page opens</footer>
 
 <script src="data/flow_bundle.js"></script>
 <script src="data/encounter_bundle.js"></script>
 <script src="data/start_bundle.js"></script>
 <script src="data/cards_bundle.js"></script>
+<script src="data/research_bundle.js"></script>
+<script src="site.js"></script>
 <script src="start.js"></script>
 </body>
 </html>

@@ -3,44 +3,64 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>The encounter loop: how patients move through primary care</title>
+<title>The primary-care loop: nurse, GP, tests, home, and back again</title>
+<link rel="stylesheet" href="theme.css">
 <link rel="stylesheet" href="encounter.css">
 </head>
-<body>
-<header class="top">
-  <div class="brand"><a class="eyebrow" href="start.html" title="Back to the demo in order" style="text-decoration:none">&larr; Demo start</a> <span class="eyebrow" style="color:var(--dim)">·</span> <span class="eyebrow">Care pathway simulator · primary-care encounter loop</span><h1 id="title">Nurse, GP, tests, home, and back again</h1>
-    <p class="sub">Each dot is a simulated patient: amber waiting, blue being seen or tested. Click a dot, or pick an example, to read that patient's record.</p></div>
-  <nav class="layers" id="layers" aria-label="Layers"></nav>
-  <div class="views">
-    <button id="truth" class="chip warn" aria-pressed="false" title="Show what the simulator knows and the clinicians do not. Off by default.">Reveal truth (teaching view)</button>
-  </div>
-  <span class="badge sim" title="Every patient here is simulated. No real patient data.">Simulated patients</span>
-</header>
+<body class="enc">
+<nav class="site-nav" data-page="simulator" aria-label="Site"></nav>
 
-<main class="stage" id="stage">
-  <section class="left">
-    <div class="pane" id="pane">
-      <div class="counters" id="counters"></div>
-      <div class="gwrap" id="gw"><div id="svgbox"></div><canvas id="cv"></canvas><div class="hit" id="hit"></div></div>
+<main class="page enc-page">
+  <header class="page-top enc-top">
+    <div class="enc-head">
+      <div>
+        <p class="label enc-crumb"><a href="flow.html">Simulator</a> · primary-care loop</p>
+        <h1 class="page-title" id="title">Nurse, GP, tests, home, and back again</h1>
+        <p class="lede">Simulated patients with symptoms circle through primary care until someone refers them. Press play, then click a dot to read that patient's record.</p>
+      </div>
+      <a class="stamp enc-stamp" id="assumed" data-claim="as-primary-care-behaviour" title="Decisions come from placeholder tables: our assumption, not measured Finnish behaviour">Assumed behaviour</a>
     </div>
-    <section id="results"></section>
-  </section>
-  <aside class="side" id="side"></aside>
-</main>
+  </header>
 
-<footer class="bar" id="bar">
-  <button id="play" class="play" aria-label="Play or pause">Pause</button>
-  <button id="restart" class="chip">Restart</button>
-  <div class="clock"><span class="eyebrow" title="Days since each patient's first contact">Patient day</span><span id="day" class="num">0</span></div>
-  <input id="slider" type="range" min="0" max="100" step="0.1" value="0" aria-label="Time in days since first contact">
-  <label class="spd"><span class="eyebrow">Speed</span><select id="speed"></select></label>
-  <div class="legend" id="legend"></div>
-</footer>
-<div class="note" id="note"></div>
-<div class="tip" id="tip" hidden></div>
+  <section class="enc-stage" id="stage">
+    <div class="enc-main">
+      <div class="enc-controls" id="bar">
+        <button id="play" class="btn btn--primary enc-play" aria-label="Play or pause">Pause</button>
+        <div class="enc-clock"><span id="day" class="num">&ndash;</span><span class="label" title="Days since each patient's first contact">days since first contact</span></div>
+        <input id="slider" type="range" min="0" max="100" step="0.1" value="0" aria-label="Time in days since first contact">
+        <button id="restart" class="chip">Restart</button>
+        <label class="enc-speed"><span class="label">Speed</span><select id="speed"></select></label>
+        <div class="enc-layers" id="layers" role="group" aria-label="What the steps show"></div>
+      </div>
+      <div class="enc-pane" id="pane">
+        <div class="enc-gwrap" id="gw"><div id="svgbox"></div><canvas id="cv"></canvas><div class="enc-hit" id="hit"></div></div>
+      </div>
+      <div class="enc-legend" id="legend"></div>
+      <p class="caption">Every patient is synthetic. Decisions come from placeholder tables (assumed behaviour), so this shows how the loop behaves, not Finnish measurements. Numbers to quote are in the multi-seed report below Details.</p>
+    </div>
+    <aside class="enc-side" id="side-wrap">
+      <button id="truth" class="chip enc-truth" aria-pressed="false" title="Show what the simulator knows and the clinicians do not. Off by default. Key: t">Reveal truth (teaching view)</button>
+      <div id="side"></div>
+    </aside>
+  </section>
+
+  <section class="details">
+    <div class="details-rule">Details</div>
+    <h3 class="finding">Where the moving patients are now</h3>
+    <div class="enc-counters" id="counters"></div>
+    <div id="results"></div>
+    <h3 class="finding">One illustration run, with assumed decisions</h3>
+    <div class="enc-note" id="note"></div>
+    <h3 class="finding">Keys and links</h3>
+    <p class="enc-keys">Space plays or pauses, the arrow keys step through time, <kbd>r</kbd> restarts and <kbd>t</kbd> reveals the truth. A patient can be opened directly with <code>encounter.html?p=&lt;id&gt;</code>; <code>?paused</code>, <code>?day=</code>, <code>?layer=time</code> and <code>?truth</code> set the starting view. The hospital pathway with the optimiser is on the <a href="flow.html">Simulator</a>; the full results report is <a href="index.html">here</a>.</p>
+  </section>
+</main>
+<footer class="footer-strip" id="footer">Synthetic patients only · not clinically reviewed · decisions assumed</footer>
+<div class="enc-tip" id="tip" hidden></div>
 
 <script src="data/encounter_bundle.js"></script>
 <script src="data/start_bundle.js"></script>
+<script src="site.js"></script>
 <script src="encounter.js"></script>
 </body>
 </html>
