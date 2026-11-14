@@ -21,5 +21,5 @@ def build_policy(sc, fc, doc: dict, seed: int):
         raise BackendUnavailable(f"decision backend '{backend}' needs the jev package, which is not installed in this build") from None
     try:
         return jev.prepare(sc, fc, backend=backend, mode=dp.get("mode"), seed=seed)
-    except ValueError as e:
+    except (ValueError, jev.BackendError) as e:           # bad table, or a JEV address that cannot be reached
         raise BackendUnavailable(str(e)) from None

@@ -136,7 +136,7 @@ def put_world(doc: WorldDocument, if_rev: int | None = Query(None, description="
     affected = []
     for fc in store.list_flowcharts(project["id"]):
         latest, _ = store.get_version(project["id"], fc["id"])
-        affected += [{**p, "flowchart_id": fc["id"]} for p in validate_documents(new, [latest])]
+        affected += [{**p, "flowchart": fc["id"]} for p in validate_documents(new, [latest])]
     return {"world": new, "rev": rev, "problems": affected}
 
 

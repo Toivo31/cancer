@@ -39,8 +39,6 @@ NODE_FIELDS = ("label", "test", "when", "availability", "outcome", "milestone", 
 # scenario keys that are not part of the world as such; ``flowcharts`` leaves, ``optimiser`` is renamed
 _WORLD_RENAMES = {"optimiser": "constraints"}
 
-DEFAULT_DECISION_POLICY = {"backend": "rule", "mode": "argmax", "points": {}}
-
 
 class DocumentError(ValueError):
     """A document cannot be converted. ``problems`` use the shape of spec 01's validation list."""
@@ -50,11 +48,14 @@ class DocumentError(ValueError):
         super().__init__("; ".join(p.get("message", "") for p in problems) or "invalid document")
 
 
-def problem(code: str, message: str, node: str | None = None, severity: str = "error", **extra) -> dict:
-    d = {"severity": severity, "code": code, "message": message}
-    if node is not None:
-        d["node"] = node
-    d.update(extra)
+def problem(code: str, message: str, node: str | None = None, severity: str | None = None, **extra) -> dict:
+    """A problem object in the shape of :mod:`pathway_sim.problems` (``edge``, ``field``, ``hint`` allowed)."""
+    from .problems import CODES, Problem
+    if code in CODES:
+        d = Problem(code=code, message=message, node=node, severity=severity or "", **extra).to_dict()
+    else:
+        d = {"severity": severity or "error", "code": code, "message": message, "flowchart": None, "node": node,
+             "edge": None, "field": None, "hint": None, **extra}
     return d
 
 
@@ -108,19 +109,29 @@ def json_safe(obj):
 
 def legacy_policy_to_decision_policy(policy: dict | None) -> dict:
     """Today's per-choice ``policy`` block as a ``rule`` decision policy (lossless: it is copied).
-
-    Spec 02 also describes migrating ``mix`` / ``rules`` to stub probability tables; that belongs to
-    the ``jev`` package. The rule form keeps every shipped scenario's numbers exactly.
-    """
+    Used when a flowchart should keep running on :class:`pathway_sim.policy.RulePolicy`."""
     return {"backend": "rule", "mode": "argmax", "points": copy.deepcopy(policy or {})}
 
 
 def decision_policy_to_legacy(decision_policy: dict | None) -> dict:
-    """Inverse of :func:`legacy_policy_to_decision_policy`; other backends give an empty policy."""
+    """The legacy ``policy`` block for a ``rule`` decision policy; other backends have none."""
     dp = decision_policy or {}
-    if dp.get("backend", "rule") != "rule":
+    if dp.get("backend", "stub") != "rule":
         return {}
     return copy.deepcopy(dp.get("points") or {})
+
+
+def stub_decision_policy(fc) -> tuple[object, dict]:
+    """(flowchart with options reordered as the migration needs, stub ``decision_policy``) for an engine
+    flowchart, using the ``jev`` migration of ``mix`` / ``rules`` / ``prefer`` (spec 02). Per-point
+    ``source`` notes of the legacy policy are kept next to the probabilities."""
+    from jev.migrate import migrate_flowchart
+    mig = migrate_flowchart(fc)
+    dp = json_safe(mig.decision_policy)
+    for nid, cfg in (fc.policy or {}).items():
+        if isinstance(cfg, dict) and cfg.get("source") and nid in dp["points"]:
+            dp["points"][nid].setdefault("source", cfg["source"])
+    return mig, dp
 
 
 def scenario_to_world(sc: Scenario) -> dict:
@@ -138,8 +149,19 @@ def scenario_to_world(sc: Scenario) -> dict:
     return world
 
 
-def flowchart_to_document(fc, world_id: str | None = None, version: int = 1, parent_version: int | None = None) -> dict:
-    """Engine :class:`~pathway_sim.scenario.Flowchart` -> flowchart document."""
+def flowchart_to_document(fc, world_id: str | None = None, version: int = 1, parent_version: int | None = None,
+                          decision_backend: str = "stub") -> dict:
+    """Engine :class:`~pathway_sim.scenario.Flowchart` -> flowchart document.
+
+    ``decision_backend="stub"`` (default) turns the legacy ``policy`` into probability tables (the engine
+    then needs ``jev.prepare``, which the service does); ``"rule"`` keeps the legacy block verbatim.
+    A flowchart that already has a ``decision_policy`` keeps it either way."""
+    if fc.decision_policy:
+        dp = json_safe(fc.decision_policy)
+    elif decision_backend == "rule":
+        dp = legacy_policy_to_decision_policy(json_safe(fc.policy))
+    else:
+        fc, dp = stub_decision_policy(fc)
     nodes, edges = [], []
     for n in fc.nodes.values():
         kind = "decision" if n.kind == "choice" else ("join" if n.kind == "step" and not n.test else n.kind)
@@ -160,7 +182,7 @@ def flowchart_to_document(fc, world_id: str | None = None, version: int = 1, par
         "schema_version": SCHEMA_VERSION, "id": fc.id, "version": version, "parent_version": parent_version,
         "world_id": world_id, "name": _flowchart_name(fc.id, fc.description), "description": fc.description,
         "nodes": nodes, "edges": edges,
-        "decision_policy": legacy_policy_to_decision_policy(json_safe(fc.policy)),
+        "decision_policy": dp,
         "test_overrides": json_safe(fc.test_overrides), "resource_overrides": json_safe(fc.resource_overrides),
         "edits_from_parent": [],
     }
@@ -208,7 +230,7 @@ def flowchart_document_to_raw(doc: dict) -> dict:
             problems.append(problem("duplicate_id", f"Two steps are called '{nid}'", node=nid))
             continue
         if nd["kind"] not in DOC_KINDS:
-            problems.append(problem("schema", f"Unknown node kind '{nd['kind']}' (use one of {', '.join(DOC_KINDS)})", node=nid))
+            problems.append(problem("unknown_kind", f"Unknown node kind '{nd['kind']}' (use one of {', '.join(DOC_KINDS)})", node=nid, field="kind"))
         n: dict = {"id": nid, "kind": "choice" if nd["kind"] == "decision" else ("step" if nd["kind"] == "join" else nd["kind"])}
         for k in NODE_FIELDS:
             if nd.get(k):
@@ -221,7 +243,7 @@ def flowchart_document_to_raw(doc: dict) -> dict:
     for pos, e in enumerate(doc["edges"]):
         src, dst, etype = e.get("from"), e.get("to"), e.get("type", "required")
         if etype not in EDGE_TYPES:
-            problems.append(problem("schema", f"Unknown connection type '{etype}' (use one of {', '.join(EDGE_TYPES)})", edge=e))
+            problems.append(problem("unknown_kind", f"Unknown connection type '{etype}' (use one of {', '.join(EDGE_TYPES)})", edge=e, field="type"))
             continue
         missing = [x for x in (src, dst) if x not in nodes]
         if missing:
@@ -230,7 +252,7 @@ def flowchart_document_to_raw(doc: dict) -> dict:
             continue
         if etype == "option":
             if nodes[src]["kind"] != "choice":
-                problems.append(problem("option_of_non_decision", f"'{src}' offers '{dst}' as an option but is not a decision", node=src, edge=e))
+                problems.append(problem("unknown_kind", f"'{src}' offers '{dst}' as an option but is not a decision", node=src, edge=e, field="kind"))
                 continue
             options[src].append((e.get("index") if isinstance(e.get("index"), int) else 10**6, pos, dst))
         else:
@@ -248,9 +270,12 @@ def flowchart_document_to_raw(doc: dict) -> dict:
     raw: dict = {"nodes": out_nodes}
     if doc.get("description"):
         raw["description"] = doc["description"]
-    policy = decision_policy_to_legacy(doc.get("decision_policy"))
-    if policy:
-        raw["policy"] = policy
+    dp = doc.get("decision_policy") or {}
+    if dp.get("backend", "stub") == "rule":
+        if dp.get("points"):
+            raw["policy"] = copy.deepcopy(dp["points"])
+    elif dp:
+        raw["decision_policy"] = copy.deepcopy(dp)
     if doc.get("test_overrides"):
         raw["test_overrides"] = copy.deepcopy(doc["test_overrides"])
     if doc.get("resource_overrides"):

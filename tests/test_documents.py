@@ -6,6 +6,8 @@ from pathlib import Path
 
 import pytest
 
+import jev
+
 from pathway_sim import compute_metrics, generate_patients, load_scenario, simulate
 from pathway_sim.documents import (DocumentError, canonical_json, doc_hash, documents_to_scenario, documents_to_yaml,
                                    flowchart_document_to_raw, load_yaml_as_documents, normalise_flowchart_doc,
@@ -15,9 +17,14 @@ ROOT = Path(__file__).resolve().parent.parent
 SCENARIOS = sorted(glob.glob(str(ROOT / "scenarios/**/*.yaml"), recursive=True))
 
 
-def metrics_text(sc, fid, n, seed):
+def metrics_text(sc, fid, n, seed, via_jev=False):
     pts = generate_patients(sc, n, seed)
-    return json.dumps(compute_metrics(simulate(sc, fid, pts, seed=seed), sc), sort_keys=True, default=str)
+    if via_jev:                         # documents carry stub tables; jev.prepare builds the engine policy from them
+        fc, policy = jev.prepare(sc, sc.flowcharts[fid], seed=seed)
+        run = simulate(sc, fc, pts, policy=policy, seed=seed)
+    else:
+        run = simulate(sc, fid, pts, seed=seed)
+    return json.dumps(compute_metrics(run, sc), sort_keys=True, default=str)
 
 
 def n_for(sc):
@@ -34,7 +41,7 @@ def test_round_trip_identical_metrics(path):
     for doc in fcs:
         sc2 = documents_to_scenario(world, [doc])
         for seed in (1, 2):
-            assert metrics_text(sc2, doc["id"], n_for(sc), seed) == metrics_text(sc, doc["id"], n_for(sc), seed), doc["id"]
+            assert metrics_text(sc2, doc["id"], n_for(sc), seed, via_jev=True) == metrics_text(sc, doc["id"], n_for(sc), seed), doc["id"]
 
 
 @pytest.mark.parametrize("path", SCENARIOS, ids=lambda p: Path(p).name)
@@ -62,7 +69,8 @@ def test_document_shape():
     assert kinds <= {"step", "decision", "join", "milestone", "exit"} and "decision" in kinds and "join" in kinds
     types = {e["type"] for e in base["edges"]}
     assert types == {"required", "optional", "option"}
-    assert base["decision_policy"]["backend"] == "rule" and base["world_id"] == "finland_lung"
+    assert base["decision_policy"]["backend"] == "stub" and base["decision_policy"]["mode"] == "sample"
+    assert base["decision_policy"]["points"]["first_contact"]["source"] == "KHALIFE2025" and base["world_id"] == "finland_lung"
     opts = [e for e in base["edges"] if e["type"] == "option" and e["from"] == "first_contact"]
     assert [e["to"] for e in sorted(opts, key=lambda e: e["index"])] == ["nurse_visit", "gp_visit"]
     # the unquoted YAML key `on:` must not leave a boolean key in a JSON document
@@ -97,10 +105,22 @@ def test_structural_problems_have_codes():
 
     assert codes(lambda d: d["nodes"].append(dict(d["nodes"][0]))) == {"duplicate_id"}
     assert codes(lambda d: d["edges"].append({"from": "ghost", "to": "cxr", "type": "required"})) == {"unknown_reference"}
-    assert codes(lambda d: d["edges"].append({"from": "cxr", "to": "ct", "type": "sideways"})) == {"schema"}
-    assert codes(lambda d: d["edges"].append({"from": "cxr", "to": "ct", "type": "option"})) == {"option_of_non_decision"}
-    assert codes(lambda d: d["nodes"][1].update(kind="blob")) == {"schema"}
+    assert codes(lambda d: d["edges"].append({"from": "cxr", "to": "ct", "type": "sideways"})) == {"unknown_kind"}
+    assert codes(lambda d: d["edges"].append({"from": "cxr", "to": "ct", "type": "option"})) == {"unknown_kind"}
+    assert codes(lambda d: d["nodes"][1].update(kind="blob")) == {"unknown_kind"}
 
 
 def test_hash_ignores_key_order():
     assert doc_hash({"a": 1, "b": [1, 2]}) == doc_hash({"b": [1, 2], "a": 1})
+
+
+def test_rule_backend_keeps_legacy_policy_exactly():
+    from pathway_sim.documents import flowchart_to_document
+    sc = load_scenario(ROOT / "scenarios/finland_lung.yaml")
+    fc = sc.flowcharts["baseline"]
+    doc = json.loads(json.dumps(flowchart_to_document(fc, sc.id, decision_backend="rule")))
+    assert doc["decision_policy"]["backend"] == "rule"
+    world, _ = scenario_to_documents(sc)
+    sc2 = documents_to_scenario(json.loads(json.dumps(world)), [doc])
+    assert sc2.flowcharts["baseline"].policy == json.loads(json.dumps(fc.policy))
+    assert metrics_text(sc2, "baseline", 300, 1) == metrics_text(sc, "baseline", 300, 1)

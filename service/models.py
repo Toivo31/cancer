@@ -85,7 +85,9 @@ class Problem(_Loose):
     message: str
     node: str | None = None
     hint: str | None = None
-    flowchart_id: str | None = None
+    flowchart: str | None = None
+    edge: dict[str, Any] | None = None
+    field: str | None = None
 
 
 class ValidationResult(BaseModel):
@@ -175,3 +177,38 @@ class TemplateSummary(BaseModel):
 class TemplateDetail(TemplateSummary):
     world: WorldDocument
     flowchart_documents: list[FlowchartDocument]
+
+
+# ------------------------------------------------------------------------------- try a decision
+
+class FlowchartRef(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    id: str
+    version: int | None = None          # default: the latest version
+
+
+class DecideRequest(BaseModel):
+    flowchart: FlowchartRef | FlowchartDocument
+    decision_point: str
+    context: dict[str, Any] = Field(default_factory=dict, description="group, age, t_days, fast_track, attributes {name: value}, "
+                                    "history [{step, test, result, t_days}]; anything left out gets a default (see context_used)")
+    offered: list[str] | None = Field(None, description="Options on offer; default all of the decision's options")
+    option_leads: dict[str, float] | None = Field(None, description="Days until the earliest appointment per option (queue state)")
+    decision_policy: dict[str, Any] | None = Field(None, description="Use this policy instead of the flowchart's")
+
+
+class DecideOption(BaseModel):
+    id: str
+    label: str
+    offered: bool
+    probability: float
+
+
+class DecideResponse(BaseModel):
+    decision_point: str
+    backend: str
+    model: str
+    mode: str
+    explanation: str | None = None
+    options: list[DecideOption]
+    context_used: dict[str, Any]

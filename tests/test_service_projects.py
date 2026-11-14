@@ -114,7 +114,7 @@ def test_world_edit_that_breaks_a_flowchart_is_reported_not_blocked(client):
     del world["tests"][victim]
     r = client.put(f"/api/projects/{p['id']}/world", json=world)
     assert r.status_code == 200
-    assert any(x["code"] == "unknown_test" and x["flowchart_id"] == "baseline" for x in r.json()["problems"])
+    assert any(x["code"] == "unknown_test" and x["flowchart"] == "baseline" for x in r.json()["problems"])
 
 
 def test_flowchart_versions(client):
