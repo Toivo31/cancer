@@ -1,0 +1,19 @@
+- id: cough
+  label: Cough
+  kind: symptom
+  type: binary
+  given:
+    lung_cancr: {p: 0.6, source: assumption}             # MISTAKE unknown_condition (typo)
+    default: {p: 0.1, source: BRADLY2021}                # MISTAKE unknown_source (typo)
+- id: breathless
+  label: Breathlessness
+  kind: symptom
+  type: binary
+  given:
+    default: {p: 0.1, source: assumption, by: {wheeze: {true: 0.5}}}   # MISTAKE by_cycle (breathless <-> wheeze)
+- id: wheeze
+  label: Wheeze
+  kind: sign
+  type: binary
+  given:
+    default: {p: 0.1, source: assumption, by: {breathless: {true: 0.4}}}
