@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-14T02:02:58+00:00",
+ "generated_at": "2026-11-14T08:12:12+00:00",
  "fixture": false,
  "scenarios": [
   {
@@ -527,10 +527,10 @@
      },
      "changes": [
       "Use the faster PET-CT scanner (the same assumption the authors made)",
-      "Diagnostic workup complete: don't wait for sampling finished (it runs in parallel; treatment still waits for it)",
-      "When PET-CT is ordered: always pet-ct ordered at triage or at the first visit",
-      "When the exercise test is ordered: always exercise test",
-      "Tissue sampling planned?: order it at the same time as first hospital visit, not after"
+      "Hold the tumour board without waiting for tissue sampling to finish; sampling runs alongside while treatment is booked",
+      "Always order the PET-CT scan at triage or the first visit, never late",
+      "Always order the exercise test early, together with the other tests",
+      "Plan tissue sampling at the first hospital visit, not after it"
      ],
      "role": "optimiser"
     },
@@ -1297,6 +1297,12 @@
       },
       "utilisation": {}
      },
+     "changes": [
+      "Always order the PET-CT scan at triage or the first visit, never late",
+      "Plan tissue sampling at the first hospital visit, not after it",
+      "Always order the exercise test early, together with the other tests",
+      "Hold the tumour board without waiting for tissue sampling to finish; sampling runs alongside while treatment is booked"
+     ],
      "changes_detail": [
       "When PET-CT is ordered: always pet-ct ordered at triage or at the first visit",
       "Tissue sampling planned?: order it at the same time as first hospital visit, not after",
@@ -1643,7 +1649,120 @@
     ],
     "selection_optimism_pp": 2.3,
     "candidates_evaluated": 54,
-    "guardrails_heldout": []
+    "guardrails_heldout": [],
+    "details": [
+     {
+      "label": "Hold the tumour board without waiting for tissue sampling to finish; sampling runs alongside while treatment is booked",
+      "raw": "Diagnostic workup complete: don't wait for sampling finished (it runs in parallel; treatment still waits for it)",
+      "kind": "detach",
+      "records_said": "In the clinic records, patients waited on average 8.62 days for this step while it held back on an earlier one",
+      "rerun_said": "Rerunning the same patients confirmed it: treated on time 58% to 68%, median 39 to 34 days.",
+      "predicted_days_saved": 8.62,
+      "train_on_time_before": 0.581,
+      "train_on_time_after": 0.68,
+      "train_median_before": 38.64,
+      "train_median_after": 33.54,
+      "heldout_on_time_after": 0.6967
+     },
+     {
+      "label": "Always order the PET-CT scan at triage or the first visit, never late",
+      "raw": "When PET-CT is ordered: always pet-ct ordered at triage or at the first visit",
+      "kind": "standardise",
+      "records_said": "The clinic records point to about 5.15 days of average waiting at this point",
+      "rerun_said": "Rerunning the same patients confirmed it: treated on time 68% to 78%, median 34 to 30 days.",
+      "predicted_days_saved": 5.15,
+      "train_on_time_before": 0.68,
+      "train_on_time_after": 0.779,
+      "train_median_before": 33.54,
+      "train_median_after": 29.98,
+      "heldout_on_time_after": 0.788
+     },
+     {
+      "label": "Always order the exercise test early, together with the other tests",
+      "raw": "When the exercise test is ordered: always exercise test",
+      "kind": "standardise",
+      "records_said": "The clinic records point to about 2.15 days of average waiting at this point",
+      "rerun_said": "Rerunning the same patients confirmed it: treated on time 78% to 85%, median 30 to 29 days.",
+      "predicted_days_saved": 2.15,
+      "train_on_time_before": 0.779,
+      "train_on_time_after": 0.852,
+      "train_median_before": 29.98,
+      "train_median_after": 29.02,
+      "heldout_on_time_after": 0.854
+     },
+     {
+      "label": "Plan tissue sampling at the first hospital visit, not after it",
+      "raw": "Tissue sampling planned?: order it at the same time as first hospital visit, not after",
+      "kind": "relax",
+      "records_said": "In the clinic records, patients waited on average 3.73 days for this step while it held back on an earlier one",
+      "rerun_said": "Rerunning the same patients confirmed it: treated on time 85% to 88%, median 29 to 27 days.",
+      "predicted_days_saved": 3.73,
+      "train_on_time_before": 0.852,
+      "train_on_time_after": 0.883,
+      "train_median_before": 29.02,
+      "train_median_after": 26.79,
+      "heldout_on_time_after": 0.882
+     }
+    ],
+    "cumulative": [
+     {
+      "step": -1,
+      "label": "Observed pathway",
+      "kind": "lead",
+      "share": 0.401,
+      "median_days": 45.6833,
+      "missed_cancers": 0.0,
+      "tests_per_patient": 2.3797
+     },
+     {
+      "step": 0,
+      "label": "Faster PET-CT scanner",
+      "kind": "start",
+      "share": 0.603,
+      "median_days": 38.2433,
+      "missed_cancers": 0.0,
+      "tests_per_patient": 2.3797
+     },
+     {
+      "step": 1,
+      "label": "Hold the tumour board without waiting for tissue sampling to finish; sampling runs alongside while treatment is booked",
+      "kind": "change",
+      "share": 0.6967,
+      "median_days": 34.0967,
+      "missed_cancers": 0.0,
+      "tests_per_patient": 2.3797
+     },
+     {
+      "step": 2,
+      "label": "Always order the PET-CT scan at triage or the first visit, never late",
+      "kind": "change",
+      "share": 0.788,
+      "median_days": 29.6833,
+      "missed_cancers": 0.0,
+      "tests_per_patient": 2.3797
+     },
+     {
+      "step": 3,
+      "label": "Always order the exercise test early, together with the other tests",
+      "kind": "change",
+      "share": 0.854,
+      "median_days": 28.74,
+      "missed_cancers": 0.0,
+      "tests_per_patient": 2.3797
+     },
+     {
+      "step": 4,
+      "label": "Plan tissue sampling at the first hospital visit, not after it",
+      "kind": "change",
+      "share": 0.882,
+      "median_days": 27.0067,
+      "missed_cancers": 0.0,
+      "tests_per_patient": 2.3797
+     }
+    ],
+    "n_train": 1000,
+    "n_heldout": 1000,
+    "heldout_cohorts": 3
    },
    "optimiser_no_new_equipment": {
     "steps": [
@@ -1705,7 +1824,146 @@
      }
     ],
     "selection_optimism_pp": -0.5,
-    "candidates_evaluated": 55
+    "candidates_evaluated": 55,
+    "guardrails_heldout": [],
+    "details": [
+     {
+      "label": "Always order the PET-CT scan at triage or the first visit, never late",
+      "raw": "When PET-CT is ordered: always pet-ct ordered at triage or at the first visit",
+      "kind": "standardise",
+      "records_said": "The clinic records point to about 6.5 days of average waiting at this point",
+      "rerun_said": "Rerunning the same patients confirmed it: treated on time 41% to 52%, median 46 to 42 days.",
+      "predicted_days_saved": 6.5,
+      "train_on_time_before": 0.406,
+      "train_on_time_after": 0.518,
+      "train_median_before": 45.78,
+      "train_median_after": 41.53,
+      "heldout_on_time_after": 0.5253
+     },
+     {
+      "label": "Plan tissue sampling at the first hospital visit, not after it",
+      "raw": "Tissue sampling planned?: order it at the same time as first hospital visit, not after",
+      "kind": "relax",
+      "records_said": "In the clinic records, patients waited on average 5.57 days for this step while it held back on an earlier one",
+      "rerun_said": "Rerunning the same patients confirmed it: treated on time 52% to 60%, median 42 to 39 days.",
+      "predicted_days_saved": 5.57,
+      "train_on_time_before": 0.518,
+      "train_on_time_after": 0.604,
+      "train_median_before": 41.53,
+      "train_median_after": 38.73,
+      "heldout_on_time_after": 0.6097
+     },
+     {
+      "label": "Always order the exercise test early, together with the other tests",
+      "raw": "When the exercise test is ordered: always exercise test",
+      "kind": "standardise",
+      "records_said": "The clinic records point to about 1.87 days of average waiting at this point",
+      "rerun_said": "Rerunning the same patients confirmed it: treated on time 60% to 66%, median 39 to 38 days.",
+      "predicted_days_saved": 1.87,
+      "train_on_time_before": 0.604,
+      "train_on_time_after": 0.658,
+      "train_median_before": 38.73,
+      "train_median_after": 37.57,
+      "heldout_on_time_after": 0.6567
+     },
+     {
+      "label": "Hold the tumour board without waiting for tissue sampling to finish; sampling runs alongside while treatment is booked",
+      "raw": "Diagnostic workup complete: don't wait for sampling finished (it runs in parallel; treatment still waits for it)",
+      "kind": "detach",
+      "records_said": "In the clinic records, patients waited on average 0.69 days for this step while it held back on an earlier one",
+      "rerun_said": "Rerunning the same patients confirmed it: treated on time 66% to 67%, median 38 to 37 days.",
+      "predicted_days_saved": 0.69,
+      "train_on_time_before": 0.658,
+      "train_on_time_after": 0.671,
+      "train_median_before": 37.57,
+      "train_median_after": 37.09,
+      "heldout_on_time_after": 0.671
+     }
+    ],
+    "cumulative": [
+     {
+      "step": 0,
+      "label": "Observed pathway",
+      "kind": "start",
+      "share": 0.401,
+      "median_days": 45.6833,
+      "missed_cancers": 0.0,
+      "tests_per_patient": 2.3797
+     },
+     {
+      "step": 1,
+      "label": "Always order the PET-CT scan at triage or the first visit, never late",
+      "kind": "change",
+      "share": 0.5253,
+      "median_days": 41.31,
+      "missed_cancers": 0.0,
+      "tests_per_patient": 2.3797
+     },
+     {
+      "step": 2,
+      "label": "Plan tissue sampling at the first hospital visit, not after it",
+      "kind": "change",
+      "share": 0.6097,
+      "median_days": 38.7467,
+      "missed_cancers": 0.0,
+      "tests_per_patient": 2.3797
+     },
+     {
+      "step": 3,
+      "label": "Always order the exercise test early, together with the other tests",
+      "kind": "change",
+      "share": 0.6567,
+      "median_days": 37.5667,
+      "missed_cancers": 0.0,
+      "tests_per_patient": 2.3797
+     },
+     {
+      "step": 4,
+      "label": "Hold the tumour board without waiting for tissue sampling to finish; sampling runs alongside while treatment is booked",
+      "kind": "change",
+      "share": 0.671,
+      "median_days": 36.9833,
+      "missed_cancers": 0.0,
+      "tests_per_patient": 2.3797
+     }
+    ],
+    "n_train": 1000,
+    "n_heldout": 1000,
+    "heldout_cohorts": 3
+   },
+   "capacity_vs_order": {
+    "title": "Faster scanner or better order?",
+    "capacity_label": "New equipment: the faster PET-CT scanner alone",
+    "rows": [
+     {
+      "kind": "today",
+      "label": "Observed pathway",
+      "share": 0.401,
+      "median_days": 45.6833
+     },
+     {
+      "kind": "capacity",
+      "label": "Faster PET-CT scanner only (7-day wait)",
+      "share": 0.603,
+      "median_days": 38.2433
+     },
+     {
+      "kind": "order",
+      "label": "Reordered steps, no new equipment",
+      "share": 0.671,
+      "median_days": 36.9833
+     },
+     {
+      "kind": "both",
+      "label": "Reordered steps and the faster scanner",
+      "share": 0.882,
+      "median_days": 27.0067
+     }
+    ]
+   },
+   "headline_no_new_equipment": {
+    "share": 0.671,
+    "median_days": 36.9833
    }
   },
   {
@@ -1714,7 +1972,7 @@
    "description": "Synthetic Finnish lung-cancer pathway in one wellbeing services county, clock from first contact in primary care (nurse or GP) to start of treatment. target_days: 90 is a PROVISIONAL display target (decisions.md D20): with the clock starting at first contact in primary care, every flowchart is at 0% within the Norwegian 42 days (which counts from referral receipt). We found no Finnish national first-contact-to-treatment target; IHE2026 gives assessment within 21 days of referral, and the strategy goal is \"treatment within target times\". Chest-symptom presenters arrive as a Poisson stream; lung cancer is about 1.6% of them, the rest is pneumonia, COPD exacerbation, benign nodule, other benign chest conditions and self-limiting illness. Half see a nurse first (KHALIFE2025). Queues form at GP appointments, chest X-ray, specialist clinic, CT, bronchoscopy / needle biopsy, PET-CT and treatment slots. Chest X-ray misses about one in five lung cancers (HSSIB2021, BRADLEY2021); a safety net (persisting symptoms -> re-presentation weeks later) catches some of them, the rest are discharged = missed cancers.\n",
    "target_days": 90.0,
    "baseline": {
-    "label": "Finnish sequential pathway (nurse/GP, CXR, referral, specialist, CT, sampling, PET-CT, board, treatment)",
+    "label": "Today's pathway",
     "metrics": {
      "scenario": "finland_lung",
      "flowchart": "baseline",
@@ -2300,8 +2558,8 @@
       }
      },
      "changes": [
-      "Fast track patients after referral handling at hospital",
-      "Nurse or GP first: always gp appointment"
+      "Fast lane: once the hospital has handled a referral, give that patient priority in every later queue",
+      "Book a GP appointment, not a nurse, at first contact"
      ],
      "role": "optimiser"
     },
@@ -2609,7 +2867,8 @@
        "treatment_slot": 0.3563
       }
      },
-     "role": "hand_written"
+     "role": "hand_written",
+     "flowchart_id": "direct_ct"
     },
     {
      "label": "CT and PET-CT ordered together at the specialist visit, board before sampling, sampling while treatment is booked. Orders about 2.8x as many PET-CT scans (PET demand 2.3 a weekday against 0.8), so it needs 3 PET slots a day; with 1 slot the PET queue grows without bound",
@@ -2915,7 +3174,8 @@
        "treatment_slot": 0.4674
       }
      },
-     "role": "hand_written"
+     "role": "hand_written",
+     "flowchart_id": "bundled_workup"
     },
     {
      "label": "Baseline plus a fast lane for non-specific presenters with a suspicious X-ray (priority, reserved clinic and CT slots, short booking leads)",
@@ -3293,7 +3553,8 @@
        "treatment_slot": 0.3659
       }
      },
-     "role": "hand_written"
+     "role": "hand_written",
+     "flowchart_id": "fast_track_nonspecific"
     },
     {
      "label": "Baseline order with the extra CT (8 slots) and PET-CT (3 slots) capacity that direct_ct and bundled_workup need (capacity-only control)",
@@ -3599,7 +3860,8 @@
        "treatment_slot": 0.3563
       }
      },
-     "role": "hand_written"
+     "role": "hand_written",
+     "flowchart_id": "baseline_plus_capacity"
     }
    ],
    "flowchart_before": {
@@ -4015,12 +4277,72 @@
     ],
     "selection_optimism_pp": 1.78,
     "candidates_evaluated": 36,
-    "guardrails_heldout": []
+    "guardrails_heldout": [],
+    "details": [
+     {
+      "label": "Fast lane: once the hospital has handled a referral, give that patient priority in every later queue",
+      "raw": "Fast track patients after referral handling at hospital",
+      "kind": "fast_track",
+      "records_said": "The clinic records point to about 1.0 days of average waiting at this point",
+      "rerun_said": "Rerunning the same patients confirmed it: treated on time 19% to 65%, median 101 to 79 days.",
+      "predicted_days_saved": 1.0,
+      "train_on_time_before": 0.192,
+      "train_on_time_after": 0.652,
+      "train_median_before": 100.66,
+      "train_median_after": 78.68,
+      "heldout_on_time_after": 0.6147
+     },
+     {
+      "label": "Book a GP appointment, not a nurse, at first contact",
+      "raw": "Nurse or GP first: always gp appointment",
+      "kind": "standardise",
+      "records_said": "The clinic records point to about 1.19 days of average waiting at this point",
+      "rerun_said": "Rerunning the same patients confirmed it: treated on time 65% to 67%, median 79 to 77 days.",
+      "predicted_days_saved": 1.19,
+      "train_on_time_before": 0.652,
+      "train_on_time_after": 0.672,
+      "train_median_before": 78.68,
+      "train_median_after": 77.32,
+      "heldout_on_time_after": 0.6376
+     }
+    ],
+    "cumulative": [
+     {
+      "step": 0,
+      "label": "Today's pathway",
+      "kind": "start",
+      "share": 0.1754,
+      "median_days": 102.31,
+      "missed_cancers": 27.5,
+      "tests_per_patient": 0.41
+     },
+     {
+      "step": 1,
+      "label": "Fast lane: once the hospital has handled a referral, give that patient priority in every later queue",
+      "kind": "change",
+      "share": 0.6147,
+      "median_days": 80.01,
+      "missed_cancers": 27.5,
+      "tests_per_patient": 0.41
+     },
+     {
+      "step": 2,
+      "label": "Book a GP appointment, not a nurse, at first contact",
+      "kind": "change",
+      "share": 0.6376,
+      "median_days": 79.58,
+      "missed_cancers": 25.0,
+      "tests_per_patient": 0.3875
+     }
+    ],
+    "n_train": 18800,
+    "n_heldout": 18800,
+    "heldout_cohorts": 2
    },
    "capacity_probe": [
     {
      "resource": "pet_scanner",
-     "label": "pet scanner",
+     "label": "PET-CT scanner",
      "capacity_per_day": 1,
      "delta_share_pp": 9.7,
      "delta_median_days": -3.9,
@@ -4028,7 +4350,7 @@
     },
     {
      "resource": "bronchoscopy",
-     "label": "bronchoscopy",
+     "label": "Bronchoscopy",
      "capacity_per_day": 1,
      "delta_share_pp": 3.6,
      "delta_median_days": -2.4,
@@ -4036,7 +4358,7 @@
     },
     {
      "resource": "ttnb_slot",
-     "label": "ttnb slot",
+     "label": "Needle biopsy slots",
      "capacity_per_day": 1,
      "delta_share_pp": 1.5,
      "delta_median_days": -0.1,
@@ -4044,7 +4366,7 @@
     },
     {
      "resource": "ct_scanner",
-     "label": "ct scanner",
+     "label": "CT scanner",
      "capacity_per_day": 3,
      "delta_share_pp": 1.1,
      "delta_median_days": -0.6,
@@ -4052,7 +4374,7 @@
     },
     {
      "resource": "nurse_appt",
-     "label": "nurse appt",
+     "label": "Nurse appointments",
      "capacity_per_day": 35,
      "delta_share_pp": 0.6,
      "delta_median_days": -0.1,
@@ -4060,7 +4382,7 @@
     },
     {
      "resource": "treatment_slot",
-     "label": "treatment slot",
+     "label": "Treatment slots",
      "capacity_per_day": 2,
      "delta_share_pp": 0.4,
      "delta_median_days": -0.1,
@@ -4068,7 +4390,7 @@
     },
     {
      "resource": "xray",
-     "label": "xray",
+     "label": "Chest X-ray",
      "capacity_per_day": 24,
      "delta_share_pp": 0.2,
      "delta_median_days": -0.1,
@@ -4076,7 +4398,7 @@
     },
     {
      "resource": "clinic",
-     "label": "clinic",
+     "label": "Specialist clinic",
      "capacity_per_day": 7,
      "delta_share_pp": 0.0,
      "delta_median_days": -0.1,
@@ -4084,13 +4406,43 @@
     },
     {
      "resource": "gp_appt",
-     "label": "gp appt",
+     "label": "GP appointments",
      "capacity_per_day": 74,
      "delta_share_pp": -0.4,
      "delta_median_days": -0.1,
      "utilisation": 0.8913
     }
-   ]
+   ],
+   "capacity_vs_order": {
+    "title": "More capacity or a better order?",
+    "rows": [
+     {
+      "kind": "today",
+      "label": "Today",
+      "share": 0.1754,
+      "median_days": 102.31
+     },
+     {
+      "kind": "capacity",
+      "label": "One more appointment a day at the busiest step (PET-CT scanner, from 1 to 2)",
+      "share": 0.2724,
+      "median_days": 98.4
+     },
+     {
+      "kind": "capacity",
+      "label": "A large capacity increase, same order: CT scanner 8 a day (from 3); PET-CT scanner 3 a day (from 1)",
+      "share": 0.3085,
+      "median_days": 96.725
+     },
+     {
+      "kind": "order",
+      "label": "Suggested change: new order and a fast lane, no new capacity",
+      "share": 0.6376,
+      "median_days": 79.58
+     }
+    ]
+   },
+   "summary": "Synthetic patients with chest symptoms in one large Finnish county, followed from first contact in primary care (nurse or GP) to the start of treatment. Time to treatment is counted against a provisional 90-day target."
   }
  ],
  "assumptions": [
