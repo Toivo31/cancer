@@ -70,9 +70,11 @@
 .pt-small{display:block;margin-top:var(--s2);font:400 13px/1.45 var(--font-mono);color:var(--ink-3)}
 
 /* claim basis labels (D69): published / our simulation / our assumption, linking to research.html#<claim id> */
+/* the linked tag is the shared .basis (theme.css); this is the plain fallback when the register lacks the id */
 .pt-basis{display:inline-block;margin-top:var(--s2);padding:1px var(--s2);border:1px solid var(--ink-3);color:var(--ink-3);
   font:400 11px/1.4 var(--font-mono);letter-spacing:.06em;text-transform:uppercase;text-decoration:none;white-space:nowrap}
-.pt-basis:hover{border-color:var(--ink);color:var(--ink)}
+.pt-basis.basis{color:var(--ink);font-weight:700;font-size:10.5px}
+.pt-basis.basis--published{color:var(--card)}
 .caption .pt-basis{margin:0 0 0 var(--s2)}
 
 /* ---------- below DETAILS ---------- */

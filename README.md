@@ -9,11 +9,11 @@ steps using only what a clinic would see, accepts a change only if a rerun of th
 
 | What | How | What it shows |
 |---|---|---|
-| Offline start page | open `demo/start.html` in a browser (no server) | Six steps, one result each, read from the data behind its screen: the gap, the primary-care loop, what reordering wins, why we trust the engine (Norway), the decision model, data and honesty. Presenter script: `docs/demo_path.md` |
+| Offline demo site | open `demo/start.html` (the Overview) in a browser (no server) | Five pages in one nav: Overview (three cards: simulate, optimise, check against a real hospital), Simulator (`flow.html`: the pathway with moving patients; OPTIMISE flips them onto the changed pathway), Patients (sealed truth vs visible record), Evidence (the Norway check with ranges), Decision model (`jev.html`). Every number carries a tag (published / our simulation / our assumption) that opens its source on `research.html`. Numbers are read from the data bundles. Presenter script: `docs/demo_path.md`; page guide: `demo/README.md` |
 | Web app | `uvicorn service.app:app --port 8000` after building `web/` (`docs/commands.md` section 4), open <http://localhost:8000> | Build or edit a flowchart, run it, optimise, rerun. Needs Node and the API requirements |
 | Hosted demo | no address is recorded in this repo; the hosted page is planned as `live_demo/` served by `python3 -m note_reader.server` (see the teammate section below) | The teammate's flowchart demo, note reader and report |
 
-If the start page's "Synthetic patients" card says "pending", run `python demo/export_cards.py` once (under a second).
+If a page says "pending", rebuild the bundles with `python demo/export_all.py` (1 to 2 minutes) and reload. `?theme=night` on any page gives the old dark look for a washed-out projector.
 
 ## Results, with how sure we are
 

@@ -8,7 +8,17 @@ const fs = require("fs");
 const [, , ppDir, chrome, outDir, demoDir, ...urls] = process.argv;
 const puppeteer = require(ppDir);
 const SIZES = [[1440, 900], [1920, 1080]];
-const slug = u => u.replace(/\.html/, "").replace(/[^A-Za-z0-9]+/g, "_").replace(/^_|_$/g, "") || "page";
+// File name: page and query as before ("flow.html?s=finland" -> flow_s_finland); a hash adds "_h_<hash>"
+// ("jev.html#gp_visit" -> jev_h_gp_visit), so hash URLs of one page get their own files. Repeats get _2, _3 ...
+const clean = s => s.replace(/[^A-Za-z0-9]+/g, "_").replace(/^_|_$/g, "");
+const seen = {};
+const slug = u => {
+  const i = u.indexOf("#"), base = i < 0 ? u : u.slice(0, i), hash = i < 0 ? "" : u.slice(i + 1);
+  let s = clean(base.replace(/\.html/, "")) || "page";
+  if (hash) s += "_h_" + (clean(hash) || "top");
+  seen[s] = (seen[s] || 0) + 1;
+  return seen[s] > 1 ? `${s}_${seen[s]}` : s;
+};
 
 (async () => {
   const browser = await puppeteer.launch({
@@ -18,6 +28,7 @@ const slug = u => u.replace(/\.html/, "").replace(/[^A-Za-z0-9]+/g, "_").replace
   const lines = [];
   let errors = 0;
   for (const u of urls) {
+    const name = slug(u);
     for (const [w, h] of SIZES) {
       const page = await browser.newPage();
       await page.setViewport({width: w, height: h});
@@ -29,7 +40,7 @@ const slug = u => u.replace(/\.html/, "").replace(/[^A-Za-z0-9]+/g, "_").replace
       try {
         await page.goto(url, {waitUntil: "load", timeout: 20000});
         await new Promise(r => setTimeout(r, 1500));
-        await page.screenshot({path: path.join(outDir, `${slug(u)}_${w}x${h}.png`)});
+        await page.screenshot({path: path.join(outDir, `${name}_${w}x${h}.png`)});
         lines.push(`ok    ${tag}`);
       } catch (e) {
         errors++;

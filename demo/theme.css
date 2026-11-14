@@ -174,6 +174,17 @@ html:not([data-theme="night"]) body{background-image:none}
 button.chip{cursor:pointer}
 .chip:hover{border-color:var(--ink);color:var(--ink)}
 .chip[aria-pressed="true"],.chip.is-on{background:var(--ink);border-color:var(--ink);color:var(--card)}
+/* Basis label (D69): the small tag saying where a number comes from, usually a link to research.html#<claim id>.
+   Same three looks as the research page's legend, so the key reads the same on every page and in greyscale:
+   published = solid ink, our simulation = mustard tint, our assumption = brick tint with a dashed border.
+   The word is always on the tag; colour is never the only cue. (Added after the revamp, ui-followups.) */
+.basis{display:inline-block;padding:1px var(--s2);border:1px solid var(--ink-3);background:transparent;color:var(--ink);
+  font:700 10.5px/1.4 var(--font-mono);letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;
+  text-decoration:none;vertical-align:baseline}
+.basis--published{background:var(--ink);border-color:var(--ink);color:var(--card)}
+.basis--simulation{background:var(--mustard-tint);border-color:var(--mustard)}
+.basis--assumption{background:var(--brick-tint);border-color:var(--brick);border-style:dashed}
+a.basis:hover,a .basis:hover{text-decoration:underline;text-underline-offset:2px}
 
 /* ---------- Buttons: one primary per view ---------- */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--s2);padding:10px var(--s5);

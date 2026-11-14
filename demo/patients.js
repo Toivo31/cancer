@@ -36,7 +36,7 @@
     Array.prototype.forEach.call(document.querySelectorAll(".pt-basis[data-claim]"), function (sp) {
       var c = known[sp.getAttribute("data-claim")];
       if (!c) return;
-      var a = el("a", sp.className, (R.basis_labels && R.basis_labels[c.basis]) || sp.textContent);
+      var a = el("a", sp.className + " basis basis--" + c.basis, (R.basis_labels && R.basis_labels[c.basis]) || sp.textContent);
       a.href = "research.html#" + encodeURIComponent(c.id);
       a.title = c.claim;
       a.setAttribute("data-claim", c.id);

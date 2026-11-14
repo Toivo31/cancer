@@ -1,7 +1,46 @@
 # Status
 
 The only file in this folder that changes often. Written by the integrator at every sync point.
-Last update: **Sat 14 Nov 2026, 18:30 UTC (20:30 Helsinki).** Deadline: Sun 15 Nov 10:00 Helsinki; freeze 04:00 UTC.
+Last update: **Sat 14 Nov 2026, about 23:15 UTC (01:15 Helsinki)**: UI revamp row and the audit below (`w9/ui-followups`).
+Sections further down are the 18:30–20:40 UTC state and are kept for the record. Deadline: Sun 15 Nov 10:00 Helsinki; freeze 04:00 UTC.
+
+## Audit at 23:15 UTC: done / building / planned / open
+
+**Done (in `overnight/sim`, gate PASS at `49f96d0`)**
+
+| Area | State |
+|---|---|
+| **UI revamp done** (14 Nov 22:47 UTC, merge `49f96d0`, base tag `ui-revamp-base` = `ad7e386`) | Offline `demo/` site on the paper theme: five pages in one nav (Overview `start.html`, Simulator `flow.html`, Patients `patients.html`, Evidence `evidence.html`, Decision model `jev.html`), plus `research.html` (D69) and `encounter.html`; `index.html` re-coloured only (D66). Lanes L0, L1, L2, L3, L4, L5, L6, L9; L7 (web tokens) is after the submission. Handoff: `docs/plan/ui-revamp/HANDOFF.md` (Do not recreate, renamed, URL parameters, judgement calls); presenter script `docs/demo_path.md`. Follow-ups on `w9/ui-followups`: claim tags on dashboard screens 2 and 4, `encounter.html?p=` lands on the patient's record, research link in `encounter.html`, one shared `.basis` tag style, `ui_shots.sh` keeps hash/query in file names, `tests/test_demo_claim_links.py` |
+| Simulator, optimiser, scenarios, flow export | Built; Finland synthetic county and Norway (Stokstad) with 184 fitting settings; optimiser plausibility check on Norway (D62, D68: no optimiser-with-faster-scanner result anywhere) |
+| Research claims register (D69) | `docs/research_claims.yaml` → `demo/data/research_bundle.js`; every page tag links `research.html#<claim id>` |
+| Patient engine and libraries | Template library `ref500` (regenerated with result author `g2@3`, D65); Gemini libraries `gemini_s2_30`, `gemini_trial`; the five audit-failing 500-card libraries parked in `libraries/g2v1_audit_fail/`. `w8/g1skew`, `w8/g2blind`, `w8/fi-sens`, `w8/norway-paper`, `w8/pitch2`, `w8/catalogue-check` merged |
+| Pitch | Numbers sheet and deck refilled after the pre-pause data refresh (`4f142fc`) |
+
+**Building now (wave 9; Tuomas: JEV is the top priority)**
+
+| Lane | What |
+|---|---|
+| `w9/jev-install` | `decision_api/` from `origin/main`, `jev/birch.py` constants for checkpoint 2350, install test, runbook |
+| `w9/jev-demo-live` | Live JEV path on `jev.html` (owns `demo/jev.*`, `serve_jev.py`, `export_jev.py`) |
+| `w9/jev-sim` | Simulator on the real JEV (runner, `flow_jev_bundle.js`, a JEV variant in `flow.html`); open question to Tuomas: one 30-patient Norway run (about 110–120 calls) acceptable? |
+| `w9/content-fix` | One definition of the waiting basis, register YAML fixes (comma-split theme titles), sources |
+| `w9/ci-green` | CI green (WP-W8-6 T1–T3) |
+| `w8/textcheck` | Text glue normaliser and symptom-consistency audit checks (resumed) |
+| `w9/ui-followups` | This audit, HANDOFF.md, demo_path, small page fixes (ready for merge) |
+
+**Planned**
+
+- `content/pages` (branch off `overnight/sim`, FYI 23:07): page copy for a slimmed site of seven pages (Introduction, Simulation, Birch JEV, Birch in healthcare, Synthetic data, Research, Case study Norway). Tuomas wants the site cut to these; it would supersede parts of the five-page nav (`site.js` `PAGES`) and of HANDOFF.md.
+- After the submission: L7 web tokens (`web/src/`), the Norway case-study white paper page, one simulator for all surfaces (WP8), pixel-diff regression.
+
+**Open (needs a human or a decision)**
+
+| Item | Owner |
+|---|---|
+| UI judgement calls (Overview card 3 and title, Evidence lede, queue thresholds, "left, symptoms persist" in brick, research chip colours, Research in the nav, `index.html` without the site nav): list in `docs/plan/ui-revamp/HANDOFF.md` | Tuomas |
+| Content issues found on the pages (not fixed by the UI lanes): Patients' two-wordings card is `gemini_s2_30` (old leaking results prompt) and contradicts itself ("no cough" vs "coughing constantly"); encounter records show a placeholder-table rule as an assessment note ("Table rule: reason == 'result' and last.spirometry.days is not None"); the Decision model figure's only model recording is a skin-lesion intake, not lung cancer | content lane / Tuomas |
+| `w9/jev-sim` run size under "no bulk cohort inference" | Tuomas |
+| Older items in "Waiting for a human" below (D42, PR #2 and #3, host, clinician for the catalogue) | as listed |
 
 ## Branches
 

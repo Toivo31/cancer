@@ -58,7 +58,7 @@
     var a = el("a", "ev-claim ev-claim--" + basis);
     a.href = "research.html#" + id;
     a.title = (c && c.claim) || "Where this comes from";
-    a.appendChild(el("span", "ev-claim__basis", basisLabel(basis)));
+    a.appendChild(el("span", "ev-claim__basis basis basis--" + basis, basisLabel(basis)));
     a.appendChild(document.createTextNode(" " + text));
     return a;
   }
@@ -385,8 +385,8 @@
 
   /* ---------- start ---------- */
   function footerText() {
-    var when = S.generated_at ? " at " + S.generated_at.replace("T", " ").replace("+00:00", " UTC") : "";
-    return "Synthetic patients only · not clinically reviewed · numbers read from data/start_bundle.js" + when;
+    var when = S.generated_at ? ", built " + String(S.generated_at).replace("T", " ").replace(/:\d\d(\.\d+)?\+\d\d:\d\d$/, " UTC") : "";
+    return "Synthetic patients only · not clinically reviewed · numbers read from start_bundle.js and research_bundle.js" + when;
   }
 
   function init() {

@@ -1,8 +1,8 @@
 /* Overview page (demo/start.html). Layout only; colours, type and shared classes come from theme.css.
    Page prefix: .ov-  Design constants (sizes of the small graphics) live here, not in start.js. */
 
-.ov-top{padding-top:var(--s6);padding-bottom:var(--s5)}
-.ov-top .lede{max-width:62ch;font-size:19px}
+.ov-top{padding-top:var(--s7);padding-bottom:var(--s5)}  /* same top as the other pages (theme .page-top) */
+.ov-top .lede{max-width:62ch}
 
 /* ---------- The three cards (the video's look: outlined card, number, inset panel, one line) ---------- */
 .ov-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--s5);counter-reset:ovcard;margin-top:var(--s5)}
@@ -21,11 +21,8 @@
 
 /* Claim labels (D69): published / our simulation / our assumption, each a link to research.html#<claim id> */
 .ov-basis{margin:auto 0 0;padding-top:var(--s2);font:400 12px/1.4 var(--font-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
-.ov-basis__link{color:var(--brown);text-decoration:none;border-bottom:1px dotted currentColor}
-.ov-basis__link:hover{color:var(--ink)}
-.ov-basis__link::before{content:"\25CF\00a0";font-size:9px;vertical-align:1px}
-.ov-basis--published::before{content:"\25CB\00a0"}
-.ov-basis--assumption::before{content:"\25B3\00a0"}
+/* the tag itself is the shared .basis (theme.css), the same three looks as the research page */
+.ov-basis__link{margin:0 var(--s1) var(--s1) 0}
 
 /* Card I: mini pathway (inline SVG; the pile is the one mustard thing on the page) */
 .ov-path{width:100%;max-width:260px;height:100%}
@@ -86,7 +83,7 @@
 .ov-more .ov-cap{margin-top:var(--s2)}
 .ov-claims{list-style:none;margin:var(--s3) 0 0;padding:0;max-width:80ch}
 .ov-claims li{margin:0 0 var(--s1);font:400 13px/1.5 var(--font-sans);color:var(--ink-3)}
-.ov-claims .ov-basis__link{font:400 12px/1.4 var(--font-mono);letter-spacing:.06em;text-transform:uppercase}
+.ov-claims .ov-basis__link{margin-right:var(--s1)}
 .ov-honest{max-width:80ch;margin:0;padding-left:var(--s5);font:400 15px/1.6 var(--font-sans);color:var(--ink-2)}
 
 @media (max-width:1100px){.ov-cards{grid-template-columns:1fr}}
