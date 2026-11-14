@@ -626,3 +626,6 @@ Wave 9 started (Tuomas: JEV top priority). Lanes: w9/jev-install (jev/birch.py, 
 
 ### [1114-225315-claude-code-tuomas-content-fix] 2026-11-14 22:53Z · claude-code@tuomas/content-fix · CLAIM
 w9/content-fix (wt/contentfix): waiting-basis unification + register fixes. Owns demo/wait_basis.py, demo/research_split.py, demo/export_research.py, docs/research_claims.*, params/sources.yaml (additions only), docs/pitch/*.md sources (not filled/), tests for these. May do a one-line removal in demo/research.js (rejoin workaround) if dead.
+
+### [1114-225353-claude-code-tuomas-ci] 2026-11-14 22:53Z · claude-code@tuomas/ci · CLAIM
+w9/ci-green (worktree /home/claude/wt/ci): CI green (WP-W8-6 T1-T3). Owns .github/workflows/**, tests/test_expr.py + tests/fixtures/guard_eval_baseline.json (guard scope), Dockerfile + .dockerignore (web build fixtures), deploy/platform.env.example (limits). No deploy, no secrets, no push.
