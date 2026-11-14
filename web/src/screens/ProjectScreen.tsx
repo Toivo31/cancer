@@ -15,6 +15,7 @@ import type { Draft } from '../lib/decisionDraft'
 import { go, replace } from '../lib/route'
 import type { Route } from '../lib/route'
 import { useRuns } from '../lib/useRuns'
+import { effectiveRun } from '../lib/runSelect'
 import { DecisionsTable } from './DecisionsTable'
 import { RunPanel } from './RunPanel'
 import { OptimisePanel } from './OptimisePanel'
@@ -78,12 +79,12 @@ export function ProjectScreen({ pid, route }: { pid: string; route: Route }) {
       if (errs.length) return
       const saved = await api.saveFlowchart(pid, cur.id, doc)
       setList(await api.listFlowcharts(pid))
-      go(`p/${pid}`, { f: cur.id, v: saved.version, tab: 'decisions', run: selectedRun })
+      go(`p/${pid}`, { f: cur.id, v: saved.version, tab: 'decisions' })
     } catch (e) {
       const err = e as Error & { problems?: Problem[] }
       if (err.problems) setProblems(err.problems as Problem[]); else setError(err.message)
     } finally { setSaving(false) }
-  }, [api, pid, fc, initial, draft, cur, selectedRun])
+  }, [api, pid, fc, initial, draft, cur])
 
   // ---- edit mode: a working copy of the flowchart, checked by the validator as it changes ----
   const [editing, setEditing] = useState(false)
@@ -136,9 +137,8 @@ export function ProjectScreen({ pid, route }: { pid: string; route: Route }) {
   }, [route.q, runsLoaded, fc, cur, world, runs, api, pid, curVer, reloadRuns])
 
   // ---- run layers: the selected run's flow document drawn on the same canvas ----
-  const autoRun = cur ? runs.find((r) => r.status === 'succeeded' && r.flowchart.id === cur.id && r.flowchart.version === curVer) : undefined
-  const effRun = selectedRun ?? autoRun?.id ?? null
-  const runObj = runs.find((r) => r.id === effRun) ?? null
+  const runObj = effectiveRun(runs, selectedRun, cur?.id ?? null, curVer)
+  const effRun = runObj?.id ?? null
   const { flow, error: flowError, loading: flowLoading } = useFlow(api, pid, effRun, runObj?.status === 'succeeded')
   const layerQ = route.q.get('layer') as Layer | null
   const layer: Layer = flow ? (layerQ && LAYERS.some((l) => l.id === layerQ) ? layerQ : 'flow') : 'structure'
@@ -180,10 +180,10 @@ export function ProjectScreen({ pid, route }: { pid: string; route: Route }) {
         <a href="#/" onClick={(e) => { e.preventDefault(); go('') }} className="muted">‹ Projects</a>
         <strong>{project?.name}</strong>
         <span className="sep dim">/</span>
-        <select className="field" aria-label="Flowchart" value={cur.id} onChange={(e) => nav({ f: e.target.value, v: null })}>
+        <select className="field" aria-label="Flowchart" value={cur.id} onChange={(e) => nav({ f: e.target.value, v: null, run: null })}>
           {list.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
         </select>
-        <select className="field" aria-label="Version" value={curVer} onChange={(e) => nav({ v: e.target.value })}>
+        <select className="field" aria-label="Version" value={curVer} onChange={(e) => nav({ v: e.target.value, run: null })}>
           {cur.versions.slice().reverse().map((v) => <option key={v} value={v}>version {v}{v === cur.latest_version ? ' (latest)' : ''}{cur.locked.includes(v) ? ' · has runs' : ''}</option>)}
         </select>
         <div className="tabs" role="tablist">
