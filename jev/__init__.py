@@ -15,3 +15,9 @@ __all__ = [
     "check_probs", "check_responses", "decode_request", "decode_response", "encode_request",
     "encode_response", "uniform_probs",
 ]
+
+from .factory import prepare, set_probability
+from .migrate import migrate_flowchart, table_from_policy
+from .stub import StubBackend, StubTableError
+
+__all__ += ["StubBackend", "StubTableError", "migrate_flowchart", "prepare", "set_probability", "table_from_policy"]
