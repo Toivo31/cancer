@@ -31,10 +31,17 @@ Strategy Goal 3 asks for *equal* as well as effective care, and includes an indi
 
 ## 3. What the simulator shows
 
-- Every synthetic patient has a presentation group (`site_specific` or `non_specific`, scenario `groups`). Metrics are reported per group: share treated within target, median days from first contact to treatment, and waiting time per stage (detection, referral, diagnosis, treatment start).
-- For each proposed change the demo shows the effect on both groups, so a change that helps the already-fast group and leaves the slow group behind is visible. The headline equity figure is the **gap in share-within-target between groups**, before and after: `[[equity_gap_before_pp]]` to `[[equity_gap_after_pp]]` percentage points.
-- It also reports waits for non-cancer patients (the crowd-out guardrail), also split by group.
-- Placeholders to fill from the final run: `[[share_within_target_site_specific_base]]`, `[[share_within_target_non_specific_base]]`, and the same after the change.
+In our synthetic Finnish county (about [[f_n]] chest-symptom presenters per held-out cohort, [[f_prevalence]]% with lung cancer, [[f_ss_presenter_share]]% presenting with alarm symptoms), each patient has a presentation group: `site_specific` (alarm symptoms) or `non_specific` (vague symptoms). The groups differ only in how likely the detection step is to send them on, so the gap at baseline follows from our assumption (D9), not from Finnish data.
+
+**Baseline.** Share treated within [[f_target]] days (provisional target, D20): [[f_ns_share_base]]% for vague-symptom patients against [[f_ss_share_base]]% for alarm-symptom patients, a gap of [[equity_gap_base_pp]] points; median days [[f_ns_median_base]] against [[f_ss_median_base]]. Share of cancers never diagnosed in the episode: [[f_ns_missed_pct_base]]% against [[f_ss_missed_pct_base]]%.
+
+**With the suggested change** (held-out): [[f_ns_share_opt]]% against [[f_ss_share_opt]]% within [[f_target]] days. Both groups gain (vague symptoms [[f_ns_share_gain_pp]] points, alarm symptoms [[f_ss_share_gain_pp]]). The gap in percentage points [[f_gap_pp_widens]] ([[equity_gap_before_pp]] to [[equity_gap_after_pp]]) because the alarm group starts closer to the threshold; the gap in median days [[f_gap_days_narrows]] ([[f_gap_days_base]] to [[f_gap_days_opt]] days). We report both because they point in different directions, and we do not claim the change closes the gap in shares. Missed cancers among vague-symptom patients go from [[f_ns_missed_pct_base]]% to [[f_ns_missed_pct_opt]]% of that group (we have not separated which of the two steps drives this; one plausible route is that GP-first visits image more patients in the model).
+
+[[f_equity_table]]
+
+Reading the table: the hand-written flowcharts reach the two groups differently. Ordering CT directly helps mainly the alarm group and widens the gap in median days ([[f_gap_days_base]] to [[f_gap_days_direct]]); the fast lane for vague symptoms is the one that most narrows the gap in shares ([[equity_gap_fast_pp]] points) but gains less overall ([[f_fast_share]]% against [[f_share_opt]]%). Which of these is "more equal" depends on the measure, and that is a choice for the team and, in practice, for clinicians.
+
+The demo also reports waits for non-cancer patients as the crowd-out guardrail: median days to leave the pathway [[f_noncancer_base]] at baseline and [[f_noncancer_opt]] with the suggested change.
 
 ## 4. What it cannot show
 
