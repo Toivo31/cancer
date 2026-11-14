@@ -521,3 +521,6 @@ w8/no-scanner-claims (worktree /home/claude/wt/noscanner): remove optimiser-with
 
 ### [1114-214943-claude-code-tuomas-research] 2026-11-14 21:49Z · claude-code@tuomas/research · CLAIM
 w8/research-page (worktree /home/claude/wt/research): research claims register. New files: docs/research_claims.{yaml,md}, demo/export_research.py, demo/data/research_bundle.js, tests/test_demo_research.py, docs/plan/ui-revamp/lanes/L9-research-page.md. Small edits: demo/export_all.py (one line, step 'research'), docs/plan/ui-revamp/07-parallel-lanes.md, docs/plan/ui-revamp/README.md, docs/decisions.md (row D69). Not touching demo/index.html, flow.js, start.js, export*.py of others, docs/pitch/*.
+
+### [1114-215533-claude-code-tuomas-textcheck] 2026-11-14 21:55Z · claude-code@tuomas/textcheck · CLAIM
+w8/textcheck (worktree /home/claude/wt/textcheck): text glue normaliser + text symptom consistency. New: patient_engine/textfix.py, patient_engine/textsym.py, patient_engine/data/ (wordlist), commands/fixtext, tests/test_pe_textfix*.py. Small edits: audit.py (2 new checks), validate.py (G1 text rule), pipeline/authors joins (space fix), __main__ command registration.
