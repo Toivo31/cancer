@@ -14,7 +14,7 @@ const TRAILER = (() => {
   help.classList.add("hidden"); st.ui = false; st.playing = false;
   FLOW.half = true; HALF_DOTS = true;      // draw every other patient; counts still use all of them
 
-  const LEN = 60, PL = 13, DROP = 31, MUSIC_OFFSET = 18.8, MUSIC_OUT = 10.5;  // music (with its crackle) stops when the visualisation starts   // drop at excerpt 49.8 lands at 0:31 (OPTIMISE card)
+  const LEN = 64, PL = 16, DROP = 31, MUSIC_OFFSET = 18.8, MUSIC_OUT = 6.5, MUSIC_FADE = 3, MUSIC_VOL = 0.5;  // music (with its crackle) stops when the visualisation starts   // drop at excerpt 49.8 lands at 0:31 (OPTIMISE card)
   // the simulation scene is blue and grey only: every other colour drawn to the canvas is turned into its grey (blue stays)
   let monoOn = false;
   function toGrey(c) {
@@ -32,7 +32,7 @@ const TRAILER = (() => {
   }
   const PIC = 0.8;                        // simulation scenes are zoomed out to this share; stills stay full frame
   // narration: one file per line (natural speed), each played at 1.2x with pitch preserved at its cue time
-  const RATE = 1.2, music = new Audio("audio/excerpt.wav"); music.preload = "auto";
+  const RATE = 1.05, music = new Audio("audio/excerpt.wav"); music.preload = "auto";
   let started = false, CAPS = [], LINES = [];
   fetch("trailer_assets/cues.json").then(r => r.json()).then(c => {
     LINES = c.map(([at, id, text, dur]) => { const au = new Audio(`trailer_assets/${id}.wav`); au.preload = "auto"; au.playbackRate = RATE; au.preservesPitch = true; return { at, au, text, dur, played: false }; });
@@ -65,7 +65,7 @@ const TRAILER = (() => {
   const T = () => (!started ? +(qs.get("from") || 0) : pausedAt !== null ? pausedAt : performance.now() / 1000 - t0);
 
   // sound effects, synthesized (no files): a bling on the build credit, a low hit under the punchline
-  let ac = null; const SFX = [{ at: 40.5, kind: "bling", done: false }, { at: 56.0, kind: "hit", done: false }];
+  let ac = null; const SFX = [{ at: 44.4, kind: "bling", done: false }, { at: 46.2, kind: "bling2", done: false }, { at: 59.4, kind: "hit", done: false }];
   function tone(f, t, dur, vol, type = "sine", f2 = null) {
     const o = ac.createOscillator(), g = ac.createGain(); o.type = type; o.frequency.setValueAtTime(f, t);
     if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + dur * 0.5);
@@ -75,6 +75,7 @@ const TRAILER = (() => {
   function sfx(kind) {
     if (!ac) return; const t = ac.currentTime + 0.02;
     if (kind === "bling") { tone(1318.5, t, 1.1, 0.16); tone(1975.5, t + 0.1, 1.3, 0.14); tone(2637, t + 0.1, 0.5, 0.05); tone(3951, t + 0.2, 0.4, 0.03); }
+    else if (kind === "bling2") { tone(1975.5, t, 1.0, 0.1); tone(2637, t + 0.05, 0.5, 0.04); }
     else { tone(110, t, 1.6, 0.5, "sine", 42); tone(55, t, 1.8, 0.35); tone(523.3, t + 0.15, 2.2, 0.05); tone(784, t + 0.15, 2.2, 0.04); tone(1046.5, t + 0.15, 2.2, 0.03); }
   }
   function syncMusic() {
@@ -82,11 +83,11 @@ const TRAILER = (() => {
     const t = T();
     for (const f of SFX) if (!f.done && t >= f.at) { f.done = true; if (t < f.at + 1) sfx(f.kind); }
     for (const l of LINES) if (!l.played && t >= l.at) { l.played = true; l.au.currentTime = 0; l.au.play().catch(() => {}); }
-    if (t < MUSIC_OUT) {
+    if (t < MUSIC_OUT + MUSIC_FADE) {
       const want = t + MUSIC_OFFSET;
       if (music.paused || Math.abs(music.currentTime - want) > 0.3) { music.currentTime = want; music.play().catch(() => {}); }
       const duck = CAPS.some(([a, b]) => t >= a && t < b) ? 0.35 : 1;
-      music.volume = Math.max(0, Math.min(1, Math.min(1, t / 0.3) * duck));
+      music.volume = Math.max(0, Math.min(1, MUSIC_VOL * Math.min(1, t / 0.3) * duck * Math.min(1, (MUSIC_OUT + MUSIC_FADE - t) / MUSIC_FADE)));
     } else if (!music.paused) music.pause();
   }
 
@@ -102,8 +103,9 @@ const TRAILER = (() => {
     const F0 = 10.5 + PL, D0 = F0 + 8, K0 = D0 + 8, E0 = K0 + 6;
     TRAILER.t = rt; TRAILER.blue = rt >= F0 && rt < D0; monoOn = TRAILER.blue; FLOW.mini = 0;
     if (rt < 10.5) { scene = "film"; return "tdraw"; }
-    if (rt < F0) { TRAILER.t = 21.8 + (rt - 10.5); scene = "pitch"; return "tdraw"; }
-    if (rt < D0) { FLOW.newKey = "baseline"; FLOW.mini = Math.max(0, Math.min(1, (rt - F0 - 4) / 1)); st.day = (rt - F0) * 9; return "flow"; }
+    if (rt < F0) { TRAILER.t = 20.5 + (rt - 10.5); scene = "pitch"; return "tdraw"; }
+    // the fast-track line appears as "a few take the fast track" is spoken
+    if (rt < D0) { FLOW.newKey = "baseline"; FLOW.mini = Math.max(0, Math.min(1, (rt - F0 - 6.3) / 0.8)); st.day = (rt - F0) * 9; return "flow"; }
     if (rt < K0) { TRAILER.docT = (rt - D0) * 1.6; return "doc"; }
     if (rt < E0) { scene = "build"; return "tdraw"; }
     scene = "end"; return "tdraw";
@@ -117,7 +119,7 @@ const TRAILER = (() => {
     ctx.save();
     full = mode === "tdraw";                  // film stills and cards: full frame, subtitles over the picture
     if (full) return;
-    ctx.fillStyle = "#fdfcf8"; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = "#fbf9ef"; ctx.fillRect(0, 0, W, H);
     const s = PIC; ctx.translate(W * (1 - s) / 2, H * 0.012); ctx.scale(s, s);
     ctx.beginPath(); ctx.rect(0, 0, W, H); ctx.clip();
   }
@@ -173,18 +175,25 @@ const TRAILER = (() => {
       return;
     }
     if (scene === "pitch") { pitch(t); return; }
-    if (scene === "build") {
-      const a = Math.max(0, Math.min(1, (T() - (10.5 + PL + 17)) / 0.5));   // 6 s scene: 1 s of black first, then the credit
-      ctx.globalAlpha = a; text("Built with Nemotron, powered by Verda.", W / 2, H * 0.5, H * 0.045, "#f2f2f2", 700); ctx.globalAlpha = 1; return;
+    if (scene === "build") {                  // credit, synced to the voice: each name appears (and chimes) as it is spoken
+      const V = 10.5 + PL + 17.1, tt = T();      // voice start; "Nemotron" is spoken at +0.81 s, "Verda" at +2.57 s (1.05x)
+      const col = (x, labelAt, nameAt, label, name) => {
+        const al = Math.max(0, Math.min(1, (tt - labelAt) / 0.3)), an = Math.max(0, Math.min(1, (tt - nameAt) / 0.25));
+        if (al) { ctx.globalAlpha = al; text(label, x, H * 0.45, H * 0.022, "#9a9a9a", 600); }
+        if (an) { ctx.globalAlpha = an; text(name, x, H * 0.52 + (1 - an) * H * 0.015, H * 0.05, "#f2f2f2", 800); }
+        ctx.globalAlpha = 1;
+      };
+      col(W * 0.27, V + 0.05, V + 0.81, "BUILT WITH", "NVIDIA Nemotron");
+      if (tt > V + 1.85) { ctx.globalAlpha = Math.min(1, (tt - V - 1.85) / 0.3); ctx.fillStyle = "rgba(255,255,255,0.35)"; ctx.fillRect(W * 0.5 - 1, H * 0.43, 2, H * 0.14); ctx.globalAlpha = 1; }
+      col(W * 0.73, V + 1.85, V + 2.57, "POWERED BY", "Verda");
+      return;
     }
-    const pk = Math.max(0, Math.min(1, (T() - 56) / 0.5));       // the punchline arrives last; the rest steps back
+    const pk = Math.max(0, Math.min(1, (T() - 59.4) / 0.5));       // the punchline arrives last; the rest steps back
     ctx.globalAlpha = 1 - 0.65 * pk;
-    text("We propose a research-based framework for future automation.", W / 2, H * 0.2, H * 0.036, "#f2f2f2", 700);
-    text("OUR SUGGESTION", W / 2, H * 0.34, H * 0.024, "#9fc3ea", 700);
-    text("Pilot one clinician-validated pipeline in one wellbeing services county.", W / 2, H * 0.42, H * 0.034, "#f2f2f2", 600);
-    text("Measure: patients reaching treatment within target times (Goal 3, indicator 3.1).", W / 2, H * 0.5, H * 0.024, "#ddd", 500);
+    text("SCIENCE-BASED PILOT", W / 2, H * 0.37, H * 0.026, "#9fc3ea", 700);
+    text("One clinician-validated pipeline in one wellbeing services county.", W / 2, H * 0.45, H * 0.034, "#f2f2f2", 600);
     text("More time for hard cases, and for the human encounter.", W / 2, H * 0.6, H * 0.03, "#f2f2f2", 600);
-    text("Clinicians define, automate and validate each pipeline, transparently. The dots are an illustration. github.com/Toivo31/cancer", W / 2, H * 0.92, H * 0.016, "#bbb");
+    text("Clinicians define, automate and validate each pipeline, transparently. The dots are an illustration. github.com/Toivo31/cancer", W / 2, H * 0.8, H * 0.016, "#bbb");
     ctx.globalAlpha = pk;
     text("Waiting is a decision nobody made.", W / 2, H * 0.76, H * 0.06, "#ffffff", 800);
     ctx.globalAlpha = 1;
@@ -204,9 +213,9 @@ const TRAILER = (() => {
 
   // the product pitch: four panels on the beat; the music drop lands on OPTIMISE
   function pitch(t) {
-    ctx.fillStyle = "#fdfcf8"; ctx.fillRect(0, 0, W, H);
-    const pt = t - 21.8;                       // seconds into the pitch scene; the first 5.2 s are the two failure modes
-    if (pt < 5.2) {
+    ctx.fillStyle = "#fbf9ef"; ctx.fillRect(0, 0, W, H);
+    const pt = t - 20.5;                       // seconds into the pitch scene; the first 6.5 s are the two failure modes
+    if (pt < 6.5) {
       text("TWO WAYS AI FAILS IN MEDICINE", W / 2, H * 0.14, H * 0.05, "#111", 800);
       const C = [[0.5, "TRUST TOO LITTLE", "Doctors check everything.", "No time is saved."],
                  [2.0, "TRUST TOO MUCH", "Doctors stop checking.", "Errors slip through."]];
@@ -226,8 +235,8 @@ const TRAILER = (() => {
     text("A simple, transparent framework to automate cancer care.", W * 0.05, H * 0.16, H * 0.024, "#444", 500, "left");
     const P = [
       [27.0, "DEFINE", "Clinicians define each pipeline as a simple flowchart of rules."],
-      [28.6, "AUTOMATE", "The system reads the note and runs the pipeline: red flag, no follow-up, fast track."],
-      [30.4, "VALIDATE", "Clinicians validate each pipeline before it runs. If the model is unsure, it flags the case for clinical review."],
+      [29.0, "AUTOMATE", "The system reads the note and runs the pipeline: red flag, no follow-up, fast track."],
+      [31.4, "VALIDATE", "Clinicians validate each pipeline before it runs. If the model is unsure, it flags the case for clinical review."],
     ];
     const pw = W * 0.28, gap = W * 0.03, x0 = W * 0.05, y0 = H * 0.21, ph = H * 0.56;
     P.forEach(([at, head, cap], i) => {
@@ -249,7 +258,11 @@ const TRAILER = (() => {
       } else if (head === "AUTOMATE") {          // a note, a flag, then the rule fires
         ctx.fillStyle = "#f3f1ea"; ctx.fillRect(x + pw * 0.08, vy + vh * 0.05, pw * 0.84, vh * 0.36);
         text("Tired, lost 6 kg.", x + pw * 0.12, vy + vh * 0.16, H * 0.017, "#222", 400, "left");
-        ctx.strokeRect(x + pw * 0.12 + H * 0.098, vy + vh * 0.16 - H * 0.014, H * 0.07, H * 0.028);
+        if (t > at + 0.4) {                      // the red flag: a box measured around "lost 6 kg"
+          ctx.font = `400 ${Math.round(H * 0.017)}px "Inter", sans-serif`;
+          const bx = x + pw * 0.12 + ctx.measureText("Tired, ").width, bw = ctx.measureText("lost 6 kg.").width;
+          ctx.lineWidth = 2; ctx.strokeRect(bx - 1, vy + vh * 0.16 - H * 0.016, bw + 4, H * 0.032);
+        }
         text("Likely stress.", x + pw * 0.12, vy + vh * 0.31, H * 0.017, "#222", 400, "left");
         if (t > at + 0.6) text("red flag, no follow-up", cx, vy + vh * 0.56, H * 0.0155, "#222", 600);
         if (t > at + 1.2) { text("↓", cx, vy + vh * 0.7, H * 0.03, "#111", 800); text("FAST TRACK", cx, vy + vh * 0.88, H * 0.022, "#111", 800); }
@@ -281,21 +294,21 @@ const TRAILER = (() => {
     if (mode === "flow" && TRAILER.blue) {      // the simulation runs inside our framework
       const a = Math.min(1, (T() - (10.5 + PL)) / 0.4);
       ctx.save(); ctx.globalAlpha = a;
-      ctx.fillStyle = "rgba(253,252,248,0.96)"; ctx.fillRect(W * 0.76, H * 0.045, W * 0.23, H * 0.12);
+      ctx.fillStyle = "rgba(251,249,239,0.96)"; ctx.fillRect(W * 0.76, H * 0.045, W * 0.23, H * 0.12);
       ctx.strokeStyle = "rgba(30,30,28,1)"; ctx.lineWidth = 2.5; ctx.strokeRect(W * 0.76, H * 0.045, W * 0.23, H * 0.12);
       text("IN OUR FRAMEWORK", W * 0.875, H * 0.088, H * 0.027, "rgba(30,30,28,1)", 800);
       text("clinician-defined rules", W * 0.875, H * 0.133, H * 0.017, "#333", 500);
       ctx.restore();
     }
     if (mode === "lanes") {
-      ctx.fillStyle = "rgba(253,252,248,0.95)"; ctx.fillRect(0, 0, W, H * 0.12);
+      ctx.fillStyle = "rgba(251,249,239,0.95)"; ctx.fillRect(0, 0, W, H * 0.12);
       text("A REAL NORWEGIAN HOSPITAL · STOKSTAD ET AL. 2019", W * 0.04, H * 0.06, H * 0.026, "#1f1f1d", 700, "left");
       text(t < DROP ? "Published 40%  ·  Ours 40%" : "Reordered, same patients: 80%  (88% with the faster scanner · 67% no new equipment)",
            W * 0.96, H * 0.06, H * 0.022, "#1f1f1d", 700, "right");
     }
     if (mode === "flowcard") {                 // the challenge and the tech challenges, as text beside the running flow
       const a = Math.max(0, Math.min(1, t / 0.5)), bx = W * 0.66, by = H * 0.3, bw = W * 0.32, bh = H * 0.5;
-      ctx.globalAlpha = a; ctx.fillStyle = "rgba(253,252,248,0.96)"; ctx.fillRect(bx, by, bw, bh);
+      ctx.globalAlpha = a; ctx.fillStyle = "rgba(251,249,239,0.96)"; ctx.fillRect(bx, by, bw, bh);
       ctx.strokeStyle = "rgba(25,95,165,0.9)"; ctx.lineWidth = 2; ctx.strokeRect(bx, by, bw, bh);
       const X = bx + W * 0.015;
       text("THE CHALLENGE", X, by + H * 0.05, H * 0.019, "rgba(25,95,165,1)", 700, "left");
@@ -317,7 +330,7 @@ const TRAILER = (() => {
   function finish() {
     ctx.restore();
     const y0 = full ? H * 0.86 : H * (0.012 + PIC) + H * 0.008;
-    if (!full) { ctx.fillStyle = "#fdfcf8"; ctx.fillRect(0, y0, W, H - y0); }
+    if (!full) { ctx.fillStyle = "#fbf9ef"; ctx.fillRect(0, y0, W, H - y0); }
     const t = T(), c = CAPS.find(([a, b]) => t >= a && t < b); if (!c || !started) return;
     const size = H * 0.027; ctx.font = `${Math.round(size)}px "Inter", sans-serif`;
     const lines = [], maxW = W * 0.78; let cur = "";

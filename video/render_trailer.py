@@ -18,7 +18,7 @@ import imageio_ffmpeg
 ROOT = Path(__file__).resolve().parent
 DOTS = ROOT / "dots"
 SR = 48000
-RATE = 1.2
+RATE = 1.05
 FF = imageio_ffmpeg.get_ffmpeg_exe()
 
 
@@ -54,16 +54,16 @@ def mix_audio(seconds, tmp):
     cues = json.load(open(DOTS / "trailer_assets" / "cues.json"))        # [at, id, text, dur]
     spans = [(c[0], c[0] + c[3] / RATE) for c in cues]
     # music: excerpt from 18.8 s, only until 10.5 s (it stops when the visualisation starts), ducked under the voice
-    MUSIC_OFFSET, MUSIC_OUT = 18.8, 10.5
+    MUSIC_OFFSET, MUSIC_OUT, MUSIC_FADE, MUSIC_VOL = 18.8, 6.5, 3.0, 0.5
     m = load_stereo(DOTS / "audio" / "excerpt.wav", tmp)
-    seg = m[int(MUSIC_OFFSET * SR): int((MUSIC_OFFSET + MUSIC_OUT) * SR)].copy()
+    seg = m[int(MUSIC_OFFSET * SR): int((MUSIC_OFFSET + MUSIC_OUT + MUSIC_FADE) * SR)].copy()
     t = np.arange(len(seg)) / SR
     duck = np.ones_like(t)
     for a, b in spans: duck[(t >= a) & (t < b)] = 0.35
     k = np.ones(int(0.03 * SR)) / int(0.03 * SR)
     duck = np.convolve(duck, k, mode="same")
-    gain = np.minimum(1, t / 0.3) * duck
-    gain *= np.minimum(1, (MUSIC_OUT - t) / 0.03)
+    gain = MUSIC_VOL * np.minimum(1, t / 0.3) * duck
+    gain *= np.clip((MUSIC_OUT + MUSIC_FADE - t) / MUSIC_FADE, 0, 1)
     seg *= gain[:, None]
     buf[: len(seg)] += seg[: n]
     # narration at 1.2x, pitch kept
@@ -72,9 +72,10 @@ def mix_audio(seconds, tmp):
         i = int(at * SR); j = min(n, i + len(v))
         if i < n: buf[i:j] += v[: j - i]
     # effects (same recipes as sfx() in trailer.js)
-    t0 = 40.5     # bling
+    t0 = 44.4     # bling
     tone(buf, 1318.5, t0, 1.1, 0.16); tone(buf, 1975.5, t0 + 0.1, 1.3, 0.14); tone(buf, 2637, t0 + 0.1, 0.5, 0.05); tone(buf, 3951, t0 + 0.2, 0.4, 0.03)
-    t1 = 56.0     # hit
+    tone(buf, 1975.5, 46.2, 1.0, 0.1); tone(buf, 2637, 46.25, 0.5, 0.04)     # second chime on "Verda"
+    t1 = 59.4     # hit
     tone(buf, 110, t1, 1.6, 0.5, 42); tone(buf, 55, t1, 1.8, 0.35)
     for f, v in ((523.3, 0.05), (784, 0.04), (1046.5, 0.03)): tone(buf, f, t1 + 0.15, 2.2, v)
     peak = float(np.abs(buf).max())
@@ -112,7 +113,7 @@ def render_frames(seconds, fps, size, silent_mp4, base_url):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--seconds", type=float, default=59.5)
+    ap.add_argument("--seconds", type=float, default=63.5)
     ap.add_argument("--fps", type=int, default=30)
     ap.add_argument("--size", default="1280x960")
     ap.add_argument("--url", default="http://127.0.0.1:8770")

@@ -1,0 +1,51 @@
+{
+  "_about": "Final narration: one normal male voice for every line, natural speed in the files; the trailer plays each line at 1.2x with pitch preserved (browser time-stretch). Run: python video/generated/tts.py --lines vo_final.json --voice Iapetus",
+  "voice_style": "Speak in a normal, natural male voice, like a clear and friendly presenter. Conversational, not dramatic, not announcer-like.",
+  "lines": [
+    {
+      "id": "v1_word",
+      "at": "0:00.3",
+      "text": "Cancer is a word. Waiting is a number."
+    },
+    {
+      "id": "v2_rule",
+      "at": "0:06.6",
+      "text": "A computer can never be held accountable. We agree."
+    },
+    {
+      "id": "v4a_modes",
+      "at": "0:10.5",
+      "text": "Doctors either trust AI too little and check everything, or too much and check nothing."
+    },
+    {
+      "id": "v5_pitch",
+      "at": "0:15.8",
+      "text": "Our framework sits between: clinicians define each pipeline, the system runs it, and when the model is unsure, a doctor reviews the case."
+    },
+    {
+      "id": "v3_wait",
+      "at": "0:23.6",
+      "text": "In our framework, the pathway is simulated. Dots are patients, piles are waiting, and a few take the fast track."
+    },
+    {
+      "id": "v4_engine",
+      "at": "0:31.5",
+      "text": "A model reads the notes and suggests a fast track when immediate care is needed."
+    },
+    {
+      "id": "v6c_build",
+      "at": "0:40.6",
+      "text": "Built with Nemotron, powered by Verda."
+    },
+    {
+      "id": "v7_end",
+      "at": "0:45.7",
+      "text": "Our suggestion: pilot one clinician-validated pipeline in one wellbeing county, tracking treatment within target times. More time for hard cases and the human encounter."
+    },
+    {
+      "id": "v8_punch",
+      "at": "0:56.0",
+      "text": "Waiting is a decision nobody made."
+    }
+  ]
+}

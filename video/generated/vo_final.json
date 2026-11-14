@@ -15,7 +15,7 @@
     {
       "id": "v3_wait",
       "at": "0:10.6",
-      "text": "In our framework, each dot is a patient. The piles are the waiting. A few take the fast track."
+      "text": "In our framework, the pathway is simulated. Dots are patients, piles are waiting, and a few take the fast track."
     },
     {
       "id": "v4_engine",
