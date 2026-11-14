@@ -376,13 +376,13 @@ function buildPanes() {
   const flows = S.keys.map(k => variantOf(sc, k).flow);
   const lay = layoutUnion(flows);
   const root = $('#panes');
-  root.className = 'panes' + (S.split ? ' split' : '');
+  root.className = 'panes' + (S.view === 'both' ? ' split' : '');
   root.innerHTML = '';
   S.panes = [];
   S.H = Math.max(...flows.map(f => f.cohort.horizon));
   [0, 1].forEach(side => {
     const V = variantOf(sc, S.keys[side]);
-    const hidden = !S.split && side !== (S.single || 0);
+    const hidden = S.view !== 'both' && side !== (S.view === 'left' ? 0 : 1);
     const el = document.createElement('section');
     el.className = 'pane ' + (side ? 'right' : 'left');
     el.style.display = hidden ? 'none' : '';
@@ -424,7 +424,7 @@ function buildPanes() {
 
 function fit(pa) {
   const w = pa.el.clientWidth - 2, availH = S.big ? 1e9 : Math.max(430, innerHeight - 310);
-  const sc = clamp(Math.min(w / pa.W, availH / pa.H), .5, 1.3);
+  const sc = clamp(Math.min(w / pa.W, availH / pa.H), .5, 1.05);
   pa.gw.style.width = Math.round(pa.W * sc) + 'px';
   pa.gw.style.margin = '0 auto';
 }
@@ -496,7 +496,7 @@ function nodeTip(pa, n) {
   if (dc && dc.n) {
     h += `<br><span class="m">${fmt(dc.n)} decisions. Chosen share (mean probability offered):</span>`;
     dc.options.forEach(o => { h += `<br><span class="m">${esc(shortOpt(F, o, 28))}: ${pct(dc.share[o])} (${dc.mean_probability[o] == null ? '–' : pct(dc.mean_probability[o])})</span>`; });
-    h += `<br><span class="m">The simulator takes the most likely option offered.</span>`;
+    h += ``;
   }
   if (ex) h += `<br><span class="m">${fmt(ex.n)} patients end here (${esc(String(ex.outcome).replace('_', ' '))})${ex.outcome !== 'treatment' && ex.n_cancer ? `, of whom ${fmt(ex.n_cancer)} had cancer` : ''}</span>`;
   return h;
@@ -577,7 +577,7 @@ function decisionsCard() {
     });
     h += '</div>';
   });
-  h += `<p>Today's decision source is a fixed table of shares per decision point (a stand-in until the decision model is attached); the simulator takes the most likely option.</p></div>`;
+  h += `<p>Where the pathway has a choice, a decision source picks the option. Here it is the scenario's rule table, a stand-in until the decision model is attached.</p></div>`;
   return h;
 }
 function traceCard() {
@@ -608,7 +608,7 @@ function aboutCard() {
   const V = S.panes.map(p => p.V);
   let h = `<div class="card"><h3>What you are looking at</h3>
     <p>Each dot is one simulated patient, starting on day 0 at first contact. Dots wait (amber) and are served (blue) at the steps; treated patients land on the right of the last step, mint if in time.</p>
-    <p>Left: the pathway as it runs today. Right: the same patients with the change. Numbers on the graph count every simulated patient; the moving dots are a sample.</p>`;
+    <p>Left: the pathway as it runs today. Right: the same patients with the change. Numbers on the graph count every simulated patient (${fmt(S.panes[0].P.F.totals.n)}); the moving dots are a sample of ${S.panes[0].P.F.cohort.size}, and so are the live counters above each graph. The clock is days since each patient's own first contact.</p>`;
   V.forEach((v, i) => { if (v.note) h += `<p><b style="color:${i ? C.mint : C.coral}">${esc(v.label)}.</b> ${esc(v.note)}</p>`; });
   const ch = V[1].changes && V[1].changes.length ? V[1].changes : null;
   if (ch) h += `<p><b>Changes in the right pathway</b><br>${ch.map(esc).join('<br>')}</p>`;
@@ -657,7 +657,8 @@ function init() {
   if (q.has('compare')) S.compare = true;
   if (q.has('paused')) S.playing = false;
   if (q.get('day')) S.t = +q.get('day');
-  S.split = !(q.get('view') === 'single') && innerWidth >= 1300;
+  S.view = q.get('view') || (innerWidth >= 1700 ? 'both' : 'right');
+  S.big = q.has('large') || innerHeight < 950;
   setScenario(S.sid, q);
   $('#scn').innerHTML = D.scenarios.map(s => `<button class="chip sc ${s.id === S.sid ? 'on' : ''}" data-s="${s.id}">${esc(s.id === 'norway' ? 'Norway (validation)' : 'Finland (synthetic)')}</button>`).join('');
   $('#scn').addEventListener('click', e => { const b = e.target.closest('[data-s]'); if (!b) return; document.querySelectorAll('#scn .chip').forEach(c => c.classList.toggle('on', c === b)); S.t = 0; S.playing = true; $('#play').textContent = 'Pause'; setScenario(b.dataset.s); });
@@ -666,8 +667,10 @@ function init() {
   $('#zoom').onclick = () => { S.big = !S.big; $('#zoom').classList.toggle('on', S.big); S.panes.forEach(fit); };
   $('#cmp').classList.toggle('on', S.compare);
   $('#cmp').onclick = () => { S.compare = !S.compare; $('#cmp').classList.toggle('on', S.compare); S.panes.forEach(renderPane); };
-  const vb = $('#view'); vb.textContent = S.split ? 'Split' : 'Single';
-  vb.onclick = () => { S.split = !S.split; vb.textContent = S.split ? 'Split' : 'Single'; buildPanes(); };
+  const vb = $('#view'), VL = {both: 'View: both', left: 'View: today', right: 'View: after'};
+  vb.textContent = VL[S.view];
+  vb.onclick = () => { S.view = {both: 'left', left: 'right', right: 'both'}[S.view]; vb.textContent = VL[S.view]; buildPanes(); };
+  $('#zoom').classList.toggle('on', S.big);
   $('#play').onclick = () => { if (S.t >= S.H) S.t = 0; S.playing = !S.playing; $('#play').textContent = S.playing ? 'Pause' : 'Play'; };
   $('#restart').onclick = () => { S.t = 0; S.playing = true; $('#play').textContent = 'Pause'; };
   $('#slider').oninput = e => { S.t = +e.target.value; S.playing = false; $('#play').textContent = 'Play'; };

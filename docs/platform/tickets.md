@@ -46,7 +46,7 @@ Critical path to the first browser loop:
 | [ ] | M2-7 | Optimisations: job, result with labels and evidence, `apply` with a subset and linked changes | M | M2-6 | Applying all changes equals the optimiser's own output; subset tests |
 | [ ] | M2-8 | "Try a decision" endpoint | S | M2-4 | Returns the stub's probabilities for a hand-entered context |
 | [ ] | M2-9 | API tests including the full loop: template → run → optimise → apply → rerun → compare | M | M2-7 | Loop test passes with small `n` and asserts same patients |
-| [ ] | M2-11 | Flow endpoint: per-step and per-edge counts, waits, critical-path share, queue series, decision shares, and a sampled cohort of patient traces for playback | M | M2-6 | Totals equal the run's metrics; sample size and seed configurable; one test on both shipped templates |
+| [ ] | M2-11 | Flow endpoint: per-step and per-edge counts, waits, critical-path share, queue series, decision shares, and a sampled cohort of patient traces for playback | M | M2-6 | Totals equal the run's metrics; sample size and seed configurable; one test on both shipped templates | **Library part done** (`pathway_sim/flow.py`, `docs/platform/flow-format.md`, fixtures, `tests/test_flow.py`); the HTTP endpoint is svc-b's.
 | [ ] | M2-10 | `service/README.md` with a `curl` walkthrough of the loop | S | M2-9 | Walkthrough runs as written |
 
 ## M3 Run from the browser (spec 04)
@@ -63,8 +63,8 @@ Critical path to the first browser loop:
 | [ ] | M3-8 | Compare two runs: headline table and the Compare layer on the graph | S | M3-6, M3-10 | Deltas shown on steps and edges; different-patient runs refused with a reason |
 | [ ] | M3-10 | **Run layers on the flowchart**: flow counts, time per step, decisions' chosen shares, queues; "where time is lost" list | M | M3-4, M2-11 | After a run the Norway graph shows the PET and tumour-board waits as the darkest steps; counts match the metrics |
 | [ ] | M3-11 | **Playback**: time slider, play, speed, dots moving along the graph, live counters | M | M3-10 | A 300-patient cohort plays through the Finnish scenario at 60 frames a second on a laptop; counters at the end equal the run's totals |
-| [ ] | M3-12 | Patient trace: click a dot or list row; steps with wait/took/result, decisions with offered probabilities, critical path highlighted | S | M3-11 | Trace of one patient equals that patient's record in the run log |
-| [ ] | M3-13 | Offline flow page `demo/flow.html` (no build): graph, flow/time/decision layers and playback from precomputed logs; fallback demo | M | M2-11 shape agreed | Opens from disk with no server; shows Norway observed vs optimised side by side |
+| [x] | M3-12 | Patient trace: click a dot or list row; steps with wait/took/result, decisions with offered probabilities, critical path highlighted | S | M3-11 | Trace of one patient equals that patient's record in the run log | Data and the offline page done (`tests/test_flow.py::test_trace_equals_run_log`, `demo/flow.html`); the React version is web's.
+| [x] | M3-13 | Offline flow page `demo/flow.html` (no build): graph, flow/time/decision layers and playback from precomputed logs; fallback demo | M | M2-11 shape agreed | Opens from disk with no server; shows Norway observed vs optimised side by side | Done: `demo/export_flow.py` then open `demo/flow.html`.
 | [ ] | M3-9 | Scripted browser pass with screenshots | S | M3-7 | One command opens a template, edits a probability, runs, saves screenshots |
 
 ## M4 Optimise and rerun in the browser (specs 04, 05)

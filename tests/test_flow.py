@@ -107,3 +107,14 @@ def test_two_cohorts_pooled():
     assert f["totals"]["n"] == 400 and f["totals"]["cohorts"] == 2
     assert f["metrics"]["share_within_target"] == pytest.approx(
         sum(compute_metrics(r, sc)["share_within_target"] for r in runs) / 2, abs=1e-4)
+
+
+def test_fixtures_have_the_documented_shape():
+    from pathlib import Path
+    root = Path(__file__).resolve().parent.parent / "docs" / "platform" / "fixtures"
+    for name in ("flow_norway.json", "flow_finland.json", "flow_norway_optimised.json", "flow_finland_optimised.json"):
+        f = json.loads((root / name).read_text())
+        assert f["format"] == "flow/1"
+        for k in ("totals", "metrics", "graph", "steps", "resources", "queues", "decisions", "exits", "time_lost", "cohort", "meta"):
+            assert k in f, (name, k)
+        assert f["cohort"]["patients"] and {"v", "c", "out", "exit"} <= set(f["cohort"]["patients"][0])

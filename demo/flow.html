@@ -14,7 +14,7 @@
   <div class="views">
     <button id="cmp" class="chip" title="Show change per step against the left pathway">Compare</button>
     <button id="zoom" class="chip" title="Fit to the screen, or draw larger and scroll">Large</button>
-    <button id="view" class="chip" title="Side by side or one pathway at a time">Split</button>
+    <button id="view" class="chip" title="Both pathways side by side, or one at a time">View</button>
   </div>
   <span class="badge sim" title="Every patient here is simulated. No real patient data.">Simulated patients</span>
 </header>
@@ -27,7 +27,7 @@
 <footer class="bar" id="bar">
   <button id="play" class="play" aria-label="Play or pause">Pause</button>
   <button id="restart" class="chip">Restart</button>
-  <div class="clock"><span class="eyebrow">Day</span><span id="day" class="num">0</span></div>
+  <div class="clock"><span class="eyebrow" title="Days since each patient's first contact">Patient day</span><span id="day" class="num">0</span></div>
   <input id="slider" type="range" min="0" max="100" step="0.1" value="0" aria-label="Time in days since first contact">
   <label class="spd"><span class="eyebrow">Speed</span>
     <select id="speed"></select></label>
