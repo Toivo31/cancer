@@ -27,7 +27,7 @@ Critical path to the first browser loop:
 | [x] | M1-3 | `StubBackend`: hardcoded and conditional probability tables; automatic migration of `mix`, `rules`, `prefer` | M | M1-2 | Every shipped scenario reproduces its current metrics exactly; changing one probability changes the run |
 | [ ] | M1-4 | Safe condition evaluator replacing `eval` in engine, policies and optimiser | M | – | Identical results on all scenarios; sandbox-escape strings rejected at load (test) |
 | [x] | M1-5 | Stub HTTP server and `HttpBackend` (keep-alive, cache, timeout, error modes) | M | M1-3 | A run through `http://localhost` equals the in-process run; Finnish run at most 3× slower; failure modes tested |
-| [ ] | M1-6 | Contract test file runnable against any JEV address | S | M1-5 | `pytest tests/test_jev_contract.py --jev-url …` passes against the stub server |
+| [x] | M1-6 | Contract test file runnable against any JEV address | S | M1-5 | `pytest tests/test_jev_contract.py --jev-url …` passes against the stub server |
 | [ ] | M1-7 | `LocalBackend` wrapping the numpy model in `decision_model/` | S | M1-1 | In-loop experiment runs through the contract with unchanged results |
 | [ ] | M1-8 | CLI: `--jev stub\|rule\|http://…`, `--decision-mode`, `--set point.option=prob` | S | M1-3 | Commands in README work |
 | [ ] | M1-9 | Turn one clinician judgement in the Finnish scenario (GP: image or wait) into a decision point | M | M1-3, T (F1) | Scenario recalibrated to the same waits; `docs/finland_scenario.md` updated |
