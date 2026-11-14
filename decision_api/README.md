@@ -178,3 +178,18 @@ For scripted API-contract testing only, `python3 -m decision_api.server --fixtur
 provides explicitly labelled fixture responses for the bundled questions. Unknown
 questions fail. Fixture reviews exist only in memory. Recorded real examples
 remain a separate, labelled playback path in all modes. The tests never call Modal.
+
+## Follow-up: optional shared-Nemotron context refinement
+
+See **[handoff 2](REASONING_HANDOFF.md)** for the coding model implementing the
+next step. Refinement is off by default. Enabling it appends the question and
+optional extra instructions, uses a total new-token budget, permits bounded
+patient-record retrieval and then scores the refined context.
+
+The intended generator is the original frozen Nemotron vocabulary head and
+unadapted suffix sharing the decision model's frozen prefix. It is not a second
+LLM service. The native runtime helper and owner patch are prepared; the live
+GPU server has not yet been updated or validated for generation. Until its
+preflight succeeds, the reference panel offers an explicitly scripted tool-flow
+preview with real local synthetic retrieval, without making a model call.
+Existing saved outputs and normal scoring remain unchanged.

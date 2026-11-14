@@ -19,8 +19,25 @@ export interface Review {question_id: string; action_id: string; reviewer: strin
 export interface SavedReview extends Review {id: string; decision_id: string; is_correction: boolean; proposed_action_id: string; created_at: string}
 export interface Examples {
   mode: 'fixture' | 'live'; credential_configured: boolean;
+  reasoning: {default_enabled: false; preview_available: boolean; live_available: boolean};
   pathway: PathwayRequest; score: ScoreRequest;
   photos: {attribution: string; source: string; license: string; examples: {id: string; title: string; url: string; context: string; source_id: string; source_split: string}[]};
+}
+export interface ReasoningSettings {
+  enabled?: boolean; max_tokens?: number; max_rounds?: number; max_tool_calls?: number;
+  additional_prompt?: string; max_context_chars?: number;
+}
+export interface ReasoningInput {
+  request?: ScoreRequest | PathwayRequest;
+  example_id?: 'pathway' | 'example-1' | 'example-2' | 'example-3';
+  patient?: string; as_of_step?: number; reasoning?: ReasoningSettings;
+}
+export interface Refinement {
+  enabled: boolean; mode: 'disabled' | 'scripted_tool_demo' | 'frozen_pretrained_nemotron';
+  original_context: string; context: string; includes_question: boolean;
+  tokens_used: number; rounds_used: number; tool_calls_used: number;
+  source_ids: string[]; stop_reason: string; trace: Record<string, unknown>[];
+  budget: {max_tokens: number; max_rounds: number; max_tool_calls: number; max_context_chars: number};
 }
 export interface RequestOptions {signal?: AbortSignal}
 export interface DecisionClient {
@@ -28,6 +45,8 @@ export interface DecisionClient {
   precomputed(id: string, options?: RequestOptions): Promise<{delivery: 'precomputed'; example_id: string; recorded_at: string; decision: Decision}>;
   health(options?: RequestOptions): Promise<{ready: boolean; backend: Decision['backend']}>;
   score(payload: ScoreRequest, options?: RequestOptions): Promise<Decision>;
+  reason(payload: ReasoningInput, options?: RequestOptions): Promise<{decision: Decision; refinement: Refinement}>;
+  refinePreview(payload: ReasoningInput, options?: RequestOptions): Promise<{delivery: 'scripted_tool_preview'; refinement: Refinement}>;
   propose(payload: PathwayRequest, options?: RequestOptions): Promise<Decision>;
   scoreExample(id: string, payload?: Partial<Pick<ScoreRequest, 'context' | 'case_id' | 'questions'>>, options?: RequestOptions): Promise<Decision>;
   decision(id: string, options?: RequestOptions): Promise<Decision & {input: Record<string, unknown>}>;

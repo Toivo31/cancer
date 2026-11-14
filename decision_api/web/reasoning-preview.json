@@ -1,0 +1,62 @@
+{
+  "delivery": "scripted_tool_preview",
+  "refinement": {
+    "enabled": true,
+    "mode": "scripted_tool_demo",
+    "original_context": "Synthetic diagnostic-pathway intake. Propose one allowed next step for a clinician to review.",
+    "context": "Synthetic diagnostic-pathway intake. Propose one allowed next step for a clinician to review.\n\nQuestions and allowed choices:\nWhich allowed next step should be proposed for review?\nAllowed choices: Review the available history with the clinician; Request the missing intake information\n\nAdditional task instructions (not patient evidence):\nGive a quick evidence review.\n\nActual tool result: retrieve_information(patient)\n{\"as_of_step\": 1, \"entries\": [{\"source_id\": \"sim:intake-01\", \"text\": \"Synthetic patient reports a changing skin lesion. This statement is not a diagnosis.\", \"timestamp\": \"2026-11-14T08:00:00Z\"}, {\"source_id\": \"sim:review-02\", \"text\": \"Synthetic follow-up note: review the supplied photograph and documented history.\", \"timestamp\": \"2026-11-14T09:00:00Z\"}], \"patient\": \"sim:demo-record\", \"synthetic\": true}\n\nGenerated evidence summary (may contain errors; not a source record):\nAvailable history has been retrieved. Review the source entries and unresolved information before choosing an allowed action.",
+    "tokens_used": 0,
+    "rounds_used": 2,
+    "tool_calls_used": 1,
+    "trace": [
+      {
+        "round": 1,
+        "tokens_used": 0,
+        "tool": "retrieve_information",
+        "arguments": {
+          "patient": "sim:demo-record"
+        },
+        "response": {
+          "patient": "sim:demo-record",
+          "as_of_step": 1,
+          "synthetic": true,
+          "entries": [
+            {
+              "source_id": "sim:intake-01",
+              "timestamp": "2026-11-14T08:00:00Z",
+              "text": "Synthetic patient reports a changing skin lesion. This statement is not a diagnosis."
+            },
+            {
+              "source_id": "sim:review-02",
+              "timestamp": "2026-11-14T09:00:00Z",
+              "text": "Synthetic follow-up note: review the supplied photograph and documented history."
+            }
+          ]
+        },
+        "status": "evidence_added"
+      },
+      {
+        "round": 2,
+        "tokens_used": 0,
+        "status": "summary_added",
+        "summary": "Available history has been retrieved. Review the source entries and unresolved information before choosing an allowed action."
+      }
+    ],
+    "source_ids": [
+      "sim:intake-01",
+      "sim:review-02"
+    ],
+    "budget": {
+      "max_tokens": 128,
+      "max_rounds": 3,
+      "max_tool_calls": 2,
+      "max_context_chars": 12000
+    },
+    "stop_reason": "summary_complete",
+    "includes_question": true,
+    "visible_input_source_ids": [
+      "sim:intake"
+    ],
+    "generator_calls": 2
+  }
+}
