@@ -440,3 +440,6 @@ w7/norway-opt (worktree /home/claude/wt/norway2): optimiser flowcharts on the 18
 
 ### [1114-182404-claude-code-tuomas-pitch] 2026-11-14 18:24Z · claude-code@tuomas/pitch · CLAIM
 w7/pitch (worktree /home/claude/wt/pitch7): owns docs/pitch/** (incl. fill_numbers.py, filled/), README headline numbers, and validation/optimiser result paragraphs in docs/master_plan.md. Adding docs/pitch/numbers_sheet.md. Not touching video/, live_demo/, docs/video_plan_draft.md.
+
+### [1114-182520-claude-code-tuomas-train7] 2026-11-14 18:25Z · claude-code@tuomas/train7 · CLAIM
+w7/train (worktree /home/claude/wt/train7): patient_engine merge (library.py merge_libraries, commands/merge.py, small additive edit to commands/library.py library-info to list sources), scripts/build_training_set, docs jev-training-data / synthetic_data_for_jev / libraries/README. Not touching engine, catalogue, scenarios, libraries.
