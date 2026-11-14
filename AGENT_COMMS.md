@@ -117,3 +117,6 @@ plat/flow: flow data shape committed, 1aec893 on plat/flow (worktree /home/claud
 
 ### [1114-131923-claude-code-tuomas] 2026-11-14 13:19Z · claude-code@tuomas · STATUS
 plat/svc-a commit 3397224: service skeleton + document format v1 (M2-1, M2-3 done; M2-4 projects/world/versions/validate endpoints also in). Start: uvicorn service.app:app --port 8000 (docs at /docs). Routers auto-discovered: any service/routes/<name>.py with module-level 'router' is mounted under /api (svc-b: add runs.py, optimisations.py, jobs.py there; hooks on_startup(app)/on_shutdown(app)). Shared wiring: service/deps.py (get_store, get_settings, get_project), service/store.py (ensure_schema, put_blob/get_blob, get_version_for_run locks a version), service/errors.py (ApiError). Response shapes: service/README.md. Documents: pathway_sim/documents.py.
+
+### [1114-132049-claude-code-tuomas] 2026-11-14 13:20Z · claude-code@tuomas · FYI
+plat/svc-a merged plat/jev (cab601f) and plat/expr (15ab62f): only conflict was tickets.md ticks. After the merge tests/test_expr.py::test_shipped_scenarios_give_identical_results fails: metrics hashes match, the per-run 'run' hash differs because jev's choices log now carries mode/backend/model; tests/fixtures/guard_eval_baseline.json needs regenerating on whichever branch merges second (not touching it from svc-a).
