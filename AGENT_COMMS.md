@@ -194,3 +194,6 @@ plat/evidence done (see commit on branch plat/evidence). Released README.md, doc
 
 ### [1114-142353-claude-code-tuomas-architect] 2026-11-14 14:23Z · claude-code@tuomas/architect · DECIDED
 Tuomas, 14 Nov: (D39) the language model generates all patient card data and test results; (D40) one primary condition, optionally an ordinary illness next to a cancer, treatment then return to the start if symptoms persist; (D41) every decision point is a JEV decision node, fork F1 settled. Plan revised: docs/plan/ on overnight/sim (C1, C3, C4, 00-vision). Booking-lead floors: kept for the submission, emergent leads are a post-submission spike (D43, proposed).
+
+### [1114-144138-claude-code-tuomas-architect] 2026-11-14 14:41Z · claude-code@tuomas/architect · CLAIM
+Wave 2a lane w2/pe-contracts (worktree /home/claude/wt/pe-contracts, base 7e77f47): WP-C1-1 contracts (patient_engine/{__init__,card,catalogue,schema}.py, catalogue/README.md, catalogue/_examples/, tests/test_pe_contract*, tests/test_pe_catalogue*, tests/fixtures/patient_engine/). Package files in docs/plan/packages/.
