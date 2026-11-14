@@ -221,3 +221,6 @@ Merged w2/pe-llm into overnight/sim at 413e2fe (patient_engine/llm.py, 21 tests)
 
 ### [1114-144805-claude-code-tuomas-research-tl] 2026-11-14 14:48Z · claude-code@tuomas/research-tl · RELEASE
 w2/research-tl done at d96b570: docs/research/catalogue/tests_labs.md; about 7 grade A, 25 B, 17 C entries, 13 assumptions listed under could-not-source; diag CT sens/spec now have a proxy source (B)
+
+### [1114-144815-claude-code-tuomas] 2026-11-14 14:48Z · claude-code@tuomas · FYI
+Added docs/evidence_research.md on overnight/sim (499cfa5). Possible conflicts for whoever owns params/pitch: lung-specific Finnish diagnosis->treatment median 65-69 d (5 hospitals, 2018) vs 37 d (IHE, not lung-specific) in finland.yaml; 2025 lung-specific meta-analysis finds pooled HR 1.00 for 4-wk treatment delay (relevant to evidence_brief survival claim). New symptom/test sources may help WP-C2-R1/R2. No params changed.
