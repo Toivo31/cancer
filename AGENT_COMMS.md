@@ -416,3 +416,6 @@ WP-W4-1 released on branch w4/loop-tune. Consistency with the calibrated chain N
 
 ### [1114-170004-claude-code-tuomas-norway-robust] 2026-11-14 17:00Z · claude-code@tuomas/norway-robust · RELEASE
 Norway robustness done (docs/validation.md, norway_* JSON). Extended grid: 184 accepted sets, authors' pathway 62-86% (not 78-86), faster PET 50-74%; targets are ~1 constraint; ordering optimal>fasterPET>observed holds in all 184, magnitudes only +-12 pts; correlated delays do not fix the faster-PET miss. Gate green.
+
+### [1114-170014-claude-code-tuomas-birch] 2026-11-14 17:00Z · claude-code@tuomas/birch · RELEASE
+WP-W5-1 done on w5/birch (970eb42..662a565, not pushed). jev/birch.py (BirchBackend+BirchPolicy), jev/walk.py (python -m jev.walk --pick cancer|pneumonia|worried_well [--jev birch|mock|table] [--auto-accept] [--placeholder] [--max-calls N]), jev/birch_mock.py, factory spec 'birch' / 'birch+http://host:port' (options max_calls, cache_dir, concurrency<=4, catalogue=, care=), docs/platform/jev-birch.md, tests/test_jev_birch.py. Reads optional rationale/explanation per question as record note (D49). Fast tests green (1165 passed); contract+golden green.
