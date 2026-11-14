@@ -8,7 +8,7 @@ Finland has the weakest lung cancer outcomes in the Nordics, and part of the gap
 
 - Five-year relative survival in lung cancer (NORDCAN, 2019-2023): men 17% in Finland against 27-30% in Denmark, Norway and Sweden; women 29% against 35-37%. [IHE Cancer Dashboard Finland 2026](https://ihe.se/app/uploads/2026/04/IHE-Cancer-Dashboard-Finland_.pdf), survival section.
 - Lung cancer is Finland's third most common cancer but causes the most cancer deaths. [University of Helsinki](https://www.helsinki.fi/fi/uutiset/terveys/miksi-suomessa-keuhkosyopaan-kuollaan-aiemmin-kuin-pohjoismaissa).
-- Delay costs lives in general: across cancers, a four-week treatment delay is associated with higher mortality (hazard ratio about 1.06-1.08 for surgery). This meta-analysis is not lung-specific. [Hanna et al., BMJ 2020](https://www.bmj.com/content/371/bmj.m4087.abstract).
+- Delay costs lives in general: across cancers, a four-week treatment delay is associated with higher mortality (hazard ratio about 1.06-1.08 for surgery). This meta-analysis is not lung-specific, and for lung surgery its estimate (about 1.06 per four weeks) was not statistically significant; a lung-specific 2025 meta-analysis is reported as null (`docs/evidence_research.md`). Do not claim that faster care saves lives in lung cancer. [Hanna et al., BMJ 2020](https://www.bmj.com/content/371/bmj.m4087.abstract).
 
 ## 2. The indicator we measure
 

@@ -43,7 +43,7 @@ python -m pathway_sim compare scenarios/generated/stokstad_calibrated.yaml --n 1
 # calibrate unsourced parameters on the observed pathway, predict the others
 python -m pathway_sim.calibrate scenarios/stokstad.yaml --n 2000 --out docs/validation_results.json
 
-# optimiser, blind, from the observed order with the faster PET-CT scanner
+# optimiser, blind to the hidden diagnosis, from the observed order with the faster PET-CT scanner
 python -m optimiser scenarios/generated/stokstad_calibrated.yaml --start faster_pet --out runs/opt.json
 
 # decision model benchmark (correction model vs dot-product)
@@ -76,14 +76,14 @@ python -m pytest tests/test_jev_contract.py --jev-url http://127.0.0.1:8100 --je
 | Norwegian pathway (Stokstad et al. 2019) | Published | Simulated |
 |---|---|---|
 | Observed pathway (calibrated) | 40% within 42 d | 40% |
-| Faster PET-CT only | 48% | 60% (we over-predict, see `docs/validation.md`) |
-| Authors' reordered pathway | 80% | 80% (predicted, not fitted; the calibrated "PET-CT ordered at triage" practice is carried into it, with PET-CT ordered at the first visit it would be 66%, `docs/review_checks/stokstad_pet_triage_result.json`) |
-| Optimiser, same premise as the authors | n/a | 88%: it finds the authors' three changes plus one |
-| Optimiser, no new equipment | n/a | 67% |
+| Faster PET-CT only | 48% (not significant) | 60% at the best fit (we over-predict; 50 to 74% across settings) |
+| Authors' reordered pathway | 80% (a model estimate) | 80% at the best fit (predicted, not fitted), but 62 to 86% across all 184 settings that fit the observed pathway, typically about 75%; about two thirds of settings fall inside the published 72 to 87%. The ranking (reordering beats a faster scanner beats today) holds in all 184. The calibrated "PET-CT ordered at triage" practice is carried into it; with PET-CT ordered at the first visit it would be 66% (`docs/review_checks/stokstad_pet_triage_result.json`, `docs/validation.md` Robustness) |
+| Optimiser, same premise as the authors | n/a | 88% at the best-fit setting: it finds the authors' three changes plus a fourth that needs a clinical check |
+| Optimiser, no new equipment | n/a | 67% at the best-fit setting (56 to 70% across the first-grid settings) |
 
 The Norwegian search chose from a menu of about 70 single changes that included each of the authors' changes as one edit; it was
 not told which. Its fourth change plans tissue sampling at referral triage, before a specialist has seen the patient, and needs a
-clinical check.
+clinical check. The lead over the authors' 80% comes from the fourth change. How the optimiser's results hold on all 184 settings and without the fourth change is being checked and is not claimed yet. Numbers for every spoken or shown claim: `docs/pitch/numbers_sheet.md`.
 
 | Finnish synthetic county (held-out, 90-day provisional target) | Within 90 d | Note |
 |---|---|---|

@@ -158,14 +158,14 @@ Code is on branch `overnight/sim`; how to run it is in `README.md`. Provisional 
   - The scenario also lists clinical needs, for example "the tumour board needs PET-CT", that no change may break.
   - *Update 14 Nov, review:* the tissue-confirmed guardrail is now active in Finland too (bronchoscopy and needle biopsy are marked as confirming). In the Norwegian check the missed-cancer guardrail is vacuous, because every patient has cancer and there is no discharge exit.
 - **Validation result** (`docs/validation.md`):
-  - Calibrating only the observed pathway reproduces the observed 40 percent. It then *predicts* 78 to 86 percent for the authors' pathway (published 80 percent) and their 16 percent drop in sampling procedures.
-  - It over-predicts "faster PET only": 55 to 67 percent against the published 48 percent.
-  - The blind optimiser, given the faster scanner as the authors were, finds their three changes:
+  - Calibrating only the observed pathway reproduces the observed 40 percent. It then *predicts* the authors' pathway at 80 percent at the best fit (published 80 percent, itself a model estimate). That is one point in a band: the two fitted targets act as one constraint, and across all 184 settings that fit the observed pathway (extended grid, 14 Nov robustness check) the prediction is 62 to 86 percent, typically about 75, with about two thirds of settings inside the published interval 72 to 87. The earlier "78 to 86 percent" was the top corner of that band and is retired. The ranking (authors' reordering beats faster PET-CT beats today) holds in all 184 settings; magnitudes are uncertain by about 12 points. The simulated drop in sampling procedures (0.82 against the published 0.82) was checked on the first grid only.
+  - It over-predicts "faster PET only": 60 percent at the best fit (50 to 74 percent across the 184 settings) against the published 48 percent (not significant). Two explanations were tried and did not fix it (`docs/validation.md`).
+  - The optimiser (blind to the hidden diagnosis, not to the menu: it chose from about 70 single changes we wrote that contained the authors' changes), given the faster scanner as the authors were, finds their three changes:
     1. the tumour board before sampling;
     2. PET-CT always ordered on time;
     3. the exercise test ordered early.
   - It also finds a fourth change: planning tissue sampling when the referral is triaged, before the first hospital visit (before a specialist has seen the patient). That needs a clinical check.
-  - This reaches 88 percent on held-out patients. Without new equipment it reaches 67 percent.
+  - This reaches 88 percent on held-out patients at the best-fit setting; the lead over the authors' 80 percent comes from the fourth change. Without new equipment it reaches 67 percent (56 to 70 percent across the first-grid settings). Pending: how these hold on all 184 settings and without the fourth change (lane w7/norway-opt).
   - *Disclosures (review M3, M7):* the 80 percent "prediction" carries the calibrated observed practice of ordering PET-CT at referral triage into the authors' pathway; with PET-CT ordered only at the first visit the simulated authors' pathway gives 66 percent. The search chose from a menu of about 70 single changes that included each of the authors' changes as one edit, and was not told which ones the authors made.
 - **Decision model** (`decision_model/README.md`):
   - On a task where the right answer depends on the set of options, the correction model beats a parameter-matched dot-product model: 84.5 against 79.0 percent accuracy (78.3 percent is the smaller d=32 dot-product model).

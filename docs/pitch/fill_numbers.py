@@ -6,6 +6,10 @@ Reads
   docs/validation_results.json    calibration run against Stokstad et al. 2019 (accepted parameter sets)
   docs/sensitivity_*.json         optional; keys are exposed as sens_<file>_<key> if present
   decision_model/README.md        benchmark tables (parsed, not retyped)
+  docs/review_checks/norway_grid_table.json, norway_grid_extension.json, norway_ranking.json
+                                  the Norway robustness band over the extended grid (184 accepted settings)
+  docs/review_checks/encounter_results.json   consistency checks of the primary-care loop
+  libraries/*/manifest.json       patient-card libraries (counts; reference vs model-written)
 
 Writes filled copies to docs/pitch/filled/. Templates keep their [[placeholders]], so rerun this
 after every new demo run:   python3 docs/pitch/fill_numbers.py
@@ -185,15 +189,16 @@ def stokstad_values(V: dict, bundle: dict, val: dict | None) -> None:
     V["s_validation_table"] = md_table(
         ["Flowchart", "Published (Stokstad 2019)", "Our simulation (held-out)", "Verdict"],
         [["Observed pathway", f"{V['s_pub_base']}% within {V['s_target_days']} d", f"{V['s_obs_share']}% (fitted)", "fitted to this number"],
-         ["Faster PET-CT only (7 d)", f"{V['s_pub_fast']}% (not significant)", f"{V['s_fast_share']}%",
-          "we over-predict"],
-         ["Authors' reordered pathway", f"{V['s_pub_opt']}%", f"{V['s_auth_share']}%", "predicted, not fitted: matches"]]
+         ["Faster PET-CT only (7 d)", f"{V['s_pub_fast']}% (not significant)", f"{V['s_fast_share']}% at the best fit",
+          "predicted, not fitted: we over-predict"],
+         ["Authors' reordered pathway", f"{V['s_pub_opt']}%", f"{V['s_auth_share']}% at the best fit",
+          "predicted, not fitted: consistent, not exact"]]
         if True else [])
     V["s_optimiser_table"] = md_table(
         ["Search starting point", "Share within 42 d, held-out", "Median days", "Missed cancers"],
         [["Observed pathway (no change)", f"{V['s_obs_share']}%", V["s_obs_median"], "0"],
-         ["Blind search, with the faster scanner (the authors' premise)", f"{V['s_opt_share']}%", V["s_opt_median"], V["s_missed_max"]],
-         ["Blind search, no new equipment", f"{V['s_noeq_share']}%", V["s_noeq_median"], V["s_missed_max"]]])
+         ["Search from a menu we wrote, with the faster scanner (the authors' premise)", f"{V['s_opt_share']}%", V["s_opt_median"], V["s_missed_max"]],
+         ["Same search, no new equipment", f"{V['s_noeq_share']}%", V["s_noeq_median"], V["s_missed_max"]]])
 
 
 def finland_values(V: dict, bundle: dict) -> None:
@@ -500,6 +505,109 @@ def sensitivity_values(V: dict) -> None:
     V["sens_files"] = ", ".join(Path(p).name for p in sorted(glob.glob(str(ROOT / "docs" / "sensitivity_*.json")))) or "none yet"
 
 
+
+def robustness_values(V: dict, val: dict | None) -> None:
+    """Norway robustness over the extended grid (docs/validation.md, "Robustness"). Source files:
+    docs/review_checks/norway_grid_extension.json (bands), norway_ranking.json (ordering) and
+    norway_grid_table.json (the 1920 rows; used to count accepted settings inside the published intervals,
+    with the same acceptance rule as the calibration: targets and tolerances from docs/validation_results.json)."""
+    d = ROOT / "docs" / "review_checks"
+    ext, rk, tab = load(d / "norway_grid_extension.json"), load(d / "norway_ranking.json"), load(d / "norway_grid_table.json")
+    if ext:
+        pe = ext["pred_extended"]
+        V["s_ext_grid"] = n0(ext["n_grid_extended"])
+        V["s_ext_n"] = n0(ext["accepted_extended"])
+        V["s_ext_n_orig"] = n0(ext["accepted_original_subset"])
+        for tag, k in (("auth", "optimal"), ("fast", "faster_pet")):
+            V[f"s_ext_{tag}_min"], V[f"s_ext_{tag}_max"] = pc(pe[k]["min"]), pc(pe[k]["max"])
+            V[f"s_ext_{tag}_p10"], V[f"s_ext_{tag}_p90"] = pc(pe[k]["p10"]), pc(pe[k]["p90"])
+            V[f"s_ext_{tag}_med"] = pc(pe[k]["median"])
+            V[f"s_ext_{tag}_med1"] = pc1(pe[k]["median"])
+        V["s_ext_auth_width"] = n0(100 * (pe["optimal"]["max"] - pe["optimal"]["min"]))
+        g = ext["gain_extended"]
+        V["s_ext_auth_gain_lo"], V["s_ext_auth_gain_hi"] = pc(g["optimal"]["min"]), pc(g["optimal"]["max"])
+        V["s_ext_fast_gain_lo"], V["s_ext_fast_gain_hi"] = pc(g["faster_pet"]["min"]), pc(g["faster_pet"]["max"])
+    if rk:
+        V["s_ext_rank_n"] = n0(rk["optimal>faster_pet>observed_in"])
+        V["s_ext_rank_of"] = n0(rk["accepted"])
+        V["s_ext_rank_grid_ok"], V["s_ext_rank_grid_of"] = n0(rk["ranking_holds_at_grid_points"]), n0(rk["all_predicted_grid_points"])
+    if tab and val:
+        t = val["targets"]
+        (ts, tol_s), (tm, tol_m) = t["share_within_target"], t["median_days_to_treatment"]
+        acc = [r for r in tab["rows"] if "optimal" in r
+               and abs(r["observed"]["share_within_target"] - ts) <= tol_s + 1e-9
+               and abs(r["observed"]["median_days_to_treatment"] - tm) <= tol_m + 1e-9]
+        pp = val["published"]
+        lo, hi = pp["optimal"]["ci95"]
+        flo, fhi = pp["faster_pet"]["ci95"]
+        if acc:
+            V["s_ext_auth_in_ci_pct"] = pc(sum(lo <= r["optimal"]["share_within_target"] <= hi for r in acc) / len(acc))
+            V["s_ext_fast_in_ci_pct"] = pc(sum(flo <= r["faster_pet"]["share_within_target"] <= fhi for r in acc) / len(acc))
+            V["s_ext_recount"] = n0(len(acc))
+    # Placeholders waiting for the lane w7/norway-opt (optimiser flowcharts on the 184 settings, ablation without the
+    # fourth change). The pitch says "being checked" until these files exist; see numbers_sheet.md, section P.
+    pend = sorted(glob.glob(str(d / "norway_opt_*.json")))
+    V["s_opt184_pending"] = "no" if pend else "yes"
+    V["s_opt184_files"] = ", ".join(Path(x).name for x in pend) or "none yet"
+
+
+def library_values(V: dict) -> None:
+    """Counts of patient cards, from libraries/*/manifest.json. 'reference' = template-written (model 'fake')."""
+    ref = llm = 0
+    n_llm_libs = 0
+    for m in sorted(glob.glob(str(ROOT / "libraries" / "*" / "manifest.json"))):
+        d = load(Path(m))
+        n = sum(d["card_count_by_condition"].values())
+        if d.get("model") == "fake":
+            ref += n
+        else:
+            llm += n
+            n_llm_libs += 1
+    V["lib_ref_n"] = thousands(ref)
+    V["lib_llm_n"] = thousands(llm)
+    V["lib_llm_libs"] = n0(n_llm_libs)
+    r = load(ROOT / "libraries" / "ref500" / "manifest.json")
+    V["lib_ref_id"] = r["id"] if r else "unknown"
+
+
+def catalogue_values(V: dict) -> None:
+    """Source tags in catalogue/lung-primary-care/*.yaml, counted as demo/export_start.py counts them
+    (every mapping with a string `source`). The older '177 of about 260' in libraries/ref500.md pre-dates care.yaml."""
+    import yaml
+    acc = {"total": 0, "assumption": 0}
+
+    def walk(n):
+        if isinstance(n, dict):
+            src = n.get("source")
+            if isinstance(src, str):
+                acc["total"] += 1
+                acc["assumption"] += src.strip().lower() == "assumption"
+            for v in n.values():
+                walk(v)
+        elif isinstance(n, list):
+            for v in n:
+                walk(v)
+
+    for f in sorted((ROOT / "catalogue" / "lung-primary-care").glob("*.yaml")):
+        walk(yaml.safe_load(f.read_text(encoding="utf-8")))
+    V["cat_total"], V["cat_assump"] = n0(acc["total"]), n0(acc["assumption"])
+    V["cat_sourced"] = n0(acc["total"] - acc["assumption"])
+
+
+def encounter_values(V: dict) -> None:
+    """Consistency of the primary-care encounter loop with the calibrated chain (docs/encounter_results.md)."""
+    e = load(ROOT / "docs" / "review_checks" / "encounter_results.json")
+    if not e:
+        return
+    c = e["consistency"]
+    ok = sum(1 for x in c.values() if x.get("within_tolerance") or x.get("passes"))
+    V["e_checks_total"] = n0(len(c))
+    V["e_checks_passed"] = n0(ok)
+    V["e_checks_failed"] = n0(len(c) - ok)
+    f = e["finding"]
+    V["e_ref_median"] = n0(f["days_to_referral_median"]["mean"])
+
+
 def build_values() -> dict:
     bundle = load(ROOT / "demo" / "data" / "demo_bundle.json")
     if bundle is None:
@@ -512,6 +620,10 @@ def build_values() -> dict:
     decision_model_values(V)
     scenario_source_values(V)
     range_values(V)
+    robustness_values(V, val)
+    library_values(V)
+    catalogue_values(V)
+    encounter_values(V)
     sensitivity_values(V)
     return V
 
@@ -557,6 +669,10 @@ def main() -> int:
             print(f"  [[{k}]] in {', '.join(sorted(fs))}")
         return 1 if a.strict else 0
     print("all placeholders filled")
+    if V.get("s_opt184_pending") == "no":
+        print("NOTE: docs/review_checks/norway_opt_*.json now exist (" + V["s_opt184_files"] + "). The pitch still says the optimiser's "
+              "results on all 184 settings and without the fourth change are pending. Update numbers_sheet.md section P and the "
+              "sentences marked 'pending' in deck.md, submission.md, qa.md, data_transparency.md, then rerun.")
     return 0
 
 

@@ -5,7 +5,7 @@
 
 ## The problem in three sentences
 
-Finland has the longest lung cancer waits in the Nordics at the first steps, with a primary-care appointment taking about 14 days and a specialist consultation 2-4 weeks after the first GP visit ([IHE](https://ihe.se/app/uploads/2026/04/IHE-Cancer-Dashboard-Finland_.pdf)). In Norway, one study found only 40% of early-stage lung cancer patients started treatment within 42 days, and that adding scanner capacity alone barely changed this while reordering the steps would have reached 80% ([Stokstad 2019](https://doaj.org/article/4acaa56fe36f47fea13458f6355b5944)). Finnish lung cancer five-year survival is 17% for men against 27-30% in Denmark, Norway and Sweden ([IHE](https://ihe.se/app/uploads/2026/04/IHE-Cancer-Dashboard-Finland_.pdf)).
+Finland has the longest lung cancer waits in the Nordics at the first steps, with a primary-care appointment taking about 14 days and a specialist consultation 2-4 weeks after the first GP visit ([IHE](https://ihe.se/app/uploads/2026/04/IHE-Cancer-Dashboard-Finland_.pdf)). In Norway, one study found only 40% of early-stage lung cancer patients started treatment within 42 days, and that adding scanner capacity alone barely changed this while reordering the steps would have reached 80% (the authors' own model estimate, not an observed result) ([Stokstad 2019](https://doaj.org/article/4acaa56fe36f47fea13458f6355b5944)). Finnish lung cancer five-year survival is 17% for men against 27-30% in Denmark, Norway and Sweden ([IHE](https://ihe.se/app/uploads/2026/04/IHE-Cancer-Dashboard-Finland_.pdf)).
 
 ## Five actions
 
