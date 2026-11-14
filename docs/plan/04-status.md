@@ -13,7 +13,7 @@ Last update: **Sat 14 Nov 2026, about 17:00 Helsinki.** Deadline: Sun 15 Nov 10:
 | `agent-comms` | The agent channel (`AGENT_COMMS.md`) | Live |
 | `plat/jev`, `plat/expr`, `plat/flow`, `plat/svc-a`, `plat/svc-b`, `plat/web`, `plat/ops`, `plat/ds` | First-wave lanes | Merged into `overnight/sim`; worktrees can be removed |
 | `plat/evidence` | Evidence sweep | Merged |
-| `plat/secreview` | Security review | Running |
+| `plat/secreview` | Security review | Merged (report and tests only) |
 | `platform/next` | Platform track for the patient engine and later waves | To create once the two running lanes are merged |
 
 ## What is built (merged into `overnight/sim`; full suite green, 718 tests)
@@ -41,7 +41,7 @@ progress on `plat/evidence`). See `components/C6-platform.md` for how they are r
 
 | Lane | Branch | Doing |
 |---|---|---|
-| Security review | `plat/secreview` | Read-only review of the service and the HTTP backend; report plus tests |
+| – | – | No lane is running |
 
 ## Next (in order)
 
@@ -72,6 +72,24 @@ progress on `plat/evidence`). See `components/C6-platform.md` for how they are r
 | A host for deployment (fork F5) | `deploy/deploy.sh user@host --seed` is ready but untested | 14 Nov |
 | A clinician to read the catalogue | Until then it is labelled draft | 14 Nov |
 | Earlier pending decisions D17, D18, D20, D25, D27 | See `docs/decisions.md` | 14 Nov |
+
+## Security review (`docs/platform/security-review.md`, reviewed the tree before access control was merged)
+
+18 findings: 3 high, 7 medium, 8 low. Rerun on the current tree, file by file:
+
+| Finding | State now |
+|---|---|
+| F1 no access token (high) | Fixed by the deployment lane; the review's test now passes |
+| F2 outside decision service can be pointed at any host (high) | Allowlist in place, credentials and echoed response text no longer returned (three of the review's tests now pass). Still open: client-chosen long timeout, slow calls stalling the API |
+| F16 the flow endpoint re-simulates inside the API process (high) | **Open** |
+| F4 wrong-typed decision policy gave a 500 | Fixed |
+| F13 missing security headers | Fixed |
+| F3 NaN and Infinity stored; F5 response size; F6 tracebacks in job errors; F7 deleted project's jobs keep running; F14 quotas; F18 memory; the low ones | **Open** |
+
+`tests/security/` is excluded from the default test run: nine of its expected-to-fail tests now
+pass (the holes are closed) and five need the allowlist configured for a local test server. Work
+package C6 F7: turn the passing ones into normal tests, fix the five, then close F16, F3, F5 to F7.
+Do F16 before any public URL.
 
 ## Known problems
 
