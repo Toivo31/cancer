@@ -1,0 +1,69 @@
+format: audit_tolerances/1
+# Audit tolerances (K8) for python -m patient_engine audit. Not part of the catalogue hash (not read by the loader).
+# A cell fails when the observed share is outside the z-sigma interval around what the catalogue's reference
+# leaves give for the library's own cards AND more than `pp` percentage points away.
+z: 4.2     # two-sided normal tail 2.7e-5 per cell: 99% for the whole report (Bonferroni over about 750 cells)
+checks:
+  findings:
+    pp: 5
+    min_n: 20
+    reason: >-
+      Frequencies by condition come from groups of 60 to 170 cards, where sampling noise is wide (a 4.2-sigma
+      interval is about 20 points for a mid-range rate), so the interval does the work there. z is 4.2, not 2.58:
+      a report has about 750 cells, and a per-cell 99% interval fails an exact reference library by chance (seen
+      on three seeds of 1 000 cards; z 2.58 gave 2, 1 and 3 failed cells). 4.2 makes that about 1 in 50 libraries
+      or fewer, and with the floor of 5 points far fewer. A model that makes patients too typical or tests too
+      accurate is off by 15 points or more in the cells it affects.
+  continuous:
+    pp: 7.5
+    min_n: 20
+    reason: >-
+      Measured findings are checked as the share below the reference median (expect 50%) and p90 (expect 90%).
+      Values are rounded to 0.1 and clamped to the variable's range, which creates ties (counted half), so the
+      floor is looser than for binary shares.
+  accuracy:
+    pp: 5
+    min_n: 20
+    reason: >-
+      Realised sensitivity, specificity and categorical accuracy against the per-attempt reference (resolved
+      under the card's own facts and active conditions). Rates are right by construction in guided mode, so a
+      5-point floor flags a model that over- or under-states test accuracy (the expected drift in free mode)
+      without failing sampling noise. Cells with fewer than 20 positives or negatives are skipped.
+  non_diagnostic:
+    pp: 2
+    min_n: 20
+    reason: >-
+      Non-diagnostic rates are small (a few percent), so the floor is 2 points; a test with no rate in the
+      catalogue must show none (an expected 0% makes any excess outside the interval).
+  state_consistency:
+    max_share: 0.0
+    reason: >-
+      A hard rule of resolution (C8 rule 3): no symptom appears and no resolved cause remains because a state
+      changed. Not a statistical quantity, so no violation is accepted.
+  presenting:
+    max_share: 0.0
+    reason: >-
+      A patient cannot complain of a symptom they do not truly have in that state; false reports belong to the
+      history test, which has its own specificity. Hard rule, no violation accepted.
+  diversity:
+    max_share: 0.02
+    reason: >-
+      Cards with identical background and findings to an earlier card. Some repeats are expected for healthy
+      primaries with few positive findings; above 2% the library is repeating itself.
+  leak:
+    max_share: 0.02
+    reason: >-
+      Notes that name the hidden diagnosis without a finding that reveals it (validator rule
+      card_reveals_condition). The validator already warns per card; 2% of notes is the most a library may
+      carry before the notes cannot be shown as unrevealed.
+  background_realism:
+    pp: 5
+    min_n: 20
+    max_share: 0.0
+    max_under_50: 0.10
+    reason: >-
+      Added for review w7 M4 (not part of the catalogue hash). Pack-years that do not fit the card's age, and
+      never-smokers with pack-years, are impossible: no violation accepted. The smoking mix and the share of
+      patients 65 and over or under 50 are compared with the population file (populations/<id>.yaml) given
+      each card's own age, sex and condition, with the same interval and 5-point floor as the frequency checks.
+      At most 10% of cancer cards may be under 50 (Finland: a few percent; the old generator gave 22%).

@@ -1,0 +1,109 @@
+# Parameters for the Finnish lung cancer pathway scenario (first contact -> referral -> diagnosis -> treatment).
+# Times in calendar days. Many Finnish waits come from an expert survey (modal answers), not registry data; notes say so.
+waits:
+  health_centre_appointment:
+    {value: 14, unit: days, dist: {dist: lognormal, median: 14, p90: 30}, source: KHALIFE2025, note: "Mode of survey answers (42 specialists). Respondents said it may be optimistic and often takes up to a month, hence the p90 of 30 (our assumption). Denmark, Norway, Sweden 2-7 days. IHE2026 repeats the figure"}
+  health_centre_appointment_nordic_comparator:
+    {value: 4.5, unit: days, range: [2, 7], source: KHALIFE2025, note: "Midpoint of the 2-7 day range reported for DK/NO/SE, for the counterfactual 'Nordic' scenario"}
+  specialist_consultation_after_gp:
+    {value: 21, unit: days, range: [14, 28], dist: {dist: uniform, low: 14, high: 28}, source: KHALIFE2025, note: "2-4 weeks, survey mode. DK/NO/SE 1-2 weeks (7-14 days) per IHE2026"}
+  diagnosis_after_specialist_consultation:
+    {value: 28, unit: days, dist: {dist: lognormal, median: 28, p90: 45}, source: KHALIFE2025, note: "4 weeks, survey mode. p90 45 is our assumption. DK/NO 2-4 weeks, SE 4 weeks per IHE2026"}
+  cumulative_delay_estimate_first_contact_to_diagnosis:
+    {value: 45, unit: days, range: [30, 60], source: KHALIFE2025, note: "Authors' own 1-2 month estimate for Finland. Use as a plausibility check on the sum of step waits"}
+  registry_diagnosis_to_treatment_start:
+    {value: 37, unit: days, range: [36, 38], source: IHE2026, note: "Registry median 2018-2022 for cancer patients in general, not lung-specific (IHE cites a national registry reference)"}
+  satakunta_first_primary_visit_to_referral:
+    {value: 14, unit: days, source: MATTILA2025, note: "About two weeks, n=131, pandemic period, abstract-level only"}
+  satakunta_referral_to_diagnosis:
+    {value: 55, unit: days, source: MATTILA2025, note: "'Just under two months' in the abstract; 55 is our rounding, exact days not given. Supports the claim that most delay is in specialist care"}
+  mot_symptom_onset_to_treatment_finland:
+    {value: 155, unit: days, source: YLE_MOT2025, note: "Unpublished journalist study, secondary. Parts: patient interval more than 50, primary care 41, specialised care 58 (they sum to 149). DK 67, SE 107. Context only"}
+  mot_primary_care_interval:
+    {value: 41, unit: days, source: YLE_MOT2025, note: "Secondary, unpublished"}
+  mot_specialised_care_interval:
+    {value: 58, unit: days, source: YLE_MOT2025, note: "Secondary, unpublished"}
+  thl_share_waiting_over_14d_for_doctor:
+    {value: 0.35, unit: fraction, source: KHALIFE2025, note: "THL 2023 national primary care data, all patients, not lung-specific. Another 14% waited 1-3 months"}
+  thl_share_waiting_1_to_3_months_for_doctor:
+    {value: 0.14, unit: fraction, source: KHALIFE2025, note: "As above"}
+  ct_report_turnaround_typical:
+    {value: 7, unit: days, source: PIRHA_PATH, note: "Pirkanmaa: lung and upper abdomen CT usually within a week of referral processing. Describes a typical process at one hospital district, not a measured median"}
+  bronchoscopy_result_turnaround:
+    {value: 4, unit: days, range: [3, 5], source: PIRHA_PATH, note: "Pirkanmaa: bronchoscopy results available 3-5 days after the procedure"}
+  referral_processing:
+    {value: 1.5, unit: days, range: [1, 2], source: PIRHA_PATH, note: "Working days; Pirkanmaa. Invitation letter usually posted within 3-4 working days of referral arrival"}
+  radiotherapy_start_after_planning_ct:
+    {value: 14, unit: days, source: PIRHA_PATH, note: "Pirkanmaa: usually within about two weeks of the planning CT"}
+  pet_ct_wait_finland:
+    {value: 20.5, unit: days, dist: {dist: lognormal, median: 20.5, p90: 35}, source: assumption, note: "No Finnish PET-CT wait found. Placeholder borrowed from the Norwegian outsourced-scanner period (STOKSTAD2019); replace if a Finnish number is found. Finland has 57% more PET scanners than the EU average per IHE2026, so this may be pessimistic"}
+  tumour_board_frequency:
+    {value: weekly, unit: schedule, source: assumption, note: "Pirkanmaa pathway lists the multidisciplinary board but not its frequency. Weekly is the Norwegian value (STOKSTAD2019) and common practice"}
+
+first_contact:
+  share_meeting_doctor_at_first_primary_care_contact:
+    {value: 0.5, unit: fraction, range: [0.4, 0.6], source: KHALIFE2025, note: "Survey mode 40-60% in Finland; Sweden 80-100%; DK/NO/IS 100%. Patients not seeing a doctor see a nurse"}
+  share_seeing_nurse_at_first_contact:
+    {value: 0.5, unit: fraction, range: [0.4, 0.6], source: KHALIFE2025, note: "Complement of the share meeting a doctor. HELSINKI2025_NEWS reports it as 40-60% seeing a nurse"}
+  share_primary_care_units_with_ct_access:
+    {value: 0.10, unit: fraction, source: IHE2026, note: "Reported as fewer than 10% (upper bound), versus 90-100% in other Nordic countries. In Khalife only one Finnish respondent reported CT as an option in primary care"}
+  ct_scanners_per_100k_vs_eu:
+    {value: -0.34, unit: relative difference, source: IHE2026, note: "2023 CT scanners per 100,000 inhabitants were 34% below the EU average and lowest in the Nordics; CT examinations 60% below the EU average"}
+
+epidemiology:
+  lung_cancer_new_cases_per_year_finland:
+    {value: 2913, unit: cases per year, source: GLOBOCAN_FIN, note: "1,701 men and 1,212 women in the fact sheet estimate. The team brief quoted about 2,500-2,700 per year from an unverified source; the registry figure for 2023 was not retrieved"}
+  population_finland:
+    {value: 5617316, unit: people, source: GLOBOCAN_FIN, note: "Fact sheet population"}
+  typical_wellbeing_county_population:
+    {value: 250000, unit: people, source: assumption, note: "Not retrieved from Statistics Finland (the page we reached had changes only). Derived: about 5.6 million over 21 wellbeing counties plus Helsinki city is about 255,000 on average; counties range from roughly 100,000 to over 600,000 (our recollection, unverified)"}
+  lung_cancer_cases_per_county_year:
+    {value: 130, unit: cases per year, source: assumption, note: "Derived: 2,913 cases divided by about 22 units. A county sized 250,000 sees roughly 130 lung cancers a year"}
+  share_stage_i_at_diagnosis:
+    {value: 0.17, unit: fraction, source: KHALIFE2025, note: "Finland 17%, over 25% in Denmark and Norway"}
+  share_stage_iv_single_centre:
+    {value: 0.59, unit: fraction, source: IHE2026, note: "Single-centre Finnish study 2007-2019, not national"}
+  five_year_relative_survival_men:
+    {value: 0.17, unit: fraction, source: IHE2026, note: "Diagnosed 2019-2023, NORDCAN. Denmark 27%, Norway 30%, Sweden 29%"}
+  five_year_relative_survival_women:
+    {value: 0.29, unit: fraction, source: IHE2026, note: "Diagnosed 2019-2023. Denmark 35%, Norway 37%, Sweden 37%"}
+
+presentation_and_prevalence:
+  lung_cancer_risk_12m_self_referred_cxr_over_50:
+    {value: 0.013, unit: fraction, source: BRADLEY2021, note: "Leeds, symptomatic people over 50 who self-requested a chest X-ray, 114 of 8,996. UK, not Finland. 1.7% within 2 years"}
+  lung_cancer_risk_12m_after_new_haemoptysis:
+    {value: 0.031, unit: fraction, source: KOO2023, note: "English primary care, 253 of 8,120 within 12 months (3.6% where guideline-concordant imaging was done)"}
+  lung_cancer_risk_12m_after_new_dyspnoea:
+    {value: 0.007, unit: fraction, source: KOO2023, note: "English primary care, 1,103 of 162,161 within 12 months"}
+  ppv_single_symptom_other_than_haemoptysis:
+    {value: 0.01, unit: fraction, source: BRADLEY2021, note: "Upper bound: below 1% at one year for each individual symptom except haemoptysis (2.9%)"}
+  lung_cancer_risk_after_negative_cxr_12m:
+    {value: 0.0035, unit: fraction, source: BRADLEY2021, note: "Observed 0.35% (CI 0.22-0.48) at one year in people who had a negative X-ray; about 28 of 114 one-year cancers had a negative X-ray"}
+  cxr_positive_predictive_value:
+    {value: 0.0902, unit: fraction, source: BRADLEY2021, note: "Positive CXR in the same cohort"}
+  urgent_referral_cancer_conversion_median_all_cancers:
+    {value: 0.12, unit: fraction, range: [0.08, 0.17], source: SEWELL2020, note: "Sewell describes urgent suspected-cancer pathways as converting 8-17% (median across studies, all cancers, not lung-specific); their own rapid diagnostic centre converted 12%. The lung-specific 2022 BJGP figure in the team brief was not found"}
+  nonspecific_symptoms_extra_wait_to_diagnosis:
+    {value: 34, unit: days, source: SEWELL2020, note: "Median extra wait to diagnosis for patients with vague versus alarm symptoms, cited in Sewell's introduction from earlier research (secondary; original not identified). Not Finnish. Use as the equity gap size for the non_specific group, or cite as UK evidence"}
+  rapid_diagnostic_centre_mean_days_usual_care:
+    {value: 84.2, unit: days, source: SEWELL2020, note: "Swansea Bay, vague symptoms, usual care mean (SD 65.3), all cancers"}
+  rapid_diagnostic_centre_mean_days_diagnosed_at_clinic:
+    {value: 5.9, unit: days, source: SEWELL2020, note: "Mean; those needing further tests 40.8 days"}
+  median_diagnostic_interval_haemoptysis_uk:
+    {value: 39, unit: days, source: KOO2023, note: "English lung cancer patients after first haemoptysis, IQR 21-71"}
+  median_diagnostic_interval_dyspnoea_uk:
+    {value: 83, unit: days, source: KOO2023, note: "IQR 28-205; 34 days with guideline-concordant imaging versus 114 without. Evidence that a missing early image drives the delay"}
+  cxr_miss_rate:
+    {value: 0.20, unit: fraction, source: HSSIB2021, note: "About one in five lung cancers missed on chest X-ray in HSSIB's wording; underlying data is Bradley 2019 (sensitivity 77-80%)"}
+
+capacity:
+  ct_scans_per_day_county:
+    {value: 30, unit: scans per weekday, source: assumption, note: "No Finnish county capacity data found. Placeholder for all CT demand in a 250,000-person county, of which suspected-lung-cancer is a small share; set the lung-pathway server capacity by calibrating to the 14-28 day specialist wait. Finland has the fewest CT scanners per capita in the Nordics (IHE2026)"}
+  bronchoscopy_ebus_slots_per_day:
+    {value: 4, unit: slots per weekday, source: assumption, note: "No data found. Placeholder; calibrate to the reported 28 day diagnosis-after-specialist wait"}
+  pet_ct_slots_per_day_region:
+    {value: 8, unit: slots per weekday, source: assumption, note: "No data found. Placeholder; PET-CT is usually a regional (university hospital) resource"}
+  gp_nurse_first_contacts_per_day:
+    {value: 30, unit: contacts per day, source: assumption, note: "Taken from the architecture example (gp capacity 30). Not sourced"}
+  surgery_slots_thoracic_per_day:
+    {value: 2, unit: operations per day, source: PIRHA_PATH, note: "The Pirkanmaa page states about two operations per day for the unit named there; applies to one hospital, not a county"}

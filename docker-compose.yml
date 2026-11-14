@@ -1,0 +1,59 @@
+# One host, one command:   docker compose --env-file deploy/platform.env up -d --build
+# Copy deploy/platform.env.example to deploy/platform.env first (it is git-ignored) and set the token.
+# The service port is published on the host's loopback only; a reverse proxy (profile "proxy", or your own) faces the internet.
+name: pathway
+
+services:
+  platform:
+    build:
+      context: .
+      target: ${PATHWAY_BUILD_TARGET:-final}      # "api" builds without the web app
+    image: pathway-platform:local
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${PATHWAY_PORT:-8000}:8000"       # never "8000:8000" on a server: that bypasses the proxy
+    volumes:
+      - pathway-data:/data
+    environment:
+      PATHWAY_ACCESS_TOKEN: ${PATHWAY_ACCESS_TOKEN:-}
+      PATHWAY_PUBLIC_READ: ${PATHWAY_PUBLIC_READ:-}
+      PATHWAY_READ_ONLY: ${PATHWAY_READ_ONLY:-}
+      PATHWAY_MAX_PATIENTS: ${PATHWAY_MAX_PATIENTS:-50000}
+      PATHWAY_MAX_JOBS: ${PATHWAY_MAX_JOBS:-2}
+      PATHWAY_JOB_SECONDS: ${PATHWAY_JOB_SECONDS:-900}
+      PATHWAY_MIN_FREE_MB: ${PATHWAY_MIN_FREE_MB:-500}
+      JEV_ALLOWED_HOSTS: ${JEV_ALLOWED_HOSTS:-}
+      JEV_DEFAULT_URL: ${JEV_DEFAULT_URL:-}
+      PATHWAY_DATA_NOTICE: ${PATHWAY_DATA_NOTICE:-}
+      # the only way in is the loopback port above, so the proxy's X-Forwarded-For is the client address
+      FORWARDED_ALLOW_IPS: "*"
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: [ALL]
+    mem_limit: 2g
+    cpus: 2
+    pids_limit: 512
+    logging:
+      driver: json-file
+      options: {max-size: "10m", max-file: "5"}
+
+  # Optional: TLS and routing for the platform and Eemeli's live demo on one host (see docs/platform/runbook.md).
+  # Host networking so it can reach 127.0.0.1:8000 (platform) and 127.0.0.1:8770 (note_reader), which listen on loopback only.
+  proxy:
+    profiles: ["proxy"]
+    image: caddy:2
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      PLATFORM_SITE: ${PLATFORM_SITE:-:80}
+      LIVE_SITE: ${LIVE_SITE:-:8080}
+      PLATFORM_UPSTREAM: 127.0.0.1:${PATHWAY_PORT:-8000}
+      LIVE_UPSTREAM: 127.0.0.1:${LIVE_PORT:-8770}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+
+volumes:
+  pathway-data:
+  caddy-data:
+  caddy-config:

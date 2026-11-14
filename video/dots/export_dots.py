@@ -136,14 +136,15 @@ def main(argv=None):
     print("stokstad")
     sc = load_scenario(sim / "scenarios" / "generated" / "stokstad_calibrated.yaml")
     held = cohorts(sc, (201, 202, 203), 1000)
-    sug = parse_flowchart("suggested", json.loads((sim / "runs" / "opt_stokstad_fastpet.json").read_text())["flowchart_after"])
+    # D68: the optimiser run from today's pathway with no new equipment (not the faster-scanner start)
+    sug = parse_flowchart("suggested", json.loads((sim / "runs" / "opt_stokstad.json").read_text())["flowchart_after"])
     st = [
         variant(sc, sc.flowcharts["observed"], held, "Observed pathway (Stokstad et al. 2019)", "observed",
                 bundle_share(bundle, "stokstad", "baseline")),
         variant(sc, sc.flowcharts["optimal"], held, "Authors' reordered pathway, simulated", "authors",
                 bundle_share(bundle, "stokstad", "authors_pathway")),
-        variant(sc, sug, held, "Optimiser, found blind (with the faster PET-CT)", "optimiser",
-                bundle_share(bundle, "stokstad", "optimiser")),
+        variant(sc, sug, held, "Optimiser, found blind, no new equipment", "optimiser",
+                bundle_share(bundle, "stokstad", "optimiser_no_new_equipment")),
     ]
     out["scenarios"].append({"id": "norway", "title": "Norwegian hospital, rebuilt from Stokstad et al. 2019",
                              "target_days": sc.target_days, "synthetic": False, "variants": st})

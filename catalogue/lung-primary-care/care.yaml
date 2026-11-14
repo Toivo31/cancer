@@ -1,0 +1,112 @@
+# Care model (care/1) for lung-primary-care (WP-C8-3). DRAFT, SYNTHETIC-WORLD content a clinician has not read.
+# Who does what in a Finnish health centre: the nurse does the needs assessment, takes the main symptoms, advises
+# and books a GP; orders and diagnosis are the doctor's (INNOKYLA_HTA: the nurse prepares requests, the doctor
+# makes the orders; KEUSOTE_LAMA: limited nurse prescribing needs training and a written doctor order and does not
+# cover prolonged respiratory infections). Details and gaps: docs/research/catalogue/care_practice.md.
+#
+# Costs: test prices are in tests.yaml (cost_eur, Finnish county price lists). The world multiplies them by
+# cost_scale (D46, visible): scenarios/finland_encounter_resources.yaml, encounters.cost_scale, lean range 1.0 to 1.5.
+#
+# Definitive tests (D46) and where they can be ordered:
+#   lung_cancer -> dx_lung_cancer_histology   not a GP action: sampling is arranged by the specialist after referral
+#   pneumonia -> dx_pneumonia_chest_xray (order_dx_pneumonia)   copd_exacerbation, asthma -> spirometry_reversibility
+#   heart_failure -> echocardiography   tuberculosis -> mycobacterial_culture   benign_nodule -> ct_nodule_followup
+#   reflux_postinfectious_cough -> ph_monitoring   viral_self_limiting -> respiratory_virus_pcr
+# Group tests (D50) narrow down first: crp / crp_poc, chest_xray, chest_ct, spirometry, nt_probnp.
+format: care/1
+roles:
+  - id: nurse
+    label: "Health-centre nurse (needs assessment)"
+    resource: nurse_appt
+    gathers:
+      - {test: history, outputs: [cough, haemoptysis, dyspnoea, chest_pain, fever, weight_loss, fatigue, wheeze]}   # main symptoms; hoarseness, appetite and recurrent infections are not asked at this visit
+    actions: [advice_return, book_gp_routine, book_gp_urgent]
+  - id: gp
+    label: "General practitioner"
+    resource: gp_appt
+    gathers:
+      - {test: history}
+      - {test: examination}
+    actions:
+      - discharge
+      - advice_return
+      - follow_up
+      - order_crp
+      - order_crp_lab
+      - order_blood_count
+      - order_chemistry
+      - order_nt_probnp
+      - order_chest_xray
+      - order_spirometry
+      - order_chest_ct
+      - order_dx_pneumonia
+      - order_spirometry_reversibility
+      - order_echo
+      - order_mycobacterial_culture
+      - order_ct_nodule_followup
+      - order_ph_monitoring
+      - order_virus_pcr
+      - treat_antibiotics
+      - treat_inhaler
+      - treat_ppi
+      - treat_diuretic
+      - refer_routine
+      - refer_urgent
+actions:
+  - {id: advice_return, kind: discharge, advice: true, label: "Self-care advice; come back if it persists"}
+  - {id: discharge, kind: discharge, label: "No treatment, sent home"}
+  - {id: book_gp_routine, kind: book, role: gp, urgency: routine, label: "Book a GP visit"}
+  - {id: book_gp_urgent, kind: book, role: gp, urgency: urgent, label: "Book an urgent GP visit"}
+  - {id: follow_up, kind: follow_up, days: {value: 14, source: assumption, note: "A follow-up visit after about two weeks; not sourced."}, label: "Follow-up visit"}
+  # group tests
+  - {id: order_crp, kind: order, test: crp_poc, label: "CRP, point of care (in the visit)"}
+  - {id: order_crp_lab, kind: order, test: crp, label: "CRP, laboratory"}
+  - {id: order_blood_count, kind: order, test: blood_count, label: "Blood count"}
+  - {id: order_chemistry, kind: order, test: chemistry, label: "Calcium, ALP, LDH"}
+  - {id: order_nt_probnp, kind: order, test: nt_probnp, label: "NT-proBNP"}
+  - {id: order_chest_xray, kind: order, test: chest_xray, label: "Chest X-ray"}
+  - {id: order_spirometry, kind: order, test: spirometry, label: "Spirometry (health centre)"}
+  - {id: order_chest_ct, kind: order, test: chest_ct, label: "CT of the chest"}
+  # definitive tests (D46)
+  - {id: order_dx_pneumonia, kind: order, test: dx_pneumonia_chest_xray, label: "Chest X-ray read for pneumonia (definitive)"}
+  - {id: order_spirometry_reversibility, kind: order, test: spirometry_reversibility, label: "Spirometry with reversibility (definitive for COPD, asthma)"}
+  - {id: order_echo, kind: order, test: echocardiography, label: "Echocardiography (definitive for heart failure)"}
+  - {id: order_mycobacterial_culture, kind: order, test: mycobacterial_culture, label: "Sputum mycobacterial culture (definitive for TB)"}
+  - {id: order_ct_nodule_followup, kind: order, test: ct_nodule_followup, label: "Repeat CT of the nodule (definitive for a benign nodule)"}
+  - {id: order_ph_monitoring, kind: order, test: ph_monitoring, label: "Oesophageal pH monitoring (definitive for reflux)"}
+  - {id: order_virus_pcr, kind: order, test: respiratory_virus_pcr, label: "Respiratory virus PCR (definitive for a viral illness)"}
+  # treatments
+  - {id: treat_antibiotics, kind: treat, treatment: antibiotics, review_days: {value: 14, source: assumption, note: "Review after two weeks; not sourced."}, label: "Antibiotics"}
+  - {id: treat_inhaler, kind: treat, treatment: inhaler, review_days: {value: 28, source: assumption, note: "Review after four weeks; not sourced."}, label: "Inhaled bronchodilator or steroid"}
+  - {id: treat_ppi, kind: treat, treatment: ppi, review_days: {value: 28, source: assumption, note: "A trial of acid suppression is judged after about four weeks; not sourced."}, label: "Proton pump inhibitor (reflux trial)"}
+  - {id: treat_diuretic, kind: treat, treatment: diuretic, review_days: {value: 14, source: assumption, note: "Review after two weeks; not sourced."}, label: "Diuretic"}
+  - {id: refer_routine, kind: refer, urgency: routine, label: "Refer to a specialist"}
+  - {id: refer_urgent, kind: refer, urgency: urgent, label: "Urgent referral (suspected cancer)"}
+treatments:
+  # What each treatment resolves: p it works, days until it does. All assumptions: no Finnish response rates were found.
+  # Acute bronchitis and viral illness are not treated with antibiotics in Finland (PIRHA_ANTIB), so antibiotics are
+  # offered here but resolve only the bacterial conditions; giving them for a viral illness is a modelled error.
+  - id: antibiotics
+    label: Antibiotics
+    resolves:
+      pneumonia: {p: {p: 0.85, source: assumption, grade: assumption, note: "Community pneumonia usually responds to antibiotics; the share is not sourced."}, days: {dist: lognormal, median: 7, p90: 14, source: assumption, grade: assumption, note: "Not sourced."}}
+      copd_exacerbation: {p: {p: 0.3, source: assumption, grade: assumption, note: "Only part of exacerbations are bacterial; not sourced."}, days: {dist: lognormal, median: 7, p90: 14, source: assumption, grade: assumption, note: "Not sourced."}}
+  - id: inhaler
+    label: "Inhaled bronchodilator or steroid"
+    resolves:
+      copd_exacerbation: {p: {p: 0.7, source: assumption, grade: assumption, note: "Not sourced."}, days: {dist: lognormal, median: 10, p90: 21, source: assumption, grade: assumption, note: "Not sourced."}}
+      asthma: {p: {p: 0.8, source: assumption, grade: assumption, note: "Not sourced."}, days: {dist: lognormal, median: 10, p90: 21, source: assumption, grade: assumption, note: "Not sourced."}}
+  - id: ppi
+    label: "Proton pump inhibitor"
+    resolves:
+      reflux_postinfectious_cough: {p: {p: 0.5, source: assumption, grade: assumption, note: "Reflux cough responds to acid suppression in about half; not sourced."}, days: {dist: lognormal, median: 28, p90: 56, source: assumption, grade: assumption, note: "Not sourced."}}
+  - id: diuretic
+    label: Diuretic
+    resolves:
+      heart_failure: {p: {p: 0.6, source: assumption, grade: assumption, note: "Congestion symptoms ease with a diuretic; heart failure itself is not cured, so 'resolved' means symptoms controlled. Not sourced."}, days: {dist: lognormal, median: 7, p90: 21, source: assumption, grade: assumption, note: "Not sourced."}}
+behaviour:
+  first_contact: {values: {nurse: 0.5, gp: 0.5}, source: KHALIFE2025, grade: B, note: "Survey mode: 40 to 60% of Finnish patients meet a doctor at first contact, the rest a nurse (specialist survey, not registry data)."}
+  return_if_persisting: {p: 0.95, source: assumption, grade: assumption, note: "After a discharge with advice while a symptom persists. Not sourced. TUNED in WP-W4-1 (was 0.7) so that persisting cancers re-present as in the calibrated chain (symptoms_persist 0.90-0.95 x gp_represent 0.95-0.98)."}
+  return_delay_days: {dist: lognormal, median: 14, p90: 35, source: assumption, grade: assumption, note: "Not sourced; finland_lung re-presents after a median of 14 days (p90 35). TUNED in WP-W4-1 (was median 21, p90 60) to match it."}
+  give_up_per_episode: {p: 0.02, source: assumption, grade: assumption, note: "Not sourced. TUNED in WP-W4-1 (was 0.05)."}
+  horizon_days: {value: 365, source: assumption, grade: assumption, note: "One year of follow-up, as the scenario's measured year."}

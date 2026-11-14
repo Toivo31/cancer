@@ -1,0 +1,78 @@
+# Hidden variables. `given` = distribution per condition (`default` covers the rest).
+- id: cough_3wk
+  label: Cough for over three weeks
+  kind: symptom
+  type: binary
+  given:
+    lung_cancer: {p: 0.6, source: assumption, by: {stage: {IV: 0.75}}}
+    pneumonia: {p: 0.3, source: assumption}
+    default: {p: 0.05, source: assumption}
+- id: fever
+  label: Fever
+  kind: symptom
+  type: binary
+  given:
+    pneumonia: {p: 0.7, source: assumption}
+    default: {p: 0.03, source: assumption}
+- id: weight_loss
+  label: Unintended weight loss
+  kind: symptom
+  type: binary
+  given:
+    lung_cancer: {p: 0.3, source: assumption, by: {stage: {III: 0.4, IV: 0.55}}}
+    default: {p: 0.02, source: assumption}
+- id: crp_true
+  label: C-reactive protein (true value)
+  kind: lab_true
+  type: continuous
+  unit: mg/L
+  range: {min: 0, max: 500}
+  given:
+    pneumonia: {dist: lognormal, median: 80, p90: 200, source: assumption}
+    lung_cancer: {dist: lognormal, median: 12, p90: 60, source: assumption}
+    default: {dist: lognormal, median: 3, p90: 10, source: assumption}
+- id: hb_true
+  label: Haemoglobin (true value)
+  kind: lab_true
+  type: continuous
+  unit: g/L
+  range: {min: 40, max: 220}
+  given:
+    lung_cancer: {dist: uniform, low: 105, high: 150, source: assumption}
+    default: {dist: uniform, low: 120, high: 165, source: assumption}
+- id: lung_lesion
+  label: Lung lesion present (imaging truth)
+  kind: imaging_true
+  type: binary
+  given:
+    lung_cancer: {p: 1.0, source: assumption, note: "a cancer is a lesion"}
+    default: {p: 0.02, source: assumption, note: "incidental benign nodule"}
+- id: lesion_size_mm
+  label: Size of the largest lung lesion
+  kind: imaging_true
+  type: size_mm
+  only_if: "lung_lesion"
+  range: {min: 1, max: 150}
+  given:
+    lung_cancer: {dist: lognormal, median: 30, p90: 60, source: assumption, by: {stage: {I: {median: 18, p90: 28}}}}
+    default: {dist: lognormal, median: 8, p90: 15, source: assumption}
+- id: lesion_location
+  label: Location of the largest lung lesion
+  kind: imaging_true
+  type: categorical
+  values: [central, peripheral]
+  only_if: "lung_lesion"
+  given:
+    lung_cancer:
+      values: {central: 0.35, peripheral: 0.65}
+      source: assumption
+      by: {location: {central: {values: {central: 1.0, peripheral: 0.0}}, peripheral: {values: {central: 0.0, peripheral: 1.0}}}}
+      note: "follows the cancer's location attribute"
+    default: {values: {central: 0.1, peripheral: 0.9}, source: assumption}
+- id: consolidation
+  label: Consolidation on imaging (truth)
+  kind: imaging_true
+  type: binary
+  given:
+    pneumonia: {p: 0.9, source: assumption}
+    default: {p: 0.01, source: assumption}

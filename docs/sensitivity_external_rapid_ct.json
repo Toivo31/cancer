@@ -1,0 +1,267 @@
+{
+ "scenario": "finland_lung",
+ "n": 10000,
+ "seeds": [
+  1,
+  2,
+  3
+ ],
+ "rapid_ct_edits": {
+  "resources.ct_scanner.capacity_per_day": 8,
+  "resources.ct_scanner.min_lead_days": 1,
+  "tests.chest_ct.report_days.median": 1.0
+ },
+ "variants": {
+  "baseline": {
+   "n_abnormal_cxr_treated": 57,
+   "cxr_to_ct_result": 28.2,
+   "ct_result_to_board_decision": 30.0,
+   "cxr_to_board_decision": 60.4,
+   "cxr_to_treatment": 75.2,
+   "first_contact_to_treatment": 102.0,
+   "share_within_target": 0.2,
+   "median_days_to_treatment": 102.0,
+   "mean_wait_days_per_treated_cancer": {
+    "spec_visit": 12.7,
+    "ct": 5.8,
+    "bronch": 5.5,
+    "ttnb": 4.5,
+    "pet": 9.7,
+    "mdt": 4.7,
+    "book_treat": 16.3
+   },
+   "non_specific_presenters_only": {
+    "n_abnormal_cxr_treated": 28,
+    "cxr_to_ct_result": 29.4,
+    "ct_result_to_board_decision": 31.9,
+    "cxr_to_board_decision": 60.8,
+    "cxr_to_treatment": 77.2,
+    "first_contact_to_treatment": 109.0
+   },
+   "per_seed_median_days_to_treatment": [
+    104.25,
+    101.97,
+    100.69
+   ],
+   "per_seed_cxr_to_ct": [
+    28.2,
+    28.7,
+    28.1
+   ],
+   "per_seed_cxr_to_decision": [
+    62.0,
+    59.5,
+    60.4
+   ]
+  },
+  "rapid_ct_only": {
+   "n_abnormal_cxr_treated": 57,
+   "cxr_to_ct_result": 21.1,
+   "ct_result_to_board_decision": 29.3,
+   "cxr_to_board_decision": 50.7,
+   "cxr_to_treatment": 67.2,
+   "first_contact_to_treatment": 94.6,
+   "share_within_target": 0.4,
+   "median_days_to_treatment": 94.6,
+   "mean_wait_days_per_treated_cancer": {
+    "spec_visit": 12.7,
+    "ct": 1.2,
+    "bronch": 5.0,
+    "ttnb": 4.2,
+    "pet": 9.8,
+    "mdt": 4.6,
+    "book_treat": 16.2
+   },
+   "non_specific_presenters_only": {
+    "n_abnormal_cxr_treated": 28,
+    "cxr_to_ct_result": 21.4,
+    "ct_result_to_board_decision": 29.3,
+    "cxr_to_board_decision": 53.8,
+    "cxr_to_treatment": 68.2,
+    "first_contact_to_treatment": 100.2
+   },
+   "per_seed_median_days_to_treatment": [
+    96.74,
+    94.01,
+    94.63
+   ],
+   "per_seed_cxr_to_ct": [
+    21.4,
+    20.9,
+    21.1
+   ],
+   "per_seed_cxr_to_decision": [
+    56.8,
+    49.2,
+    50.7
+   ]
+  },
+  "rapid_ct_plus_pet_capacity": {
+   "n_abnormal_cxr_treated": 57,
+   "cxr_to_ct_result": 21.1,
+   "ct_result_to_board_decision": 25.2,
+   "cxr_to_board_decision": 46.6,
+   "cxr_to_treatment": 62.2,
+   "first_contact_to_treatment": 88.2,
+   "share_within_target": 0.5,
+   "median_days_to_treatment": 88.2,
+   "mean_wait_days_per_treated_cancer": {
+    "spec_visit": 12.7,
+    "ct": 1.2,
+    "bronch": 5.0,
+    "ttnb": 4.2,
+    "pet": 4.3,
+    "mdt": 4.8,
+    "book_treat": 16.3
+   },
+   "non_specific_presenters_only": {
+    "n_abnormal_cxr_treated": 28,
+    "cxr_to_ct_result": 21.4,
+    "ct_result_to_board_decision": 24.4,
+    "cxr_to_board_decision": 46.7,
+    "cxr_to_treatment": 61.8,
+    "first_contact_to_treatment": 93.1
+   },
+   "per_seed_median_days_to_treatment": [
+    86.84,
+    88.22,
+    91.53
+   ],
+   "per_seed_cxr_to_ct": [
+    21.4,
+    20.9,
+    21.1
+   ],
+   "per_seed_cxr_to_decision": [
+    46.6,
+    46.3,
+    48.7
+   ]
+  },
+  "direct_ct (CT before referral, 8 CT slots)": {
+   "n_abnormal_cxr_treated": 28,
+   "cxr_to_ct_result": 8.7,
+   "ct_result_to_board_decision": 51.6,
+   "cxr_to_board_decision": 60.7,
+   "cxr_to_treatment": 75.5,
+   "first_contact_to_treatment": 98.6,
+   "share_within_target": 0.3,
+   "median_days_to_treatment": 98.6,
+   "mean_wait_days_per_treated_cancer": {
+    "spec_visit": 12.5,
+    "bronch": 5.5,
+    "ttnb": 4.8,
+    "pet": 9.4,
+    "mdt": 4.6,
+    "book_treat": 16.2
+   },
+   "non_specific_presenters_only": {
+    "n_abnormal_cxr_treated": 28,
+    "cxr_to_ct_result": 8.7,
+    "ct_result_to_board_decision": 51.6,
+    "cxr_to_board_decision": 60.7,
+    "cxr_to_treatment": 75.5,
+    "first_contact_to_treatment": 108.2
+   },
+   "per_seed_median_days_to_treatment": [
+    100.84,
+    95.89,
+    98.62
+   ],
+   "per_seed_cxr_to_ct": [
+    8.7,
+    9.0,
+    8.7
+   ],
+   "per_seed_cxr_to_decision": [
+    62.8,
+    54.9,
+    60.7
+   ]
+  },
+  "direct_ct + 1 d CT lead and report": {
+   "n_abnormal_cxr_treated": 28,
+   "cxr_to_ct_result": 3.5,
+   "ct_result_to_board_decision": 49.9,
+   "cxr_to_board_decision": 53.8,
+   "cxr_to_treatment": 69.5,
+   "first_contact_to_treatment": 91.9,
+   "share_within_target": 0.4,
+   "median_days_to_treatment": 91.9,
+   "mean_wait_days_per_treated_cancer": {
+    "spec_visit": 12.4,
+    "bronch": 5.4,
+    "ttnb": 4.7,
+    "pet": 9.0,
+    "mdt": 4.5,
+    "book_treat": 16.2
+   },
+   "non_specific_presenters_only": {
+    "n_abnormal_cxr_treated": 28,
+    "cxr_to_ct_result": 3.5,
+    "ct_result_to_board_decision": 49.9,
+    "cxr_to_board_decision": 53.8,
+    "cxr_to_treatment": 69.5,
+    "first_contact_to_treatment": 99.9
+   },
+   "per_seed_median_days_to_treatment": [
+    92.96,
+    91.01,
+    91.86
+   ],
+   "per_seed_cxr_to_ct": [
+    3.3,
+    3.6,
+    3.5
+   ],
+   "per_seed_cxr_to_decision": [
+    58.0,
+    52.5,
+    53.8
+   ]
+  },
+  "bundled_workup (reorder)": {
+   "n_abnormal_cxr_treated": 57,
+   "cxr_to_ct_result": 28.2,
+   "ct_result_to_board_decision": 5.2,
+   "cxr_to_board_decision": 33.3,
+   "cxr_to_treatment": 51.9,
+   "first_contact_to_treatment": 79.2,
+   "share_within_target": 0.5,
+   "median_days_to_treatment": 79.2,
+   "mean_wait_days_per_treated_cancer": {
+    "spec_visit": 12.7,
+    "ct": 5.8,
+    "bronch": 6.5,
+    "ttnb": 4.8,
+    "pet_early": 2.8,
+    "pet_after_ct": 2.3,
+    "mdt": 4.5,
+    "book_treat": 15.9
+   },
+   "non_specific_presenters_only": {
+    "n_abnormal_cxr_treated": 28,
+    "cxr_to_ct_result": 29.4,
+    "ct_result_to_board_decision": 5.2,
+    "cxr_to_board_decision": 33.7,
+    "cxr_to_treatment": 53.4,
+    "first_contact_to_treatment": 88.8
+   },
+   "per_seed_median_days_to_treatment": [
+    75.26,
+    79.2,
+    85.0
+   ],
+   "per_seed_cxr_to_ct": [
+    28.2,
+    28.7,
+    28.1
+   ],
+   "per_seed_cxr_to_decision": [
+    33.2,
+    33.3,
+    33.7
+   ]
+  }
+ }
+}

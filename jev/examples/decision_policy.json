@@ -1,0 +1,14 @@
+{
+  "backend": "stub",
+  "mode": "sample",
+  "points": {
+    "first_contact": {"default": {"nurse_visit": 0.5, "gp_visit": 0.5}},
+    "sample_method": {
+      "default": {"bronch": 0.5, "ttnb": 0.5},
+      "rules": [
+        {"when": "location == 'central'", "probs": {"bronch": 0.9, "ttnb": 0.1}},
+        {"when": "location == 'peripheral'", "probs": {"bronch": 0.15, "ttnb": 0.85}}
+      ]
+    }
+  }
+}

@@ -1,0 +1,26 @@
+# Clinical catalogue `lung-primary-care` (WP-C2-1). SYNTHETIC-WORLD CONTENT, DRAFT: a clinician has not read it.
+# Every number carries a source id (params/sources.yaml) or `assumption` with the reasoning in `note`.
+# Numbers read through a summarising tool say so in `note` ("re-check against the page").
+# Research notes behind it: docs/research/catalogue/conditions_symptoms.md and tests_labs.md.
+format: "catalogue/1"
+id: lung_primary_care
+version: 1
+title: "Lung symptoms in Finnish primary care (draft)"
+status: draft
+scope: >-
+  Adults (18 and over) contacting primary care (health centre nurse or GP) with chest or general
+  symptoms (cough, breathlessness, chest pain, haemoptysis, tiredness, weight loss), where lung cancer
+  is one of several explanations. Prevalence is the share of these presenters whose primary condition
+  it is, not the share in the general population. Almost all numbers come from UK, other European or
+  hospital cohorts; hardly any are Finnish primary care data, and the notes say which.
+max_attempts: 3
+note: >-
+  Background distributions per population are not part of catalogue/1 yet (populations/ is not read).
+  Region is a visible field for the equity analysis (urban versus rural); no number in this catalogue
+  depends on it yet.
+background:
+  - {id: age, label: Age, type: continuous, unit: years, range: {min: 18, max: 100}}
+  - {id: sex, label: Sex, type: categorical, values: [f, m]}
+  - {id: smoking_status, label: "Smoking status", type: categorical, values: [never, former, current]}
+  - {id: pack_years, label: "Pack-years smoked", type: continuous, unit: "pack-years", range: {min: 0, max: 200}}
+  - {id: region, label: "Home region", type: categorical, values: [urban, rural]}

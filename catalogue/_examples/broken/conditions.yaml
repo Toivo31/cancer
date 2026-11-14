@@ -1,0 +1,8 @@
+- id: lung_cancer
+  label: Lung cancer
+  class: cancer
+  prevalence: {value: 1.6, source: assumption}          # MISTAKE probability_out_of_range (1.6 > 1)
+- id: healthy
+  label: Healthy
+  class: healthy
+  prevalence: 0.984                                      # MISTAKE missing_source (bare number)

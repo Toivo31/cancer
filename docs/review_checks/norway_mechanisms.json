@@ -1,0 +1,193 @@
+{
+ "n": 1000,
+ "seed": 1,
+ "grid": {
+  "bronch": [
+   3,
+   6
+  ],
+  "surgrt": [
+   [
+    10,
+    17
+   ],
+   [
+    8,
+    14
+   ],
+   [
+    6,
+    10.5
+   ],
+   [
+    4,
+    7.0
+   ],
+   [
+    2,
+    3.5
+   ]
+  ],
+  "cut": [
+   0,
+   2
+  ],
+  "extra": [
+   0.01,
+   2,
+   4
+  ],
+  "pet": [
+   0.0,
+   0.5,
+   0.8,
+   1.0
+  ]
+ },
+ "runs": [
+  {
+   "scenario": "base",
+   "rho": 0.0,
+   "grid_points": 240,
+   "accepted": 38,
+   "faster_pet": {
+    "min": 0.519,
+    "median": 0.612,
+    "max": 0.709
+   },
+   "optimal": {
+    "min": 0.665,
+    "median": 0.75,
+    "max": 0.855
+   },
+   "faster_pet_gain_over_observed_pts": [
+    15,
+    22,
+    32
+   ],
+   "best_fit_point": {
+    "pt": {
+     "bronch": 3,
+     "surg": 6,
+     "rt": 10.5,
+     "cut": 0,
+     "extra": 2,
+     "pet": 1.0
+    },
+    "observed": {
+     "share_within_target": 0.393,
+     "median_days_to_treatment": 46.42,
+     "sampling_per_patient": 0.994
+    }
+   },
+   "accepted_pet_share_levels": [
+    0.0,
+    0.5,
+    0.8,
+    1.0
+   ],
+   "accepted_surg_levels": [
+    2,
+    4,
+    6,
+    8
+   ]
+  },
+  {
+   "scenario": "base",
+   "rho": 0.3,
+   "grid_points": 240,
+   "accepted": 46,
+   "faster_pet": {
+    "min": 0.522,
+    "median": 0.611,
+    "max": 0.732
+   },
+   "optimal": {
+    "min": 0.652,
+    "median": 0.742,
+    "max": 0.85
+   },
+   "faster_pet_gain_over_observed_pts": [
+    15,
+    21,
+    31
+   ],
+   "best_fit_point": {
+    "pt": {
+     "bronch": 6,
+     "surg": 2,
+     "rt": 3.5,
+     "cut": 0,
+     "extra": 4,
+     "pet": 0.8
+    },
+    "observed": {
+     "share_within_target": 0.395,
+     "median_days_to_treatment": 46.28,
+     "sampling_per_patient": 0.994
+    }
+   },
+   "accepted_pet_share_levels": [
+    0.0,
+    0.5,
+    0.8,
+    1.0
+   ],
+   "accepted_surg_levels": [
+    2,
+    4,
+    6,
+    8
+   ]
+  },
+  {
+   "scenario": "base",
+   "rho": 0.6,
+   "grid_points": 240,
+   "accepted": 52,
+   "faster_pet": {
+    "min": 0.506,
+    "median": 0.591,
+    "max": 0.7
+   },
+   "optimal": {
+    "min": 0.616,
+    "median": 0.729,
+    "max": 0.831
+   },
+   "faster_pet_gain_over_observed_pts": [
+    12,
+    19,
+    29
+   ],
+   "best_fit_point": {
+    "pt": {
+     "bronch": 6,
+     "surg": 2,
+     "rt": 3.5,
+     "cut": 2,
+     "extra": 4,
+     "pet": 0.8
+    },
+    "observed": {
+     "share_within_target": 0.397,
+     "median_days_to_treatment": 46.54,
+     "sampling_per_patient": 0.994
+    }
+   },
+   "accepted_pet_share_levels": [
+    0.0,
+    0.5,
+    0.8,
+    1.0
+   ],
+   "accepted_surg_levels": [
+    2,
+    4,
+    6,
+    8
+   ]
+  }
+ ]
+}

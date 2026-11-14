@@ -285,11 +285,11 @@ $("actions").innerHTML = `<button class="close" onclick="this.parentElement.clas
 
 // ---- Norway panel
 const nv = Object.fromEntries(nor.variants.map(v => [v.key, v.share]));
-const NROWS = [["Observed pathway, simulated (published: 40%)", nv.observed, true], ["Authors' reordered pathway, simulated (published: 80%, a model estimate)", nv.authors, false], ["Our optimiser, found blind, with the faster PET-CT", nv.optimiser, false]];
+const NROWS = [["Observed pathway, simulated (published: 40%)", nv.observed, true], ["Authors' reordered pathway, simulated (published: 80%, a model estimate)", nv.authors, false], ["Our optimiser, found blind, no new equipment", nv.optimiser, false]];
 $("norway").innerHTML = `<h2>Can you trust it? A real Norwegian hospital</h2>
   <div class="muted">Stokstad et al., BMC Health Serv Res 2019;19:679: 100 early-stage lung cancer patients, share treated within 42 days. The simulator was fitted to the observed pathway only.</div>
   <div class="norway">${NROWS.map(([l, v, light]) => `<div class="nrow ${light ? "light" : ""}"><span>${esc(l)}</span><div class="b"><i style="width:${100 * v}%"></i></div><b>${Math.round(100 * v)}%</b></div>`).join("")}</div>
-  <p>Searching on its own, the optimiser finds the same reordering the authors proposed. Without any new equipment it reaches 67%.</p>`;
+  <p>A plausibility check: searching on its own from today's pathway, with no new equipment, the optimiser finds the authors' three timing changes plus a fourth that needs clinical review, and reaches ${Math.round(100 * nv.optimiser)}% at the best-fitting setting. The authors' 80% includes a shorter PET-CT wait, so the two are not a like-for-like pair.</p>`;
 
 // ---- loop
 let last = performance.now();

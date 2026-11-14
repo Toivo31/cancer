@@ -1,0 +1,784 @@
+#!/usr/bin/env python3
+"""Fill every [[placeholder]] in docs/pitch/*.md from the real run outputs.
+
+Reads
+  demo/data/demo_bundle.json      simulation results (Norwegian check, Finnish scenario, parameter list)
+  docs/validation_results.json    calibration run against Stokstad et al. 2019 (accepted parameter sets)
+  docs/sensitivity_*.json         optional; keys are exposed as sens_<file>_<key> if present
+  decision_model/README.md        benchmark tables (parsed, not retyped)
+  docs/review_checks/norway_grid_table.json, norway_grid_extension.json, norway_ranking.json
+                                  the Norway robustness band over the extended grid (184 accepted settings)
+  docs/review_checks/encounter_results.json   consistency checks of the primary-care loop
+  libraries/*/manifest.json       patient-card libraries (counts; reference vs model-written)
+
+Writes filled copies to docs/pitch/filled/. Templates keep their [[placeholders]], so rerun this
+after every new demo run:   python3 docs/pitch/fill_numbers.py
+
+No simulation number is typed in the templates. Published literature numbers (Stokstad 40/48/80 etc.)
+are read from the bundle's `published` block or the validation file, where they carry their source.
+Placeholders that cannot be filled are printed, and left as they are in the filled copy.
+Use --strict to exit non-zero if any remain. Use --list to print every value.
+"""
+from __future__ import annotations
+
+import argparse
+import glob
+import json
+import re
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[2]
+PITCH = ROOT / "docs" / "pitch"
+OUT = PITCH / "filled"
+PLACEHOLDER = re.compile(r"\[\[([a-z0-9_]+)\]\]")
+
+
+# ---------------------------------------------------------------- formatting
+def rhu(x: float, nd: int = 0) -> float:
+    """Round half up (Python's round() is banker's rounding)."""
+    f = 10 ** nd
+    return int(x * f + (0.5 if x >= 0 else -0.5)) / f
+
+
+def n0(x: float) -> str:
+    return f"{rhu(x):.0f}"
+
+
+def n1(x: float) -> str:
+    return f"{rhu(x, 1):.1f}"
+
+
+def n2(x: float) -> str:
+    return f"{rhu(x, 2):.2f}"
+
+
+def pc(x: float) -> str:  # share 0-1 -> "40"
+    return n0(100 * x)
+
+
+def pc1(x: float) -> str:
+    return n1(100 * x)
+
+
+def thousands(x: float) -> str:
+    return f"{int(rhu(x)):,}".replace(",", " ")
+
+
+def md_table(header: list[str], rows: list[list[str]]) -> str:
+    out = ["| " + " | ".join(header) + " |", "|" + "|".join("---" for _ in header) + "|"]
+    out += ["| " + " | ".join(r) + " |" for r in rows]
+    return "\n".join(out)
+
+
+# ---------------------------------------------------------------- loading
+def load(path: Path):
+    return json.loads(path.read_text()) if path.exists() else None
+
+
+def scenario(bundle: dict, sid: str) -> dict | None:
+    return next((s for s in bundle["scenarios"] if s["id"] == sid), None)
+
+
+def by_role(sc: dict, role: str) -> dict | None:
+    return next((v for v in sc["variants"] if v.get("role") == role), None)
+
+
+def by_flowchart(sc: dict, fid: str) -> dict | None:
+    return next((v for v in sc["variants"] if v["metrics"]["flowchart"] == fid), None)
+
+
+def group_stats(m: dict, g: str) -> dict:
+    return m["by_group"][g]
+
+
+def missed_share(m: dict) -> float:
+    return m["missed_cancers"] / m["n_cancer"]
+
+
+# ---------------------------------------------------------------- values
+def stokstad_values(V: dict, bundle: dict, val: dict | None) -> None:
+    s = scenario(bundle, "stokstad")
+    if not s:
+        return
+    pub = s["published"]
+    base = s["baseline"]["metrics"]
+    fast = by_role(s, "faster_pet")["metrics"]
+    auth = by_role(s, "authors_pathway")["metrics"]
+    # D68: the Norwegian optimiser result is the run from today's pathway with no new equipment; the run from the
+    # faster-scanner pathway is not reported (Tuomas, 14 Nov), so there are no s_opt_* values any more
+    noeq = by_role(s, "optimiser_no_new_equipment")
+    V.update({
+        "s_source": pub["source"],
+        "s_target_days": n0(s["target_days"]),
+        "s_pub_base": pc(pub["baseline_share"]),
+        "s_pub_fast": pc(pub["faster_pet_share"]),
+        "s_pub_opt": pc(pub["optimal_share"]),
+        "s_obs_share": pc(base["share_within_target"]),
+        "s_obs_median": n0(base["median_days_to_treatment"]),
+        "s_fast_share": pc(fast["share_within_target"]),
+        "s_fast_median": n0(fast["median_days_to_treatment"]),
+        "s_auth_share": pc(auth["share_within_target"]),
+        "s_auth_median": n0(auth["median_days_to_treatment"]),
+        "s_noeq_share": pc(noeq["metrics"]["share_within_target"]),
+        "s_noeq_median": n0(noeq["metrics"]["median_days_to_treatment"]),
+        "s_n": thousands(base["n"]),
+        "s_missed_max": n0(max(noeq["metrics"]["missed_cancers"], auth["missed_cancers"])),
+        "s_fast_over_pp": n0(100 * (fast["share_within_target"] - pub["faster_pet_share"])),
+        "s_tests_base": n2(base["tests_per_patient"]),
+        "s_tests_auth": n2(auth["tests_per_patient"]),
+        "s_tests_noeq": n2(noeq["metrics"]["tests_per_patient"]),
+    })
+    # optimiser (no new equipment): steps, train vs held-out, optimism
+    sn = s["optimiser"]
+    V["s_noeq_train"] = pc(sn["steps"][-1]["evidence"]["train_on_time_after"])
+    V["s_noeq_train_start"] = pc(sn["steps"][0]["evidence"]["train_on_time_before"])
+    V["s_noeq_optimism_pp"] = n1(sn["selection_optimism_pp"])
+    V["s_candidates"] = n0(sn["candidates_evaluated"])
+    V["s_noeq_nsteps"] = n0(len(sn["steps"]))
+    V["s_noeq_changes"] = "\n".join(f"{i}. {c}" for i, c in enumerate(noeq["changes_detail"], 1))
+    st = base["stage_breakdown"]
+    top = max(st, key=lambda k: st[k]["wait"])
+    V["s_top_stage"] = top.replace("_", " ")
+    V["s_top_stage_wait"] = n0(st[top]["wait"])
+
+    if val:
+        pp = val["published"]
+        ps = val["prediction_summary"]
+        V.update({
+            "val_pub_base_ci": f"{pc(pp['observed']['ci95'][0])}-{pc(pp['observed']['ci95'][1])}",
+            "val_pub_fast_ci": f"{pc(pp['faster_pet']['ci95'][0])}-{pc(pp['faster_pet']['ci95'][1])}",
+            "val_pub_opt_ci": f"{pc(pp['optimal']['ci95'][0])}-{pc(pp['optimal']['ci95'][1])}",
+            "val_pub_median": n1(pp["observed"]["median_days_to_treatment"]),
+            "val_fast_min": pc(ps["faster_pet"]["share_min"]),
+            "val_fast_med": pc(ps["faster_pet"]["share_median"]),
+            "val_fast_max": pc(ps["faster_pet"]["share_max"]),
+            "val_opt_min": pc(ps["optimal"]["share_min"]),
+            "val_opt_med": pc(ps["optimal"]["share_median"]),
+            "val_opt_max": pc(ps["optimal"]["share_max"]),
+            "val_accepted": n0(val["accepted"]),
+            "val_grid": n0(val["grid_points"]),
+            "val_n": thousands(val["n"]),
+            "val_target_share": pc(val["targets"]["share_within_target"][0]),
+            "val_target_tol": pc(val["targets"]["share_within_target"][1]),
+        })
+        obs = [a["observed"]["share_within_target"] for a in val["accepted_sets"]]
+        V["val_obs_min"], V["val_obs_max"] = pc(min(obs)), pc(max(obs))
+        b = val["best"]
+        r_sim = b["optimal"]["sampling_per_patient"] / b["observed"]["sampling_per_patient"]
+        V["val_samp_obs"] = n2(b["observed"]["sampling_per_patient"])
+        V["val_samp_opt"] = n2(b["optimal"]["sampling_per_patient"])
+        V["val_samp_ratio"] = n2(r_sim)
+        sp = pp["sampling_procedures"]
+        V["val_samp_pub_obs"] = n0(sp["observed"])
+        V["val_samp_pub_opt"] = n0(sp["optimal"])
+        V["val_samp_pub_ratio"] = n2(sp["optimal"] / sp["observed"])
+
+    # tables
+    V["s_validation_table"] = md_table(
+        ["Flowchart", "Published (Stokstad 2019)", "Our simulation (held-out)", "Verdict"],
+        [["Observed pathway", f"{V['s_pub_base']}% within {V['s_target_days']} d", f"{V['s_obs_share']}% (fitted)", "fitted to this number"],
+         ["Faster PET-CT only (7 d)", f"{V['s_pub_fast']}% (not significant)", f"{V['s_fast_share']}% at the best fit",
+          "predicted, not fitted: we over-predict"],
+         ["Authors' reordered pathway", f"{V['s_pub_opt']}%", f"{V['s_auth_share']}% at the best fit",
+          "predicted, not fitted: consistent, not exact"]]
+        if True else [])
+    V["s_optimiser_table"] = md_table(
+        ["Search starting point", "Share within 42 d, held-out", "Median days", "Missed cancers"],
+        [["Observed pathway (no change)", f"{V['s_obs_share']}%", V["s_obs_median"], "0"],
+         ["Search from a menu we wrote, from today's pathway, no new equipment", f"{V['s_noeq_share']}%", V["s_noeq_median"], V["s_missed_max"]]])
+
+
+def finland_values(V: dict, bundle: dict) -> None:
+    f = scenario(bundle, "finland_lung")
+    if not f:
+        return
+    base = f["baseline"]["metrics"]
+    opt = by_role(f, "optimiser")["metrics"]
+    direct = by_flowchart(f, "direct_ct")["metrics"]
+    bundled = by_flowchart(f, "bundled_workup")["metrics"]
+    fast = by_flowchart(f, "fast_track_nonspecific")["metrics"]
+    capctl = by_flowchart(f, "baseline_plus_capacity")["metrics"]
+    cond_v = by_role(f, "conditional_urgent_booking")
+    so = f["optimiser"]
+    sh = lambda m: m["share_within_target"]  # noqa: E731
+    V.update({
+        "f_target": n0(f["target_days"]),
+        "f_n": thousands(base["n"]),
+        "f_cancers": thousands(base["n_cancer"]),
+        "f_prevalence": n1(100 * base["n_cancer"] / base["n"]),
+        "f_share_base": pc(sh(base)),
+        "f_share_opt": pc(sh(opt)),
+        "f_share_gain_pp": n0(100 * (sh(opt) - sh(base))),
+        "f_median_base": n0(base["median_days_to_treatment"]),
+        "f_median_opt": n0(opt["median_days_to_treatment"]),
+        "f_median_gain": n0(base["median_days_to_treatment"] - opt["median_days_to_treatment"]),
+        "f_missed_base": n1(base["missed_cancers"]),
+        "f_missed_opt": n1(opt["missed_cancers"]),
+        "f_missed_pct_base": pc1(missed_share(base)),
+        "f_missed_pct_opt": pc1(missed_share(opt)),
+        "f_tests_base": n2(base["tests_per_patient"]),
+        "f_tests_opt": n2(opt["tests_per_patient"]),
+        "f_cost_base": n0(base["cost_per_patient"]),
+        "f_cost_opt": n0(opt["cost_per_patient"]),
+        "f_noncancer_base": n1(base["median_days_to_exit_noncancer"]),
+        "f_noncancer_opt": n1(opt["median_days_to_exit_noncancer"]),
+        "f_train_base": pc(so["steps"][0]["evidence"]["train_on_time_before"]),
+        "f_train_opt": pc(so["steps"][-1]["evidence"]["train_on_time_after"]),
+        "f_optimism_pp": n1(so["selection_optimism_pp"]),
+        "f_candidates": n0(so["candidates_evaluated"]),
+        "f_changes": "; ".join(by_role(f, "optimiser")["changes"]),
+        "f_n_changes": {1: "One step", 2: "Two steps", 3: "Three steps"}.get(len(by_role(f, "optimiser")["changes"]),
+                                                                              f"{len(by_role(f, 'optimiser')['changes'])} steps"),
+        "f_direct_share": pc(sh(direct)), "f_direct_median": n0(direct["median_days_to_treatment"]),
+        "f_bundle_share": pc(sh(bundled)), "f_bundle_median": n0(bundled["median_days_to_treatment"]),
+        "f_fast_share": pc(sh(fast)), "f_fast_median": n0(fast["median_days_to_treatment"]),
+        "f_capctl_share": pc(sh(capctl)), "f_capctl_median": n0(capctl["median_days_to_treatment"]),
+        "f_bundle_gain_pp": n0(100 * (sh(bundled) - sh(base))),
+        "f_capctl_gain_pp": n0(100 * (sh(capctl) - sh(base))),
+        "f_order_only_pp": n0(100 * (sh(bundled) - sh(capctl))),
+        "f_direct_gain_pp": n0(100 * (sh(direct) - sh(base))),
+        "f_fast_gain_pp": n0(100 * (sh(fast) - sh(base))),
+    })
+
+    ch = by_role(f, "optimiser")["changes"]
+    for i, c in enumerate(ch, 1):
+        V[f"f_change_{i}"] = c
+    V["f_opt_vs_capctl_pp"] = n0(100 * (sh(opt) - sh(capctl)))
+    V["f_opt_gain_vs_capctl_note"] = "more" if sh(opt) > sh(capctl) else "less"
+    if cond_v:
+        rows = {round(r["share_of_lead_reduction"] * 100): r for r in cond_v["conditional"]}
+        for k, r in rows.items():
+            V[f"f_cond_share_{k}"] = pc(r["share_within_target"])
+            V[f"f_cond_median_{k}"] = n0(r["median_days_to_treatment"])
+            V[f"f_cond_missed_{k}"] = n1(r["missed_cancers"])
+        V["f_cond_gain_100_pp"] = n0(100 * (rows[100]["share_within_target"] - rows[0]["share_within_target"]))
+        V["f_cond_table"] = md_table(
+            ["Share of the assumed urgent-booking lead reduction that holds", f"Treated within {V['f_target']} d", "Median days", "Missed cancers per cohort"],
+            [[f"{k}%", f"{pc(r['share_within_target'])}%", n0(r["median_days_to_treatment"]), n1(r["missed_cancers"])]
+             for k, r in sorted(rows.items())])
+        cm = cond_v["metrics"]
+        for tag in ("ns", "ss"):
+            grp = "non_specific" if tag == "ns" else "site_specific"
+            V[f"f_cond_{tag}_share"] = pc(cm["by_group"][grp]["share_within_target"])
+
+    # where time is lost
+    st = base["stage_breakdown"]
+    for k, short in (("detection", "detection"), ("referral", "referral"), ("diagnosis", "diagnosis"),
+                     ("treatment_start", "treatment")):
+        V[f"f_wait_{short}"] = n0(st[k]["wait"])
+        V[f"f_svc_{short}"] = n0(st[k]["service"])
+    tot_wait = sum(x["wait"] for x in st.values())
+    tot_svc = sum(x["service"] for x in st.values())
+    V["f_wait_share"] = n0(100 * tot_wait / (tot_wait + tot_svc))
+    V["f_wait_total"] = n0(tot_wait)
+    V["f_svc_total"] = n0(tot_svc)
+    # where the waiting days come from (bundle wait_basis, demo/wait_basis.py): published figure vs our assumption
+    wb = f.get("wait_basis")
+    if wb:
+        gp, ga = wb["groups"]["published"], wb["groups"]["assumption"]
+        V["f_wb_pub_share"] = n0(100 * gp["share_of_waiting"])
+        V["f_wb_asm_share"] = n0(100 * ga["share_of_waiting"])
+        V["f_wb_pub_steps"] = ", ".join(f"{r['step']} {n0(r['days'])} d" for r in gp["steps"])
+        V["f_wb_asm_steps"] = ", ".join(f"{r['step']} {n0(r['days'])} d" for r in ga["steps"])
+        V["f_wb_statement"] = wb["statement"]
+    top = max(st, key=lambda k: st[k]["wait"])
+    V["f_top_stage"] = top.replace("_", " ")
+    V["f_top_stage_wait"] = n0(st[top]["wait"])
+    labels = {n["id"]: n.get("label", n["id"]) for n in f["flowchart_before"]["nodes"]}
+    nodes = sorted(base["node_breakdown"].items(), key=lambda kv: -kv[1]["wait"])[:3]
+    for i, (nid, x) in enumerate(nodes, 1):
+        V[f"f_node{i}_name"] = labels.get(nid, nid).lower()
+        V[f"f_node{i}_wait"] = n0(x["wait"])
+    V["f_node_list"] = ", ".join(f"{V[f'f_node{i}_name']} ({V[f'f_node{i}_wait']} d)" for i in (1, 2, 3))
+
+    # equity: presentation groups
+    ns, ss = "non_specific", "site_specific"
+    g = lambda m, k, key: group_stats(m, k)[key]  # noqa: E731
+    gaps = {}
+    for tag, m in (("base", base), ("opt", opt), ("direct", direct), ("bundle", bundled), ("fast", fast),
+                   ("capctl", capctl)):
+        V[f"f_ns_share_{tag}"] = pc(g(m, ns, "share_within_target"))
+        V[f"f_ss_share_{tag}"] = pc(g(m, ss, "share_within_target"))
+        V[f"f_ns_median_{tag}"] = n0(g(m, ns, "median_days_to_treatment"))
+        V[f"f_ss_median_{tag}"] = n0(g(m, ss, "median_days_to_treatment"))
+        gap_pp = 100 * (g(m, ss, "share_within_target") - g(m, ns, "share_within_target"))
+        gap_d = g(m, ns, "median_days_to_treatment") - g(m, ss, "median_days_to_treatment")
+        V[f"equity_gap_{tag}_pp"] = n1(gap_pp)
+        V[f"f_gap_days_{tag}"] = n1(gap_d)
+        gaps[tag] = (gap_pp, gap_d)
+        V[f"f_ns_missed_pct_{tag}"] = pc1(g(m, ns, "missed_cancers") / g(m, ns, "n_cancer"))
+        V[f"f_ss_missed_pct_{tag}"] = pc1(g(m, ss, "missed_cancers") / g(m, ss, "n_cancer"))
+    # legacy names used by the earlier templates
+    V["equity_gap_before_pp"] = V["equity_gap_base_pp"]
+    V["equity_gap_after_pp"] = V["equity_gap_opt_pp"]
+    V["f_gap_days_before"], V["f_gap_days_after"] = V["f_gap_days_base"], V["f_gap_days_opt"]
+    V["f_ns_n_cancer"] = n0(g(base, ns, "n_cancer"))
+    V["f_ss_n_cancer"] = n0(g(base, ss, "n_cancer"))
+    V["f_ss_presenter_share"] = pc(g(base, ss, "n") / base["n"])
+    V["f_ns_share_gain_pp"] = n0(100 * (g(opt, ns, "share_within_target") - g(base, ns, "share_within_target")))
+    V["f_ss_share_gain_pp"] = n0(100 * (g(opt, ss, "share_within_target") - g(base, ss, "share_within_target")))
+    V["f_gap_pp_widens"] = "widens" if gaps["opt"][0] > gaps["base"][0] else "narrows"
+    V["f_gap_days_narrows"] = "narrows" if gaps["opt"][1] < gaps["base"][1] else "widens"
+
+    # tables
+    def row(label, m, kind):
+        return [label, kind, f"{pc(sh(m))}%", n0(m["median_days_to_treatment"]), n1(m["missed_cancers"]),
+                n2(m["tests_per_patient"])]
+
+    V["f_variant_table"] = md_table(
+        ["Flowchart (same patients)", "Origin", f"Treated within {V['f_target']} d", "Median days", "Missed cancers per cohort", "Tests per patient"],
+        [row("Baseline", base, "starting point"),
+         row(f"Suggested change ({len(ch)} reorders, no new capacity)", opt, "optimiser, held-out"),
+         row("GPs order CT directly (needs 8 CT slots)", direct, "hand-written"),
+         row("Order CT + PET-CT together, board before sampling (needs 3 PET slots)", bundled, "hand-written"),
+         row("Hand-written priority track for vague symptoms", fast, "hand-written"),
+         *([row("Conditional: urgent booking for every referred patient (assumed lead times, 100% of the reduction)", cond_v["metrics"], "conditional finding")] if cond_v else []),
+         row("Baseline order, same extra CT and PET capacity", capctl, "capacity-only control")])
+    V["f_equity_table"] = md_table(
+        ["Flowchart", "Vague (non-specific) symptoms: within target", "Alarm (site-specific) symptoms: within target",
+         "Gap, pp", "Gap in median days"],
+        [[lab, f"{V[f'f_ns_share_{t}']}%", f"{V[f'f_ss_share_{t}']}%", V[f"equity_gap_{t}_pp"], V[f"f_gap_days_{t}"]]
+         for lab, t in (("Baseline", "base"), ("Suggested change", "opt"), ("GPs order CT directly", "direct"),
+                        ("Order together", "bundle"), ("Fast lane for vague symptoms", "fast"),
+                        ("Capacity-only control", "capctl"))])
+
+    V["f_cap_control_table"] = md_table(
+        ["Option (same patients)", f"Treated within {V['f_target']} d", "Median days"],
+        [["Baseline", f"{pc(sh(base))}%", n0(base["median_days_to_treatment"])],
+         ["Large capacity increase, same order (CT 8, PET-CT 3)", f"{pc(sh(capctl))}%", n0(capctl["median_days_to_treatment"])],
+         ["Same extra capacity plus ordering tests together (hand-written)", f"{pc(sh(bundled))}%", n0(bundled["median_days_to_treatment"])],
+         ["Suggested change, no new capacity", f"{pc(sh(opt))}%", n0(opt["median_days_to_treatment"])]])
+
+    probe = f["capacity_probe"]
+    V["f_cap_top_name"] = probe[0]["label"]
+    V["f_cap_top_pp"] = n1(probe[0]["delta_share_pp"])
+    V["f_cap_second_name"] = probe[1]["label"]
+    V["f_cap_second_pp"] = n1(probe[1]["delta_share_pp"])
+    V["f_cap_rest_max_pp"] = n1(max(p["delta_share_pp"] for p in probe[2:]))
+    V["f_cap_n"] = n0(len(probe))
+    V["f_cap_table"] = md_table(
+        ["Resource", "Slots a day now", "Utilisation", f"Change in share within {V['f_target']} d with one more slot"],
+        [[p["label"], n0(p["capacity_per_day"]), f"{pc(p['utilisation'])}%", f"{p['delta_share_pp']:+.1f} pp"]
+         for p in probe])
+
+
+def bundle_values(V: dict, bundle: dict) -> None:
+    a = bundle["assumptions"]
+    V["parameter_count"] = n0(len(a))
+    V["assumption_count"] = n0(sum(1 for x in a if x["status"] == "assumption"))
+    V["sourced_count"] = n0(sum(1 for x in a if x["status"] == "sourced"))
+    V["bundle_date"] = bundle["generated_at"][:10]
+    V["bundle_is_fixture"] = "illustrative fixture" if bundle.get("fixture") else "real run"
+
+
+def count_source_tags(path: Path) -> dict[str, int]:
+    """Count every `source:` tag in a scenario file (each tag once, anchors not re-counted)."""
+    import yaml
+    from collections import Counter
+    c: Counter = Counter()
+    seen: set[int] = set()
+
+    def walk(n):
+        if id(n) in seen:
+            return
+        seen.add(id(n))
+        if isinstance(n, yaml.MappingNode):
+            for k, v in n.value:
+                if k.value == "source" and isinstance(v, yaml.ScalarNode):
+                    c["assumption" if v.value == "assumption" else ("untagged" if v.value in ("", "none") else "sourced")] += 1
+                walk(v)
+        elif isinstance(n, yaml.SequenceNode):
+            for x in n.value:
+                walk(x)
+
+    walk(yaml.compose(path.read_text()))
+    return dict(c)
+
+
+def scenario_source_values(V: dict) -> None:
+    """Counts come from params/ledger.py (simulator input blocks only; calibration targets and repeated
+    decision mixes are not counted as inputs). See docs/ledger.md."""
+    sys.path.insert(0, str(ROOT / "params"))
+    import ledger
+    L = {s["id"]: s for s in ledger.build()["scenarios"]}
+    for tag, sid in (("f", "finland_lung"), ("s", "stokstad")):
+        i = L[sid]["inputs"]
+        t = L[sid]["calibration_targets_and_comparators"] or {"blocks": 0}
+        V[f"{tag}_scn_n"] = n0(i["blocks"])
+        V[f"{tag}_scn_assumption"] = n0(i["assumption"])
+        V[f"{tag}_scn_sourced"] = n0(i["sourced"])
+        V[f"{tag}_scn_strict"] = n0(i["sourced_strict"])
+        V[f"{tag}_scn_targets"] = n0(t["blocks"])
+        V[f"{tag}_scn_untagged"] = "0"
+    p = load(ROOT / "docs" / "review_checks" / "stokstad_pet_triage_result.json")
+    if p:
+        r = p["share_within_target_by_pet_triage_share"]
+        V["s_auth_pet_triage_100"] = pc(r["1.0"])
+        V["s_auth_pet_triage_50"] = pc(r["0.5"])
+        V["s_auth_pet_first_visit"] = pc(r["0.0"])
+
+
+def range_values(V: dict) -> None:
+    """Ranges next to the headlines, from docs/ranges_finland.json and docs/ranges_norway.json
+    (docs/evidence_checks/ranges_*.py). Absent files leave the placeholders unfilled."""
+    f = load(ROOT / "docs" / "ranges_finland.json")
+    if f:
+        a = f["cohort_spread"]
+        V["r_f_cohorts"] = n0(len(a["seeds"]))
+        V["r_f_base_lo"], V["r_f_base_hi"] = pc(a["baseline_share"]["min"]), pc(a["baseline_share"]["max"])
+        V["r_f_sug_lo"], V["r_f_sug_hi"] = pc(a["suggested_share"]["min"]), pc(a["suggested_share"]["max"])
+        V["r_f_gain_mean"] = n0(a["gain_pp"]["mean"])
+        V["r_f_gain_lo"], V["r_f_gain_hi"] = n0(a["gain_pp"]["min"]), n0(a["gain_pp"]["max"])
+        V["r_f_gain_wins"] = n0(a["cohorts_where_suggested_beats_baseline"])
+        sens = (f.get("sensitivity_suggested_vs_baseline") or {})
+        j = ((sens.get("joint") or {}).get("summary") or {}).get("baseline>suggested", {}).get("all")
+        if j:
+            V["r_f_joint_draws"] = n0(j["draws"])
+            V["r_f_joint_better"] = pc(j["p_B_better_share"])
+            V["r_f_joint_p5"], V["r_f_joint_p95"] = n0(j["gain_pp"]["p5"]), n0(j["gain_pp"]["p95"])
+        rows = (sens.get("tornado") or {}).get("rows") or []
+        if rows:
+            ks = "baseline>suggested"
+            V["r_f_oat_n"] = n0(len(rows))
+            V["r_f_oat_worst"] = n0(min(r[ks]["worst_gain_pp"] for r in rows))
+            V["r_f_oat_nonpositive"] = n0(sum(1 for r in rows if r[ks]["gain_vanishes"]))
+    n = load(ROOT / "docs" / "ranges_norway.json")
+    if n:
+        c, b = n["cohorts_of_100"], n["accepted_calibration_sets"]["range"]
+        for k, tag in (("observed", "obs"), ("authors", "auth"), ("optimiser_no_new_equipment", "noeq")):
+            V[f"r_n_{tag}_lo"], V[f"r_n_{tag}_hi"] = pc(c[k]["p2_5"]), pc(c[k]["p97_5"])
+            V[f"r_n_{tag}_cal_lo"], V[f"r_n_{tag}_cal_hi"] = pc(b[k]["min"]), pc(b[k]["max"])
+        V["r_n_sets"] = n0(n["accepted_calibration_sets"]["n_sets"])
+
+
+def decision_model_values(V: dict) -> None:
+    p = ROOT / "decision_model" / "README.md"
+    if not p.exists():
+        return
+    txt = p.read_text()
+    rows = [[c.strip() for c in ln.strip().strip("|").split("|")] for ln in txt.splitlines() if ln.startswith("|")]
+    acc = {}
+    for r in rows:
+        if len(r) == 5 and r[0].startswith(("comparison", "control")):
+            acc[(r[0].split(" ")[0], r[1])] = (r[2], r[3], r[4])
+    get = lambda task, prefix: next((v for (t, m), v in acc.items() if t == task and m.startswith(prefix)), None)  # noqa: E731
+    dp, dpw, cm = get("comparison", "Dot-product (d"), get("comparison", "Dot-product, wider"), get("comparison", "Correction")
+    cdp, ccm = get("control", "Dot-product"), get("control", "Correction")
+    if dp and cm and dpw:
+        V["dm_acc_dot"] = n1(100 * float(dp[1]))
+        V["dm_acc_dot_wide"] = n1(100 * float(dpw[1]))
+        V["dm_acc_corr"] = n1(100 * float(cm[1]))
+        V["dm_gain_pp"] = n1(100 * (float(cm[1]) - float(dpw[1])))
+        V["dm_params_dot_wide"] = dpw[0]
+        V["dm_params_corr"] = cm[0]
+    if cdp and ccm:
+        V["dm_ctrl_dot"] = n1(100 * float(cdp[1]))
+        V["dm_ctrl_corr"] = n1(100 * float(ccm[1]))
+        V["dm_ctrl_gain_pp"] = n1(100 * (float(ccm[1]) - float(cdp[1])))
+    ratios = []
+    for r in rows:
+        if len(r) == 6 and r[1] in ("default", "heavy (hidden 512)"):
+            try:
+                ratios.append((r[0], r[1], float(r[4])))
+            except ValueError:
+                pass
+    dflt = [x[2] for x in ratios if x[1] == "default"]
+    heavy = [x[2] for x in ratios if x[1].startswith("heavy") and x[0].startswith("Correction")]
+    if dflt:
+        V["dm_second_lo"], V["dm_second_hi"] = pc(min(dflt)), pc(max(dflt))
+    if heavy:
+        V["dm_second_heavy"] = n2(heavy[0])
+
+
+def sensitivity_values(V: dict) -> None:
+    for p in sorted(glob.glob(str(ROOT / "docs" / "sensitivity_*.json"))):
+        d = load(Path(p))
+        tag = Path(p).stem.replace("sensitivity_", "")
+        if isinstance(d, dict):
+            for k, v in d.items():
+                if isinstance(v, (int, float, str)):
+                    V[f"sens_{tag}_{k}"] = str(v)
+    V["sens_files"] = ", ".join(Path(p).name for p in sorted(glob.glob(str(ROOT / "docs" / "sensitivity_*.json")))) or "none yet"
+
+
+
+def robustness_values(V: dict, val: dict | None) -> None:
+    """Norway robustness over the extended grid (docs/validation.md, "Robustness"). Source files:
+    docs/review_checks/norway_grid_extension.json (bands), norway_ranking.json (ordering) and
+    norway_grid_table.json (the 1920 rows; used to count accepted settings inside the published intervals,
+    with the same acceptance rule as the calibration: targets and tolerances from docs/validation_results.json)."""
+    d = ROOT / "docs" / "review_checks"
+    ext, rk, tab = load(d / "norway_grid_extension.json"), load(d / "norway_ranking.json"), load(d / "norway_grid_table.json")
+    if ext:
+        pe = ext["pred_extended"]
+        V["s_ext_grid"] = n0(ext["n_grid_extended"])
+        V["s_ext_n"] = n0(ext["accepted_extended"])
+        V["s_ext_n_orig"] = n0(ext["accepted_original_subset"])
+        for tag, k in (("auth", "optimal"), ("fast", "faster_pet")):
+            V[f"s_ext_{tag}_min"], V[f"s_ext_{tag}_max"] = pc(pe[k]["min"]), pc(pe[k]["max"])
+            V[f"s_ext_{tag}_p10"], V[f"s_ext_{tag}_p90"] = pc(pe[k]["p10"]), pc(pe[k]["p90"])
+            V[f"s_ext_{tag}_med"] = pc(pe[k]["median"])
+            V[f"s_ext_{tag}_med1"] = pc1(pe[k]["median"])
+        V["s_ext_auth_width"] = n0(100 * (pe["optimal"]["max"] - pe["optimal"]["min"]))
+        g = ext["gain_extended"]
+        V["s_ext_auth_gain_lo"], V["s_ext_auth_gain_hi"] = pc(g["optimal"]["min"]), pc(g["optimal"]["max"])
+        V["s_ext_fast_gain_lo"], V["s_ext_fast_gain_hi"] = pc(g["faster_pet"]["min"]), pc(g["faster_pet"]["max"])
+    if rk:
+        V["s_ext_rank_n"] = n0(rk["optimal>faster_pet>observed_in"])
+        V["s_ext_rank_of"] = n0(rk["accepted"])
+        V["s_ext_rank_grid_ok"], V["s_ext_rank_grid_of"] = n0(rk["ranking_holds_at_grid_points"]), n0(rk["all_predicted_grid_points"])
+    if tab and val:
+        t = val["targets"]
+        (ts, tol_s), (tm, tol_m) = t["share_within_target"], t["median_days_to_treatment"]
+        acc = [r for r in tab["rows"] if "optimal" in r
+               and abs(r["observed"]["share_within_target"] - ts) <= tol_s + 1e-9
+               and abs(r["observed"]["median_days_to_treatment"] - tm) <= tol_m + 1e-9]
+        pp = val["published"]
+        lo, hi = pp["optimal"]["ci95"]
+        flo, fhi = pp["faster_pet"]["ci95"]
+        if acc:
+            V["s_ext_auth_in_ci_pct"] = pc(sum(lo <= r["optimal"]["share_within_target"] <= hi for r in acc) / len(acc))
+            V["s_ext_fast_in_ci_pct"] = pc(sum(flo <= r["faster_pet"]["share_within_target"] <= fhi for r in acc) / len(acc))
+            V["s_ext_recount"] = n0(len(acc))
+
+
+def optimiser_values(V: dict) -> None:
+    """Optimiser on the 184 settings, ablation and structure check (docs/validation.md, "Optimiser robustness,
+    ablation and structure check"). Files: docs/review_checks/norway_opt_summary.json, norway_opt_structure.json,
+    norway_opt_grid.json, norway_opt_bestfit.json. Also the demo start bundle's without-fourth re-simulation."""
+    d = ROOT / "docs" / "review_checks"
+    sm, st, gr = load(d / "norway_opt_summary.json"), load(d / "norway_opt_structure.json"), load(d / "norway_opt_grid.json")
+    V["o_files"] = ", ".join(Path(x).name for x in sorted(glob.glob(str(d / "norway_opt_*.json")))) or "none yet"
+    if not (sm and st):
+        V["o_available"] = "no"
+        return
+    V["o_available"] = "yes"
+    b, c, df, bf = sm["bands_percent"], sm["counts"], sm["differences_pts"], sm["best_fit_shipped_percent"]
+    f0 = lambda x: n0(x)  # noqa: E731
+    V["o_n"] = n0(sm["n_settings"])
+    V["o_nof_min"], V["o_nof_med"], V["o_nof_max"] = f0(b["full_nofast"]["min"]), f0(b["full_nofast"]["median"]), f0(b["full_nofast"]["max"])
+    V["o_obs_min"], V["o_obs_max"] = f0(b["observed"]["min"]), f0(b["observed"]["max"])
+    V["o_nof_beats_obs"] = n0(c["opt_nofast_beats_observed"])
+    V["o_nof_beats_fast"] = n0(c["opt_nofast_beats_fasterpet"])
+    V["o_nof_loses_fast"] = n0(sm["n_settings"] - c["opt_nofast_beats_fasterpet"])
+    V["o_nod_nof_bf"], V["o_nod_nof_bf1"] = f0(bf["no_d_nofast"]), n1(bf["no_d_nofast"])
+    V["o_nof_bf1"] = n1(bf["full_nofast"])
+    dv = [bf["full_nofast"] - bf["no_d_nofast"], df["full_nofast - no_d_nofast (value of d)"]["median"]]
+    V["o_d_lo"], V["o_d_hi"] = f0(min(dv)), f0(max(dv))
+    V["o_b_loss_med"] = f0(df["full_nofast - no_b_nofast"]["median"])
+    # structure check
+    gb = st["grid_bands"]
+    V["o_ship_med"], V["o_ship_in"] = pc1(gb["optimal"]["share"]["median"] / 100), n0(gb["optimal"]["in_published_CI_72_87"])
+    V["o_nogate_bf"] = f0(st["best_fit_shipped_percent"]["optimal_nogate"])
+    V["o_nogate_bf1"] = n1(st["best_fit_shipped_percent"]["optimal_nogate"])
+    V["o_nogate_med"] = n1(gb["optimal_nogate"]["share"]["median"])
+    V["o_nogate_gain"] = n1(gb["optimal_nogate"]["minus_authors_pts"]["median"])
+    V["o_petvisit_loss"] = n1(-gb["optimal_petvisit"]["minus_authors_pts"]["median"])
+    lit = gb["optimal_petvisit_nogate"]
+    V["o_lit_bf"] = f0(st["best_fit_shipped_percent"]["optimal_petvisit_nogate"])
+    V["o_lit_med"] = f0(lit["share"]["median"])
+    V["o_lit_min"], V["o_lit_max"] = f0(lit["share"]["min"]), f0(lit["share"]["max"])
+    V["o_lit_in"] = n0(lit["in_published_CI_72_87"])
+    # demo start bundle: re-simulation without the fourth change at the best-fit setting (held-out cohorts)
+    sb = ROOT / "demo" / "data" / "start_bundle.js"
+    if sb.exists():
+        try:
+            data = json.loads(sb.read_text().split("=", 1)[1].strip().rstrip(";"))
+            wf = (data.get("norway") or {}).get("without_fourth")
+            if wf:
+                V["o_bundle_three"], V["o_bundle_four"] = pc(wf["three_changes"]), pc(wf["all_four"])
+        except Exception:
+            pass
+    # ready-made sentences, so every pitch file says the same thing (numbers_sheet.md rows B1 to B6)
+    V["o_txt_nof"] = (f"{V['s_noeq_share']}% at the best fit; {V['o_nof_min']} to {V['o_nof_max']}% across all {V['o_n']} settings "
+                      f"(median {V['o_nof_med']}%), against {V['o_obs_min']} to {V['o_obs_max']}% for today's pathway")
+    V["o_txt_core"] = ("Starting from today's pathway, with no new equipment and without being told the answer, the optimiser arrived at the "
+                       "authors' three timing changes plus a fourth that needs clinical review. It did not improve on the authors' redesign")
+    V["o_txt_notpair"] = (f"The authors' {V['s_pub_opt']}% ({V.get('val_pub_opt_ci', '?')}%) for their reordered pathway includes the shorter "
+                          "PET-CT wait; our optimiser's pathway assumes no new equipment, so the two are not a like-for-like pair")
+    V["o_txt_scanner"] = (f"Without new equipment it beats today's pathway in {V['o_nof_beats_obs']} of {V['o_n']} settings but beats the faster "
+                          f"scanner alone in only {V['o_nof_beats_fast']} of {V['o_n']}")
+    V["o_txt_fourth"] = (f"Without the fourth change the optimiser still gives {V['o_nod_nof_bf']}% at the best fit; the fourth change is worth "
+                         f"{V['o_d_lo']} to {V['o_d_hi']} points and overlaps with \"tumour board before sampling\". It was not in the paper "
+                         "and needs a clinical check")
+    V["o_txt_literal"] = (f"A stricter reading of the paper's text (PET-CT at the first visit, treatment not waiting for sampling) gives a median of "
+                          f"{V['o_lit_med']}% over the {V['o_n']} settings ({V['o_lit_min']} to {V['o_lit_max']}%; {V['o_lit_in']} of {V['o_n']} inside "
+                          f"the published {V['val_pub_opt_ci']}%) and {V['o_lit_bf']}% at the best fit. Caveats: we read summaries of the paper, not "
+                          "its figures, and the observed pathway was not recalibrated under that reading; the shipped scenario is unchanged and "
+                          "this is an open decision for the human lead")
+
+    # which sentences were written while this check was pending (none now; kept so a rerun can list them)
+    V["s_opt184_pending"] = "no"
+    V["s_opt184_files"] = V["o_files"]
+
+
+def library_values(V: dict) -> None:
+    """Counts of patient cards from libraries/*/manifest.json. Template-written = model 'fake'. Model-written cards are split by
+    results prompt: g2@1 (old: report wording leaked the error plan, found by review w7 B1; reports are rebuilt from values before
+    a decider sees them) and g2@2 (the engine sets every value; the model writes report text from the reported values only)."""
+    ref = 0
+    llm_old = llm_new = n_old_libs = n_new_libs = 0
+    for m in sorted(glob.glob(str(ROOT / "libraries" / "*" / "manifest.json"))):
+        d = load(Path(m))
+        n = sum(d["card_count_by_condition"].values())
+        if d.get("model") == "fake":
+            ref += n
+        elif (d.get("prompts") or {}).get("results") == "g2@2":
+            llm_new += n
+            n_new_libs += 1
+        else:
+            llm_old += n
+            n_old_libs += 1
+    V["lib_ref_n"] = thousands(ref)
+    V["lib_llm_n"] = thousands(llm_old + llm_new)
+    V["lib_llm_old_n"], V["lib_llm_new_n"] = thousands(llm_old), thousands(llm_new)
+    V["lib_llm_libs"] = n0(n_old_libs + n_new_libs)
+    r = load(ROOT / "libraries" / "ref500" / "manifest.json")
+    V["lib_ref_id"] = r["id"] if r else "unknown"
+    a = load(ROOT / "libraries" / "ref500" / "audit.json")
+    V["lib_ref_audit"] = n0(sum(1 for c in a["checks"] if c["status"] == "pass")) if a else "?"
+    V["lib_ref_audit_total"] = n0(len(a["checks"])) if a else "?"
+    if llm_new:
+        V["lib_g2_sentence"] = (f"{thousands(llm_new)} model-written cards in {n_new_libs} libraries use the new result prompt g2@2 "
+                                "(values set by the engine, report text written from the reported values only); the remaining "
+                                f"{thousands(llm_old)} use the old prompt g2@1 and have their report text rebuilt from values before any decider sees it")
+    else:
+        V["lib_g2_sentence"] = ("the new result prompt (g2@2: the engine sets every value, the language model writes report text from the "
+                                "reported values only) has not yet been run on the real model; the "
+                                f"{thousands(llm_old)} model-written cards in the repository use the old prompt g2@1, and their report text is "
+                                "rebuilt from values before any decider sees it")
+    V["lib_g2_status"] = "run" if llm_new else "not yet run on the real model"
+
+
+def catalogue_values(V: dict) -> None:
+    """Source tags in catalogue/lung-primary-care/*.yaml, counted as demo/export_start.py counts them
+    (every mapping with a string `source`). The older '177 of about 260' in libraries/ref500.md pre-dates care.yaml."""
+    import yaml
+    acc = {"total": 0, "assumption": 0}
+
+    def walk(n):
+        if isinstance(n, dict):
+            src = n.get("source")
+            if isinstance(src, str):
+                acc["total"] += 1
+                acc["assumption"] += src.strip().lower() == "assumption"
+            for v in n.values():
+                walk(v)
+        elif isinstance(n, list):
+            for v in n:
+                walk(v)
+
+    for f in sorted((ROOT / "catalogue" / "lung-primary-care").glob("*.yaml")):
+        walk(yaml.safe_load(f.read_text(encoding="utf-8")))
+    V["cat_total"], V["cat_assump"] = n0(acc["total"]), n0(acc["assumption"])
+    V["cat_sourced"] = n0(acc["total"] - acc["assumption"])
+
+
+def encounter_values(V: dict) -> None:
+    """Primary-care encounter loop against the calibrated chain (docs/encounter_results.md). Headline: the pooled eight-seed file;
+    in-sample (tuning seeds 1-4) and fresh seeds (5-8) from the two four-seed files."""
+    rc = ROOT / "docs" / "review_checks"
+    pool, tune, fresh = (load(rc / f) for f in ("encounter_results_8seeds.json", "encounter_results.json", "encounter_results_oos.json"))
+    if not (pool and tune and fresh):
+        return
+
+    def tally(e):
+        c = e["consistency"]
+        ok = [k for k, x in c.items() if x.get("within_tolerance") or x.get("passes")]
+        return len(ok), len(c), [k for k in c if k not in ok]
+
+    for tag, e in (("pool", pool), ("tune", tune), ("fresh", fresh)):
+        ok, tot, miss = tally(e)
+        V[f"e_{tag}_ok"], V[f"e_{tag}_total"], V[f"e_{tag}_miss_n"] = n0(ok), n0(tot), n0(len(miss))
+    names = {"ref_med": "median days to referral", "ref14": "cancers referred within 14 days", "ref28": "cancers referred within 28 days",
+             "ref42": "cancers referred within 42 days", "referred": "cancers ever referred", "treated": "cancers treated",
+             "within90": "cancers treated within 90 days", "noncancer_referred": "non-cancer patients referred"}
+    for tag, e in (("pool", pool), ("fresh", fresh)):
+        V[f"e_{tag}_miss"] = " and ".join(names[k] for k in tally(e)[2]) or "none"
+    nc = pool["consistency"]["noncancer_referred"]
+    V["e_nc_loop"], V["e_nc_chain"] = pc1(nc["loop"]["mean"]), pc1(nc["chain"]["mean"])
+    V["e_nc_tol"] = n0(100 * nc["tolerance"])
+    V["e_framing"] = (f"it reproduces the calibrated chain at the edge of the tolerances: {V['e_tune_ok']} of {V['e_tune_total']} checks on the "
+                      f"seeds it was tuned on, {V['e_fresh_ok']} of {V['e_fresh_total']} on fresh seeds, {V['e_pool_ok']} of {V['e_pool_total']} pooled over eight seeds")
+    f = pool["finding"]
+    V["e_ref_median"] = n0(f["days_to_referral_median"]["mean"])
+    V["e_chain_ref_median"] = n0(pool["consistency"]["ref_med"]["chain"]["mean"])
+    w = f["share_first_treated_as_something_else"]
+    V["e_wrong_pct"], V["e_wrong_lo"], V["e_wrong_hi"] = pc(w["mean"]), pc(w["lo"]), pc(w["hi"])
+    V["e_wrong_tune_pct"] = pc(tune["finding"]["share_first_treated_as_something_else"]["mean"])
+    V["e_wrong_fresh_pct"] = pc(fresh["finding"]["share_first_treated_as_something_else"]["mean"])
+    wd, nd = f["days_to_referral_median_with_wrong_treatment"], f["days_to_referral_median_without_wrong_treatment"]
+    V["e_wrong_days"], V["e_wrong_days_lo"], V["e_wrong_days_hi"] = n0(round(wd["mean"], -1)), n0(wd["lo"]), n0(wd["hi"])
+    V["e_other_days"] = n0(nd["mean"])
+    V["e_ratio"] = n0(wd["mean"] / nd["mean"])
+    V["e_n_cancers"] = n0(f["n_cancers"]["mean"])
+
+
+def build_values() -> dict:
+    bundle = load(ROOT / "demo" / "data" / "demo_bundle.json")
+    if bundle is None:
+        sys.exit("demo/data/demo_bundle.json missing")
+    val = load(ROOT / "docs" / "validation_results.json")
+    V: dict[str, str] = {}
+    bundle_values(V, bundle)
+    stokstad_values(V, bundle, val)
+    finland_values(V, bundle)
+    decision_model_values(V)
+    scenario_source_values(V)
+    range_values(V)
+    robustness_values(V, val)
+    optimiser_values(V)
+    library_values(V)
+    catalogue_values(V)
+    encounter_values(V)
+    sensitivity_values(V)
+    return V
+
+
+# ---------------------------------------------------------------- main
+def main() -> int:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--strict", action="store_true", help="exit 1 if any placeholder is left unfilled")
+    ap.add_argument("--list", action="store_true", help="print every value (single-line ones)")
+    a = ap.parse_args()
+    V = build_values()
+    if a.list:
+        for k in sorted(V):
+            if "\n" not in V[k]:
+                print(f"{k} = {V[k]}")
+    OUT.mkdir(exist_ok=True)
+    for old in OUT.glob("*.md"):
+        old.unlink()  # drop stale copies of renamed or deleted templates
+    missing: dict[str, set[str]] = {}
+    used: set[str] = set()
+    n_files = 0
+    for p in sorted(PITCH.glob("*.md")):
+        text = p.read_text()
+        if p.name == "video_script.md":  # spoken word count, computed from the filled spoken section
+            spoken = PLACEHOLDER.sub(lambda mo: V.get(mo.group(1), "x"), text.split("## Spoken text only")[1].split("## Claims")[0])
+            V["spoken_words"] = str(round(len(spoken.split()), -1))
+
+        def sub(mo, name=p.name):
+            k = mo.group(1)
+            used.add(k)
+            if k in V:
+                return V[k]
+            missing.setdefault(k, set()).add(name)
+            return mo.group(0)
+
+        (OUT / p.name).write_text(PLACEHOLDER.sub(sub, text))
+        n_files += 1
+    print(f"filled {n_files} files into {OUT.relative_to(ROOT)}/ from bundle {V.get('bundle_date')} ({V.get('bundle_is_fixture')})")
+    print(f"{len(used)} distinct placeholders used, {len(V)} values available")
+    if missing:
+        print("UNFILLED placeholders (no source value available):")
+        for k, fs in sorted(missing.items()):
+            print(f"  [[{k}]] in {', '.join(sorted(fs))}")
+        return 1 if a.strict else 0
+    print("all placeholders filled")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

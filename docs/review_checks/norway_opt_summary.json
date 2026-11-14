@@ -1,0 +1,327 @@
+{
+ "n_settings": 184,
+ "bands_percent": {
+  "observed": {
+   "min": 36.0,
+   "p10": 36.7,
+   "median": 39.4,
+   "p90": 42.9,
+   "max": 44.0
+  },
+  "faster_pet": {
+   "min": 49.7,
+   "p10": 54.5,
+   "median": 60.5,
+   "p90": 66.3,
+   "max": 74.2
+  },
+  "optimal": {
+   "min": 61.7,
+   "p10": 66.4,
+   "median": 74.7,
+   "p90": 82.1,
+   "max": 85.9
+  },
+  "full_nofast": {
+   "min": 48.3,
+   "p10": 56.8,
+   "median": 64.8,
+   "p90": 71.0,
+   "max": 76.8
+  },
+  "full_fast": {
+   "min": 78.2,
+   "p10": 82.0,
+   "median": 87.7,
+   "p90": 91.3,
+   "max": 93.3
+  },
+  "no_a_nofast": {
+   "min": 48.1,
+   "p10": 55.7,
+   "median": 62.7,
+   "p90": 68.6,
+   "max": 73.0
+  },
+  "no_b_nofast": {
+   "min": 41.1,
+   "p10": 46.6,
+   "median": 51.4,
+   "p90": 57.0,
+   "max": 61.9
+  },
+  "no_c_nofast": {
+   "min": 45.6,
+   "p10": 53.7,
+   "median": 60.4,
+   "p90": 66.4,
+   "max": 72.6
+  },
+  "no_d_nofast": {
+   "min": 47.5,
+   "p10": 54.8,
+   "median": 60.9,
+   "p90": 65.0,
+   "max": 68.5
+  },
+  "only_a_nofast": {
+   "min": 38.3,
+   "p10": 42.0,
+   "median": 45.5,
+   "p90": 48.8,
+   "max": 51.9
+  },
+  "only_b_nofast": {
+   "min": 42.3,
+   "p10": 45.8,
+   "median": 49.2,
+   "p90": 53.3,
+   "max": 55.4
+  },
+  "only_c_nofast": {
+   "min": 38.2,
+   "p10": 39.4,
+   "median": 42.4,
+   "p90": 45.9,
+   "max": 47.5
+  },
+  "only_d_nofast": {
+   "min": 38.5,
+   "p10": 42.3,
+   "median": 46.4,
+   "p90": 50.3,
+   "max": 55.0
+  },
+  "no_a_fast": {
+   "min": 77.5,
+   "p10": 80.7,
+   "median": 84.6,
+   "p90": 87.9,
+   "max": 90.0
+  },
+  "no_b_fast": {
+   "min": 67.1,
+   "p10": 72.3,
+   "median": 79.1,
+   "p90": 82.3,
+   "max": 84.5
+  },
+  "no_c_fast": {
+   "min": 73.2,
+   "p10": 76.5,
+   "median": 82.0,
+   "p90": 85.2,
+   "max": 87.1
+  },
+  "no_d_fast": {
+   "min": 69.6,
+   "p10": 75.9,
+   "median": 82.8,
+   "p90": 87.7,
+   "max": 90.2
+  },
+  "only_a_fast": {
+   "min": 59.1,
+   "p10": 63.5,
+   "median": 69.9,
+   "p90": 74.3,
+   "max": 77.0
+  },
+  "only_b_fast": {
+   "min": 54.4,
+   "p10": 60.3,
+   "median": 66.4,
+   "p90": 73.2,
+   "max": 79.4
+  },
+  "only_c_fast": {
+   "min": 52.8,
+   "p10": 58.9,
+   "median": 64.8,
+   "p90": 71.5,
+   "max": 78.6
+  },
+  "only_d_fast": {
+   "min": 62.3,
+   "p10": 66.1,
+   "median": 70.6,
+   "p90": 74.0,
+   "max": 77.5
+  }
+ },
+ "counts": {
+  "opt_fast_beats_authors": 184,
+  "opt_fast_beats_authors_by_>1.5pt": 184,
+  "opt_nofast_beats_fasterpet": 128,
+  "opt_nofast_beats_observed": 184,
+  "opt_nofast_beats_authors": 22,
+  "opt_fast_beats_fasterpet": 184,
+  "no_d_fast_beats_authors": 182,
+  "no_d_nofast_beats_authors": 0,
+  "no_d_fast_vs_authors_within_1.5pt": 7,
+  "no_d_nofast_vs_authors_within_1.5pt": 1
+ },
+ "differences_pts": {
+  "full_fast - authors": {
+   "min": 3.6,
+   "p10": 7.1,
+   "median": 12.8,
+   "p90": 17.3,
+   "max": 19.0
+  },
+  "no_d_fast - authors": {
+   "min": -0.5,
+   "p10": 3.1,
+   "median": 7.9,
+   "p90": 12.9,
+   "max": 15.5
+  },
+  "full_nofast - faster_pet": {
+   "min": -21.7,
+   "p10": -7.4,
+   "median": 5.1,
+   "p90": 14.1,
+   "max": 22.2
+  },
+  "no_d_nofast - faster_pet": {
+   "min": -21.9,
+   "p10": -9.8,
+   "median": 2.0,
+   "p90": 7.4,
+   "max": 11.0
+  },
+  "full_nofast - observed": {
+   "min": 10.6,
+   "p10": 17.5,
+   "median": 24.9,
+   "p90": 30.9,
+   "max": 36.0
+  },
+  "no_d_nofast - observed": {
+   "min": 10.3,
+   "p10": 16.3,
+   "median": 21.5,
+   "p90": 24.3,
+   "max": 26.3
+  },
+  "full_nofast - no_d_nofast (value of d)": {
+   "min": 0.2,
+   "p10": 1.1,
+   "median": 3.1,
+   "p90": 7.0,
+   "max": 13.3
+  },
+  "full_fast - no_d_fast (value of d)": {
+   "min": 0.8,
+   "p10": 1.8,
+   "median": 3.8,
+   "p90": 8.7,
+   "max": 15.1
+  },
+  "only_d_nofast - observed": {
+   "min": 1.2,
+   "p10": 3.7,
+   "median": 6.8,
+   "p90": 10.3,
+   "max": 13.4
+  },
+  "full_nofast - no_a_nofast": {
+   "min": 0.1,
+   "p10": 0.3,
+   "median": 1.3,
+   "p90": 4.5,
+   "max": 8.9
+  },
+  "full_nofast - no_b_nofast": {
+   "min": 6.7,
+   "p10": 10.7,
+   "median": 13.2,
+   "p90": 14.7,
+   "max": 15.5
+  },
+  "full_nofast - no_c_nofast": {
+   "min": 2.3,
+   "p10": 3.2,
+   "median": 4.2,
+   "p90": 4.9,
+   "max": 5.3
+  }
+ },
+ "best_fit_shipped_percent": {
+  "observed": 40.1,
+  "faster_pet": 60.3,
+  "optimal": 80.1,
+  "full_nofast": 67.1,
+  "no_a_nofast": 65.7,
+  "no_b_nofast": 51.3,
+  "no_c_nofast": 62.4,
+  "no_d_nofast": 64.9,
+  "only_a_nofast": 46.3,
+  "only_b_nofast": 52.5,
+  "only_c_nofast": 43.2,
+  "only_d_nofast": 46.6,
+  "full_fast": 88.2,
+  "no_a_fast": 85.8,
+  "no_b_fast": 77.7,
+  "no_c_fast": 81.5,
+  "no_d_fast": 85.4,
+  "only_a_fast": 69.7,
+  "only_b_fast": 67.9,
+  "only_c_fast": 65.5,
+  "only_d_fast": 69.7
+ },
+ "best_fit_shipped_median_days": {
+  "observed": 45.68,
+  "faster_pet": 38.24,
+  "optimal": 31.04,
+  "full_nofast": 36.98,
+  "no_a_nofast": 37.57,
+  "no_b_nofast": 41.5,
+  "no_c_nofast": 38.09,
+  "no_d_nofast": 37.79,
+  "only_a_nofast": 43.26,
+  "only_b_nofast": 41.31,
+  "only_c_nofast": 44.46,
+  "only_d_nofast": 43.16,
+  "full_fast": 27.01,
+  "no_a_fast": 29.13,
+  "no_b_fast": 30.94,
+  "no_c_fast": 27.64,
+  "no_d_fast": 28.74,
+  "only_a_fast": 34.1,
+  "only_b_fast": 35.54,
+  "only_c_fast": 36.8,
+  "only_d_fast": 34.08
+ },
+ "extended_grid_closest_setting": {
+  "pt": {
+   "bronch": 1,
+   "surg": 2,
+   "rt": 3.5,
+   "cut": 0,
+   "extra": 6,
+   "pet": 0.8
+  },
+  "observed": 40.0,
+  "faster_pet": 57.5,
+  "optimal": 64.4,
+  "full_nofast": 62.3,
+  "full_fast": 79.2,
+  "no_a_nofast": 62.1,
+  "no_b_nofast": 49.1,
+  "no_c_nofast": 58.3,
+  "no_d_nofast": 58.7,
+  "only_a_nofast": 43.7,
+  "only_b_nofast": 49.9,
+  "only_c_nofast": 42.9,
+  "only_d_nofast": 45.8,
+  "no_a_fast": 79.0,
+  "no_b_fast": 70.1,
+  "no_c_fast": 74.0,
+  "no_d_fast": 74.9,
+  "only_a_fast": 62.5,
+  "only_b_fast": 63.8,
+  "only_c_fast": 62.0,
+  "only_d_fast": 65.1
+ }
+}

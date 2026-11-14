@@ -1,0 +1,27 @@
+# Which ordinary illness occurs next to lung cancer, as a share of lung cancer patients. At most one co-existing illness per patient (shares add to at most 1).
+- primary: lung_cancer
+  coexisting: copd_exacerbation
+  share:
+    value: 0.5
+    source: YOUNG2009
+    grade: B
+    note: >-
+      Spirometric COPD was present in about 50% of lung cancer patients against 8% of matched
+      community controls (odds ratio 11.6); 56-61% in a subgroup with spirometry before diagnosis.
+      That is COPD present, not an exacerbation; the catalogue has only the exacerbation condition, so
+      this overstates acute illness (see the report). Screening populations: airflow limitation 40.1%
+      (CHEST2025_AIRFLOW). Authors not captured by the research lane. Read through a summarising tool;
+      re-check against the page.
+
+- primary: lung_cancer
+  coexisting: pneumonia
+  share:
+    value: 0.023
+    source: WEINBERG2021
+    grade: B
+    note: >-
+      2.3% of 2,289 NSCLC patients at one US cancer centre had pneumonia recorded before the
+      diagnosis; a weak indicator that 'pneumonia first' is a minority route. NSCLC only, single
+      academic centre. The other direction: 8.1% of 381 heavy smokers admitted with pneumonia had a
+      lung cancer within a year (SHEPSHELOVICH2016, secondary, hospitalised). Read through a
+      summarising tool; re-check against the page.

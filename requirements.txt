@@ -1,1 +1,3 @@
 pyyaml>=6.0
+# decision_model/ (numpy only; torch was not installable here, see decision_model/README.md)
+numpy>=2.0

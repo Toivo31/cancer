@@ -1,0 +1,116 @@
+# Parameters for the Stokstad et al. 2019 validation scenario (St Olavs, Trondheim, 2011-2013 diagnoses).
+# Clock starts at referral receipt. Times in calendar days. source: STOKSTAD2019 = reported in the paper;
+# source: assumption = our estimate (reasoning in note). Values derived from reported counts are tagged assumption.
+cohort:
+  n_patients:
+    {value: 100, unit: patients, source: STOKSTAD2019, note: "Stage I-II on baseline CT, curative treatment, no unplanned delay of 3 days or more"}
+  n_diagnosed_period:
+    {value: 454, unit: patients, source: STOKSTAD2019, note: "Lung cancer diagnoses 2011-2013. Flow: 449 not declining, 150 preliminary stage I-II, 26 ineligible for curative treatment, 24 excluded for delay of 3+ days, 100 analysed"}
+  median_age:
+    {value: 70, unit: years, range: [54, 84], source: STOKSTAD2019, note: "32% were 75 or older, 63% women"}
+  share_stage_i:
+    {value: 0.72, unit: fraction, source: STOKSTAD2019, note: "Stage II 20%. The baseline table also lists stage III 8% (likely restaging after the preliminary stage I-II classification; interpretation)"}
+  share_stage_ii:
+    {value: 0.20, unit: fraction, source: STOKSTAD2019, note: "See share_stage_i"}
+  share_nsclc:
+    {value: 0.77, unit: fraction, source: STOKSTAD2019, note: "SCLC 6%, other primary lung cancer 5%, remainder not tabulated"}
+  share_no_tissue_diagnosis:
+    {value: 0.12, unit: fraction, source: STOKSTAD2019, note: "Baseline table. The text separately says 54 patients were treated without a definitive cancer diagnosis (22 never sampled, 27 one negative bronchoscopy, 5 two attempts), so the two counts use different definitions"}
+  n_treated_without_definitive_diagnosis:
+    {value: 54, unit: patients, source: STOKSTAD2019, note: "42 surgery, 11 stereotactic radiotherapy, 1 conventional radiotherapy. Relevant to benign-lesion exposure and the value of earlier tissue sampling"}
+  share_treatment_surgery:
+    {value: 0.76, unit: fraction, source: STOKSTAD2019, note: "Curative radiotherapy 8%, stereotactic radiotherapy 16%"}
+  share_treatment_curative_radiotherapy:
+    {value: 0.08, unit: fraction, source: STOKSTAD2019, note: "Includes chemoradiotherapy for limited-stage SCLC"}
+  share_treatment_sbrt:
+    {value: 0.16, unit: fraction, source: STOKSTAD2019, note: "Stereotactic radiotherapy"}
+
+outcomes_published:
+  target_days:
+    {value: 42, unit: days, source: STOKSTAD2019, note: "National target, referral receipt to treatment start"}
+  median_days_to_treatment_observed:
+    {value: 46.5, unit: days, range: [5, 145], source: STOKSTAD2019, note: "Primary calibration target"}
+  share_within_42d_observed:
+    {value: 0.40, unit: fraction, ci95: [0.31, 0.50], source: STOKSTAD2019, note: "Calibration target for the baseline flowchart"}
+  share_within_42d_pet_le7d:
+    {value: 0.48, unit: fraction, ci95: [0.39, 0.58], source: STOKSTAD2019, note: "Observed intervals, PET-CT wait set to 7 days or less. p=0.254 in abstract, 0.255 in results"}
+  share_within_42d_optimal_pathway:
+    {value: 0.80, unit: fraction, ci95: [0.72, 0.87], source: STOKSTAD2019, note: "Optimal sequence with PET wait 7 days or less and observed intervals for other steps; p<0.001. A model estimate, not an observed result"}
+  share_within_42d_optimal_pathway_median_intervals:
+    {value: 0.93, unit: fraction, source: STOKSTAD2019, note: "Optimal sequence using median observed interval per procedure (Fig. 4). Upper bound; do not use as the main target"}
+  tissue_sampling_procedures_observed:
+    {value: 112, unit: procedures, source: STOKSTAD2019, note: "Whole cohort"}
+  tissue_sampling_procedures_optimal:
+    {value: 92, unit: procedures, source: STOKSTAD2019, note: "About 16% fewer. Check that the simulated optimal flowchart also reduces repeat sampling"}
+
+step_waits:
+  referral_to_first_visit:
+    {value: 7, unit: days, dist: {dist: lognormal, median: 7, p90: 18.5}, source: assumption, note: "The paper reports no median. It says 50 of 100 patients waited more than 7 days and 18 waited 14 days or more. Median about 7 and the 82nd percentile 14 gives lognormal sigma about 0.76, p90 about 18.5. Derived from published counts"}
+  radiology_report_incomplete_at_first_visit:
+    {value: 2, unit: days, range: [1, 55], source: STOKSTAD2019, note: "Median extra wait; affected 39 patients. Median applies only to those patients"}
+  share_report_incomplete_at_first_visit:
+    {value: 0.39, unit: fraction, source: STOKSTAD2019, note: "39 of 100"}
+  share_ct_inadequate_at_first_visit:
+    {value: 0.08, unit: fraction, source: STOKSTAD2019, note: "CT poor quality, too old or upper abdomen missing; stage not correctly assessed"}
+  ct_inadequate_extra_delay:
+    {value: 15.5, unit: days, range: [2, 98], source: STOKSTAD2019, note: "Median delay in the 8 affected patients"}
+  pet_referral_late_after_first_visit:
+    {value: 8, unit: days, range: [1, 36], source: STOKSTAD2019, note: "Median, 27 patients not referred to PET-CT at the first consultation"}
+  exercise_test_referral_late_after_first_visit:
+    {value: 10, unit: days, range: [2, 28], source: STOKSTAD2019, note: "Median, 16 patients not referred at the first visit; 21 patients had an exercise test overall"}
+  pet_ct_referral_to_report_outsourced:
+    {value: 20.5, unit: days, range: [7, 49], dist: {dist: lognormal, median: 20.5, p90: 35}, source: STOKSTAD2019, note: "Median and range from the paper (outsourced scanner period). The p90 of 35 is our assumption fitted to the range of 7 to 49"}
+  pet_ct_referral_to_report_after_new_scanner:
+    {value: 7, unit: days, source: STOKSTAD2019, note: "Paper says the waiting time became 7 days or less after PET-CT became available in-house in October 2013. 7 is the upper bound; the typical value would be lower (assumption)"}
+  exercise_test_wait:
+    {value: 11, unit: days, range: [1, 19], dist: {dist: lognormal, median: 11, p90: 18}, source: STOKSTAD2019, note: "Median wait for the cardiopulmonary exercise test, n=9. p90 18 is our assumption from the range"}
+  tumour_board_frequency:
+    {value: weekly, unit: schedule, source: STOKSTAD2019, note: "Weekly; the weekday is not given in the paper, so Wednesday in the architecture example is an assumption. The authors note more frequent meetings could reduce time further"}
+  share_incomplete_workup_at_tumour_board:
+    {value: 0.16, unit: fraction, source: STOKSTAD2019, note: "16 patients: 10 awaiting PET-CT, 6 awaiting exercise test"}
+  pathology_report_after_sampling:
+    {value: 4.5, unit: days, range: [0, 14], dist: {dist: lognormal, median: 4.5, p90: 9}, source: STOKSTAD2019, note: "Median from the paper; p90 9 is our assumption from the range. Information appointments were routinely 1-2 weeks after sampling"}
+  repeat_sampling_wait:
+    {value: 8, unit: days, range: [1, 14], source: STOKSTAD2019, note: "Median wait for repeat tissue sampling after a failed first attempt"}
+  referral_to_treatment_surgery:
+    {value: 13, unit: days, range: [4, 48], source: STOKSTAD2019, note: "Reported as median referral-to-treatment by treatment type. The overall median is 46.5 days, so this cannot start at referral receipt; our reading is that it runs from the referral for treatment to the start of surgery (interpretation, not stated explicitly)"}
+  referral_to_treatment_radiotherapy:
+    {value: 22.5, unit: days, range: [6, 37], source: STOKSTAD2019, note: "Same caveat as surgery"}
+  share_further_workup_after_pet:
+    {value: 0.12, unit: fraction, source: STOKSTAD2019, note: "12 patients in the results; the abstract says 11"}
+  share_treatment_plan_changed_by_pet:
+    {value: 0.02, unit: fraction, source: STOKSTAD2019, note: "Treatment plan changed in 2% after PET-CT. Argues PET-CT mostly confirms rather than redirects in this cohort"}
+
+delay_reason_counts:
+  late_pet_referral:
+    {value: 27, unit: patients, source: STOKSTAD2019, note: "Abstract"}
+  late_exercise_test_referral:
+    {value: 16, unit: patients, source: STOKSTAD2019, note: "Abstract"}
+  repeat_sampling_after_failed_bronchoscopy:
+    {value: 15, unit: patients, source: STOKSTAD2019, note: "Abstract"}
+  extra_investigations_after_pet:
+    {value: 11, unit: patients, source: STOKSTAD2019, note: "Abstract says 11, results say 12"}
+  first_visit_over_7d_unexplained:
+    {value: 50, unit: patients, source: STOKSTAD2019, note: "18 of them waited 14 days or more"}
+
+diagnostic_yield:
+  bronchoscopy_first_tissue_method_diagnostic:
+    {value: 27, unit: patients, source: STOKSTAD2019, note: "3 of them diagnostic only on a second attempt. The denominator (patients who had bronchoscopy) is not given in the text we read"}
+  ttnb_diagnostic:
+    {value: 19, unit: patients, source: STOKSTAD2019, note: "15 of them after a negative bronchoscopy"}
+  ttnb_after_negative_bronchoscopy:
+    {value: 15, unit: patients, source: STOKSTAD2019, note: "Count of TTNB procedures that followed a negative bronchoscopy"}
+
+not_in_paper_estimates:
+  ct_to_first_visit_wait:
+    {value: 0, unit: days, source: assumption, note: "Not reported. In the paper CT is usually done before or at the first visit, and the optimal pathway sets CT referral to the day the letter arrives. Treat CT as part of the first-visit interval unless a patient had no CT"}
+  bronchoscopy_wait_after_referral:
+    {value: 7, unit: days, dist: {dist: lognormal, median: 7, p90: 14}, source: assumption, note: "Not reported. Reasoned from the reported repeat-sampling wait (median 8, range 1-14), which is the only sampling wait given. Calibrate so the baseline reproduces the 46.5 day median"}
+  ttnb_wait_after_referral:
+    {value: 8, unit: days, dist: {dist: lognormal, median: 8, p90: 14}, source: assumption, note: "Not reported. Set equal to the repeat-sampling wait as the closest published number"}
+  tumour_board_wait_after_workup_complete:
+    {value: 3.5, unit: days, dist: {dist: uniform, low: 0, high: 7}, source: assumption, note: "Not reported. Follows from a weekly board with a cutoff; the simulator's batch resource produces this wait itself, so do not add a separate delay"}
+  treatment_decision_to_start_surgery:
+    {value: 13, unit: days, source: STOKSTAD2019, note: "Uses referral_to_treatment_surgery under our interpretation; see that entry"}
+  treatment_decision_to_start_radiotherapy:
+    {value: 22.5, unit: days, source: STOKSTAD2019, note: "Uses referral_to_treatment_radiotherapy under our interpretation"}

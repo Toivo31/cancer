@@ -1,0 +1,279 @@
+# Primary conditions. `prevalence` = share of presenters whose primary condition this is (adds up to 1, also within every smoking level).
+# The seven conditions of scenarios/finland_lung.yaml map as: lung_cancer_site + lung_cancer_nonspec -> lung_cancer;
+# pneumonia -> pneumonia; copd_exacerbation -> copd_exacerbation; benign_nodule -> benign_nodule;
+# other_benign -> asthma, heart_failure, reflux_postinfectious_cough, no_disease_found (and tuberculosis, new);
+# self_limiting -> viral_self_limiting (and part of no_disease_found).
+- id: lung_cancer
+  label: "Lung cancer"
+  class: cancer
+  prevalence:
+    value: 0.013
+    source: BRADLEY2021
+    grade: B
+    note: >-
+      Share of presenters with lung cancer within a year: 114 of 8,996 symptomatic people over 50 who
+      self-requested a chest X-ray, Leeds (params/finland.yaml). UK, over 50, self-referred, so not
+      Finnish GP presenters. Other published proxies: 0.008 (dyspnoea and haemoptysis presentations
+      pooled, KOO2023, derived by the research note), 0.031 after new haemoptysis and 0.007 after new
+      dyspnoea (KOO2023). The scenario (scenarios/finland_lung.yaml) used 0.016 (0.005 alarm-symptom
+      plus 0.011 non-specific); that is the high bound here. The upper and lower bounds are the
+      research note's defensible range (0.8% to 1.6%), not a published interval. Smoking mix among
+      presenters is assumed: never 0.4, former 0.38, current 0.22 (Finnish adults: never about 0.33 to
+      0.46 and daily smokers 0.05 to 0.12 by age and sex, THL_TUPAKKA2022 via a secondary copy;
+      presenters are assumed to smoke more). Relative risks: current 8.43 (LEE2012), former 3.0
+      (assumed inside the 2 to 4 range of LEE2012 4.30 and HIPPISLEYCOX2015 1.8 to 2.4). Levels are P
+      / (never share + former share x 3.0 + current share x 8.43) times the relative risk, which keeps
+      the overall value 0.013.
+    low: 0.008
+    high: 0.016
+    by:
+      smoking_status:
+        never:
+          value: 0.0038
+          source: LEE2012
+          grade: C
+          note: >-
+            Derived level (relative risk x assumed smoking mix, see the base note). Never-smokers then
+            make about 12% of cancers; the Finnish programme says 10 to 15% (FILHA2026).
+        former:
+          value: 0.0115
+          source: LEE2012
+          grade: C
+          note: >-
+            Derived level (relative risk x assumed smoking mix, see the base note). Never-smokers then
+            make about 12% of cancers; the Finnish programme says 10 to 15% (FILHA2026).
+        current:
+          value: 0.0323
+          source: LEE2012
+          grade: C
+          note: >-
+            Derived level (relative risk x assumed smoking mix, see the base note). Never-smokers then
+            make about 12% of cancers; the Finnish programme says 10 to 15% (FILHA2026).
+  attributes:
+    stage:
+      values: {I: 0.17, II: 0.09, III: 0.15, IV: 0.59}
+      source: KHALIFE2025
+      grade: C
+      note: >-
+        Derived mix from different sources, so grade C. Stage I 0.17 is KHALIFE2025 (Finland, carried
+        from params/finland.yaml; CAPER Exeter 0.126, PAAPPANEN2025 NSCLC 0.197). Stage IV 0.59 is
+        AHVONEN2023 / IHE2026 (single centre, Tampere, 2007-2019; the national programme FILHA2026
+        says 65-70% are advanced). Stage II 0.09 is PAAPPANEN2025 (NSCLC, five Finnish hospitals 2018:
+        0.089). Stage III 0.15 is the remainder by us (PAAPPANEN2025 has IIIA 0.109; IIIB is not split
+        from IV there). One source field only, so the per-level sources are in this note.
+    histology:
+      values: {adenocarcinoma: 0.402, squamous: 0.343, small_cell: 0.175, other: 0.08}
+      source: FILHA2026
+      grade: C
+      note: >-
+        Small cell 0.175 (national programme 15-20%; non-small-cell above 80%). The non-small-cell
+        remainder 0.825 is split like the operable NSCLC of PAAPPANEN2025 (adenocarcinoma 0.487,
+        squamous 0.416, carcinoid and other 0.097), which is a surgical subset, so squamous and adeno
+        shares are uncertain. The programme's own subtype table (adenocarcinoma 50-60%, squamous about
+        40%) sums above 100% in the copy read; open the table before relying on this. Read through a
+        summarising tool; re-check against the page.
+    location:
+      values: {central: 0.377, peripheral: 0.623}
+      source: KOSIN2014
+      grade: C
+      note: >-
+        1,139 lung cancer patients having bronchoscopy at one Korean hospital 2000-2010: peripheral
+        0.623. Not primary care and not Nordic. The scenario used central 0.35 / peripheral 0.65
+        (assumption); the sourced value is used. Depends on histology as in the same series
+        (adenocarcinoma 81.3% peripheral, squamous 59% central, small cell 56.9% peripheral); the mix
+        of these gives about 0.617 peripheral. Read through a summarising tool; re-check against the
+        page.
+      by:
+        histology:
+          adenocarcinoma:
+            values: {central: 0.187, peripheral: 0.813}
+            source: KOSIN2014
+            grade: C
+            note: "Adenocarcinoma 81.3% peripheral."
+          squamous:
+            values: {central: 0.59, peripheral: 0.41}
+            source: KOSIN2014
+            grade: C
+            note: "Squamous 59% central."
+          small_cell:
+            values: {central: 0.431, peripheral: 0.569}
+            source: KOSIN2014
+            grade: C
+            note: "Small cell 56.9% peripheral."
+
+- id: pneumonia
+  label: "Pneumonia (radiograph-confirmed)"
+  class: other_illness
+  prevalence:
+    value: 0.05
+    source: VANVUGT2012
+    grade: A
+    note: >-
+      GRACE: 140 of 2,823 adults with acute cough (28 days or less) at a first GP visit in 12 European
+      countries had pneumonia on the chest radiograph. Acute-cough presenters only, not all chest
+      symptoms (the grade is the research note's). TEEPE2016 gives 0.03 when suspected pneumonia was
+      excluded. The scenario used 0.17 (assumption, 'lower-respiratory infection / pneumonia'); the
+      sourced value is used here. Acute bronchitis (8% in the same cohort) belongs to
+      viral_self_limiting. Read through a summarising tool; re-check against the page.
+    low: 0.03
+    high: 0.1
+
+- id: copd_exacerbation
+  label: "COPD exacerbation"
+  class: other_illness
+  prevalence:
+    value: 0.075
+    source: assumption
+    grade: assumption
+    note: >-
+      No published share among chest-symptom presenters. The research note suggests 0.05 to 0.10 (COPD
+      is the commonest new diagnosis after first breathlessness, CHEN2020 3.9% within six months, but
+      an exacerbation is a fraction of those); midpoint taken. The scenario used 0.14 (assumption).
+      Smoking dependence is our assumption (COPD is mostly a smoking disease; levels 0.02 / 0.10 /
+      0.13 keep the overall near 0.075); replace with Kaypa hoito or GOLD numbers.
+    low: 0.05
+    high: 0.1
+    by:
+      smoking_status:
+        never:
+          value: 0.02
+          source: assumption
+          grade: assumption
+          note: "Assumed: COPD is rare in never-smokers and commonest in current smokers; not sourced."
+        former:
+          value: 0.1
+          source: assumption
+          grade: assumption
+          note: "Assumed: COPD is rare in never-smokers and commonest in current smokers; not sourced."
+        current:
+          value: 0.13
+          source: assumption
+          grade: assumption
+          note: "Assumed: COPD is rare in never-smokers and commonest in current smokers; not sourced."
+
+- id: asthma
+  label: Asthma
+  class: other_illness
+  prevalence:
+    value: 0.059
+    source: CHEN2020
+    grade: C
+    note: >-
+      NOT a share at presentation. 4,430 of 75,698 UK adults (5.9%) with a first recorded
+      breathlessness symptom had a new asthma diagnosis within 0 to 6 months (11,355, 15.0%, over the
+      whole follow-up). Used as the closest proxy; the share among all chest-symptom presenters is not
+      published. The scenario's 'other benign' class (0.30: asthma, reflux, heart failure,
+      musculoskeletal pain) is split across asthma, heart_failure, reflux_postinfectious_cough and
+      no_disease_found. Read through a summarising tool; re-check against the page.
+    low: 0.04
+    high: 0.15
+
+- id: heart_failure
+  label: "Heart failure"
+  class: other_illness
+  prevalence:
+    value: 0.05
+    source: assumption
+    grade: assumption
+    note: >-
+      No prevalence among dyspnoea or chest-symptom presenters was found (MANT2009 gives accuracy, not
+      prevalence). The research note suggests 0.05; CHEN2020 has ischaemic heart disease including
+      heart failure at 17.3% new diagnoses after first breathlessness over follow-up, an upper context
+      number only.
+    low: 0.02
+    high: 0.1
+
+- id: tuberculosis
+  label: "Pulmonary tuberculosis"
+  class: other_illness
+  prevalence:
+    value: 0.0007
+    source: ECDC_TB2024
+    grade: C
+    note: >-
+      Derived: Finland 2024 notification rate 3.3 per 100,000 (184 cases, 67.9% pulmonary); 16.5 cases
+      a year in a 500,000 county, 11 pulmonary, over 44 presenters a day x 365 = 16,060 gives 0.07%.
+      The stream size is itself an assumption and not every TB case passes through it, hence the range
+      0.05 to 0.10%. Rare in Finland; kept as a condition because it mimics cancer. Read through a
+      summarising tool; re-check against the page.
+    low: 0.0005
+    high: 0.001
+
+- id: benign_nodule
+  label: "Benign pulmonary nodule or scar"
+  class: other_illness
+  prevalence:
+    value: 0.018
+    source: VANVUGT2012
+    grade: B
+    note: >-
+      'Suspected nodules or shadows' on the chest radiograph in 1.8% of 2,823 acute-cough presenters
+      (GRACE). This includes undiagnosed cancers, so a benign-only share is somewhat lower: treat
+      0.018 as an upper value. The scenario used 0.03 (assumption); the sourced value is used. Read
+      through a summarising tool; re-check against the page.
+    low: 0.01
+    high: 0.03
+
+- id: reflux_postinfectious_cough
+  label: "Reflux or post-infectious cough"
+  class: other_illness
+  prevalence:
+    value: 0.055
+    source: assumption
+    grade: assumption
+    note: >-
+      No primary-care series; the cough-clinic shares (reflux 21.5%, post-infective 11%, TURNER2016)
+      are conditional on referral. The research note suggests 0.03 to 0.08; midpoint taken.
+    low: 0.03
+    high: 0.08
+
+- id: no_disease_found
+  label: "No disease found (musculoskeletal, anxiety, other)"
+  class: healthy
+  prevalence:
+    value: 0.2
+    source: assumption
+    grade: assumption
+    note: >-
+      No source. The scenario's 'other benign' class held musculoskeletal chest pain and similar;
+      after splitting out asthma, heart failure and reflux, about one fifth of presenters is assumed
+      to end with no disease found. GRACE has a normal radiograph in 70% of acute-cough presenters
+      (VANVUGT2012), which includes the viral illnesses below.
+    low: 0.1
+    high: 0.3
+
+- id: viral_self_limiting
+  label: "Self-limiting viral illness"
+  class: other_illness
+  prevalence:
+    value: 0.4493
+    source: assumption
+    grade: assumption
+    note: >-
+      The remainder, so that prevalences add up to 1 ('renormalise through self_limiting', research
+      note section 9). Scenario value 0.344. Acute bronchitis was 8% and a normal radiograph 70% of
+      GRACE acute-cough presenters (VANVUGT2012). The smoking levels absorb the changes in lung cancer
+      and COPD so that every level adds up to 1.
+    by:
+      smoking_status:
+        never: {value: 0.5135, source: assumption, grade: assumption, note: "Remainder at this smoking level."}
+        former: {value: 0.4258, source: assumption, grade: assumption, note: "Remainder at this smoking level."}
+        current: {value: 0.375, source: assumption, grade: assumption, note: "Remainder at this smoking level."}
+
+- id: worried_well
+  label: "Worried well (a random, incoherent set of symptoms, no objective findings)"
+  class: healthy
+  prevalence:
+    value: 0.03
+    source: assumption
+    grade: assumption
+    low: 0.01
+    high: 0.08
+    note: >-
+      D47 (Tuomas): a small share of presenters report an incoherent set of symptoms with nothing
+      behind them. Not a Finnish number. Context: a review cites medically unexplained symptoms as
+      about 20% of new consultations in primary care (MUS_BMJO2022, UK-type setting, all complaints,
+      cited from other studies), but most of those have a plausible ordinary explanation and are not a
+      random cluster, and this catalogue is a chest-symptom stream where such patients are already
+      partly inside no_disease_found. 3% is the chosen share of purely incoherent presenters; it is
+      taken from viral_self_limiting (the remainder) so that all shares still add up to 1.

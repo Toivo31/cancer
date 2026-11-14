@@ -1,0 +1,112 @@
+{
+  "model": "stub@1",
+  "requests": [
+    {
+      "request_id": "C1a2b3c4d5:gp_encounter:3",
+      "decision_point": "gp_encounter",
+      "question_type": "next_step",
+      "context": {
+        "age": 67,
+        "t_days": 11.5,
+        "fast_track": false,
+        "attributes": {},
+        "history": [
+          {
+            "step": "chest_xray",
+            "test": "chest_xray",
+            "result": false,
+            "t_days": 11.5
+          }
+        ],
+        "card_format": "card/1",
+        "patient_id": "C1a2b3c4d5",
+        "background": {
+          "age": 67,
+          "sex": "f",
+          "smoking_status": "former"
+        },
+        "episode": 1,
+        "role": "gp",
+        "encounters_so_far": 2,
+        "presenting": {
+          "reported": [
+            "cough_3wk",
+            "fever"
+          ]
+        },
+        "found": {
+          "cough_3wk": true,
+          "fever": true,
+          "weight_loss": false
+        },
+        "observations": [
+          {
+            "test": "chest_xray",
+            "attempt": 1,
+            "status": "ok",
+            "values": {
+              "abnormal": false,
+              "consolidation": true
+            },
+            "report": "Right lower lobe consolidation.",
+            "positive": false,
+            "t_days": 11.5
+          }
+        ],
+        "notes": [
+          {
+            "id": "n1",
+            "kind": "nurse_note",
+            "text": "Cough, fever. GP booked.",
+            "t_days": 0.0
+          },
+          {
+            "id": "n2",
+            "kind": "gp_note",
+            "text": "Chest X-ray ordered.",
+            "t_days": 9.0
+          }
+        ],
+        "assessments": [
+          {
+            "author": "gp_encounter/example",
+            "t_days": 11.5,
+            "role": "gp",
+            "note": "Cough with fever, no weight loss. Chest X-ray first.",
+            "assessment": {
+              "working_diagnosis": "likely infection",
+              "differential": [
+                "other lung disease"
+              ],
+              "plan": "chest X-ray, review on result",
+              "confidence": 0.6
+            }
+          }
+        ],
+        "actions": [
+          "book_gp_routine",
+          "order_chest_xray"
+        ]
+      },
+      "options": [
+        {
+          "id": "order_chest_xray",
+          "label": "Chest X-ray",
+          "test": "chest_xray",
+          "features": {
+            "invasive": false,
+            "lead_days": 3.0
+          }
+        },
+        {
+          "id": "treat_antibiotics",
+          "label": "Antibiotics"
+        },
+        {
+          "id": "refer_urgent",
+          "label": "Urgent referral"
+        }
+      ]
+    }
+  ]
+}

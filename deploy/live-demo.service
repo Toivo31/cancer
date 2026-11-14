@@ -1,0 +1,23 @@
+# systemd unit for Eemeli's live demo (note_reader/server.py), next to the platform on one host.
+# Install:  sudo cp deploy/live-demo.service /etc/systemd/system/live-demo.service
+#           (edit User, WorkingDirectory and ExecStart to the checkout and virtualenv on the host)
+#           sudo systemctl daemon-reload && sudo systemctl enable --now live-demo
+# The server reads LLM_* / VERDA_* keys from the .env file in the checkout; keep that file chmod 600 and out of git.
+# It listens on loopback only: the reverse proxy (deploy/Caddyfile) is what the internet sees.
+[Unit]
+Description=Junction live demo (note reader and flow page)
+After=network.target
+
+[Service]
+User=pathway
+WorkingDirectory=/opt/pathway/live-demo
+ExecStart=/opt/pathway/live-demo/.venv/bin/python -m note_reader.server --host 127.0.0.1 --port 8770
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

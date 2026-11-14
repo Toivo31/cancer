@@ -1,0 +1,32 @@
+{
+  "card_count_by_condition": {
+    "asthma": 42,
+    "benign_nodule": 42,
+    "copd_exacerbation": 42,
+    "heart_failure": 42,
+    "lung_cancer": 83,
+    "no_disease_found": 41,
+    "pneumonia": 42,
+    "reflux_postinfectious_cough": 42,
+    "tuberculosis": 42,
+    "viral_self_limiting": 41,
+    "worried_well": 41
+  },
+  "catalogue_hash": "436ff728b7179a74c7cb4732a2f6a49108481ff9a43cc43b9633e87e72508094",
+  "catalogue_id": "lung_primary_care",
+  "created": "2026-11-14T21:39:41Z",
+  "error_source": "guided",
+  "file": {
+    "bytes": 1338829,
+    "name": "cards.jsonl.gz",
+    "sha256": "fb3d5c150f74de64b7289550195b09258a16d102c6b329c3f712fd32aa242acb"
+  },
+  "format": "library/1",
+  "generator": "llm",
+  "id": "L_a295975981893d2b",
+  "model": "fake",
+  "prompts": {
+    "patient": "g1@2",
+    "results": "g2@3"
+  }
+}

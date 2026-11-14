@@ -1,0 +1,137 @@
+"""Adapter from a :class:`DecisionBackend` to the engine's ``Policy.choose(view, options)``.
+
+The engine never imports this module. It only reads three optional attributes from the policy
+object: ``decision_mode`` (``"sample"`` or ``"argmax"``), ``backend_name`` and ``model_id``; they
+end up in the run log's ``choices`` entries.
+"""
+
+from __future__ import annotations
+
+from .contract import (QUESTION_NEXT_STEP, BackendInfo, ContractError, DecisionBackend, DecisionRequest,
+                       check_responses)
+
+MODES = ("sample", "argmax")
+
+
+def build_context(view, catalogue=None) -> dict:
+    """Context JSON from a ``PatientView``: revealed information only.
+
+    When the view carries a non-empty ``record`` (a ``patient_engine.record.Record``), the record's
+    keys are added (``jev.record_context``); the view's own ``group``, ``age``, ``t_days``,
+    ``fast_track``, ``attributes`` and non-empty ``history`` stay as they are.
+    """
+    ctx = {
+        "group": view.group, "age": view.age, "t_days": float(view.t_now),
+        "fast_track": bool(view.priority),
+        "attributes": dict(view.attributes),
+        "history": [{"step": n, "test": t, "result": r, "t_days": tt} for n, t, r, tt in view.history],
+    }
+    record = getattr(view, "record", None)
+    if record is not None and getattr(record, "entries", None):
+        from .record_context import context_from_record
+        role = getattr(view, "role", None) or next((e.role for e in reversed(record.entries) if e.role), None)
+        extra = context_from_record(record, role=role, now_days=view.t_now, catalogue=catalogue)
+        for k in ("age", "t_days", "fast_track", "attributes"):
+            extra.pop(k, None)
+        if ctx["history"]:
+            extra.pop("history", None)
+        if ctx["age"] is None:
+            ctx["age"] = record.background.get("age")
+        ctx.update(extra)
+    return ctx
+
+
+class OptionCatalogue:
+    """Static option metadata (label, test, features) from the world's test catalogue.
+
+    Built from a scenario and a flowchart; without them options carry only their id.
+    """
+
+    def __init__(self, scenario=None, flowchart=None):
+        self.meta: dict[str, dict] = {}
+        if scenario is None or flowchart is None:
+            return
+        for nid, n in flowchart.nodes.items():
+            spec = {}
+            if n.test:
+                spec = {**scenario.tests.get(n.test, {}), **flowchart.test_overrides.get(n.test, {})}
+            feats = {}
+            if "invasive" in spec:
+                feats["invasive"] = bool(spec["invasive"])
+            if spec.get("cost_eur") is not None:
+                feats["cost_eur"] = spec["cost_eur"]
+            self.meta[nid] = {"label": n.label or nid, "test": n.test, "features": feats}
+
+    def option(self, oid: str, lead_days: float | None) -> dict:
+        m = self.meta.get(oid)
+        o = {"id": oid}
+        if m:
+            o["label"], o["test"], feats = m["label"], m["test"], dict(m["features"])
+        else:
+            feats = {}
+        if lead_days is not None:
+            feats["lead_days"] = lead_days
+        if feats:
+            o["features"] = feats
+        return o
+
+
+class BackendPolicy:
+    """Engine ``Policy`` backed by a :class:`DecisionBackend`.
+
+    ``mode`` tells the engine how to turn the probabilities into a choice: ``"sample"`` (inverse CDF
+    with the common-random-number draw) or ``"argmax"``. Responses are validated against the
+    contract (exactly the offered ids, non-negative, sum 1 within 1e-6) before the engine sees them.
+    """
+
+    def __init__(self, backend: DecisionBackend, mode: str = "sample", scenario=None, flowchart=None,
+                 question_type: str = QUESTION_NEXT_STEP):
+        if mode not in MODES:
+            raise ValueError(f"decision mode must be one of {MODES}, not {mode!r}")
+        self.backend = backend
+        self.decision_mode = mode
+        self.question_type = question_type
+        self.catalogue = OptionCatalogue(scenario, flowchart)
+        self._info: BackendInfo = backend.info()
+        self._cur: BackendInfo = self._info
+        self._routed = callable(getattr(backend, "info_for", None))
+        self.last_explanation: str | None = None
+
+    # attributes the engine reads for the run log
+    @property
+    def backend_name(self) -> str:
+        return self._cur.name
+
+    @property
+    def model_id(self) -> str:
+        return self._cur.model
+
+    def request_for(self, view, options: list[str]) -> DecisionRequest:
+        leads = getattr(view, "option_leads", None) or {}
+        return DecisionRequest(
+            request_id=f"p{view.patient_id}:{view.node}", decision_point=view.node,
+            context=build_context(view), options=[self.catalogue.option(o, leads.get(o)) for o in options],
+            question_type=self.question_type)
+
+    def choose_with_note(self, view, options: list[str]):
+        """``(probs, record_note, assessment)``: the response's own words (decision D49), None when the
+        backend wrote none. The engine appends them to the record as an assessment entry."""
+        if self._routed:                       # log which backend answered this decision point
+            self._cur = self.backend.info_for(view.node)
+        req = self.request_for(view, options)
+        raw = self.backend.decide([req])
+        resp = check_responses([req], raw)[0]      # validated probabilities (it keeps only probs and explanation)
+        self.last_explanation = resp.explanation
+        r0 = raw[0]
+        return resp.probs, getattr(r0, "record_note", None), getattr(r0, "assessment", None)
+
+    def choose(self, view, options: list[str]) -> dict[str, float]:
+        return self.choose_with_note(view, options)[0]
+
+    def run_summary(self) -> dict:
+        """Backend counters for the run summary (cache hits, fallbacks, ...); empty if it has none."""
+        fn = getattr(self.backend, "summary", None)
+        return fn() if callable(fn) else {}
+
+
+__all__ = ["BackendPolicy", "OptionCatalogue", "build_context", "MODES", "ContractError"]

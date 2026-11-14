@@ -1,0 +1,5 @@
+# Service dependencies (spec 03). The simulation libraries need only the root requirements.txt.
+fastapi>=0.110
+uvicorn>=0.29
+pydantic>=2.6
+httpx>=0.27          # FastAPI TestClient and the JEV HTTP client

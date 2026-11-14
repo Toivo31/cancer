@@ -1,0 +1,1039 @@
+{
+ "definitions": "(also written at the top of docs/ledger.md)\n  * A *block* is a mapping with a `source:` key (a test, a resource, a condition, a decision mix ...), or the\n    sibling mapping of a `<name>_source:` block (`arrivals` / `arrivals_source`).\n  * Blocks under `finnish_targets` and `published` are calibration targets or comparators, not simulator inputs.\n    They are counted separately and never as inputs.\n  * *Grade* of a sourced block = how we read the cited source, from `access` in sources.yaml:\n    `full_text` > `abstract` > `secondary` (news, unpublished, or seen only through another document).\n    `assumption` is its own class. Study design and setting (Finnish registry, foreign cohort, survey) are not in\n    sources.yaml, so no A/B quality grade is computed here.\n  * A sourced block whose `note` says part of it is an assumption, a calibration or a placeholder is flagged\n    `mixed`: the tag is real, but not every number in the block comes from the source. The strict count\n    treats those as not sourced.\n  * *Numbers* are the numeric leaves inside a block (probabilities, days, capacities, shares), not counting\n    booleans or ids. For `<test>_fast` copies only the numbers that differ from the base test are counted.",
+ "scenarios": [
+  {
+   "id": "finland_lung",
+   "file": "scenarios/finland_lung.yaml",
+   "inputs": {
+    "blocks": 49,
+    "sourced": 9,
+    "assumption": 40,
+    "sourced_by_grade": {
+     "full_text": 7,
+     "abstract": 2
+    },
+    "sourced_but_note_mentions_assumption": 4,
+    "sourced_strict": 5,
+    "numbers": 168,
+    "numbers_in_sourced_blocks": 48,
+    "numbers_in_assumption_blocks": 120,
+    "numbers_in_sourced_blocks_strict": 17
+   },
+   "calibration_targets_and_comparators": {
+    "blocks": 8,
+    "sourced": 8,
+    "assumption": 0,
+    "sourced_by_grade": {
+     "full_text": 5,
+     "abstract": 2,
+     "secondary": 1
+    },
+    "sourced_but_note_mentions_assumption": 0,
+    "sourced_strict": 8,
+    "numbers": 10,
+    "numbers_in_sourced_blocks": 10,
+    "numbers_in_assumption_blocks": 0,
+    "numbers_in_sourced_blocks_strict": 10
+   },
+   "by_section": {
+    "age": {
+     "blocks": 1,
+     "sourced": 0,
+     "assumption": 1,
+     "sourced_by_grade": {},
+     "sourced_but_note_mentions_assumption": 0,
+     "sourced_strict": 0,
+     "numbers": 2,
+     "numbers_in_sourced_blocks": 0,
+     "numbers_in_assumption_blocks": 2,
+     "numbers_in_sourced_blocks_strict": 0
+    },
+    "arrivals": {
+     "blocks": 1,
+     "sourced": 0,
+     "assumption": 1,
+     "sourced_by_grade": {},
+     "sourced_but_note_mentions_assumption": 0,
+     "sourced_strict": 0,
+     "numbers": 1,
+     "numbers_in_sourced_blocks": 0,
+     "numbers_in_assumption_blocks": 1,
+     "numbers_in_sourced_blocks_strict": 0
+    },
+    "attributes": {
+     "blocks": 1,
+     "sourced": 0,
+     "assumption": 1,
+     "sourced_by_grade": {},
+     "sourced_but_note_mentions_assumption": 0,
+     "sourced_strict": 0,
+     "numbers": 2,
+     "numbers_in_sourced_blocks": 0,
+     "numbers_in_assumption_blocks": 2,
+     "numbers_in_sourced_blocks_strict": 0
+    },
+    "conditions": {
+     "blocks": 7,
+     "sourced": 2,
+     "assumption": 5,
+     "sourced_by_grade": {
+      "full_text": 2
+     },
+     "sourced_but_note_mentions_assumption": 0,
+     "sourced_strict": 2,
+     "numbers": 7,
+     "numbers_in_sourced_blocks": 2,
+     "numbers_in_assumption_blocks": 5,
+     "numbers_in_sourced_blocks_strict": 2
+    },
+    "flowcharts": {
+     "blocks": 4,
+     "sourced": 1,
+     "assumption": 3,
+     "sourced_by_grade": {
+      "full_text": 1
+     },
+     "sourced_but_note_mentions_assumption": 0,
+     "sourced_strict": 1,
+     "numbers": 6,
+     "numbers_in_sourced_blocks": 2,
+     "numbers_in_assumption_blocks": 4,
+     "numbers_in_sourced_blocks_strict": 2
+    },
+    "groups": {
+     "blocks": 2,
+     "sourced": 0,
+     "assumption": 2,
+     "sourced_by_grade": {},
+     "sourced_but_note_mentions_assumption": 0,
+     "sourced_strict": 0,
+     "numbers": 7,
+     "numbers_in_sourced_blocks": 0,
+     "numbers_in_assumption_blocks": 7,
+     "numbers_in_sourced_blocks_strict": 0
+    },
+    "resources": {
+     "blocks": 11,
+     "sourced": 1,
+     "assumption": 10,
+     "sourced_by_grade": {
+      "full_text": 1
+     },
+     "sourced_but_note_mentions_assumption": 1,
+     "sourced_strict": 0,
+     "numbers": 26,
+     "numbers_in_sourced_blocks": 2,
+     "numbers_in_assumption_blocks": 24,
+     "numbers_in_sourced_blocks_strict": 0
+    },
+    "tests": {
+     "blocks": 22,
+     "sourced": 5,
+     "assumption": 17,
+     "sourced_by_grade": {
+      "full_text": 3,
+      "abstract": 2
+     },
+     "sourced_but_note_mentions_assumption": 3,
+     "sourced_strict": 2,
+     "numbers": 117,
+     "numbers_in_sourced_blocks": 42,
+     "numbers_in_assumption_blocks": 75,
+     "numbers_in_sourced_blocks_strict": 13
+    }
+   },
+   "top_level_settings": {
+    "target_days": 90,
+    "warmup_days": 60,
+    "default_n": 18800
+   },
+   "sensitivity": {
+    "discoverable_assumption_parameters": 63,
+    "varied_by_default": 26,
+    "note": "grouped parameters as defined in pathway_sim/sensitivity.py (for example p_positive[cancer] is one)"
+   },
+   "sources_cited_by_inputs": [
+    "BRADLEY2021",
+    "GOULD2001",
+    "KHALIFE2025",
+    "KOO2023",
+    "PIRHA_PATH",
+    "RIVERA2013",
+    "UZUN2017"
+   ],
+   "sources_cited_only_by_targets": [
+    "IHE2026",
+    "MATTILA2025",
+    "YLE_MOT2025"
+   ],
+   "unknown_source_ids": [],
+   "blocks": [
+    {
+     "path": "arrivals",
+     "section": "arrivals",
+     "source": "assumption",
+     "grade": "assumption",
+     "numbers": 1,
+     "mixed": false
+    },
+    {
+     "path": "conditions.0",
+     "section": "conditions",
+     "source": "KOO2023",
+     "grade": "full_text",
+     "numbers": 1,
+     "mixed": false
+    },
+    {
+     "path": "conditions.1",
+     "section": "conditions",
+     "source": "BRADLEY2021",
+     "grade": "full_text",
+     "numbers": 1,
+     "mixed": false
+    },
+    {
+     "path": "conditions.2",
+     "section": "conditions",
+     "source": "assumption",
+     "grade": "assumption",
+     "numbers": 1,
+     "mixed": false
+    },
+    {
+     "path": "conditions.3",
+     "section": "conditions",
+     "source": "assumption",
+     "grade": "assumption",
+     "numbers": 1,
+     "mixed": false
+    },
+    {
+     "path": "conditions.4",
+     "section": "conditions",
+     "source": "assumption",
+     "grade": "assumption",
+     "numbers": 1,
+     "mixed": false
+    },
+    {
+     "path": "conditions.5",
+     "section": "conditions",
+     "source": "assumption",
+     "grade": "assumption",
+     "numbers": 1,
+     "mixed": false
+    },
+    {
+     "path": "conditions.6",
+     "section": "conditions",
+     "source": "assumption",
+     "grade": "assumption",
+     "numbers": 1,
+     "mixed": false
+    },
+    {
+     "path": "groups.0",
+     "section": "groups",
+     "source": "assumption",
+     "grade": "assumption",
+     "numbers": 7,
+     "mixed": false
+    },
+    {
+     "path": "groups.1",
+     "section": "groups",
+     "source": "assumption",
+     "grade": "assumption",
+     "numbers": 0,
+     "mixed": false
+    },
+    {
+     "path": "attributes.location",
+     "section": "attributes",
+     "source": "assumption",
+     "grade": "assumption",
+     "numbers": 2,
+     "mixed": false
+    },
+    {
+     "path": "age",
+     "section": "age",
+     "source": "assumption",
+     "grade": "assumption",
+     "numbers": 2,
+     "mixed": false
+    },
+    {
+     "path": "resources.nurse_appt",
+     "section": "resources",
+     "source": "assumption",
+     "grade": "assumption",
+     "numbers": 2,
+     "mixed": false
+    },
+    {
+     "path": "resources.gp_appt",
+     "section": "resources",
+     "source": "KHALIFE2025",
+     "grade": "full_text",
+     "numbers": 2,
+     "mixed": true
+    },
+    {
+     "path": "resources.xray",
+     "section": "resources",
+     "source": "assumption",
+     "grade": "assumption",
+     "numbers": 2,
+     "mixed": false
+    },
+    {
+     "path": "resources.clinic",
+     "section": "resources",
+     "source": "assumption",
+     "grade": "assumption",
+     "numbers": 3,
+     "mixed": false
+    },
+    {
+     "path": "resources.ct_scanner",
+     "section": "resources",
+     "source": "assumption",
+     "grade": "assumption",
+     "numbers": 3,
+     "mixed": false
+    },
+    {
+     "path": "resources.bronchoscopy",
+     "section": "resources",
+     "source": "assumption",
+     "grade": "assumption",
+     "numbers": 3,
+     "mixed": false
+    },
+    {
+     "path": "resources.ttnb_slot",
+     "section": "resources",
+     "source": "assumption",
+     "grade": "assumption",
+     "numbers": 3,
+     "mixed": false
+    },
+    {
+     "path": "resources.pet_scanner",
+     "section": "resources",
+     "source": "assumption",
+     "grade": "assumption",
+     "numbers": 3,
+     "mixed": false
+    },
+    {
+     "path": "resources.tumour_board",
+     "section": "resources",
+     "source": "assumption",
+     "grade": "assumption",
+     "numbers": 2,
+     "mixed": false
+    },
+    {
+     "path": "resources.treatment_slot",
+     "section": "resources",
+     "source": "assumption",
+     "grade": "assumption",
+     "numbers": 3,
+     "mixed": false
+    },
+    {
+     "path": "resources.paper",
+     "section": "resources",
+     "source": "assumption",
+     "grade": "assumption",
+     "numbers": 0,
+     "mixed": false
+    },
+    {
+     "path": "tests.nurse_assessment",
+     "section": "tests",
+     "source": "assumption",
+     "grade": "assumption",
+     "numbers": 8,
+     "mixed": false
+    },
+    {
+     "path": "tests.gp_assessment",
+     "section": "tests",
+     "source": "assumption",
+     "grade": "assumption",
+     "numbers": 8,
+     "mixed": false
+    },
+    {
+     "path": "tests.gp_assessment_after_nurse",
+     "section": "tests",
+     "source": "assumption",
+     "grade": "assumption",
+     "numbers": 8,
+     "mixed": false
+    },
+    {
+     "path": "tests.chest_xray",
+     "section": "tests",
+     "source": "BRADLEY2021",
+     "grade": "full_text",
+     "numbers": 11,
+     "mixed": true
+    },
+    {
+     "path": "tests.gp_second_look",
+     "section": "tests",
+     "source": "assumption",
+     "grade": "assumption",
+     "numbers": 9,
+     "mixed": false
+    },
+    {
+     "path": "tests.symptoms_persist",
+     "section": "tests",
+     "source": "assumption",
+     "grade": "assumption",
+     "numbers": 7,
+     "mixed": false
+    },
+    {
+     "path": "tests.gp_represent",
+     "section": "tests",
+     "source": "assumption",
+     "grade": "assumption",
+     "numbers": 10,
+     "mixed": false
+    },
+    {
+     "path": "tests.gp_referral_letter",
+     "section": "tests",
+     "source": "assumption",
+     "grade": "assumption",
+     "numbers": 2,
+     "mixed": false
+    },
+    {
+     "path": "tests.referral_triage",
+     "section": "tests",
+     "source": "PIRHA_PATH",
+     "grade": "full_text",
+     "numbers": 2,
+     "mixed": false
+    },
+    {
+     "path": "tests.specialist_visit",
+     "section": "tests",
+     "source": "assumption",
+     "grade": "assumption",
+     "numbers": 8,
+     "mixed": false
+    },
+    {
+     "path": "tests.chest_ct",
+     "section": "tests",
+     "source": "assumption",
+     "grade": "assumption",
+     "numbers": 11,
+     "mixed": false
+    },
+    {
+     "path": "tests.bronchoscopy",
+     "section": "tests",
+     "source": "RIVERA2013",
+     "grade": "abstract",
+     "numbers": 9,
+     "mixed": true
+    },
+    {
+     "path": "tests.ttnb",
+     "section": "tests",
+     "source": "UZUN2017",
+     "grade": "full_text",
+     "numbers": 9,
+     "mixed": true
+    },
+    {
+     "path": "tests.pet_ct",
+     "section": "tests",
+     "source": "GOULD2001",
+     "grade": "abstract",
+     "numbers": 11,
+     "mixed": false
+    },
+    {
+     "path": "tests.tumour_board",
+     "section": "tests",
+     "source": "assumption",
+     "grade": "assumption",
+     "numbers": 1,
+     "mixed": false
+    },
+    {
+     "path": "tests.treatment_booking",
+     "section": "tests",
+     "source": "assumption",
+     "grade": "assumption",
+     "numbers": 3,
+     "mixed": false
+    },
+    {
+     "path": "tests.specialist_visit_fast",
+     "section": "tests",
+     "source": "assumption",
+     "grade": "assumption",
+     "numbers": 0,
+     "mixed": false,
+     "copy_of": "tests.specialist_visit"
+    },
+    {
+     "path": "tests.chest_ct_fast",
+     "section": "tests",
+     "source": "assumption",
+     "grade": "assumption",
+     "numbers": 0,
+     "mixed": false,
+     "copy_of": "tests.chest_ct"
+    },
+    {
+     "path": "tests.bronchoscopy_fast",
+     "section": "tests",
+     "source": "assumption",
+     "grade": "assumption",
+     "numbers": 0,
+     "mixed": false,
+     "copy_of": "tests.bronchoscopy"
+    },
+    {
+     "path": "tests.ttnb_fast",
+     "section": "tests",
+     "source": "assumption",
+     "grade": "assumption",
+     "numbers": 0,
+     "mixed": false,
+     "copy_of": "tests.ttnb"
+    },
+    {
+     "path": "tests.pet_ct_fast",
+     "section": "tests",
+     "source": "assumption",
+     "grade": "assumption",
+     "numbers": 0,
+     "mixed": false,
+     "copy_of": "tests.pet_ct"
+    },
+    {
+     "path": "tests.treatment_booking_fast",
+     "section": "tests",
+     "source": "assumption",
+     "grade": "assumption",
+     "numbers": 0,
+     "mixed": false,
+     "copy_of": "tests.treatment_booking"
+    },
+    {
+     "path": "flowcharts.{baseline, direct_ct, bundled_workup, fast_track_nonspecific, baseline_plus_capacity}.policy.first_contact",
+     "section": "flowcharts",
+     "source": "KHALIFE2025",
+     "grade": "full_text",
+     "numbers": 2,
+     "mixed": false
+    },
+    {
+     "path": "flowcharts.{baseline, direct_ct, bundled_workup, fast_track_nonspecific, baseline_plus_capacity}.policy.sample_choice",
+     "section": "flowcharts",
+     "source": "assumption",
+     "grade": "assumption",
+     "numbers": 2,
+     "mixed": false
+    },
+    {
+     "path": "flowcharts.{direct_ct}.policy.imaging_route",
+     "section": "flowcharts",
+     "source": "assumption",
+     "grade": "assumption",
+     "numbers": 0,
+     "mixed": false
+    },
+    {
+     "path": "flowcharts.{fast_track_nonspecific}.policy.sample_choice_fast",
+     "section": "flowcharts",
+     "source": "assumption",
+     "grade": "assumption",
+     "numbers": 2,
+     "mixed": false
+    }
+   ],
+   "target_blocks": [
+    {
+     "path": "finnish_targets.gp_appointment_wait_days",
+     "section": "finnish_targets",
+     "source": "KHALIFE2025",
+     "grade": "full_text",
+     "numbers": 1,
+     "mixed": false
+    },
+    {
+     "path": "finnish_targets.gp_referral_to_specialist_days",
+     "section": "finnish_targets",
+     "source": "KHALIFE2025",
+     "grade": "full_text",
+     "numbers": 2,
+     "mixed": false
+    },
+    {
+     "path": "finnish_targets.specialist_to_diagnosis_days",
+     "section": "finnish_targets",
+     "source": "KHALIFE2025",
+     "grade": "full_text",
+     "numbers": 1,
+     "mixed": false
+    },
+    {
+     "path": "finnish_targets.first_contact_to_diagnosis_days",
+     "section": "finnish_targets",
+     "source": "KHALIFE2025",
+     "grade": "full_text",
+     "numbers": 2,
+     "mixed": false
+    },
+    {
+     "path": "finnish_targets.satakunta_first_visit_to_referral_days",
+     "section": "finnish_targets",
+     "source": "MATTILA2025",
+     "grade": "abstract",
+     "numbers": 1,
+     "mixed": false
+    },
+    {
+     "path": "finnish_targets.satakunta_referral_to_diagnosis_days",
+     "section": "finnish_targets",
+     "source": "MATTILA2025",
+     "grade": "abstract",
+     "numbers": 1,
+     "mixed": false
+    },
+    {
+     "path": "finnish_targets.diagnosis_to_treatment_days",
+     "section": "finnish_targets",
+     "source": "IHE2026",
+     "grade": "full_text",
+     "numbers": 1,
+     "mixed": false
+    },
+    {
+     "path": "finnish_targets.first_contact_to_treatment_days",
+     "section": "finnish_targets",
+     "source": "YLE_MOT2025",
+     "grade": "secondary",
+     "numbers": 1,
+     "mixed": false
+    }
+   ],
+   "input_sections_with_tags": [
+    "age",
+    "arrivals",
+    "attributes",
+    "conditions",
+    "flowcharts",
+    "groups",
+    "resources",
+    "tests"
+   ]
+  },
+  {
+   "id": "stokstad",
+   "file": "scenarios/stokstad.yaml",
+   "inputs": {
+    "blocks": 25,
+    "sourced": 22,
+    "assumption": 3,
+    "sourced_by_grade": {
+     "full_text": 22
+    },
+    "sourced_but_note_mentions_assumption": 5,
+    "sourced_strict": 17,
+    "numbers": 95,
+    "numbers_in_sourced_blocks": 85,
+    "numbers_in_assumption_blocks": 10,
+    "numbers_in_sourced_blocks_strict": 57
+   },
+   "calibration_targets_and_comparators": {
+    "blocks": 1,
+    "sourced": 1,
+    "assumption": 0,
+    "sourced_by_grade": {
+     "full_text": 1
+    },
+    "sourced_but_note_mentions_assumption": 0,
+    "sourced_strict": 1,
+    "numbers": 12,
+    "numbers_in_sourced_blocks": 12,
+    "numbers_in_assumption_blocks": 0,
+    "numbers_in_sourced_blocks_strict": 12
+   },
+   "by_section": {
+    "attributes": {
+     "blocks": 5,
+     "sourced": 4,
+     "assumption": 1,
+     "sourced_by_grade": {
+      "full_text": 4
+     },
+     "sourced_but_note_mentions_assumption": 0,
+     "sourced_strict": 4,
+     "numbers": 10,
+     "numbers_in_sourced_blocks": 8,
+     "numbers_in_assumption_blocks": 2,
+     "numbers_in_sourced_blocks_strict": 8
+    },
+    "conditions": {
+     "blocks": 1,
+     "sourced": 1,
+     "assumption": 0,
+     "sourced_by_grade": {
+      "full_text": 1
+     },
+     "sourced_but_note_mentions_assumption": 0,
+     "sourced_strict": 1,
+     "numbers": 1,
+     "numbers_in_sourced_blocks": 1,
+     "numbers_in_assumption_blocks": 0,
+     "numbers_in_sourced_blocks_strict": 1
+    },
+    "flowcharts": {
+     "blocks": 5,
+     "sourced": 4,
+     "assumption": 1,
+     "sourced_by_grade": {
+      "full_text": 4
+     },
+     "sourced_but_note_mentions_assumption": 0,
+     "sourced_strict": 4,
+     "numbers": 11,
+     "numbers_in_sourced_blocks": 9,
+     "numbers_in_assumption_blocks": 2,
+     "numbers_in_sourced_blocks_strict": 9
+    },
+    "resources": {
+     "blocks": 1,
+     "sourced": 1,
+     "assumption": 0,
+     "sourced_by_grade": {
+      "full_text": 1
+     },
+     "sourced_but_note_mentions_assumption": 1,
+     "sourced_strict": 0,
+     "numbers": 2,
+     "numbers_in_sourced_blocks": 2,
+     "numbers_in_assumption_blocks": 0,
+     "numbers_in_sourced_blocks_strict": 0
+    },
+    "tests": {
+     "blocks": 13,
+     "sourced": 12,
+     "assumption": 1,
+     "sourced_by_grade": {
+      "full_text": 12
+     },
+     "sourced_but_note_mentions_assumption": 4,
+     "sourced_strict": 8,
+     "numbers": 71,
+     "numbers_in_sourced_blocks": 65,
+     "numbers_in_assumption_blocks": 6,
+     "numbers_in_sourced_blocks_strict": 39
+    }
+   },
+   "top_level_settings": {
+    "target_days": 42,
+    "default_n": 100
+   },
+   "sensitivity": {
+    "discoverable_assumption_parameters": 10,
+    "varied_by_default": 10,
+    "note": "grouped parameters as defined in pathway_sim/sensitivity.py (for example p_positive[cancer] is one)"
+   },
+   "sources_cited_by_inputs": [
+    "STOKSTAD2019"
+   ],
+   "sources_cited_only_by_targets": [],
+   "unknown_source_ids": [],
+   "blocks": [
+    {
+     "path": "conditions.0",
+     "section": "conditions",
+     "source": "STOKSTAD2019",
+     "grade": "full_text",
+     "numbers": 1,
+     "mixed": false
+    },
+    {
+     "path": "attributes.location",
+     "section": "attributes",
+     "source": "assumption",
+     "grade": "assumption",
+     "numbers": 2,
+     "mixed": false
+    },
+    {
+     "path": "attributes.treatment",
+     "section": "attributes",
+     "source": "STOKSTAD2019",
+     "grade": "full_text",
+     "numbers": 2,
+     "mixed": false
+    },
+    {
+     "path": "attributes.ct_inadequate",
+     "section": "attributes",
+     "source": "STOKSTAD2019",
+     "grade": "full_text",
+     "numbers": 2,
+     "mixed": false
+    },
+    {
+     "path": "attributes.further_workup_after_pet",
+     "section": "attributes",
+     "source": "STOKSTAD2019",
+     "grade": "full_text",
+     "numbers": 2,
+     "mixed": false
+    },
+    {
+     "path": "attributes.needs_exercise_test",
+     "section": "attributes",
+     "source": "STOKSTAD2019",
+     "grade": "full_text",
+     "numbers": 2,
+     "mixed": false
+    },
+    {
+     "path": "resources.tumour_board",
+     "section": "resources",
+     "source": "STOKSTAD2019",
+     "grade": "full_text",
+     "numbers": 2,
+     "mixed": true
+    },
+    {
+     "path": "tests.baseline_ct",
+     "section": "tests",
+     "source": "STOKSTAD2019",
+     "grade": "full_text",
+     "numbers": 0,
+     "mixed": false
+    },
+    {
+     "path": "tests.first_visit",
+     "section": "tests",
+     "source": "STOKSTAD2019",
+     "grade": "full_text",
+     "numbers": 5,
+     "mixed": true
+    },
+    {
+     "path": "tests.bronchoscopy",
+     "section": "tests",
+     "source": "STOKSTAD2019",
+     "grade": "full_text",
+     "numbers": 9,
+     "mixed": true
+    },
+    {
+     "path": "tests.bronchoscopy_repeat",
+     "section": "tests",
+     "source": "STOKSTAD2019",
+     "grade": "full_text",
+     "numbers": 9,
+     "mixed": false
+    },
+    {
+     "path": "tests.ttnb",
+     "section": "tests",
+     "source": "STOKSTAD2019",
+     "grade": "full_text",
+     "numbers": 9,
+     "mixed": true
+    },
+    {
+     "path": "tests.ct_redo",
+     "section": "tests",
+     "source": "STOKSTAD2019",
+     "grade": "full_text",
+     "numbers": 3,
+     "mixed": true
+    },
+    {
+     "path": "tests.further_workup",
+     "section": "tests",
+     "source": "assumption",
+     "grade": "assumption",
+     "numbers": 6,
+     "mixed": false
+    },
+    {
+     "path": "tests.pet_ct",
+     "section": "tests",
+     "source": "STOKSTAD2019",
+     "grade": "full_text",
+     "numbers": 6,
+     "mixed": false
+    },
+    {
+     "path": "tests.pet_ct_late",
+     "section": "tests",
+     "source": "STOKSTAD2019",
+     "grade": "full_text",
+     "numbers": 8,
+     "mixed": false
+    },
+    {
+     "path": "tests.exercise_test",
+     "section": "tests",
+     "source": "STOKSTAD2019",
+     "grade": "full_text",
+     "numbers": 5,
+     "mixed": false
+    },
+    {
+     "path": "tests.exercise_test_late",
+     "section": "tests",
+     "source": "STOKSTAD2019",
+     "grade": "full_text",
+     "numbers": 7,
+     "mixed": false
+    },
+    {
+     "path": "tests.surgery_booking",
+     "section": "tests",
+     "source": "STOKSTAD2019",
+     "grade": "full_text",
+     "numbers": 2,
+     "mixed": false
+    },
+    {
+     "path": "tests.radiotherapy_booking",
+     "section": "tests",
+     "source": "STOKSTAD2019",
+     "grade": "full_text",
+     "numbers": 2,
+     "mixed": false
+    },
+    {
+     "path": "flowcharts.{observed, faster_pet}.policy.sample_plan",
+     "section": "flowcharts",
+     "source": "STOKSTAD2019",
+     "grade": "full_text",
+     "numbers": 2,
+     "mixed": false
+    },
+    {
+     "path": "flowcharts.{observed, faster_pet}.policy.after_bronch",
+     "section": "flowcharts",
+     "source": "STOKSTAD2019",
+     "grade": "full_text",
+     "numbers": 3,
+     "mixed": false
+    },
+    {
+     "path": "flowcharts.{observed, faster_pet}.policy.pet_timing",
+     "section": "flowcharts",
+     "source": "STOKSTAD2019",
+     "grade": "full_text",
+     "numbers": 2,
+     "mixed": false
+    },
+    {
+     "path": "flowcharts.{observed, faster_pet, optimal}.policy.pet_on_time",
+     "section": "flowcharts",
+     "source": "assumption",
+     "grade": "assumption",
+     "numbers": 2,
+     "mixed": false
+    },
+    {
+     "path": "flowcharts.{observed, faster_pet}.policy.ex_timing",
+     "section": "flowcharts",
+     "source": "STOKSTAD2019",
+     "grade": "full_text",
+     "numbers": 2,
+     "mixed": false
+    }
+   ],
+   "target_blocks": [
+    {
+     "path": "published",
+     "section": "published",
+     "source": "STOKSTAD2019",
+     "grade": "full_text",
+     "numbers": 12,
+     "mixed": false
+    }
+   ],
+   "input_sections_with_tags": [
+    "attributes",
+    "conditions",
+    "flowcharts",
+    "resources",
+    "tests"
+   ]
+  }
+ ],
+ "params_table": {
+  "rows": 131,
+  "sourced": 113,
+  "assumption": 18,
+  "sourced_by_grade": {
+   "full_text": 96,
+   "abstract": 9,
+   "secondary": 8
+  },
+  "per_file": {
+   "finland.yaml": {
+    "rows": 49,
+    "sourced": 41,
+    "assumption": 8
+   },
+   "stokstad.yaml": {
+    "rows": 51,
+    "sourced": 46,
+    "assumption": 5
+   },
+   "test_accuracy.yaml": {
+    "rows": 31,
+    "sourced": 26,
+    "assumption": 5
+   }
+  },
+  "unknown_source_ids": []
+ },
+ "registry": {
+  "sources": 21,
+  "by_access": {
+   "full_text": 12,
+   "abstract": 4,
+   "secondary": 5
+  },
+  "cited_by_a_scenario_input": 8,
+  "cited_only_by_targets": [
+   "IHE2026",
+   "MATTILA2025",
+   "YLE_MOT2025"
+  ],
+  "not_cited_by_any_scenario": [
+   "ALMEIDA2012",
+   "BRADLEY2019",
+   "GELBERG2014",
+   "GLOBOCAN_FIN",
+   "HELSINKI2025_NEWS",
+   "HOREWEG2014",
+   "HSSIB2021",
+   "SEWELL2020",
+   "SILVESTRI2013",
+   "WIENER2011"
+  ]
+ }
+}

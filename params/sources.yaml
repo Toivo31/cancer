@@ -1,0 +1,635 @@
+# Source registry. Every `source:` in the other params/*.yaml files must be `assumption` or an id below.
+# access: full_text = we read the paper/report text itself (possibly a mirror copy);
+#         abstract  = abstract only; secondary = we saw it only via another document or a news summary.
+- id: STOKSTAD2019
+  citation: "Stokstad T, et al. Reasons for prolonged time for diagnostic workup for stage I-II lung cancer and estimated effect of applying an optimized pathway for diagnostic procedures. BMC Health Services Research 2019;19:679."
+  url: https://doi.org/10.1186/s12913-019-4517-z
+  year: 2019
+  supports: [stokstad per-step waits, delay-reason counts, observed vs optimal pathway timeliness, treatment split]
+  accessed: 2026-11-14
+  access: full_text   # read via a library mirror copy of the full text (d-nb.info/1203944322/34); publisher hosts were blocked
+- id: IHE2026
+  citation: "IHE. IHE Cancer Dashboard Finland (April 2026). Stockholm: Swedish Institute for Health Economics."
+  url: https://ihe.se/app/uploads/2026/04/IHE-Cancer-Dashboard-Finland_.pdf
+  year: 2026
+  supports: [Finnish lung pathway waits (citing Khalife 2025), CT in primary care <10%, CT scanner density, stage at diagnosis, survival, registry time to treatment]
+  accessed: 2026-11-14
+  access: full_text   # first 100k of 130k characters read
+- id: KHALIFE2025
+  citation: "Khalife G, Warisa J, Bodtger U, Isaksson J, Neumann K, Hardardottir H, et al. Comparative study of lung cancer care and survival outcomes across the Nordic countries. Acta Oncologica 2025;64:734-741."
+  url: https://doi.org/10.2340/1651-226X.2025.42778
+  year: 2025
+  supports: [Finnish waits per step, share of patients meeting a doctor at first contact, CT in primary care, THL primary care waits, stage I share]
+  accessed: 2026-11-14
+  access: full_text   # via University of Turku repository copy; survey of 42 specialists plus two workshops, not registry data
+- id: MATTILA2025
+  citation: "Mattila S. Keuhkosyovan diagnostinen viive Satakunnassa koronapandemian aikana (Lung cancer diagnostic delay in Satakunta during the COVID-19 pandemic). Advanced studies thesis, University of Turku, 2025."
+  url: https://www.utupub.fi/handle/10024/180618
+  year: 2025
+  supports: [Satakunta first visit to referral about 2 weeks, referral to diagnosis just under 2 months, n=131]
+  accessed: 2026-11-14
+  access: abstract
+- id: YLE_MOT2025
+  citation: "Yle (MOT programme), news article 23 Oct 2025, reporting an unpublished MOT study of lung cancer diagnostic delay in Finland, Sweden and Denmark."
+  url: https://yle.fi/a/74-20251023
+  year: 2025
+  supports: [symptom onset to treatment about 155 days in Finland, split patient/primary/specialised]
+  accessed: 2026-11-14
+  access: secondary   # journalist analysis, unpublished; use only as context
+- id: HELSINKI2025_NEWS
+  citation: "University of Helsinki news item: Miksi Suomessa keuhkosyopaan kuollaan aiemmin kuin Pohjoismaissa? (reporting the Khalife et al. survey)."
+  url: https://www.helsinki.fi/fi/uutiset/terveys/miksi-suomessa-keuhkosyopaan-kuollaan-aiemmin-kuin-pohjoismaissa
+  year: 2025
+  supports: [40-60% of Finnish patients see a nurse at first visit, 42 specialists surveyed 2023-2024]
+  accessed: 2026-11-14
+  access: secondary
+- id: BRADLEY2021
+  citation: "Bradley SH, Hatton NLF, Aslam R, et al. Estimating lung cancer risk from chest X-ray and symptoms: a prospective cohort study. Br J Gen Pract 2021;71(705):e280-e286."
+  url: https://bjgp.org/content/71/705/e280
+  year: 2021
+  supports: [lung cancer prevalence among symptomatic self-referred CXR patients over 50, CXR sensitivity/specificity/PPV/NPV, haemoptysis PPV]
+  accessed: 2026-11-14
+  access: full_text
+- id: BRADLEY2019
+  citation: "Bradley SH, Abraham S, Callister MEJ, et al. Sensitivity of chest X-ray for detecting lung cancer in people presenting with symptoms: a systematic review. Br J Gen Pract 2019;69(689):e827-e835."
+  url: https://eprints.whiterose.ac.uk/id/eprint/146374/
+  year: 2019
+  supports: [CXR sensitivity 77-80% in symptomatic patients]
+  accessed: 2026-11-14
+  access: abstract
+- id: HSSIB2021
+  citation: "HSIB (now HSSIB). Missed detection of lung cancer on chest X-rays of patients being seen in primary care. Investigation report R5323, 14 October 2021."
+  url: https://hssib.org.uk/patient-safety-investigations/missed-detection-of-lung-cancer-on-chest-x-rays-of-patients-being-seen-in-primary-care/investigation-report
+  year: 2021
+  supports: [about one in five lung cancers missed on chest X-ray]
+  accessed: 2026-11-14
+  access: full_text   # first 100k of 217k characters read; the one-in-five figure itself cites Bradley 2019
+- id: KOO2023
+  citation: "Koo MM, Mounce LTA, Rafiq M, Callister MEJ, Singh H, Abel GA, Lyratzopoulos G. Guideline concordance for timely chest imaging after new presentations of dyspnoea or haemoptysis in primary care: a retrospective cohort study. Thorax 2023 (doi 10.1136/thorax-2022-219509)."
+  url: https://doi.org/10.1136/thorax-2022-219509
+  year: 2023
+  supports: [12-month lung cancer risk after new dyspnoea or haemoptysis in English primary care, diagnostic intervals]
+  accessed: 2026-11-14
+  access: full_text
+- id: SEWELL2020
+  citation: "Sewell B, Jones M, Gray H, et al. Rapid cancer diagnosis for patients with vague symptoms: a cost-effectiveness study. Br J Gen Pract 2020;70(692):e186-e192."
+  url: https://bjgp.org/content/70/692/e186
+  year: 2020
+  supports: [non-specific symptom patients wait a median 34 days longer than alarm-symptom patients (cited from earlier research in the introduction), rapid diagnostic centre timings, 12% cancer conversion]
+  accessed: 2026-11-14
+  access: full_text   # the 34-day figure is a secondary citation inside this paper; its original source was not identified
+- id: RIVERA2013
+  citation: "Rivera MP, Mehta AC, Wahidi MM. Establishing the diagnosis of lung cancer: Diagnosis and management of lung cancer, 3rd ed: ACCP evidence-based clinical practice guidelines. Chest 2013;143(5 Suppl):e142S-e165S."
+  url: https://pubmed.ncbi.nlm.nih.gov/23649436/
+  year: 2013
+  supports: [bronchoscopy sensitivity central vs peripheral, radial EBUS, EMN, transthoracic needle sensitivity]
+  accessed: 2026-11-14
+  access: abstract
+- id: SILVESTRI2013
+  citation: "Silvestri GA, Gonzalez AV, Jantz MA, et al. Methods for staging non-small cell lung cancer: ACCP evidence-based clinical practice guidelines. Chest 2013;143(5 Suppl):e211S-e250S."
+  url: https://pubmed.ncbi.nlm.nih.gov/23649440/
+  year: 2013
+  supports: [CT, PET and EBUS-TBNA mediastinal staging accuracy (values taken from GELBERG2014)]
+  accessed: 2026-11-14
+  access: secondary   # PubMed page blocked by a captcha; numbers read in Gelberg 2014
+- id: GELBERG2014
+  citation: "Gelberg J, Grondin S, Tremblay A. Mediastinal staging for lung cancer. Can Respir J 2014;21(3):159-161. doi:10.1155/2014/890108."
+  url: https://pmc.ncbi.nlm.nih.gov/articles/PMC4128458
+  year: 2014
+  supports: [mediastinal staging sensitivity/specificity/NPV for CT, PET, EBUS-TBNA from the ACCP 2013 guideline]
+  accessed: 2026-11-14
+  access: full_text
+- id: ALMEIDA2012
+  citation: "Almeida FA. Bronchoscopy and endobronchial ultrasound for diagnosis and staging of lung cancer. Cleve Clin J Med 2012."
+  url: https://www.mdedge.com/ccjm/article/95807/bronchoscopy-and-endobronchial-ultrasound-diagnosis-and-staging-lung-cancer/page/0/1
+  year: 2012
+  supports: [EBUS-TBNA pooled sensitivity 88-93%, higher when selected by PET/CT, lower in unselected patients]
+  accessed: 2026-11-14
+  access: full_text   # narrative review citing meta-analyses by reference number only
+- id: GOULD2001
+  citation: "Gould MK, et al. Accuracy of positron emission tomography for diagnosis of pulmonary nodules and mass lesions: a meta-analysis. JAMA 2001 (22 Feb issue)."
+  url: https://www.qxmd.com/r/11180735
+  year: 2001
+  supports: [FDG-PET sensitivity and specificity for malignant focal pulmonary lesions]
+  accessed: 2026-11-14
+  access: abstract   # stand-alone PET, not PET-CT; the author list was not shown on the page we read
+- id: HOREWEG2014
+  citation: "Horeweg N, et al. NELSON trial prespecified interim analysis of low-dose CT screening performance. Lancet Oncology 2014."
+  url: https://www.news-medical.net/news/20141119/CT-screening-highly-sensitive-specific-for-lung-cancer-detection.aspx
+  year: 2014
+  supports: [LDCT sensitivity 84.6%, specificity 98.6%, PPV 40.4%, NPV 99.8% in screening of high-risk smokers]
+  accessed: 2026-11-14
+  access: secondary   # news summary of the paper; screening population, not symptomatic patients
+- id: WIENER2011
+  citation: "Wiener RS, et al. Study of complications after transthoracic needle lung biopsy of pulmonary nodules. Ann Intern Med, 2 Aug 2011 issue (title paraphrased; volume/pages not verified)."
+  url: https://www.healthday.com/healthpro-news/pulmonology/pneumothorax-common-after-transthoracic-needle-biopsy-655390.html
+  year: 2011
+  supports: [pneumothorax after TTNB about 15%, chest tube about 6.6% (US population-based, hospital discharge data)]
+  accessed: 2026-11-14
+  access: secondary   # HealthDay summary
+- id: UZUN2017
+  citation: "Uzun C, Akkaya Z, Atman ED, et al. Non-coaxial CT-guided fine needle aspiration of pulmonary lesions, 442 biopsies. Diagn Interv Radiol 2017;23:137-."
+  url: https://dirjournal.org/pdf/beb8919b-f013-4ea1-b1c8-40332e840fe1/articles/dir.2016.16173/Diagn%20Interv%20Radiol-23-137-En.pdf
+  year: 2017
+  supports: [single-centre CT-guided FNA: accuracy 97.6%, non-diagnostic 2.7%, pneumothorax 19%, chest tube 2.9%]
+  accessed: 2026-11-14
+  access: full_text   # title paraphrased; single centre, fine-needle aspiration rather than core biopsy
+- id: GLOBOCAN_FIN
+  citation: "IARC Global Cancer Observatory. Finland fact sheet (GLOBOCAN), as retrieved 2026-11-14."
+  url: https://gco.iarc.who.int/media/globocan/factsheets/populations/246-finland-fact-sheet.pdf
+  year: 2024
+  supports: [lung cancer new cases per year in Finland, population]
+  accessed: 2026-11-14
+  access: full_text   # the page was summarised by the fetch tool; estimate year labelled 2024 there, not independently confirmed
+- id: PIRHA_PATH
+  citation: "Pirkanmaa Hospital District (Pirha). Keuhkosyopapotilaan hoitopolku (lung cancer patient pathway), patient information document."
+  url: https://pirha.fi/documents/d/kehitysversio/keuhkosyopapotilaan-hoitopolku
+  year: 2025
+  supports: [typical internal process times at a Finnish university hospital district (CT within about a week, bronchoscopy results 3-5 days), tests used in the pathway]
+  accessed: 2026-11-14
+  access: full_text   # document year not shown on the page; 2025 is a guess for ordering only
+
+# --- added by WP-C2-1 from docs/research/catalogue/conditions_symptoms.md (R1) and tests_labs.md (R2); accessed dates as in those notes ---
+- id: HAMILTON2005
+  citation: "Hamilton W, Peters TJ, Round A, Sharp D. Thorax 2005;60(12):1059- (Exeter case-control study, CAPER; title not captured by the fetch)"
+  url: https://thorax.bmj.com/content/60/12/1059
+  year: 2005
+  supports: ["haemoptysis, cough PPVs; cough 65%, haemoptysis 20%, dyspnoea 56%; thrombocytosis"]
+  accessed: 2026-11-14
+  access: full_text   # (text only, tables absent)
+- id: ADES2014
+  citation: "Ades AE, Biswas M, Welton NJ, Hamilton W. Symptom lead time distribution in lung cancer: natural history and prospects for early diagnosis. Int J Epidemiol 2014 (doi:10.1093/ije/dyu174)"
+  url: https://core.ac.uk/download/29027139.pdf
+  year: 2014
+  supports: ["symptom frequencies in cases and controls by stage, CAPER dataset"]
+  accessed: 2026-11-14
+  access: full_text
+- id: WALTER2015
+  citation: "Walter FM et al. Symptoms and other factors associated with time to diagnosis and stage of lung cancer: a prospective cohort study. Br J Cancer 2015 (doi:10.1038/bjc.2015.30)"
+  url: https://link.springer.com/10.1038/bjc.2015.30
+  year: 2015
+  supports: ["symptom frequencies and stage in 153 lung cancers among 963 referred adults. Table read via a Melbourne repository copy (minerva-access.unimelb.edu.au)"]
+  accessed: 2026-11-14
+  access: full_text
+- id: JONES2007
+  citation: "Jones R, Latinovic R, Charlton J, Gulliford MC. Alarm symptoms in early diagnosis of cancer in primary care: cohort study using General Practice Research Database. BMJ 2007;334:1040"
+  url: https://www.bmj.com/content/334/7602/1040
+  year: 2007
+  supports: ["haemoptysis PPV for respiratory tract neoplasm in men and women"]
+  accessed: 2026-11-14
+  access: full_text   # (age table absent)
+- id: SCHMIDTHANSEN2017
+  citation: "Schmidt-Hansen M, Berendse S, Hamilton W, Baldwin DR. Lung cancer in symptomatic patients presenting in primary care: a systematic review of risk prediction tools. Br J Gen Pract 2017;67(659):e396-e404 (title partly from our reading of the page)"
+  url: https://bjgp.org/content/67/659/e396
+  year: 2017
+  supports: ["review of risk tools; Iyen-Omofoman AUC 0.88; thrombocytosis 26% vs 4.8%; two symptoms in 3 months 80.6% sensitivity"]
+  accessed: 2026-11-14
+  access: full_text   # (tables absent)
+- id: HIPPISLEYCOX2015
+  citation: "Hippisley-Cox J, Coupland C. Development and validation of risk prediction algorithms to estimate future risk of common cancers in men and women: prospective cohort study. BMJ Open 2015;5:e007825"
+  url: https://nottingham-repository.worktribe.com/OutputFile/744023
+  year: 2015
+  supports: ["smoking HR by intensity, COPD, asthma"]
+  accessed: 2026-11-14
+  access: full_text   # (first 100k of 124k characters)
+- id: LEE2012
+  citation: "Systematic review with meta-analysis of the epidemiological evidence in the 1900s relating smoking to lung cancer (authors not captured). BMC Cancer 2012;12:385"
+  url: https://link.springer.com/doi/10.1186/1471-2407-12-385
+  year: 2012
+  supports: ["RR current 8.43, former 4.30, by histology"]
+  accessed: 2026-11-14
+  access: full_text   # (first 100k of 647k characters)
+- id: NICE_NG12
+  citation: "NICE. Suspected cancer: recognition and referral. NG12, lung and pleural cancer recommendations"
+  url: https://www.nice.org.uk/guidance/ng12/chapter/recommendations-organised-by-site-of-cancer
+  year: 2015
+  supports: ["symptom rules for urgent CXR"]
+  accessed: 2026-11-14
+  access: full_text
+- id: NICE_NG12_CONTEXT
+  citation: "NICE NG12 context chapter (3% PPV threshold)"
+  url: https://www.nice.org.uk/guidance/ng12/chapter/Context
+  year: 2015
+  supports: ["PPV threshold"]
+  accessed: 2026-11-14
+  access: full_text
+- id: NICE_NG114
+  citation: "NICE NG114 COPD guideline, terms used: definition of exacerbation"
+  url: https://www.nice.org.uk/guidance/ng114/chapter/terms-used-in-the-guideline
+  year: 2018
+  supports: ["exacerbation definition"]
+  accessed: 2026-11-14
+  access: full_text
+- id: VANVUGT2012
+  citation: "van Vugt SF, Broekhuizen L, Zuithoff N, et al. Incidental chest radiographic findings in adult patients with acute cough. Ann Fam Med 2012;10(6):510-515"
+  url: https://www.annfammed.org/content/10/6/510.full.pdf
+  year: 2012
+  supports: ["pneumonia 5%, bronchitis 8%, normal 70%, nodules/shadows 1.8% among 2,823 acute-cough adults in European primary care"]
+  accessed: 2026-11-14
+  access: full_text
+- id: TEEPE2016
+  citation: "Teepe J, et al. Disease course of lower respiratory tract infection with a bacterial cause. Ann Fam Med 2016;14(6):534-539"
+  url: https://www.annfammed.org/content/14/6/534.full.pdf
+  year: 2016
+  supports: ["pneumonia infiltrates 3% in GRACE-10 placebo arm; bacterial LRTI 19%"]
+  accessed: 2026-11-14
+  access: full_text
+- id: TURNER2016
+  citation: "Turner RD, Bothamley GH. Chronic cough and a normal chest X-ray: a simple systematic approach to exclude common causes before referral to secondary care. npj Prim Care Respir Med 2016;26:15081"
+  url: https://www.nature.com/articles/npjpcrm201581
+  year: 2016
+  supports: ["chronic-cough diagnosis distribution (cough-clinic referrals)"]
+  accessed: 2026-11-14
+  access: full_text
+- id: CHEN2020
+  citation: "Chen Y, Hayward R, Chew-Graham CA, Hubbard R, Croft P, Sims K, Jordan KP. Prognostic value of first-recorded breathlessness for future chronic respiratory and heart disease: a cohort study using a UK national primary care database. Br J Gen Pract 2020;70(693):e264-e273"
+  url: https://bjgp.org/content/bjgp/70/693/e264.full.pdf
+  year: 2020
+  supports: ["COPD, asthma, IHD diagnoses after first breathlessness"]
+  accessed: 2026-11-14
+  access: full_text
+- id: MANT2009
+  citation: "Mant J, Doust J, Roalfe A, et al. Systematic review and individual patient data meta-analysis of diagnosis of heart failure, with modelling of implications of different diagnostic strategies in primary care. Health Technol Assess 2009;13(32)"
+  url: https://research.bond.edu.au/en/publications/systematic-review-and-individual-patient-data-meta-analysis-of-di/
+  year: 2009
+  supports: ["symptom and sign sensitivity/specificity for heart failure"]
+  accessed: 2026-11-14
+  access: abstract
+- id: METLAY_UW
+  citation: "Metlay JP et al., likelihood ratios for history and exam in community-acquired pneumonia, as tabulated by the University of Washington physical diagnosis pages"
+  url: https://depts.washington.edu/physdx/pulmonary/evid1.html
+  year: 2026   # undated page: access year
+  supports: ["LR for fever, cough, dyspnoea, crackles"]
+  accessed: 2026-11-14
+  access: secondary
+- id: HECKERLING_UW
+  citation: "Heckerling pneumonia prior (about 5% of cough patients), cited on the same UW page"
+  url: https://depts.washington.edu/physdx/pulmonary/evid1.html
+  year: 2026   # undated page: access year
+  supports: ["pneumonia prior in primary-care cough"]
+  accessed: 2026-11-14
+  access: secondary
+- id: YOUNG2009
+  citation: "COPD prevalence is increased in lung cancer, independent of age, sex and smoking history. Eur Respir J 2009;34(2):380-386 (authors not captured; first author recalled as Young but unverified)"
+  url: https://pubmed.ncbi.nlm.nih.gov/19196816/
+  year: 2009
+  supports: ["COPD 50% vs 8%"]
+  accessed: 2026-11-14
+  access: abstract
+- id: CHEST2025_AIRFLOW
+  citation: "Prevalence of airflow limitation and emphysema in lung cancer screening populations: a systematic review and meta-analysis. Chest 2025;168(1):67-82 (authors not captured)"
+  url: https://pubmed.ncbi.nlm.nih.gov/40054601/
+  year: 2025
+  supports: ["airflow limitation 40.1%"]
+  accessed: 2026-11-14
+  access: abstract
+- id: WEINBERG2021
+  citation: "Weinberg FD, Zhao L, Chellappa N, Kalemkerian GP, Ramnath N. Characterization of pneumonia and other factors leading to poorer survival across all age groups in patients with non-small cell lung cancer. J Thorac Dis 2021;13(2):986-994"
+  url: https://jtd.amegroups.org/article/view/48747/html
+  year: 2021
+  supports: ["pneumonia before NSCLC diagnosis 2.3%"]
+  accessed: 2026-11-14
+  access: full_text
+- id: SHEPSHELOVICH2016
+  citation: "Shepshelovich D et al., lung cancer within a year of hospitalisation for community-acquired pneumonia in heavy smokers. Am J Med 2016 (as reported in a news summary)"
+  url: https://www.news-medical.net/news/20160108/Screening-smokers-with-community-acquired-pneumonia-could-facilitate-early-diagnosis-of-lung-cancer.aspx
+  year: 2016
+  supports: ["31 of 381 lung cancers within a year"]
+  accessed: 2026-11-14
+  access: secondary
+- id: FILHA2026
+  citation: "FILHA (Finnish Lung Health Association; authors not captured). Valtakunnallinen keuhkosyöpäohjelma 2026-2035, preprint 18.5.2026 (authors not captured)"
+  url: https://www.filha.fi/wp-content/uploads/2026/05/Valtakunnallinen-keuhkosyopaohjelma-2026-2035_180526_preprint.pdf
+  year: 2026
+  supports: ["incidence, advanced stage 65-70%, NSCLC/SCLC and subtype shares, never smokers 10-15%, one quarter asymptomatic"]
+  accessed: 2026-11-14
+  access: full_text   # (preprint)
+- id: AHVONEN2023
+  citation: "Ahvonen J, Luukkaala T, Laitinen T, Jukkola A. Survival with lung cancer in Finland has not improved during 2007-2019. Acta Oncol 2023;62(6):571-578"
+  url: https://researchportal.tuni.fi/en/publications/survival-with-lung-cancer-in-finland-has-not-improved-during-2007/
+  year: 2023
+  supports: ["stage IV about 59% at Tampere University Hospital, n=3,041"]
+  accessed: 2026-11-14
+  access: abstract
+- id: PAAPPANEN2025
+  citation: "Paappanen V, Tikka J, et al. Outcome of lung cancer surgery and proportion of lung cancer patients eligible for surgery in five Finnish hospitals in 2018, real world study. Acta Oncol 2025;64:909-916 (doi:10.2340/1651-226X.2025.43398)"
+  url: https://medicaljournalssweden.se/actaoncologica/article/download/43398/50813
+  year: 2025
+  supports: ["histology, smoking status and stage in operable NSCLC; Finnish stage distribution (NSCLC), operability"]
+  accessed: 2026-11-14
+  access: full_text
+- id: KOSIN2014
+  citation: "Characteristics of peripheral versus central lung cancer since 2000. Kosin Medical Journal (about 2014, as listed by DOAJ; authors not captured)"
+  url: https://doaj.org/article/863067cb9c164770a4896b18431a913f
+  year: 2014
+  supports: ["central/peripheral and histology by location"]
+  accessed: 2026-11-14
+  access: abstract
+- id: CLUBBING1998
+  citation: "Prevalence of digital clubbing in bronchogenic carcinoma by a new digital index. Clin Exp Rheumatol 1998;16(1):21-26 (authors not captured)"
+  url: https://api-pubmed-ncbi.laibokeji.com/9543557
+  year: 1998
+  supports: ["clubbing about one third"]
+  accessed: 2026-11-14
+  access: abstract
+- id: THL_TUPAKKA2022
+  citation: "THL Tupakkatilasto 2023 (Tilastoraportti 55/2024), data year 2022, Terve Suomi survey, as reproduced in the ASH Finland file"
+  url: https://suomenash.fi/wp-content/uploads/2025/02/tupakkatilasto-2023.pdf
+  year: 2024
+  supports: ["daily and never-smoker shares by sex and age"]
+  accessed: 2026-11-14
+  access: secondary
+- id: ASHFIN_2024
+  citation: "ASH Finland. Smoking in Finland (2024 figures for adults 20-64; source not named)"
+  url: https://suomenash.fi/en/facts-about-smoking/smoking/
+  year: 2024
+  supports: ["daily smoking 10%"]
+  accessed: 2026-11-14
+  access: secondary
+- id: ECDC_TB2024
+  citation: "ECDC. Tuberculosis country profile Finland 2024"
+  url: https://www.ecdc.europa.eu/sites/default/files/documents/Country-profile-Finland-TB-2024.pdf
+  year: 2025
+  supports: ["TB notification rate 3.3 per 100,000, 184 cases, 67.9% pulmonary"]
+  accessed: 2026-11-14
+  access: full_text
+- id: EJIOFOR2017
+  citation: "Ejiofor SI, Stolk J, Fernandez P, Stockley RA. Patterns and characterization of COPD exacerbations using real-time data collection. Int J Chron Obstruct Pulmon Dis 2017;12:427-434"
+  url: https://www.dovepress.com/patterns-and-characterization-of-copd-exacerbations-using-real-time-da-peer-reviewed-fulltext-article-COPD
+  year: 2017
+  supports: ["not used for numbers: alpha-1 antitrypsin trial, 46 patients"]
+  accessed: 2026-11-14
+  access: full_text
+- id: WEIRMCCALL2020
+  citation: "Weir-McCall JR, Joyce S, Clegg A, et al. Dynamic contrast-enhanced computed tomography for the diagnosis of solitary pulmonary nodules: a systematic review and meta-analysis. Eur Radiol 2020;30(6):3310-3323."
+  url: https://link.springer.com/article/10.1007/s00330-020-06661-8
+  year: 2020
+  supports: ["CT sensitivity 0.948, specificity 0.755 for malignant nodules"]
+  accessed: 2026-11-14
+  access: abstract
+- id: LI2018
+  citation: "Li ZZ, Huang YL, Song HJ, Wang YJ, Huang Y. The value of 18F-FDG-PET/CT in the diagnosis of solitary pulmonary nodules: a meta-analysis. Medicine (Baltimore) 2018;97(12):e0130."
+  url: https://pmc.ncbi.nlm.nih.gov/articles/PMC5895332
+  year: 2018
+  supports: ["PET-CT sensitivity 0.89, specificity 0.70"]
+  accessed: 2026-11-14
+  access: abstract
+- id: LI2008
+  citation: "Li F, Engelmann R, Metz CE, Doi K, MacMahon H. Lung cancers missed on chest radiographs: results obtained with a commercial computer-aided detection program. Radiology 2008;246(1)."
+  url: https://www2.rsna.org/timssnet/radiologyselect/pdf/category%202%20-%20detection,%20observer%20performance,%20technical%20aids%20for%20assessing%20pulmonary%20nodules/lung_cancers_missed_on_chest_radiographs.pdf
+  year: 2008
+  supports: ["size and location of missed cancers"]
+  accessed: 2026-11-14
+  access: full_text   # (abstract-level summary)
+- id: HUO2020
+  citation: "Huo YR, Chan MV, Habib AR, Lui I, Ridley L. Pneumothorax rates in CT-guided lung biopsies: a comprehensive systematic review and meta-analysis of risk factors. Br J Radiol 2020;93(1108):20190866."
+  url: https://pmc.ncbi.nlm.nih.gov/articles/PMC7362905
+  year: 2020
+  supports: ["pneumothorax 25.9 %, chest drain 6.9 %, risk factors (bulla OR 6.13, emphysema OR 3.33)"]
+  accessed: 2026-11-14
+  access: full_text
+- id: STAHL2015
+  citation: "Stahl DL, Richard KM, Papadimos TJ. Complications of bronchoscopy: a concise synopsis. Int J Crit Illn Inj Sci 2015;5:189-195."
+  url: https://www.scienceopen.com/document_file/2ded9536-f0ae-4db9-83ea-6238d780100b/PubMedCentral/2ded9536-f0ae-4db9-83ea-6238d780100b.pdf
+  year: 2015
+  supports: ["bronchoscopy complication rates"]
+  accessed: 2026-11-14
+  access: full_text
+- id: AHMETOGLU2023
+  citation: "Ahmetoglu E, Karadogan D, Gundogdu H, et al. Mediastinitis and subcutaneous abscess complicated after EBUS-TBNA of 2R mediastinal lymph node. Tuberk Toraks 2023;71(3):20239713."
+  url: https://pmc.ncbi.nlm.nih.gov/articles/PMC10795241
+  year: 2023
+  supports: ["EBUS-TBNA infectious complication rates quoted from surveys (Asano, Kang)"]
+  accessed: 2026-11-14
+  access: secondary
+- id: SERRA2023
+  citation: "Serra Mitja P, Goncalves dos Santos Carvalho F, Garcia Olive I, et al. Incidence and risk factors for infectious complications of EBUS-TBNA: prospective multicenter study. Arch Bronconeumol 2023;59:84-89."
+  url: https://archbronconeumol.org/en-incidence-risk-factors-for-infectious-articulo-S0300289622005956
+  year: 2023
+  supports: ["infectious complication 4.05 %"]
+  accessed: 2026-11-14
+  access: abstract
+- id: PATHOLOGIST2024
+  citation: "The Pathologist. Timing matters, and liquid is part of the future (trade article on NSCLC biomarker turnaround; 2024 issue)."
+  url: https://thepathologist.com/diagnostics/timing-matters-and-liquid-is-part-of-the-future
+  year: 2024
+  supports: ["in-house NGS 4 working days, outsourced several weeks"]
+  accessed: 2026-11-14
+  access: full_text   # (secondary)
+- id: HORMALAINEN2025
+  citation: "Hormalainen K, Marttila K, Nykter M, et al. Comprehensive genomic profiling in advanced non-small cell lung cancer: a real-world cohort study in Finland. Cancer Med 2025 (Oct)."
+  url: https://researchportal.tuni.fi/en/publications/comprehensive-genomic-profiling-in-advanced-non-small-cell-lung-c/
+  year: 2025
+  supports: ["45 % actionable alterations, Finland"]
+  accessed: 2026-11-14
+  access: abstract
+- id: BAILEY2017
+  citation: "Bailey SER, Ukoumunne OC, Shephard EA, Hamilton W. Clinical relevance of thrombocytosis in primary care: a prospective cohort study of cancer incidence using English electronic medical records and cancer registry data. Br J Gen Pract 2017;67(659):e405-e413."
+  url: https://bjgp.org/content/early/2017/05/22/bjgp17X691109.full.pdf
+  year: 2017
+  supports: ["thrombocytosis prevalence 1.5 to 2.2 %, 573/31,261 lung cancers, 1-year any-cancer PPV 11.6 % men / 6.2 % women (the PPVs were read in the GPNotebook summary https://gpnotebook.com/pages/haematology/high-platelet-count-and-cancer-risk)"]
+  accessed: 2026-11-14
+  access: full_text   # (partial)
+- id: CHEN2021
+  citation: "Chen C, Song Z, Wang W, Zhou J. Baseline anemia and anemia grade are independent prognostic factors for stage IV non-small cell lung cancer. Mol Clin Oncol 2021;14:59."
+  url: https://www.spandidos-publications.com/10.3892/mco.2021.2221
+  year: 2021
+  supports: ["anaemia 32.1 %, mean Hb 123.3 g/L"]
+  accessed: 2026-11-14
+  access: full_text
+- id: CHAN2020
+  citation: "Chan VWQ, Henry MT, Kennedy MP. Hyponatremia and hypercalcemia: a study of a large cohort of patients with lung cancer. Transl Cancer Res 2020;9(1):222-230."
+  url: https://tcr.amegroups.org/article/view/35140/html
+  year: 2020
+  supports: ["hypercalcaemia 7.1 %, hyponatraemia 31.6 %"]
+  accessed: 2026-11-14
+  access: full_text
+- id: LEE2016
+  citation: "Lee DS, Park KR, Kim SJ, et al. Serum lactate dehydrogenase levels at presentation in stage IV non-small cell lung cancer: predictive value of metastases and relation to survival outcomes. Tumour Biol 2016;37(1):619-625."
+  url: https://www.springermedizin.de/serum-lactate-dehydrogenase-levels-at-presentation-in-stage-iv-n/9259812
+  year: 2016
+  supports: ["LDH elevated 56.9 %, median 477 IU/L"]
+  accessed: 2026-11-14
+  access: abstract
+- id: SCIREP2017
+  citation: "The risk factors of bone metastases in patients with lung cancer. Sci Rep, August 2017 (authors not shown on the page read)."
+  url: https://doaj.org/article/fd2913af340e434ca17613f477908a66
+  year: 2017
+  supports: ["bone metastasis 23.9 %; ALP sens 41.3 %, spec 77.1 %"]
+  accessed: 2026-11-14
+  access: abstract
+- id: YE2025
+  citation: "Ye H, Zhang Q. Diagnosis of bone metastasis in patients with non-small cell lung cancer by combined detection of CEA, CYFRA21-1, and ALP. Vojnosanit Pregl 2025;82(9):551-557."
+  url: https://www.vsp.mod.gov.rs/pdf_clanci/vsp271/01_vsp_9_55866_25_551_557_1758886286.pdf
+  year: 2025
+  supports: ["ALP means, sens 22.1 %, spec 90.0 %"]
+  accessed: 2026-11-14
+  access: full_text
+- id: MINNAARD2016
+  citation: "Minnaard MC, de Groot JAH, Hopstaken RM, et al. The added value of C-reactive protein measurement in diagnosing pneumonia in primary care: a meta-analysis of individual patient data. CMAJ 2016."
+  url: https://www.cmaj.ca/content/early/2016/09/19/cmaj.151163.full.pdf
+  year: 2016
+  supports: ["CRP medians by study, model accuracy"]
+  accessed: 2026-11-14
+  access: full_text
+- id: GRAFFELMAN2007
+  citation: "Graffelman AW, et al. J Fam Pract 2007;56(6):465-470 (read in a summary at https://www.mdedge.com/content/can-history-and-exam-alone-reliably-predict-pneumonia)."
+  url: https://www.mdedge.com/content/can-history-and-exam-alone-reliably-predict-pneumonia
+  year: 2007
+  supports: ["history and exam alone do not predict pneumonia; CRP model PPV 47 %"]
+  accessed: 2026-11-14
+  access: secondary
+- id: VANDENBEMT2014
+  citation: "van den Bemt L, Wouters BCW, Grootens J, et al. Diagnostic accuracy of pre-bronchodilator FEV1/FEV6 from microspirometry to detect airflow obstruction in primary care. NPJ Prim Care Respir Med 2014;24:14033."
+  url: https://pmc.ncbi.nlm.nih.gov/articles/PMC4373403
+  year: 2014
+  supports: ["microspirometry sens 0.932 / spec 0.850"]
+  accessed: 2026-11-14
+  access: abstract
+- id: HAUGHNEY2014
+  citation: "Haughney J, Gruffydd-Jones K, Roberts J, Lee AJ, Hardwell A, McGarvey L. The distribution of COPD in UK general practice using the new GOLD classification. Eur Respir J 2014;43(4):993-1002."
+  url: https://abdn.elsevierpure.com/en/publications/the-distribution-of-copd-in-uk-general-practice-using-the-new-gol
+  year: 2014
+  supports: ["GOLD stage shares"]
+  accessed: 2026-11-14
+  access: abstract
+- id: BROCKELSBY_PRENDECKI
+  citation: "Brockelsby C, Maconachie R, Navani N, Prendecki R, et al. A real-world, multi-centre study of brain metastasis prevalence, its impact on treatment, and re-modelling of the NICE lung cancer brain imaging economic analysis (year not shown on the copy read; about 2022)."
+  url: https://discovery.ucl.ac.uk/id/eprint/10176080/1/Prendecki_Brain%20imaging%20in%20lung%20cancer%20staging.pdf
+  year: 2022
+  supports: ["asymptomatic brain metastasis 2.1 to 6.2 %"]
+  accessed: 2026-11-14
+  access: full_text
+- id: ALHUSAINI2023
+  citation: "Alhusaini S, Lanman TA, Ko RB, et al. Real-world risk of brain metastases in stage III non-small cell lung cancer in the era of PET and MRI staging. Front Oncol 2023;13:1139940."
+  url: https://www.frontiersin.org/journals/oncology/articles/10.3389/fonc.2023.1139940/full
+  year: 2023
+  supports: ["2-year brain metastasis incidence 17 %"]
+  accessed: 2026-11-14
+  access: full_text
+- id: SOLBERG2022
+  citation: "Solberg S, Nilssen Y, Brustugun OT, et al. Concordance between clinical and pathology TNM-staging in lung cancer. Lung Cancer 2022;171:65-69."
+  url: https://munin.uit.no/bitstream/10037/27539/2/article.pdf
+  year: 2022
+  supports: ["Norwegian surgical cohort nodal status, stage"]
+  accessed: 2026-11-14
+  access: full_text
+- id: LEE2006
+  citation: "Computed tomographic screening for lung cancer: the relationship of disease stage to tumor size. Arch Intern Med 2006;166(3):321-325 (authors not on the page read)."
+  url: https://pubmed.ncbi.nlm.nih.gov/16476872/
+  year: 2006
+  supports: ["N0M0 share by tumour size in screening"]
+  accessed: 2026-11-14
+  access: abstract
+- id: YANG2010
+  citation: "Yang F, Chen H, Xiang J, et al. Relationship between tumor size and disease stage in non-small cell lung cancer. BMC Cancer 2010;10:474."
+  url: https://www.springermedizin.de/relationship-between-tumor-size-and-disease-stage-in-non-small-c/9460906
+  year: 2010
+  supports: ["N0M0 share and N1/N2 share by size, Shanghai"]
+  accessed: 2026-11-14
+  access: full_text
+- id: SOITE2024
+  citation: "Soite (Keski-Pohjanmaan hyvinvointialue). Suoriteperusteisen laskutuksen hinnasto 19.3.2024 (Swedish version). Radiology pp. 100-117, pathology pp. 118-121, clinics pp. 8-26. Euro prices per procedure."
+  url: https://soite.fi/wp-content/uploads/2024/03/Suoriteperusteisen-laskutuksen-hinnasto-19.3.2024-sve.pdf
+  year: 2024
+  supports: [euro price of chest X-ray, CT thorax, MRI brain, CT-guided lung biopsy, bronchoscopy, spirometry, echocardiography, oesophageal pH, pathology items]
+  accessed: 2026-11-14
+  access: full_text   # read through a summarising tool in two parts (offset 0 and 100000); re-check line items against the page
+- id: EPHVA2026
+  citation: "Etelä-Pohjanmaan hyvinvointialue (Ephva). Palveluhinnasto 2026 (muutettu 3/2026). GP visit and nurse visit prices; specialist visit bundles."
+  url: https://www.hyvaep.fi/uploads/2026/03/ephva_palveluhinnasto_2026_muutettu.pdf
+  year: 2026
+  supports: [GP visit 232 EUR, nurse visit 92 EUR, PET-CT bundle prices, lung clinic bronchoscopy bundle 1265 EUR]
+  accessed: 2026-11-14
+  access: full_text   # first 100,000 of 111,430 characters, via a summarising tool; imaging and laboratory have no standalone lines
+- id: KELA_VVK2026
+  citation: "Kela. Valinnanvapauskokeilu 2026: tutkimukset ja hinta jonka potilas maksaa (price list of examinations in the free-choice pilot, from 1 July). Patient price, not provider cost."
+  url: https://www.kela.fi/documents/d/guest/valinnanvapauskokeilu-2026_a4-verkko_tutkimukset-1-7-alkaen
+  year: 2026
+  supports: [CRP 3 EUR, blood count 3-6 EUR, bacterial culture 6 EUR, pro-BNP 12 EUR, chest X-ray 48.50 EUR (patient prices)]
+  accessed: 2026-11-14
+  access: full_text   # via a summarising tool; the page gives no year or setter of the prices
+- id: HUS_YEAR2024
+  citation: "HUS. HUS year 2024: laboratories and imaging (annual report page). Volumes of examinations 2024."
+  url: https://www.hus.fi/en/about-us/annual-reports/hus-year-2024/patient-care/hus-year-2024-laboratories-and-imaging
+  year: 2024
+  supports: [HUS radiology 1,178,368 examinations, pathology 529,985, microbiology 1,685,705, chemistry and haematology 18,885,969 in 2024; local imaging backlogs]
+  accessed: 2026-11-14
+  access: full_text
+- id: PIRHA_ANTIB
+  citation: "Pirkanmaan hyvinvointialue (Pirha). Milloin immuniteetiltaan terveille aikuisille ei määrätä antibioottia (guidance page, cites Käypä hoito)."
+  url: https://pirha.fi/documents/d/guest/milloin-immuniteetiltaan-terveille-aikuisille-ei-maarata-antibioottia
+  year: 2025
+  supports: [acute bronchitis is not treated with antibiotics in immunocompetent adults]
+  accessed: 2026-11-14
+  access: full_text
+- id: KEUSOTE_LAMA
+  citation: "Keusote / Theseus thesis: Sairaanhoitajan rajattu lääkkeenmäärääminen tiimityössä. Limited nurse prescribing since 2011; model scope in outpatient care."
+  url: https://keusote.fi/sairaanhoitajan-rajattu-laakkeenmaaraaminen-tiimityossa
+  year: 2023
+  supports: [nurse limited prescribing needs training and a written doctor order; sore throat and allergic rhinitis in scope; sinus, ear and prolonged respiratory infections go to a doctor]
+  accessed: 2026-11-14
+  access: full_text   # first 100,000 of 163,423 characters, via a summarising tool; year of the thesis not captured
+- id: INNOKYLA_HTA
+  citation: "Innokylä. Hoidon tarpeen arvioinnin ohjeet ammattilaiselle (December 2025)."
+  url: https://www.innokyla.fi/sites/default/files/2025-12/Hoidon%20tarpeen%20arvioinnin%20ohjeet%20ammattilaiselle%20Innokyl%C3%A4.pdf
+  year: 2025
+  supports: [needs assessment done the same working day as contact; nurse prepares referrals and requests, orders are the doctor's]
+  accessed: 2026-11-14
+  access: full_text   # via a summarising tool
+- id: MTV_THL2022
+  citation: "MTV Uutiset, article on THL statistical report on access to primary care (data October 2022): just under 60 percent got a non-urgent doctor visit within 7 days, about 90 percent a nurse visit."
+  url: https://www.mtvuutiset.fi/artikkeli/terveyskeskukseen-sai-kiireettoman-laakariajan-alle-viikossa-vain-hieman-yli-joka-toinen-tana-syksyna-yli-kolme-kuukautta-laakaria-odottaneita-enemman-kuin-aikoihin/8595548
+  year: 2022
+  supports: [share seen within 7 days, doctor and nurse, October 2022]
+  accessed: 2026-11-14
+  access: secondary   # journalist summary of a THL report; the report itself was not opened
+- id: CDC_TB
+  citation: "CDC. Clinical and Laboratory Diagnosis for Tuberculosis (healthcare providers page)."
+  url: https://www.cdc.gov/tb/hcp/testing-diagnosis/clinical-and-laboratory-diagnosis.html
+  year: 2025
+  supports: [culture is the gold standard for TB, takes a week or more against hours for NAAT, a negative culture does not rule out TB]
+  accessed: 2026-11-14
+  access: full_text
+- id: MUS_BMJO2022
+  citation: "Review of persistent physical symptoms / medically unexplained symptoms in primary care, eprints.whiterose.ac.uk/192766 (BMJ Open e059971; title and authors not read). Cites MUS as about 45% of general practice consultations and 20% of new consultations in primary care."
+  url: https://eprints.whiterose.ac.uk/id/eprint/192766/6/e059971.full.pdf
+  year: 2022
+  supports: [medically unexplained symptoms are a large share of primary care consultations; prevalence range 1.7% to 76% in high users]
+  accessed: 2026-11-14
+  access: full_text   # via a summarising tool; the 45% and 20% are the review's citations of other studies
+- id: STM_HOITOTAKUU2025
+  citation: "STM. Perusterveydenhuollon kiireettömään hoitoon pääsyn enimmäisajat pitenevät vuoden 2025 alusta lukien."
+  url: https://stm.fi/-/perusterveydenhuollon-kiireettomaan-hoitoon-paasyn-enimmaisajat-pitenevat-vuoden-2025-alusta-lukien
+  year: 2024
+  supports: [care guarantee for primary outpatient care is 3 months from 2025 (not applying under 23)]
+  accessed: 2026-11-14
+  access: full_text
+- id: KELA_LAB
+  citation: "Kela. Sairaanhoitokorvaus laboratoriotutkimuksista (page for healthcare partners): point-of-care tests such as blood glucose, haemoglobin and CRP use the code of the equivalent laboratory test."
+  url: https://www.kela.fi/yhteistyokumppanit-terveydenhuolto-sairaanhoitokorvaukset-tutkimus-ja-hoito-laboratoriotutkimukset
+  year: 2026
+  supports: [CRP is a point-of-care test in Finnish practice; pathology belongs to laboratory examinations]
+  accessed: 2026-11-14
+  access: full_text   # via a summarising tool; no euro amounts on the page
+- id: HUS_DIAG2023
+  citation: "HUS Diagnostiikkakeskus palvelukuvaus 2023 (annex 1 to the Itä-Uusimaa wellbeing county contract). Lists CRP as a point-of-care test; urgent chemistry and haematology tests aim for a result within one hour of sample arrival; pathology laboratories work on weekdays 7:00 to 15:30; no prices or turnaround for histology or cultures."
+  url: https://itauusimaa.fi/wp-content/uploads/2023/09/LIITE-1-HUS-Diagnostiikkakeskuksen-palvelukuvaus-2023_Ita-Uudenmaan-hva-002.pdf
+  year: 2023
+  supports: [CRP point-of-care, one-hour target for urgent laboratory tests, plain X-rays usually without appointment]
+  accessed: 2026-11-14
+  access: full_text   # via a summarising tool
+- id: GETNET2019
+  citation: "Getnet F, Demissie M, Worku A, Gobena T, Tschopp R, Girmachew M, Assefa G, Seyoum B. Delay in diagnosis of pulmonary tuberculosis increases the risk of pulmonary cavitation in pastoralist setting of Ethiopia. BMC Pulmonary Medicine 2019."
+  url: https://pmc.ncbi.nlm.nih.gov/articles/PMC6836413
+  year: 2019
+  supports: ["cavitation on chest radiograph in 45.6% (95% CI 40.9-50.4) of 434 new pulmonary TB patients", "cavity diameter mean 2.8 cm, SD 1.0"]
+  accessed: 2026-11-14
+  access: full_text   # read through a summarising tool; high-burden setting with long diagnostic delay
+- id: NICE_NG245
+  citation: "NICE, BTS, SIGN. Asthma: diagnosis, monitoring and chronic asthma management (update). Evidence reviews for spirometry, draft for consultation, June 2024 (guideline NG245)."
+  url: https://nice.org.uk/guidance/ng245/documents/evidence-review
+  year: 2024
+  supports: ["spirometry for asthma in adults: FEV1/FVC below 70% sensitivity 0.30-0.35, specificity 0.96-1.00 (2 studies); below LLN sensitivity 0.37 (0.26-0.50), specificity 0.96; no pooling"]
+  accessed: 2026-11-14
+  access: full_text   # first 100k of 157k characters, read through a summarising tool

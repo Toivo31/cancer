@@ -1,0 +1,9861 @@
+{
+ "format": "flow/1",
+ "scenario": "stokstad",
+ "flowchart": "observed",
+ "policy": "RulePolicy",
+ "seeds": [
+  201,
+  202,
+  203
+ ],
+ "synthetic": true,
+ "clock_start": "referral_received",
+ "target_days": 42.0,
+ "warmup_days": 0.0,
+ "totals": {
+  "n": 900,
+  "n_cancer": 900,
+  "missed_cancers": 0,
+  "untreated_cancers": 0,
+  "treated_cancers": 900,
+  "stuck": 0,
+  "cohorts": 3
+ },
+ "metrics": {
+  "n": 300.0,
+  "n_cancer": 300.0,
+  "target_days": 42.0,
+  "median_days_to_treatment": 44.83,
+  "share_within_target": 0.4211,
+  "median_days_to_diagnosis": 31.3,
+  "missed_cancers": 0.0,
+  "tests_per_patient": 2.4057,
+  "invasive_per_patient": 1.1157,
+  "cost_per_patient": 2869.0,
+  "median_days_to_exit_noncancer": null
+ },
+ "by_group": {
+  "all": {
+   "n": 900,
+   "n_cancer": 900,
+   "median_days_to_treatment": 44.83,
+   "share_within_target": 0.4211,
+   "median_days_to_diagnosis": 31.3,
+   "missed_cancers": 0
+  }
+ },
+ "graph": {
+  "nodes": [
+   {
+    "id": "ct",
+    "label": "CT scan",
+    "short": "CT scan",
+    "kind": "step",
+    "stage": "detection",
+    "layer": 0,
+    "test": "baseline_ct"
+   },
+   {
+    "id": "visit",
+    "label": "First hospital visit",
+    "short": "First hospital visit",
+    "kind": "step",
+    "stage": "referral",
+    "layer": 1,
+    "test": "first_visit",
+    "resource": "waits"
+   },
+   {
+    "id": "sample_plan",
+    "label": "Tissue sampling planned?",
+    "short": "Tissue sampling planned?",
+    "kind": "decision",
+    "stage": "diagnosis",
+    "layer": 2,
+    "options": [
+     "bronch1",
+     "no_sampling"
+    ]
+   },
+   {
+    "id": "no_sampling",
+    "label": "No tissue sample",
+    "short": "No tissue sample",
+    "kind": "step",
+    "stage": "diagnosis",
+    "layer": 3,
+    "option_of": "sample_plan"
+   },
+   {
+    "id": "bronch1",
+    "label": "Bronchoscopy",
+    "short": "Bronchoscopy",
+    "kind": "step",
+    "stage": "diagnosis",
+    "layer": 3,
+    "test": "bronchoscopy",
+    "resource": "waits",
+    "option_of": "sample_plan"
+   },
+   {
+    "id": "after_bronch",
+    "label": "After an inconclusive bronchoscopy",
+    "short": "After an inconclusive bronchoscopy",
+    "kind": "decision",
+    "stage": "diagnosis",
+    "layer": 4,
+    "options": [
+     "ttnb",
+     "bronch2",
+     "no_more"
+    ],
+    "when": "not bronch1"
+   },
+   {
+    "id": "ttnb",
+    "label": "Needle biopsy",
+    "short": "Needle biopsy",
+    "kind": "step",
+    "stage": "diagnosis",
+    "layer": 5,
+    "test": "ttnb",
+    "resource": "waits",
+    "option_of": "after_bronch"
+   },
+   {
+    "id": "bronch2",
+    "label": "Repeat bronchoscopy",
+    "short": "Repeat bronchoscopy",
+    "kind": "step",
+    "stage": "diagnosis",
+    "layer": 5,
+    "test": "bronchoscopy_repeat",
+    "resource": "waits",
+    "option_of": "after_bronch"
+   },
+   {
+    "id": "no_more",
+    "label": "Proceed without tissue",
+    "short": "Proceed without tissue",
+    "kind": "step",
+    "stage": "diagnosis",
+    "layer": 5,
+    "option_of": "after_bronch"
+   },
+   {
+    "id": "ct_redo",
+    "label": "New CT (first one inadequate)",
+    "short": "New CT",
+    "kind": "step",
+    "stage": "diagnosis",
+    "layer": 2,
+    "test": "ct_redo",
+    "resource": "waits",
+    "when": "ct_inadequate == 'yes'"
+   },
+   {
+    "id": "pet_timing",
+    "label": "When PET-CT is ordered",
+    "short": "When PET-CT is ordered",
+    "kind": "decision",
+    "stage": "diagnosis",
+    "layer": 1,
+    "options": [
+     "pet_on_time",
+     "pet_late"
+    ]
+   },
+   {
+    "id": "pet_on_time",
+    "label": "PET-CT ordered at triage or at the first visit",
+    "short": "PET-CT ordered at triage or at the first visit",
+    "kind": "decision",
+    "stage": "diagnosis",
+    "layer": 2,
+    "options": [
+     "pet_triage",
+     "pet_early_route"
+    ],
+    "option_of": "pet_timing"
+   },
+   {
+    "id": "pet_triage",
+    "label": "PET-CT (ordered at referral triage)",
+    "short": "PET-CT",
+    "kind": "step",
+    "stage": "diagnosis",
+    "layer": 3,
+    "test": "pet_ct",
+    "resource": "waits",
+    "option_of": "pet_on_time"
+   },
+   {
+    "id": "pet_early_route",
+    "label": "PET-CT ordered at first visit",
+    "short": "PET-CT ordered at first visit",
+    "kind": "step",
+    "stage": "diagnosis",
+    "layer": 3,
+    "option_of": "pet_on_time"
+   },
+   {
+    "id": "pet_early",
+    "label": "PET-CT",
+    "short": "PET-CT",
+    "kind": "step",
+    "stage": "diagnosis",
+    "layer": 4,
+    "test": "pet_ct",
+    "resource": "waits"
+   },
+   {
+    "id": "pet_late",
+    "label": "PET-CT (ordered late)",
+    "short": "PET-CT",
+    "kind": "step",
+    "stage": "diagnosis",
+    "layer": 3,
+    "test": "pet_ct_late",
+    "resource": "waits",
+    "option_of": "pet_timing"
+   },
+   {
+    "id": "workup",
+    "label": "Further tests after PET-CT",
+    "short": "Further tests after PET-CT",
+    "kind": "step",
+    "stage": "diagnosis",
+    "layer": 5,
+    "test": "further_workup",
+    "resource": "waits",
+    "when": "further_workup_after_pet == 'yes'"
+   },
+   {
+    "id": "ex_timing",
+    "label": "When the exercise test is ordered",
+    "short": "When the exercise test is ordered",
+    "kind": "decision",
+    "stage": "diagnosis",
+    "layer": 2,
+    "options": [
+     "ex_early",
+     "ex_late"
+    ],
+    "when": "needs_exercise_test == 'yes'"
+   },
+   {
+    "id": "ex_early",
+    "label": "Exercise test",
+    "short": "Exercise test",
+    "kind": "step",
+    "stage": "diagnosis",
+    "layer": 3,
+    "test": "exercise_test",
+    "resource": "waits",
+    "option_of": "ex_timing"
+   },
+   {
+    "id": "ex_late",
+    "label": "Exercise test (ordered late)",
+    "short": "Exercise test",
+    "kind": "step",
+    "stage": "diagnosis",
+    "layer": 3,
+    "test": "exercise_test_late",
+    "resource": "waits",
+    "option_of": "ex_timing"
+   },
+   {
+    "id": "diagnosis",
+    "label": "Diagnostic workup complete",
+    "short": "Diagnostic workup complete",
+    "kind": "milestone",
+    "stage": "diagnosis",
+    "layer": 6
+   },
+   {
+    "id": "mdt",
+    "label": "Tumour board",
+    "short": "Tumour board",
+    "kind": "step",
+    "stage": "treatment_start",
+    "layer": 7,
+    "test": "tumour_board",
+    "resource": "tumour_board"
+   },
+   {
+    "id": "book_surgery",
+    "label": "Waiting for surgery",
+    "short": "Waiting for surgery",
+    "kind": "step",
+    "stage": "treatment_start",
+    "layer": 8,
+    "test": "surgery_booking",
+    "resource": "waits",
+    "when": "treatment == 'surgery'"
+   },
+   {
+    "id": "book_rt",
+    "label": "Waiting for radiotherapy",
+    "short": "Waiting for radiotherapy",
+    "kind": "step",
+    "stage": "treatment_start",
+    "layer": 8,
+    "test": "radiotherapy_booking",
+    "resource": "waits",
+    "when": "treatment == 'radiotherapy'"
+   },
+   {
+    "id": "treat",
+    "label": "Treatment starts",
+    "short": "Treatment starts",
+    "kind": "exit",
+    "stage": "treatment_start",
+    "layer": 9,
+    "test": "treatment",
+    "outcome": "treatment"
+   }
+  ],
+  "edges": [
+   {
+    "id": "ct>visit",
+    "source": "ct",
+    "target": "visit",
+    "kind": "then",
+    "n": 900
+   },
+   {
+    "id": "visit>sample_plan",
+    "source": "visit",
+    "target": "sample_plan",
+    "kind": "then",
+    "n": 900
+   },
+   {
+    "id": "sample_plan>no_sampling",
+    "source": "sample_plan",
+    "target": "no_sampling",
+    "kind": "option",
+    "n": 187
+   },
+   {
+    "id": "sample_plan>bronch1",
+    "source": "sample_plan",
+    "target": "bronch1",
+    "kind": "option",
+    "n": 713
+   },
+   {
+    "id": "bronch1>after_bronch",
+    "source": "bronch1",
+    "target": "after_bronch",
+    "kind": "then",
+    "n": 393
+   },
+   {
+    "id": "after_bronch>ttnb",
+    "source": "after_bronch",
+    "target": "ttnb",
+    "kind": "option",
+    "n": 116
+   },
+   {
+    "id": "after_bronch>bronch2",
+    "source": "after_bronch",
+    "target": "bronch2",
+    "kind": "option",
+    "n": 63
+   },
+   {
+    "id": "after_bronch>no_more",
+    "source": "after_bronch",
+    "target": "no_more",
+    "kind": "option",
+    "n": 214
+   },
+   {
+    "id": "visit>ct_redo",
+    "source": "visit",
+    "target": "ct_redo",
+    "kind": "then",
+    "n": 54
+   },
+   {
+    "id": "ct>pet_timing",
+    "source": "ct",
+    "target": "pet_timing",
+    "kind": "then",
+    "n": 900
+   },
+   {
+    "id": "pet_timing>pet_on_time",
+    "source": "pet_timing",
+    "target": "pet_on_time",
+    "kind": "option",
+    "n": 662
+   },
+   {
+    "id": "pet_on_time>pet_triage",
+    "source": "pet_on_time",
+    "target": "pet_triage",
+    "kind": "option",
+    "n": 662
+   },
+   {
+    "id": "visit>pet_early_route",
+    "source": "visit",
+    "target": "pet_early_route",
+    "kind": "then",
+    "n": 0
+   },
+   {
+    "id": "pet_on_time>pet_early_route",
+    "source": "pet_on_time",
+    "target": "pet_early_route",
+    "kind": "option",
+    "n": 0
+   },
+   {
+    "id": "pet_early_route>pet_early",
+    "source": "pet_early_route",
+    "target": "pet_early",
+    "kind": "then",
+    "n": 0
+   },
+   {
+    "id": "ct_redo>pet_early",
+    "source": "ct_redo",
+    "target": "pet_early",
+    "kind": "maybe",
+    "n": 0
+   },
+   {
+    "id": "visit>pet_late",
+    "source": "visit",
+    "target": "pet_late",
+    "kind": "then",
+    "shortcut": true,
+    "n": 229
+   },
+   {
+    "id": "ct_redo>pet_late",
+    "source": "ct_redo",
+    "target": "pet_late",
+    "kind": "maybe",
+    "n": 9
+   },
+   {
+    "id": "pet_timing>pet_late",
+    "source": "pet_timing",
+    "target": "pet_late",
+    "kind": "option",
+    "n": 238
+   },
+   {
+    "id": "pet_triage>workup",
+    "source": "pet_triage",
+    "target": "workup",
+    "kind": "maybe",
+    "n": 79
+   },
+   {
+    "id": "pet_early>workup",
+    "source": "pet_early",
+    "target": "workup",
+    "kind": "maybe",
+    "n": 0
+   },
+   {
+    "id": "pet_late>workup",
+    "source": "pet_late",
+    "target": "workup",
+    "kind": "maybe",
+    "n": 33
+   },
+   {
+    "id": "visit>ex_timing",
+    "source": "visit",
+    "target": "ex_timing",
+    "kind": "then",
+    "n": 207
+   },
+   {
+    "id": "ex_timing>ex_early",
+    "source": "ex_timing",
+    "target": "ex_early",
+    "kind": "option",
+    "n": 57
+   },
+   {
+    "id": "ex_timing>ex_late",
+    "source": "ex_timing",
+    "target": "ex_late",
+    "kind": "option",
+    "n": 150
+   },
+   {
+    "id": "no_sampling>diagnosis",
+    "source": "no_sampling",
+    "target": "diagnosis",
+    "kind": "maybe",
+    "n": 187
+   },
+   {
+    "id": "bronch1>diagnosis",
+    "source": "bronch1",
+    "target": "diagnosis",
+    "kind": "maybe",
+    "shortcut": true,
+    "n": 320
+   },
+   {
+    "id": "ttnb>diagnosis",
+    "source": "ttnb",
+    "target": "diagnosis",
+    "kind": "maybe",
+    "n": 116
+   },
+   {
+    "id": "bronch2>diagnosis",
+    "source": "bronch2",
+    "target": "diagnosis",
+    "kind": "maybe",
+    "n": 63
+   },
+   {
+    "id": "no_more>diagnosis",
+    "source": "no_more",
+    "target": "diagnosis",
+    "kind": "maybe",
+    "n": 214
+   },
+   {
+    "id": "pet_triage>diagnosis",
+    "source": "pet_triage",
+    "target": "diagnosis",
+    "kind": "maybe",
+    "shortcut": true,
+    "n": 583
+   },
+   {
+    "id": "pet_late>diagnosis",
+    "source": "pet_late",
+    "target": "diagnosis",
+    "kind": "maybe",
+    "shortcut": true,
+    "n": 205
+   },
+   {
+    "id": "workup>diagnosis",
+    "source": "workup",
+    "target": "diagnosis",
+    "kind": "maybe",
+    "n": 112
+   },
+   {
+    "id": "diagnosis>mdt",
+    "source": "diagnosis",
+    "target": "mdt",
+    "kind": "then",
+    "n": 900
+   },
+   {
+    "id": "ex_early>mdt",
+    "source": "ex_early",
+    "target": "mdt",
+    "kind": "maybe",
+    "n": 57
+   },
+   {
+    "id": "ex_late>mdt",
+    "source": "ex_late",
+    "target": "mdt",
+    "kind": "maybe",
+    "n": 150
+   },
+   {
+    "id": "mdt>book_surgery",
+    "source": "mdt",
+    "target": "book_surgery",
+    "kind": "then",
+    "n": 680
+   },
+   {
+    "id": "mdt>book_rt",
+    "source": "mdt",
+    "target": "book_rt",
+    "kind": "then",
+    "n": 220
+   },
+   {
+    "id": "book_surgery>treat",
+    "source": "book_surgery",
+    "target": "treat",
+    "kind": "maybe",
+    "n": 680
+   },
+   {
+    "id": "book_rt>treat",
+    "source": "book_rt",
+    "target": "treat",
+    "kind": "maybe",
+    "n": 220
+   }
+  ],
+  "stages": [
+   "detection",
+   "referral",
+   "diagnosis",
+   "treatment_start"
+  ]
+ },
+ "steps": {
+  "ct": {
+   "n": 900,
+   "n_cancer": 900,
+   "events": 900,
+   "wait_mean": 0.0,
+   "wait_median": 0.0,
+   "wait_p90": 0.0,
+   "service_mean": 0.0,
+   "service_median": 0.0,
+   "wait_days": 0.0,
+   "positive": 900,
+   "negative": 0,
+   "nondiagnostic": 0,
+   "critical_n": 900,
+   "critical_wait": 0.0,
+   "critical_service": 0.0,
+   "critical_share": 0.0,
+   "critical_wait_share": 0.0
+  },
+  "visit": {
+   "n": 900,
+   "n_cancer": 900,
+   "events": 900,
+   "wait_mean": 12.338,
+   "wait_median": 10.31,
+   "wait_p90": 23.376,
+   "service_mean": 0.1,
+   "service_median": 0.1,
+   "wait_days": 11104.0,
+   "positive": 900,
+   "negative": 0,
+   "nondiagnostic": 0,
+   "critical_n": 579,
+   "critical_wait": 9.11,
+   "critical_service": 0.06,
+   "critical_share": 0.189,
+   "critical_wait_share": 0.1878
+  },
+  "no_sampling": {
+   "n": 187,
+   "n_cancer": 187
+  },
+  "bronch1": {
+   "n": 713,
+   "n_cancer": 713,
+   "events": 713,
+   "wait_mean": 3.45,
+   "wait_median": 2.959,
+   "wait_p90": 5.974,
+   "service_mean": 5.137,
+   "service_median": 4.573,
+   "wait_days": 2460.0,
+   "positive": 320,
+   "negative": 0,
+   "nondiagnostic": 393,
+   "critical_n": 240,
+   "critical_wait": 1.0,
+   "critical_service": 1.48,
+   "critical_share": 0.0511,
+   "critical_wait_share": 0.0206
+  },
+  "ttnb": {
+   "n": 116,
+   "n_cancer": 116,
+   "events": 116,
+   "wait_mean": 8.962,
+   "wait_median": 8.487,
+   "wait_p90": 12.968,
+   "service_mean": 5.392,
+   "service_median": 4.627,
+   "wait_days": 1039.6,
+   "positive": 107,
+   "negative": 0,
+   "nondiagnostic": 9,
+   "critical_n": 82,
+   "critical_wait": 0.84,
+   "critical_service": 0.5,
+   "critical_share": 0.0276,
+   "critical_wait_share": 0.0173
+  },
+  "bronch2": {
+   "n": 63,
+   "n_cancer": 63,
+   "events": 63,
+   "wait_mean": 8.578,
+   "wait_median": 7.75,
+   "wait_p90": 12.789,
+   "service_mean": 5.536,
+   "service_median": 4.468,
+   "wait_days": 540.4,
+   "positive": 19,
+   "negative": 0,
+   "nondiagnostic": 44,
+   "critical_n": 39,
+   "critical_wait": 0.38,
+   "critical_service": 0.27,
+   "critical_share": 0.0134,
+   "critical_wait_share": 0.0078
+  },
+  "no_more": {
+   "n": 214,
+   "n_cancer": 214
+  },
+  "ct_redo": {
+   "n": 54,
+   "n_cancer": 54,
+   "events": 54,
+   "wait_mean": 19.905,
+   "wait_median": 16.394,
+   "wait_p90": 41.092,
+   "service_mean": 0.1,
+   "service_median": 0.1,
+   "wait_days": 1074.9,
+   "positive": 45,
+   "negative": 0,
+   "nondiagnostic": 9,
+   "critical_n": 8,
+   "critical_wait": 0.18,
+   "critical_service": 0.0,
+   "critical_share": 0.0037,
+   "critical_wait_share": 0.0037
+  },
+  "pet_triage": {
+   "n": 662,
+   "n_cancer": 662,
+   "events": 662,
+   "wait_mean": 19.734,
+   "wait_median": 18.043,
+   "wait_p90": 30.581,
+   "service_mean": 2.778,
+   "service_median": 2.625,
+   "wait_days": 13063.8,
+   "positive": 662,
+   "negative": 0,
+   "nondiagnostic": 0,
+   "critical_n": 321,
+   "critical_wait": 8.44,
+   "critical_service": 1.0,
+   "critical_share": 0.1946,
+   "critical_wait_share": 0.1739
+  },
+  "pet_early_route": {
+   "n": 0,
+   "n_cancer": 0
+  },
+  "pet_early": {
+   "n": 0,
+   "n_cancer": 0
+  },
+  "pet_late": {
+   "n": 238,
+   "n_cancer": 238,
+   "events": 238,
+   "wait_mean": 31.963,
+   "wait_median": 26.576,
+   "wait_p90": 54.13,
+   "service_mean": 2.778,
+   "service_median": 2.638,
+   "wait_days": 7607.1,
+   "positive": 238,
+   "negative": 0,
+   "nondiagnostic": 0,
+   "critical_n": 211,
+   "critical_wait": 7.87,
+   "critical_service": 0.66,
+   "critical_share": 0.1758,
+   "critical_wait_share": 0.1622
+  },
+  "workup": {
+   "n": 112,
+   "n_cancer": 112,
+   "events": 112,
+   "wait_mean": 8.423,
+   "wait_median": 7.237,
+   "wait_p90": 15.301,
+   "service_mean": 5.229,
+   "service_median": 4.457,
+   "wait_days": 943.3,
+   "positive": 112,
+   "negative": 0,
+   "nondiagnostic": 0,
+   "critical_n": 91,
+   "critical_wait": 0.92,
+   "critical_service": 0.53,
+   "critical_share": 0.0299,
+   "critical_wait_share": 0.019
+  },
+  "ex_early": {
+   "n": 57,
+   "n_cancer": 57,
+   "events": 57,
+   "wait_mean": 11.041,
+   "wait_median": 9.601,
+   "wait_p90": 16.825,
+   "service_mean": 1.1,
+   "service_median": 1.1,
+   "wait_days": 629.3,
+   "positive": 57,
+   "negative": 0,
+   "nondiagnostic": 0,
+   "critical_n": 19,
+   "critical_wait": 0.26,
+   "critical_service": 0.02,
+   "critical_share": 0.0058,
+   "critical_wait_share": 0.0054
+  },
+  "ex_late": {
+   "n": 150,
+   "n_cancer": 150,
+   "events": 150,
+   "wait_mean": 24.766,
+   "wait_median": 23.222,
+   "wait_p90": 39.027,
+   "service_mean": 1.1,
+   "service_median": 1.1,
+   "wait_days": 3714.9,
+   "positive": 150,
+   "negative": 0,
+   "nondiagnostic": 0,
+   "critical_n": 100,
+   "critical_wait": 3.02,
+   "critical_service": 0.12,
+   "critical_share": 0.0647,
+   "critical_wait_share": 0.0622
+  },
+  "diagnosis": {
+   "n": 900,
+   "n_cancer": 900
+  },
+  "mdt": {
+   "n": 900,
+   "n_cancer": 900,
+   "events": 900,
+   "wait_mean": 3.502,
+   "wait_median": 3.39,
+   "wait_p90": 6.377,
+   "service_mean": 0.5,
+   "service_median": 0.5,
+   "wait_days": 3152.0,
+   "positive": 900,
+   "negative": 0,
+   "nondiagnostic": 0,
+   "critical_n": 900,
+   "critical_wait": 3.5,
+   "critical_service": 0.5,
+   "critical_share": 0.0824,
+   "critical_wait_share": 0.0721
+  },
+  "book_surgery": {
+   "n": 680,
+   "n_cancer": 680,
+   "events": 680,
+   "wait_mean": 6.745,
+   "wait_median": 5.921,
+   "wait_p90": 11.235,
+   "service_mean": 0.0,
+   "service_median": 0.0,
+   "wait_days": 4586.5,
+   "positive": 680,
+   "negative": 0,
+   "nondiagnostic": 0,
+   "critical_n": 680,
+   "critical_wait": 5.1,
+   "critical_service": 0.0,
+   "critical_share": 0.1051,
+   "critical_wait_share": 0.1051
+  },
+  "book_rt": {
+   "n": 220,
+   "n_cancer": 220,
+   "events": 220,
+   "wait_mean": 11.31,
+   "wait_median": 11.002,
+   "wait_p90": 16.397,
+   "service_mean": 0.0,
+   "service_median": 0.0,
+   "wait_days": 2488.3,
+   "positive": 220,
+   "negative": 0,
+   "nondiagnostic": 0,
+   "critical_n": 220,
+   "critical_wait": 2.76,
+   "critical_service": 0.0,
+   "critical_share": 0.0569,
+   "critical_wait_share": 0.0569
+  },
+  "treat": {
+   "n": 900,
+   "n_cancer": 900,
+   "events": 900,
+   "wait_mean": 0.0,
+   "wait_median": 0.0,
+   "wait_p90": 0.0,
+   "service_mean": 0.0,
+   "service_median": 0.0,
+   "wait_days": 0.0,
+   "positive": 0,
+   "negative": 0,
+   "nondiagnostic": 900,
+   "critical_n": 900,
+   "critical_wait": 0.0,
+   "critical_service": 0.0,
+   "critical_share": 0.0,
+   "critical_wait_share": 0.0
+  }
+ },
+ "resources": {
+  "waits": {
+   "label": "Waits",
+   "type": "delay"
+  },
+  "tumour_board": {
+   "label": "Tumour board",
+   "type": "batch"
+  }
+ },
+ "queues": {
+  "ct": {
+   "x": [
+    0.0,
+    9.1,
+    18.2,
+    27.3,
+    36.4,
+    45.5,
+    54.6,
+    63.7,
+    72.8,
+    81.9,
+    91.0,
+    100.2,
+    109.3,
+    118.4,
+    127.5,
+    136.6,
+    145.7,
+    154.8,
+    163.9,
+    173.0,
+    182.1,
+    191.2,
+    200.3,
+    209.4,
+    218.5,
+    227.6,
+    236.7,
+    245.8,
+    254.9,
+    264.0,
+    273.1,
+    282.2,
+    291.3,
+    300.5,
+    309.6,
+    318.7,
+    327.8,
+    336.9,
+    346.0,
+    355.1,
+    364.2,
+    373.3,
+    382.4,
+    391.5,
+    400.6,
+    409.7,
+    418.8,
+    427.9,
+    437.0,
+    446.1,
+    455.2,
+    464.3,
+    473.4,
+    482.5,
+    491.6,
+    500.8,
+    509.9,
+    519.0,
+    528.1,
+    537.2,
+    546.3,
+    555.4,
+    564.5,
+    573.6,
+    582.7,
+    591.8,
+    600.9,
+    610.0,
+    619.1,
+    628.2,
+    637.3,
+    646.4,
+    655.5,
+    664.6,
+    673.7,
+    682.8,
+    691.9,
+    701.1,
+    710.2,
+    719.3,
+    728.4,
+    737.5,
+    746.6,
+    755.7,
+    764.8,
+    773.9,
+    783.0,
+    792.1,
+    801.2,
+    810.3,
+    819.4,
+    828.5,
+    837.6,
+    846.7,
+    855.8,
+    864.9,
+    874.0,
+    883.1,
+    892.2,
+    901.4,
+    910.5,
+    919.6,
+    928.7,
+    937.8,
+    946.9,
+    956.0,
+    965.1,
+    974.2,
+    983.3,
+    992.4,
+    1001.5,
+    1010.6,
+    1019.7,
+    1028.8,
+    1037.9,
+    1047.0,
+    1056.1,
+    1065.2,
+    1074.3,
+    1083.4
+   ],
+   "y": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+   ],
+   "peak": 0.0,
+   "mean": 0.0
+  },
+  "visit": {
+   "x": [
+    0.0,
+    9.1,
+    18.2,
+    27.3,
+    36.4,
+    45.5,
+    54.6,
+    63.7,
+    72.8,
+    81.9,
+    91.0,
+    100.2,
+    109.3,
+    118.4,
+    127.5,
+    136.6,
+    145.7,
+    154.8,
+    163.9,
+    173.0,
+    182.1,
+    191.2,
+    200.3,
+    209.4,
+    218.5,
+    227.6,
+    236.7,
+    245.8,
+    254.9,
+    264.0,
+    273.1,
+    282.2,
+    291.3,
+    300.5,
+    309.6,
+    318.7,
+    327.8,
+    336.9,
+    346.0,
+    355.1,
+    364.2,
+    373.3,
+    382.4,
+    391.5,
+    400.6,
+    409.7,
+    418.8,
+    427.9,
+    437.0,
+    446.1,
+    455.2,
+    464.3,
+    473.4,
+    482.5,
+    491.6,
+    500.8,
+    509.9,
+    519.0,
+    528.1,
+    537.2,
+    546.3,
+    555.4,
+    564.5,
+    573.6,
+    582.7,
+    591.8,
+    600.9,
+    610.0,
+    619.1,
+    628.2,
+    637.3,
+    646.4,
+    655.5,
+    664.6,
+    673.7,
+    682.8,
+    691.9,
+    701.1,
+    710.2,
+    719.3,
+    728.4,
+    737.5,
+    746.6,
+    755.7,
+    764.8,
+    773.9,
+    783.0,
+    792.1,
+    801.2,
+    810.3,
+    819.4,
+    828.5,
+    837.6,
+    846.7,
+    855.8,
+    864.9,
+    874.0,
+    883.1,
+    892.2,
+    901.4,
+    910.5,
+    919.6,
+    928.7,
+    937.8,
+    946.9,
+    956.0,
+    965.1,
+    974.2,
+    983.3,
+    992.4,
+    1001.5,
+    1010.6,
+    1019.7,
+    1028.8,
+    1037.9,
+    1047.0,
+    1056.1,
+    1065.2,
+    1074.3,
+    1083.4
+   ],
+   "y": [
+    0.0,
+    1.67,
+    3.33,
+    3.0,
+    4.0,
+    1.67,
+    2.67,
+    3.67,
+    3.33,
+    3.67,
+    4.33,
+    2.33,
+    2.67,
+    3.0,
+    2.0,
+    2.33,
+    3.33,
+    3.33,
+    1.67,
+    3.0,
+    2.67,
+    2.0,
+    2.67,
+    3.67,
+    2.33,
+    4.67,
+    3.67,
+    4.67,
+    3.67,
+    4.33,
+    2.67,
+    2.0,
+    2.33,
+    2.67,
+    2.33,
+    3.33,
+    5.0,
+    5.0,
+    2.33,
+    4.0,
+    4.33,
+    2.67,
+    2.0,
+    4.0,
+    4.67,
+    4.33,
+    5.33,
+    4.67,
+    3.0,
+    3.33,
+    4.67,
+    4.0,
+    3.0,
+    3.0,
+    3.0,
+    3.33,
+    3.67,
+    4.33,
+    3.33,
+    4.0,
+    2.0,
+    2.33,
+    2.0,
+    3.33,
+    2.67,
+    2.33,
+    2.67,
+    2.33,
+    2.67,
+    3.33,
+    3.67,
+    2.67,
+    3.0,
+    3.0,
+    4.67,
+    2.67,
+    3.0,
+    2.33,
+    4.33,
+    3.67,
+    4.33,
+    3.67,
+    2.33,
+    3.67,
+    4.33,
+    5.0,
+    4.67,
+    2.67,
+    3.0,
+    2.67,
+    3.0,
+    5.0,
+    4.0,
+    3.0,
+    5.67,
+    2.67,
+    3.67,
+    3.33,
+    3.67,
+    3.67,
+    4.33,
+    4.0,
+    3.67,
+    3.0,
+    1.67,
+    3.0,
+    2.0,
+    1.67,
+    3.0,
+    4.67,
+    4.33,
+    4.0,
+    3.33,
+    3.67,
+    3.33,
+    3.0,
+    4.33,
+    3.67,
+    4.33,
+    7.67
+   ],
+   "peak": 7.7,
+   "mean": 3.34
+  },
+  "bronch1": {
+   "x": [
+    0.0,
+    9.1,
+    18.2,
+    27.3,
+    36.4,
+    45.5,
+    54.6,
+    63.7,
+    72.8,
+    81.9,
+    91.0,
+    100.2,
+    109.3,
+    118.4,
+    127.5,
+    136.6,
+    145.7,
+    154.8,
+    163.9,
+    173.0,
+    182.1,
+    191.2,
+    200.3,
+    209.4,
+    218.5,
+    227.6,
+    236.7,
+    245.8,
+    254.9,
+    264.0,
+    273.1,
+    282.2,
+    291.3,
+    300.5,
+    309.6,
+    318.7,
+    327.8,
+    336.9,
+    346.0,
+    355.1,
+    364.2,
+    373.3,
+    382.4,
+    391.5,
+    400.6,
+    409.7,
+    418.8,
+    427.9,
+    437.0,
+    446.1,
+    455.2,
+    464.3,
+    473.4,
+    482.5,
+    491.6,
+    500.8,
+    509.9,
+    519.0,
+    528.1,
+    537.2,
+    546.3,
+    555.4,
+    564.5,
+    573.6,
+    582.7,
+    591.8,
+    600.9,
+    610.0,
+    619.1,
+    628.2,
+    637.3,
+    646.4,
+    655.5,
+    664.6,
+    673.7,
+    682.8,
+    691.9,
+    701.1,
+    710.2,
+    719.3,
+    728.4,
+    737.5,
+    746.6,
+    755.7,
+    764.8,
+    773.9,
+    783.0,
+    792.1,
+    801.2,
+    810.3,
+    819.4,
+    828.5,
+    837.6,
+    846.7,
+    855.8,
+    864.9,
+    874.0,
+    883.1,
+    892.2,
+    901.4,
+    910.5,
+    919.6,
+    928.7,
+    937.8,
+    946.9,
+    956.0,
+    965.1,
+    974.2,
+    983.3,
+    992.4,
+    1001.5,
+    1010.6,
+    1019.7,
+    1028.8,
+    1037.9,
+    1047.0,
+    1056.1,
+    1065.2,
+    1074.3,
+    1083.4
+   ],
+   "y": [
+    0.0,
+    0.0,
+    0.33,
+    0.33,
+    0.33,
+    2.0,
+    0.0,
+    1.33,
+    1.0,
+    0.67,
+    0.67,
+    0.33,
+    0.33,
+    0.67,
+    1.67,
+    1.33,
+    0.33,
+    2.67,
+    0.33,
+    1.0,
+    0.0,
+    0.33,
+    0.67,
+    1.67,
+    0.33,
+    0.0,
+    1.0,
+    0.33,
+    0.33,
+    0.67,
+    1.33,
+    1.0,
+    1.0,
+    0.33,
+    0.33,
+    0.33,
+    0.67,
+    0.67,
+    1.67,
+    0.67,
+    1.67,
+    2.0,
+    0.67,
+    0.67,
+    1.0,
+    0.33,
+    1.0,
+    1.67,
+    0.33,
+    0.33,
+    0.67,
+    0.33,
+    1.0,
+    0.67,
+    0.67,
+    0.33,
+    0.33,
+    0.33,
+    0.33,
+    0.33,
+    1.33,
+    0.67,
+    1.0,
+    0.33,
+    1.33,
+    0.67,
+    0.0,
+    1.0,
+    0.33,
+    0.67,
+    1.0,
+    0.67,
+    0.0,
+    0.67,
+    0.67,
+    1.0,
+    1.0,
+    1.0,
+    0.67,
+    0.67,
+    0.67,
+    0.33,
+    0.67,
+    0.67,
+    0.67,
+    0.33,
+    1.67,
+    0.33,
+    0.33,
+    0.67,
+    0.67,
+    0.33,
+    0.67,
+    0.33,
+    0.67,
+    1.0,
+    0.0,
+    0.67,
+    0.33,
+    1.0,
+    1.33,
+    1.33,
+    1.0,
+    0.33,
+    1.67,
+    0.33,
+    1.0,
+    0.67,
+    0.67,
+    0.67,
+    1.0,
+    0.67,
+    0.67,
+    0.33,
+    1.33,
+    0.67,
+    0.67,
+    0.67,
+    0.67,
+    0.33
+   ],
+   "peak": 2.7,
+   "mean": 0.72
+  },
+  "ttnb": {
+   "x": [
+    0.0,
+    9.1,
+    18.2,
+    27.3,
+    36.4,
+    45.5,
+    54.6,
+    63.7,
+    72.8,
+    81.9,
+    91.0,
+    100.2,
+    109.3,
+    118.4,
+    127.5,
+    136.6,
+    145.7,
+    154.8,
+    163.9,
+    173.0,
+    182.1,
+    191.2,
+    200.3,
+    209.4,
+    218.5,
+    227.6,
+    236.7,
+    245.8,
+    254.9,
+    264.0,
+    273.1,
+    282.2,
+    291.3,
+    300.5,
+    309.6,
+    318.7,
+    327.8,
+    336.9,
+    346.0,
+    355.1,
+    364.2,
+    373.3,
+    382.4,
+    391.5,
+    400.6,
+    409.7,
+    418.8,
+    427.9,
+    437.0,
+    446.1,
+    455.2,
+    464.3,
+    473.4,
+    482.5,
+    491.6,
+    500.8,
+    509.9,
+    519.0,
+    528.1,
+    537.2,
+    546.3,
+    555.4,
+    564.5,
+    573.6,
+    582.7,
+    591.8,
+    600.9,
+    610.0,
+    619.1,
+    628.2,
+    637.3,
+    646.4,
+    655.5,
+    664.6,
+    673.7,
+    682.8,
+    691.9,
+    701.1,
+    710.2,
+    719.3,
+    728.4,
+    737.5,
+    746.6,
+    755.7,
+    764.8,
+    773.9,
+    783.0,
+    792.1,
+    801.2,
+    810.3,
+    819.4,
+    828.5,
+    837.6,
+    846.7,
+    855.8,
+    864.9,
+    874.0,
+    883.1,
+    892.2,
+    901.4,
+    910.5,
+    919.6,
+    928.7,
+    937.8,
+    946.9,
+    956.0,
+    965.1,
+    974.2,
+    983.3,
+    992.4,
+    1001.5,
+    1010.6,
+    1019.7,
+    1028.8,
+    1037.9,
+    1047.0,
+    1056.1,
+    1065.2,
+    1074.3,
+    1083.4
+   ],
+   "y": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.67,
+    1.0,
+    1.33,
+    0.33,
+    0.0,
+    0.67,
+    0.67,
+    0.33,
+    0.0,
+    0.0,
+    0.0,
+    0.33,
+    0.67,
+    0.33,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.33,
+    0.0,
+    0.0,
+    0.33,
+    0.0,
+    0.33,
+    0.33,
+    0.0,
+    0.33,
+    0.0,
+    0.67,
+    0.0,
+    0.33,
+    0.67,
+    0.67,
+    0.67,
+    0.0,
+    1.0,
+    0.0,
+    0.33,
+    0.67,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.67,
+    0.67,
+    0.33,
+    0.33,
+    0.67,
+    0.33,
+    0.67,
+    0.33,
+    0.33,
+    0.33,
+    0.67,
+    0.0,
+    0.33,
+    0.0,
+    0.33,
+    0.0,
+    0.33,
+    0.0,
+    0.33,
+    0.33,
+    0.33,
+    0.0,
+    0.0,
+    0.33,
+    0.0,
+    0.33,
+    0.0,
+    0.0,
+    0.0,
+    0.67,
+    0.0,
+    0.33,
+    0.0,
+    0.33,
+    0.0,
+    0.33,
+    0.67,
+    0.0,
+    0.0,
+    0.0,
+    1.0,
+    0.33,
+    0.33,
+    0.33,
+    0.0,
+    0.0,
+    0.33,
+    0.33,
+    0.33,
+    0.33,
+    1.33,
+    0.33,
+    0.33,
+    0.33,
+    0.33,
+    0.33,
+    0.0,
+    0.67,
+    0.33,
+    0.0,
+    0.67,
+    0.33,
+    0.0,
+    0.0,
+    0.67,
+    1.0,
+    0.33,
+    0.33,
+    0.67,
+    0.67,
+    0.0,
+    0.67,
+    0.33
+   ],
+   "peak": 1.3,
+   "mean": 0.3
+  },
+  "bronch2": {
+   "x": [
+    0.0,
+    9.1,
+    18.2,
+    27.3,
+    36.4,
+    45.5,
+    54.6,
+    63.7,
+    72.8,
+    81.9,
+    91.0,
+    100.2,
+    109.3,
+    118.4,
+    127.5,
+    136.6,
+    145.7,
+    154.8,
+    163.9,
+    173.0,
+    182.1,
+    191.2,
+    200.3,
+    209.4,
+    218.5,
+    227.6,
+    236.7,
+    245.8,
+    254.9,
+    264.0,
+    273.1,
+    282.2,
+    291.3,
+    300.5,
+    309.6,
+    318.7,
+    327.8,
+    336.9,
+    346.0,
+    355.1,
+    364.2,
+    373.3,
+    382.4,
+    391.5,
+    400.6,
+    409.7,
+    418.8,
+    427.9,
+    437.0,
+    446.1,
+    455.2,
+    464.3,
+    473.4,
+    482.5,
+    491.6,
+    500.8,
+    509.9,
+    519.0,
+    528.1,
+    537.2,
+    546.3,
+    555.4,
+    564.5,
+    573.6,
+    582.7,
+    591.8,
+    600.9,
+    610.0,
+    619.1,
+    628.2,
+    637.3,
+    646.4,
+    655.5,
+    664.6,
+    673.7,
+    682.8,
+    691.9,
+    701.1,
+    710.2,
+    719.3,
+    728.4,
+    737.5,
+    746.6,
+    755.7,
+    764.8,
+    773.9,
+    783.0,
+    792.1,
+    801.2,
+    810.3,
+    819.4,
+    828.5,
+    837.6,
+    846.7,
+    855.8,
+    864.9,
+    874.0,
+    883.1,
+    892.2,
+    901.4,
+    910.5,
+    919.6,
+    928.7,
+    937.8,
+    946.9,
+    956.0,
+    965.1,
+    974.2,
+    983.3,
+    992.4,
+    1001.5,
+    1010.6,
+    1019.7,
+    1028.8,
+    1037.9,
+    1047.0,
+    1056.1,
+    1065.2,
+    1074.3,
+    1083.4
+   ],
+   "y": [
+    0.0,
+    0.0,
+    0.0,
+    0.33,
+    0.33,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    1.0,
+    0.0,
+    0.0,
+    0.67,
+    1.0,
+    0.33,
+    0.0,
+    0.0,
+    0.67,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.67,
+    0.0,
+    0.0,
+    0.0,
+    0.67,
+    0.33,
+    0.0,
+    0.33,
+    0.0,
+    0.67,
+    0.33,
+    0.0,
+    0.0,
+    0.67,
+    0.33,
+    0.0,
+    0.33,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.33,
+    0.0,
+    0.33,
+    0.0,
+    0.0,
+    0.0,
+    0.67,
+    0.33,
+    0.67,
+    0.33,
+    0.0,
+    0.33,
+    0.0,
+    0.33,
+    0.0,
+    0.33,
+    0.33,
+    0.0,
+    0.33,
+    0.0,
+    0.0,
+    0.33,
+    0.0,
+    0.0,
+    0.67,
+    0.33,
+    0.33,
+    0.33,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.33,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.33,
+    1.0,
+    0.33,
+    0.0,
+    0.0,
+    0.0,
+    0.67,
+    0.0,
+    0.33,
+    0.33,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.33,
+    0.0,
+    0.33,
+    0.33,
+    0.0,
+    0.0,
+    0.33,
+    0.0,
+    0.0,
+    0.33,
+    0.0,
+    0.33,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+   ],
+   "peak": 1.0,
+   "mean": 0.17
+  },
+  "ct_redo": {
+   "x": [
+    0.0,
+    9.1,
+    18.2,
+    27.3,
+    36.4,
+    45.5,
+    54.6,
+    63.7,
+    72.8,
+    81.9,
+    91.0,
+    100.2,
+    109.3,
+    118.4,
+    127.5,
+    136.6,
+    145.7,
+    154.8,
+    163.9,
+    173.0,
+    182.1,
+    191.2,
+    200.3,
+    209.4,
+    218.5,
+    227.6,
+    236.7,
+    245.8,
+    254.9,
+    264.0,
+    273.1,
+    282.2,
+    291.3,
+    300.5,
+    309.6,
+    318.7,
+    327.8,
+    336.9,
+    346.0,
+    355.1,
+    364.2,
+    373.3,
+    382.4,
+    391.5,
+    400.6,
+    409.7,
+    418.8,
+    427.9,
+    437.0,
+    446.1,
+    455.2,
+    464.3,
+    473.4,
+    482.5,
+    491.6,
+    500.8,
+    509.9,
+    519.0,
+    528.1,
+    537.2,
+    546.3,
+    555.4,
+    564.5,
+    573.6,
+    582.7,
+    591.8,
+    600.9,
+    610.0,
+    619.1,
+    628.2,
+    637.3,
+    646.4,
+    655.5,
+    664.6,
+    673.7,
+    682.8,
+    691.9,
+    701.1,
+    710.2,
+    719.3,
+    728.4,
+    737.5,
+    746.6,
+    755.7,
+    764.8,
+    773.9,
+    783.0,
+    792.1,
+    801.2,
+    810.3,
+    819.4,
+    828.5,
+    837.6,
+    846.7,
+    855.8,
+    864.9,
+    874.0,
+    883.1,
+    892.2,
+    901.4,
+    910.5,
+    919.6,
+    928.7,
+    937.8,
+    946.9,
+    956.0,
+    965.1,
+    974.2,
+    983.3,
+    992.4,
+    1001.5,
+    1010.6,
+    1019.7,
+    1028.8,
+    1037.9,
+    1047.0,
+    1056.1,
+    1065.2,
+    1074.3,
+    1083.4
+   ],
+   "y": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.67,
+    0.33,
+    0.33,
+    0.33,
+    0.33,
+    0.0,
+    0.33,
+    0.33,
+    0.0,
+    0.0,
+    0.67,
+    0.33,
+    0.67,
+    0.67,
+    0.0,
+    0.33,
+    0.0,
+    0.33,
+    0.33,
+    0.0,
+    0.0,
+    0.33,
+    0.33,
+    0.0,
+    0.33,
+    0.67,
+    0.33,
+    0.0,
+    0.0,
+    0.33,
+    0.33,
+    0.0,
+    0.33,
+    0.67,
+    0.33,
+    0.67,
+    1.0,
+    1.0,
+    0.67,
+    0.67,
+    0.67,
+    0.67,
+    0.33,
+    0.0,
+    0.33,
+    0.33,
+    1.33,
+    0.33,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.67,
+    0.67,
+    0.33,
+    0.67,
+    0.67,
+    0.33,
+    0.33,
+    0.33,
+    0.33,
+    0.33,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.33,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.33,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.67,
+    0.67,
+    0.67,
+    1.0,
+    0.67,
+    0.33,
+    0.33,
+    0.33,
+    0.67,
+    0.33,
+    0.33,
+    0.33,
+    0.33,
+    0.33,
+    0.0,
+    0.0,
+    0.33,
+    0.67,
+    0.33,
+    0.33,
+    0.0,
+    0.0,
+    0.33,
+    0.33,
+    0.0,
+    0.0,
+    0.0,
+    0.67,
+    0.33,
+    0.67,
+    1.0
+   ],
+   "peak": 1.3,
+   "mean": 0.29
+  },
+  "pet_triage": {
+   "x": [
+    0.0,
+    9.1,
+    18.2,
+    27.3,
+    36.4,
+    45.5,
+    54.6,
+    63.7,
+    72.8,
+    81.9,
+    91.0,
+    100.2,
+    109.3,
+    118.4,
+    127.5,
+    136.6,
+    145.7,
+    154.8,
+    163.9,
+    173.0,
+    182.1,
+    191.2,
+    200.3,
+    209.4,
+    218.5,
+    227.6,
+    236.7,
+    245.8,
+    254.9,
+    264.0,
+    273.1,
+    282.2,
+    291.3,
+    300.5,
+    309.6,
+    318.7,
+    327.8,
+    336.9,
+    346.0,
+    355.1,
+    364.2,
+    373.3,
+    382.4,
+    391.5,
+    400.6,
+    409.7,
+    418.8,
+    427.9,
+    437.0,
+    446.1,
+    455.2,
+    464.3,
+    473.4,
+    482.5,
+    491.6,
+    500.8,
+    509.9,
+    519.0,
+    528.1,
+    537.2,
+    546.3,
+    555.4,
+    564.5,
+    573.6,
+    582.7,
+    591.8,
+    600.9,
+    610.0,
+    619.1,
+    628.2,
+    637.3,
+    646.4,
+    655.5,
+    664.6,
+    673.7,
+    682.8,
+    691.9,
+    701.1,
+    710.2,
+    719.3,
+    728.4,
+    737.5,
+    746.6,
+    755.7,
+    764.8,
+    773.9,
+    783.0,
+    792.1,
+    801.2,
+    810.3,
+    819.4,
+    828.5,
+    837.6,
+    846.7,
+    855.8,
+    864.9,
+    874.0,
+    883.1,
+    892.2,
+    901.4,
+    910.5,
+    919.6,
+    928.7,
+    937.8,
+    946.9,
+    956.0,
+    965.1,
+    974.2,
+    983.3,
+    992.4,
+    1001.5,
+    1010.6,
+    1019.7,
+    1028.8,
+    1037.9,
+    1047.0,
+    1056.1,
+    1065.2,
+    1074.3,
+    1083.4
+   ],
+   "y": [
+    0.0,
+    1.33,
+    4.0,
+    3.0,
+    3.33,
+    2.67,
+    2.67,
+    3.67,
+    3.67,
+    4.33,
+    4.0,
+    3.33,
+    2.0,
+    2.67,
+    4.0,
+    5.0,
+    3.33,
+    4.33,
+    3.0,
+    3.0,
+    3.0,
+    2.67,
+    2.33,
+    3.33,
+    2.67,
+    4.33,
+    4.67,
+    3.0,
+    3.67,
+    5.33,
+    5.67,
+    3.0,
+    2.67,
+    3.33,
+    3.33,
+    4.33,
+    4.67,
+    5.0,
+    4.33,
+    4.33,
+    5.0,
+    3.33,
+    2.67,
+    4.67,
+    6.33,
+    5.0,
+    6.0,
+    6.0,
+    4.33,
+    3.0,
+    4.33,
+    4.67,
+    5.0,
+    4.33,
+    2.67,
+    3.33,
+    2.67,
+    5.0,
+    4.33,
+    2.67,
+    2.33,
+    3.0,
+    3.33,
+    3.33,
+    3.0,
+    3.0,
+    4.67,
+    5.0,
+    5.0,
+    4.0,
+    2.67,
+    3.0,
+    2.67,
+    3.67,
+    6.0,
+    4.67,
+    3.67,
+    4.33,
+    4.67,
+    4.0,
+    4.0,
+    3.33,
+    3.0,
+    4.0,
+    5.33,
+    5.0,
+    4.33,
+    3.67,
+    3.33,
+    3.67,
+    3.0,
+    4.67,
+    5.67,
+    5.67,
+    6.33,
+    4.67,
+    3.0,
+    3.33,
+    3.33,
+    4.67,
+    5.33,
+    5.33,
+    4.33,
+    2.67,
+    1.67,
+    2.67,
+    2.67,
+    3.0,
+    3.33,
+    5.0,
+    4.33,
+    5.0,
+    4.33,
+    4.0,
+    4.67,
+    4.0,
+    5.67,
+    6.33,
+    6.67,
+    7.33
+   ],
+   "peak": 7.3,
+   "mean": 3.94
+  },
+  "pet_late": {
+   "x": [
+    0.0,
+    9.1,
+    18.2,
+    27.3,
+    36.4,
+    45.5,
+    54.6,
+    63.7,
+    72.8,
+    81.9,
+    91.0,
+    100.2,
+    109.3,
+    118.4,
+    127.5,
+    136.6,
+    145.7,
+    154.8,
+    163.9,
+    173.0,
+    182.1,
+    191.2,
+    200.3,
+    209.4,
+    218.5,
+    227.6,
+    236.7,
+    245.8,
+    254.9,
+    264.0,
+    273.1,
+    282.2,
+    291.3,
+    300.5,
+    309.6,
+    318.7,
+    327.8,
+    336.9,
+    346.0,
+    355.1,
+    364.2,
+    373.3,
+    382.4,
+    391.5,
+    400.6,
+    409.7,
+    418.8,
+    427.9,
+    437.0,
+    446.1,
+    455.2,
+    464.3,
+    473.4,
+    482.5,
+    491.6,
+    500.8,
+    509.9,
+    519.0,
+    528.1,
+    537.2,
+    546.3,
+    555.4,
+    564.5,
+    573.6,
+    582.7,
+    591.8,
+    600.9,
+    610.0,
+    619.1,
+    628.2,
+    637.3,
+    646.4,
+    655.5,
+    664.6,
+    673.7,
+    682.8,
+    691.9,
+    701.1,
+    710.2,
+    719.3,
+    728.4,
+    737.5,
+    746.6,
+    755.7,
+    764.8,
+    773.9,
+    783.0,
+    792.1,
+    801.2,
+    810.3,
+    819.4,
+    828.5,
+    837.6,
+    846.7,
+    855.8,
+    864.9,
+    874.0,
+    883.1,
+    892.2,
+    901.4,
+    910.5,
+    919.6,
+    928.7,
+    937.8,
+    946.9,
+    956.0,
+    965.1,
+    974.2,
+    983.3,
+    992.4,
+    1001.5,
+    1010.6,
+    1019.7,
+    1028.8,
+    1037.9,
+    1047.0,
+    1056.1,
+    1065.2,
+    1074.3,
+    1083.4
+   ],
+   "y": [
+    0.0,
+    0.0,
+    0.67,
+    0.67,
+    0.67,
+    1.33,
+    1.0,
+    1.0,
+    3.0,
+    2.67,
+    3.33,
+    3.0,
+    2.0,
+    2.33,
+    3.0,
+    2.67,
+    0.33,
+    0.67,
+    1.67,
+    1.67,
+    2.0,
+    2.67,
+    1.33,
+    1.67,
+    2.33,
+    1.67,
+    2.0,
+    2.33,
+    2.33,
+    1.33,
+    2.33,
+    2.0,
+    2.0,
+    1.67,
+    1.33,
+    0.33,
+    0.67,
+    2.0,
+    3.67,
+    4.0,
+    3.0,
+    2.33,
+    2.67,
+    2.0,
+    1.67,
+    1.67,
+    1.0,
+    1.67,
+    2.67,
+    2.67,
+    2.0,
+    2.0,
+    2.67,
+    3.0,
+    2.0,
+    2.67,
+    3.0,
+    4.0,
+    4.33,
+    3.33,
+    3.67,
+    2.67,
+    4.0,
+    3.33,
+    2.33,
+    1.67,
+    1.33,
+    1.67,
+    1.33,
+    0.67,
+    1.33,
+    2.33,
+    2.33,
+    2.67,
+    2.67,
+    3.33,
+    3.0,
+    2.67,
+    2.0,
+    1.67,
+    1.33,
+    1.33,
+    1.67,
+    1.67,
+    2.0,
+    2.67,
+    2.0,
+    2.33,
+    1.67,
+    2.33,
+    2.67,
+    3.0,
+    3.0,
+    3.67,
+    3.67,
+    5.0,
+    4.0,
+    2.0,
+    1.67,
+    1.67,
+    2.33,
+    3.0,
+    2.33,
+    3.0,
+    3.0,
+    2.0,
+    2.33,
+    2.0,
+    2.0,
+    2.67,
+    2.67,
+    2.67,
+    3.33,
+    2.67,
+    3.0,
+    2.67,
+    1.33,
+    1.0,
+    1.33,
+    2.33
+   ],
+   "peak": 5.0,
+   "mean": 2.21
+  },
+  "workup": {
+   "x": [
+    0.0,
+    9.1,
+    18.2,
+    27.3,
+    36.4,
+    45.5,
+    54.6,
+    63.7,
+    72.8,
+    81.9,
+    91.0,
+    100.2,
+    109.3,
+    118.4,
+    127.5,
+    136.6,
+    145.7,
+    154.8,
+    163.9,
+    173.0,
+    182.1,
+    191.2,
+    200.3,
+    209.4,
+    218.5,
+    227.6,
+    236.7,
+    245.8,
+    254.9,
+    264.0,
+    273.1,
+    282.2,
+    291.3,
+    300.5,
+    309.6,
+    318.7,
+    327.8,
+    336.9,
+    346.0,
+    355.1,
+    364.2,
+    373.3,
+    382.4,
+    391.5,
+    400.6,
+    409.7,
+    418.8,
+    427.9,
+    437.0,
+    446.1,
+    455.2,
+    464.3,
+    473.4,
+    482.5,
+    491.6,
+    500.8,
+    509.9,
+    519.0,
+    528.1,
+    537.2,
+    546.3,
+    555.4,
+    564.5,
+    573.6,
+    582.7,
+    591.8,
+    600.9,
+    610.0,
+    619.1,
+    628.2,
+    637.3,
+    646.4,
+    655.5,
+    664.6,
+    673.7,
+    682.8,
+    691.9,
+    701.1,
+    710.2,
+    719.3,
+    728.4,
+    737.5,
+    746.6,
+    755.7,
+    764.8,
+    773.9,
+    783.0,
+    792.1,
+    801.2,
+    810.3,
+    819.4,
+    828.5,
+    837.6,
+    846.7,
+    855.8,
+    864.9,
+    874.0,
+    883.1,
+    892.2,
+    901.4,
+    910.5,
+    919.6,
+    928.7,
+    937.8,
+    946.9,
+    956.0,
+    965.1,
+    974.2,
+    983.3,
+    992.4,
+    1001.5,
+    1010.6,
+    1019.7,
+    1028.8,
+    1037.9,
+    1047.0,
+    1056.1,
+    1065.2,
+    1074.3,
+    1083.4
+   ],
+   "y": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.33,
+    0.0,
+    0.0,
+    0.33,
+    0.33,
+    0.33,
+    0.67,
+    0.67,
+    0.0,
+    0.33,
+    0.0,
+    1.33,
+    0.0,
+    0.33,
+    0.0,
+    0.33,
+    0.33,
+    0.0,
+    0.33,
+    0.0,
+    0.0,
+    0.67,
+    1.0,
+    0.67,
+    0.0,
+    0.33,
+    0.0,
+    0.33,
+    0.0,
+    0.33,
+    0.33,
+    0.0,
+    0.67,
+    0.0,
+    0.0,
+    0.33,
+    0.67,
+    0.33,
+    0.33,
+    0.67,
+    0.0,
+    0.0,
+    0.67,
+    0.33,
+    0.0,
+    0.67,
+    0.33,
+    0.33,
+    0.67,
+    0.67,
+    0.0,
+    0.0,
+    0.67,
+    0.33,
+    0.0,
+    0.0,
+    0.0,
+    1.0,
+    1.0,
+    0.33,
+    0.33,
+    0.0,
+    0.0,
+    0.67,
+    0.67,
+    0.33,
+    0.33,
+    0.0,
+    0.0,
+    0.0,
+    0.33,
+    0.67,
+    0.33,
+    0.67,
+    0.67,
+    0.33,
+    0.33,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.33,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.67,
+    0.67,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.33,
+    0.0,
+    0.0,
+    0.33,
+    0.67,
+    1.0,
+    0.33,
+    0.0,
+    0.0,
+    0.0,
+    0.67,
+    0.33,
+    0.0,
+    0.33,
+    0.33,
+    0.0,
+    0.33,
+    0.33,
+    0.0,
+    0.33,
+    0.33,
+    0.33,
+    0.67
+   ],
+   "peak": 1.3,
+   "mean": 0.28
+  },
+  "ex_early": {
+   "x": [
+    0.0,
+    9.1,
+    18.2,
+    27.3,
+    36.4,
+    45.5,
+    54.6,
+    63.7,
+    72.8,
+    81.9,
+    91.0,
+    100.2,
+    109.3,
+    118.4,
+    127.5,
+    136.6,
+    145.7,
+    154.8,
+    163.9,
+    173.0,
+    182.1,
+    191.2,
+    200.3,
+    209.4,
+    218.5,
+    227.6,
+    236.7,
+    245.8,
+    254.9,
+    264.0,
+    273.1,
+    282.2,
+    291.3,
+    300.5,
+    309.6,
+    318.7,
+    327.8,
+    336.9,
+    346.0,
+    355.1,
+    364.2,
+    373.3,
+    382.4,
+    391.5,
+    400.6,
+    409.7,
+    418.8,
+    427.9,
+    437.0,
+    446.1,
+    455.2,
+    464.3,
+    473.4,
+    482.5,
+    491.6,
+    500.8,
+    509.9,
+    519.0,
+    528.1,
+    537.2,
+    546.3,
+    555.4,
+    564.5,
+    573.6,
+    582.7,
+    591.8,
+    600.9,
+    610.0,
+    619.1,
+    628.2,
+    637.3,
+    646.4,
+    655.5,
+    664.6,
+    673.7,
+    682.8,
+    691.9,
+    701.1,
+    710.2,
+    719.3,
+    728.4,
+    737.5,
+    746.6,
+    755.7,
+    764.8,
+    773.9,
+    783.0,
+    792.1,
+    801.2,
+    810.3,
+    819.4,
+    828.5,
+    837.6,
+    846.7,
+    855.8,
+    864.9,
+    874.0,
+    883.1,
+    892.2,
+    901.4,
+    910.5,
+    919.6,
+    928.7,
+    937.8,
+    946.9,
+    956.0,
+    965.1,
+    974.2,
+    983.3,
+    992.4,
+    1001.5,
+    1010.6,
+    1019.7,
+    1028.8,
+    1037.9,
+    1047.0,
+    1056.1,
+    1065.2,
+    1074.3,
+    1083.4
+   ],
+   "y": [
+    0.0,
+    0.0,
+    0.0,
+    0.33,
+    0.0,
+    0.0,
+    0.0,
+    0.33,
+    0.67,
+    0.33,
+    0.33,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.33,
+    0.67,
+    0.33,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.33,
+    0.0,
+    0.33,
+    0.33,
+    0.33,
+    0.0,
+    0.33,
+    0.33,
+    0.0,
+    0.0,
+    0.0,
+    0.33,
+    0.67,
+    1.0,
+    0.0,
+    0.33,
+    0.0,
+    0.0,
+    0.0,
+    0.33,
+    0.0,
+    0.33,
+    0.33,
+    0.0,
+    0.67,
+    1.0,
+    0.67,
+    0.33,
+    0.0,
+    0.0,
+    0.0,
+    0.33,
+    0.0,
+    0.0,
+    0.33,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.33,
+    0.33,
+    0.33,
+    0.0,
+    0.0,
+    0.33,
+    0.67,
+    0.0,
+    0.0,
+    0.0,
+    0.33,
+    0.33,
+    0.0,
+    0.33,
+    0.0,
+    0.0,
+    0.0,
+    0.33,
+    0.33,
+    0.33,
+    0.0,
+    0.67,
+    1.0,
+    0.33,
+    0.33,
+    0.33,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.33,
+    0.33,
+    0.0,
+    0.0,
+    0.0,
+    0.33,
+    0.33,
+    0.67,
+    0.67,
+    0.0,
+    0.0
+   ],
+   "peak": 1.0,
+   "mean": 0.18
+  },
+  "ex_late": {
+   "x": [
+    0.0,
+    9.1,
+    18.2,
+    27.3,
+    36.4,
+    45.5,
+    54.6,
+    63.7,
+    72.8,
+    81.9,
+    91.0,
+    100.2,
+    109.3,
+    118.4,
+    127.5,
+    136.6,
+    145.7,
+    154.8,
+    163.9,
+    173.0,
+    182.1,
+    191.2,
+    200.3,
+    209.4,
+    218.5,
+    227.6,
+    236.7,
+    245.8,
+    254.9,
+    264.0,
+    273.1,
+    282.2,
+    291.3,
+    300.5,
+    309.6,
+    318.7,
+    327.8,
+    336.9,
+    346.0,
+    355.1,
+    364.2,
+    373.3,
+    382.4,
+    391.5,
+    400.6,
+    409.7,
+    418.8,
+    427.9,
+    437.0,
+    446.1,
+    455.2,
+    464.3,
+    473.4,
+    482.5,
+    491.6,
+    500.8,
+    509.9,
+    519.0,
+    528.1,
+    537.2,
+    546.3,
+    555.4,
+    564.5,
+    573.6,
+    582.7,
+    591.8,
+    600.9,
+    610.0,
+    619.1,
+    628.2,
+    637.3,
+    646.4,
+    655.5,
+    664.6,
+    673.7,
+    682.8,
+    691.9,
+    701.1,
+    710.2,
+    719.3,
+    728.4,
+    737.5,
+    746.6,
+    755.7,
+    764.8,
+    773.9,
+    783.0,
+    792.1,
+    801.2,
+    810.3,
+    819.4,
+    828.5,
+    837.6,
+    846.7,
+    855.8,
+    864.9,
+    874.0,
+    883.1,
+    892.2,
+    901.4,
+    910.5,
+    919.6,
+    928.7,
+    937.8,
+    946.9,
+    956.0,
+    965.1,
+    974.2,
+    983.3,
+    992.4,
+    1001.5,
+    1010.6,
+    1019.7,
+    1028.8,
+    1037.9,
+    1047.0,
+    1056.1,
+    1065.2,
+    1074.3,
+    1083.4
+   ],
+   "y": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.33,
+    1.33,
+    1.67,
+    1.67,
+    2.0,
+    1.0,
+    1.0,
+    1.33,
+    0.67,
+    0.0,
+    0.67,
+    2.0,
+    2.0,
+    1.33,
+    1.33,
+    1.0,
+    1.0,
+    1.67,
+    2.0,
+    1.67,
+    1.67,
+    1.0,
+    0.33,
+    1.0,
+    1.0,
+    0.33,
+    0.33,
+    0.33,
+    0.67,
+    0.67,
+    0.67,
+    0.67,
+    0.67,
+    1.0,
+    2.33,
+    2.0,
+    1.33,
+    1.33,
+    1.0,
+    1.33,
+    1.33,
+    1.0,
+    1.0,
+    1.0,
+    1.33,
+    1.0,
+    0.67,
+    1.67,
+    1.33,
+    0.33,
+    0.67,
+    1.67,
+    2.0,
+    2.0,
+    2.33,
+    2.0,
+    1.0,
+    0.33,
+    0.33,
+    0.67,
+    0.67,
+    1.33,
+    1.0,
+    1.0,
+    0.33,
+    0.0,
+    0.0,
+    1.0,
+    1.0,
+    1.33,
+    1.33,
+    1.33,
+    1.33,
+    1.0,
+    0.33,
+    0.33,
+    1.0,
+    1.67,
+    2.0,
+    1.33,
+    0.0,
+    0.0,
+    0.33,
+    0.67,
+    0.67,
+    0.33,
+    0.33,
+    0.67,
+    1.33,
+    1.67,
+    1.67,
+    0.67,
+    0.67,
+    1.33,
+    1.33,
+    2.0,
+    1.67,
+    1.33,
+    0.67,
+    2.0,
+    2.0,
+    1.0,
+    2.0,
+    2.0,
+    1.67,
+    0.67,
+    1.0,
+    1.33,
+    1.33,
+    1.33,
+    2.33,
+    2.0,
+    2.0,
+    1.0,
+    1.33,
+    1.0
+   ],
+   "peak": 2.3,
+   "mean": 1.1
+  },
+  "mdt": {
+   "x": [
+    0.0,
+    9.1,
+    18.2,
+    27.3,
+    36.4,
+    45.5,
+    54.6,
+    63.7,
+    72.8,
+    81.9,
+    91.0,
+    100.2,
+    109.3,
+    118.4,
+    127.5,
+    136.6,
+    145.7,
+    154.8,
+    163.9,
+    173.0,
+    182.1,
+    191.2,
+    200.3,
+    209.4,
+    218.5,
+    227.6,
+    236.7,
+    245.8,
+    254.9,
+    264.0,
+    273.1,
+    282.2,
+    291.3,
+    300.5,
+    309.6,
+    318.7,
+    327.8,
+    336.9,
+    346.0,
+    355.1,
+    364.2,
+    373.3,
+    382.4,
+    391.5,
+    400.6,
+    409.7,
+    418.8,
+    427.9,
+    437.0,
+    446.1,
+    455.2,
+    464.3,
+    473.4,
+    482.5,
+    491.6,
+    500.8,
+    509.9,
+    519.0,
+    528.1,
+    537.2,
+    546.3,
+    555.4,
+    564.5,
+    573.6,
+    582.7,
+    591.8,
+    600.9,
+    610.0,
+    619.1,
+    628.2,
+    637.3,
+    646.4,
+    655.5,
+    664.6,
+    673.7,
+    682.8,
+    691.9,
+    701.1,
+    710.2,
+    719.3,
+    728.4,
+    737.5,
+    746.6,
+    755.7,
+    764.8,
+    773.9,
+    783.0,
+    792.1,
+    801.2,
+    810.3,
+    819.4,
+    828.5,
+    837.6,
+    846.7,
+    855.8,
+    864.9,
+    874.0,
+    883.1,
+    892.2,
+    901.4,
+    910.5,
+    919.6,
+    928.7,
+    937.8,
+    946.9,
+    956.0,
+    965.1,
+    974.2,
+    983.3,
+    992.4,
+    1001.5,
+    1010.6,
+    1019.7,
+    1028.8,
+    1037.9,
+    1047.0,
+    1056.1,
+    1065.2,
+    1074.3,
+    1083.4
+   ],
+   "y": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    1.0,
+    0.33,
+    1.33,
+    0.67,
+    0.33,
+    1.0,
+    0.67,
+    0.0,
+    0.67,
+    2.0,
+    0.0,
+    0.0,
+    2.0,
+    2.33,
+    0.0,
+    0.33,
+    1.33,
+    1.67,
+    0.0,
+    0.67,
+    0.67,
+    1.0,
+    0.33,
+    0.67,
+    1.0,
+    1.67,
+    0.67,
+    2.67,
+    0.33,
+    0.33,
+    0.67,
+    0.67,
+    1.33,
+    0.33,
+    0.67,
+    0.67,
+    1.33,
+    0.67,
+    2.67,
+    0.67,
+    0.67,
+    1.33,
+    1.0,
+    1.33,
+    1.33,
+    1.33,
+    1.33,
+    1.0,
+    1.67,
+    1.0,
+    1.67,
+    1.67,
+    0.0,
+    1.67,
+    0.67,
+    1.0,
+    1.0,
+    1.33,
+    0.0,
+    1.0,
+    1.67,
+    1.33,
+    0.33,
+    0.33,
+    1.33,
+    0.33,
+    1.33,
+    1.33,
+    0.0,
+    1.33,
+    0.67,
+    0.0,
+    1.0,
+    1.0,
+    0.33,
+    0.67,
+    1.0,
+    1.33,
+    1.0,
+    1.0,
+    1.67,
+    1.0,
+    1.0,
+    1.33,
+    0.0,
+    0.33,
+    1.0,
+    0.0,
+    1.33,
+    0.33,
+    1.67,
+    1.33,
+    1.0,
+    1.0,
+    1.0,
+    1.33,
+    1.33,
+    0.33,
+    0.67,
+    1.33,
+    1.33,
+    1.67,
+    0.33,
+    0.0,
+    0.33,
+    0.33,
+    0.67,
+    0.67,
+    1.33,
+    0.0,
+    2.0,
+    2.33,
+    0.33,
+    0.67,
+    1.0,
+    0.67
+   ],
+   "peak": 2.7,
+   "mean": 0.89
+  },
+  "book_surgery": {
+   "x": [
+    0.0,
+    9.1,
+    18.2,
+    27.3,
+    36.4,
+    45.5,
+    54.6,
+    63.7,
+    72.8,
+    81.9,
+    91.0,
+    100.2,
+    109.3,
+    118.4,
+    127.5,
+    136.6,
+    145.7,
+    154.8,
+    163.9,
+    173.0,
+    182.1,
+    191.2,
+    200.3,
+    209.4,
+    218.5,
+    227.6,
+    236.7,
+    245.8,
+    254.9,
+    264.0,
+    273.1,
+    282.2,
+    291.3,
+    300.5,
+    309.6,
+    318.7,
+    327.8,
+    336.9,
+    346.0,
+    355.1,
+    364.2,
+    373.3,
+    382.4,
+    391.5,
+    400.6,
+    409.7,
+    418.8,
+    427.9,
+    437.0,
+    446.1,
+    455.2,
+    464.3,
+    473.4,
+    482.5,
+    491.6,
+    500.8,
+    509.9,
+    519.0,
+    528.1,
+    537.2,
+    546.3,
+    555.4,
+    564.5,
+    573.6,
+    582.7,
+    591.8,
+    600.9,
+    610.0,
+    619.1,
+    628.2,
+    637.3,
+    646.4,
+    655.5,
+    664.6,
+    673.7,
+    682.8,
+    691.9,
+    701.1,
+    710.2,
+    719.3,
+    728.4,
+    737.5,
+    746.6,
+    755.7,
+    764.8,
+    773.9,
+    783.0,
+    792.1,
+    801.2,
+    810.3,
+    819.4,
+    828.5,
+    837.6,
+    846.7,
+    855.8,
+    864.9,
+    874.0,
+    883.1,
+    892.2,
+    901.4,
+    910.5,
+    919.6,
+    928.7,
+    937.8,
+    946.9,
+    956.0,
+    965.1,
+    974.2,
+    983.3,
+    992.4,
+    1001.5,
+    1010.6,
+    1019.7,
+    1028.8,
+    1037.9,
+    1047.0,
+    1056.1,
+    1065.2,
+    1074.3,
+    1083.4
+   ],
+   "y": [
+    0.0,
+    0.0,
+    0.0,
+    0.33,
+    0.0,
+    0.67,
+    1.67,
+    0.67,
+    2.0,
+    1.67,
+    2.33,
+    2.33,
+    2.33,
+    1.67,
+    1.67,
+    1.0,
+    0.67,
+    1.67,
+    2.0,
+    1.33,
+    0.33,
+    0.67,
+    2.0,
+    0.67,
+    1.0,
+    1.67,
+    1.33,
+    0.67,
+    1.67,
+    1.33,
+    0.33,
+    0.67,
+    1.67,
+    0.33,
+    1.33,
+    1.67,
+    1.0,
+    1.0,
+    0.67,
+    0.67,
+    1.67,
+    2.33,
+    2.33,
+    3.67,
+    1.0,
+    0.67,
+    1.33,
+    2.0,
+    1.67,
+    2.33,
+    2.33,
+    0.67,
+    0.33,
+    1.0,
+    1.67,
+    1.67,
+    1.33,
+    0.33,
+    0.67,
+    2.0,
+    2.67,
+    1.0,
+    1.33,
+    1.67,
+    0.67,
+    0.67,
+    1.67,
+    1.67,
+    1.33,
+    3.33,
+    1.67,
+    1.33,
+    2.0,
+    0.67,
+    1.33,
+    1.67,
+    2.33,
+    0.33,
+    1.33,
+    1.67,
+    1.33,
+    1.0,
+    1.33,
+    1.0,
+    0.0,
+    1.0,
+    1.33,
+    0.67,
+    0.67,
+    2.0,
+    0.33,
+    2.0,
+    2.0,
+    1.0,
+    1.67,
+    2.0,
+    2.0,
+    2.0,
+    2.0,
+    2.33,
+    0.67,
+    2.0,
+    2.0,
+    0.67,
+    1.67,
+    1.67,
+    1.0,
+    1.33,
+    1.67,
+    2.67,
+    2.0,
+    1.67,
+    0.67,
+    1.67,
+    0.67,
+    1.67,
+    1.0,
+    0.67,
+    2.0,
+    1.0
+   ],
+   "peak": 3.7,
+   "mean": 1.35
+  },
+  "book_rt": {
+   "x": [
+    0.0,
+    9.1,
+    18.2,
+    27.3,
+    36.4,
+    45.5,
+    54.6,
+    63.7,
+    72.8,
+    81.9,
+    91.0,
+    100.2,
+    109.3,
+    118.4,
+    127.5,
+    136.6,
+    145.7,
+    154.8,
+    163.9,
+    173.0,
+    182.1,
+    191.2,
+    200.3,
+    209.4,
+    218.5,
+    227.6,
+    236.7,
+    245.8,
+    254.9,
+    264.0,
+    273.1,
+    282.2,
+    291.3,
+    300.5,
+    309.6,
+    318.7,
+    327.8,
+    336.9,
+    346.0,
+    355.1,
+    364.2,
+    373.3,
+    382.4,
+    391.5,
+    400.6,
+    409.7,
+    418.8,
+    427.9,
+    437.0,
+    446.1,
+    455.2,
+    464.3,
+    473.4,
+    482.5,
+    491.6,
+    500.8,
+    509.9,
+    519.0,
+    528.1,
+    537.2,
+    546.3,
+    555.4,
+    564.5,
+    573.6,
+    582.7,
+    591.8,
+    600.9,
+    610.0,
+    619.1,
+    628.2,
+    637.3,
+    646.4,
+    655.5,
+    664.6,
+    673.7,
+    682.8,
+    691.9,
+    701.1,
+    710.2,
+    719.3,
+    728.4,
+    737.5,
+    746.6,
+    755.7,
+    764.8,
+    773.9,
+    783.0,
+    792.1,
+    801.2,
+    810.3,
+    819.4,
+    828.5,
+    837.6,
+    846.7,
+    855.8,
+    864.9,
+    874.0,
+    883.1,
+    892.2,
+    901.4,
+    910.5,
+    919.6,
+    928.7,
+    937.8,
+    946.9,
+    956.0,
+    965.1,
+    974.2,
+    983.3,
+    992.4,
+    1001.5,
+    1010.6,
+    1019.7,
+    1028.8,
+    1037.9,
+    1047.0,
+    1056.1,
+    1065.2,
+    1074.3,
+    1083.4
+   ],
+   "y": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.67,
+    1.67,
+    0.67,
+    0.33,
+    0.33,
+    1.0,
+    1.33,
+    1.0,
+    0.67,
+    0.0,
+    0.0,
+    0.33,
+    0.33,
+    0.0,
+    0.33,
+    1.0,
+    1.0,
+    0.67,
+    0.67,
+    0.67,
+    1.33,
+    0.67,
+    0.0,
+    0.33,
+    0.67,
+    0.67,
+    1.33,
+    0.33,
+    0.33,
+    0.67,
+    0.33,
+    2.33,
+    0.0,
+    0.0,
+    0.33,
+    0.33,
+    0.67,
+    0.67,
+    0.0,
+    1.0,
+    1.0,
+    0.67,
+    1.33,
+    0.67,
+    1.0,
+    1.33,
+    0.67,
+    0.33,
+    1.67,
+    1.0,
+    0.0,
+    1.0,
+    1.33,
+    0.33,
+    0.33,
+    0.0,
+    0.0,
+    1.0,
+    1.33,
+    1.33,
+    1.33,
+    1.0,
+    0.0,
+    0.33,
+    0.0,
+    0.33,
+    1.33,
+    0.67,
+    0.67,
+    0.67,
+    0.67,
+    1.67,
+    1.0,
+    1.67,
+    0.33,
+    1.0,
+    1.33,
+    1.33,
+    1.0,
+    1.0,
+    1.33,
+    1.0,
+    1.67,
+    2.0,
+    1.0,
+    1.33,
+    0.33,
+    0.33,
+    0.33,
+    1.0,
+    0.33,
+    1.33,
+    1.67,
+    0.67,
+    0.33,
+    0.67,
+    0.67,
+    1.0,
+    0.0,
+    1.33,
+    0.33,
+    0.67,
+    0.0,
+    0.0,
+    0.33,
+    0.67,
+    0.67,
+    0.0,
+    1.67,
+    0.33,
+    1.67,
+    1.33,
+    1.0,
+    0.33
+   ],
+   "peak": 2.3,
+   "mean": 0.71
+  }
+ },
+ "decisions": {
+  "sample_plan": {
+   "n": 900,
+   "options": [
+    "bronch1",
+    "no_sampling"
+   ],
+   "offered": {
+    "bronch1": 900,
+    "no_sampling": 900
+   },
+   "chosen": {
+    "bronch1": 713,
+    "no_sampling": 187
+   },
+   "share": {
+    "bronch1": 0.7922,
+    "no_sampling": 0.2078
+   },
+   "mean_probability": {
+    "bronch1": 0.7922,
+    "no_sampling": 0.2078
+   },
+   "by_group": {
+    "all": {
+     "n": 900,
+     "share": {
+      "bronch1": 0.7922,
+      "no_sampling": 0.2078
+     }
+    }
+   }
+  },
+  "after_bronch": {
+   "n": 393,
+   "options": [
+    "ttnb",
+    "bronch2",
+    "no_more"
+   ],
+   "offered": {
+    "ttnb": 393,
+    "bronch2": 393,
+    "no_more": 393
+   },
+   "chosen": {
+    "ttnb": 116,
+    "bronch2": 63,
+    "no_more": 214
+   },
+   "share": {
+    "ttnb": 0.2952,
+    "bronch2": 0.1603,
+    "no_more": 0.5445
+   },
+   "mean_probability": {
+    "ttnb": 0.2952,
+    "bronch2": 0.1603,
+    "no_more": 0.5445
+   },
+   "by_group": {
+    "all": {
+     "n": 393,
+     "share": {
+      "ttnb": 0.2952,
+      "bronch2": 0.1603,
+      "no_more": 0.5445
+     }
+    }
+   }
+  },
+  "pet_timing": {
+   "n": 900,
+   "options": [
+    "pet_on_time",
+    "pet_late"
+   ],
+   "offered": {
+    "pet_on_time": 900,
+    "pet_late": 900
+   },
+   "chosen": {
+    "pet_on_time": 662,
+    "pet_late": 238
+   },
+   "share": {
+    "pet_on_time": 0.7356,
+    "pet_late": 0.2644
+   },
+   "mean_probability": {
+    "pet_on_time": 0.7356,
+    "pet_late": 0.2644
+   },
+   "by_group": {
+    "all": {
+     "n": 900,
+     "share": {
+      "pet_on_time": 0.7356,
+      "pet_late": 0.2644
+     }
+    }
+   }
+  },
+  "pet_on_time": {
+   "n": 662,
+   "options": [
+    "pet_triage",
+    "pet_early_route"
+   ],
+   "offered": {
+    "pet_triage": 662,
+    "pet_early_route": 662
+   },
+   "chosen": {
+    "pet_triage": 662,
+    "pet_early_route": 0
+   },
+   "share": {
+    "pet_triage": 1.0,
+    "pet_early_route": 0.0
+   },
+   "mean_probability": {
+    "pet_triage": 1.0,
+    "pet_early_route": 0.0
+   },
+   "by_group": {
+    "all": {
+     "n": 662,
+     "share": {
+      "pet_triage": 1.0,
+      "pet_early_route": 0.0
+     }
+    }
+   }
+  },
+  "ex_timing": {
+   "n": 207,
+   "options": [
+    "ex_early",
+    "ex_late"
+   ],
+   "offered": {
+    "ex_early": 207,
+    "ex_late": 207
+   },
+   "chosen": {
+    "ex_early": 57,
+    "ex_late": 150
+   },
+   "share": {
+    "ex_early": 0.2754,
+    "ex_late": 0.7246
+   },
+   "mean_probability": {
+    "ex_early": 0.2754,
+    "ex_late": 0.7246
+   },
+   "by_group": {
+    "all": {
+     "n": 207,
+     "share": {
+      "ex_early": 0.2754,
+      "ex_late": 0.7246
+     }
+    }
+   }
+  }
+ },
+ "exits": {
+  "treat": {
+   "n": 900,
+   "n_cancer": 900,
+   "outcome": "treatment"
+  }
+ },
+ "time_lost": [
+  {
+   "node": "visit",
+   "label": "First hospital visit",
+   "wait": 9.11,
+   "service": 0.06,
+   "share": 0.189,
+   "wait_share": 0.1878,
+   "n_critical": 579,
+   "wait_median": 10.31,
+   "wait_p90": 23.376
+  },
+  {
+   "node": "pet_triage",
+   "label": "PET-CT",
+   "wait": 8.44,
+   "service": 1.0,
+   "share": 0.1946,
+   "wait_share": 0.1739,
+   "n_critical": 321,
+   "wait_median": 18.043,
+   "wait_p90": 30.581
+  },
+  {
+   "node": "pet_late",
+   "label": "PET-CT",
+   "wait": 7.87,
+   "service": 0.66,
+   "share": 0.1758,
+   "wait_share": 0.1622,
+   "n_critical": 211,
+   "wait_median": 26.576,
+   "wait_p90": 54.13
+  },
+  {
+   "node": "book_surgery",
+   "label": "Waiting for surgery",
+   "wait": 5.1,
+   "service": 0.0,
+   "share": 0.1051,
+   "wait_share": 0.1051,
+   "n_critical": 680,
+   "wait_median": 5.921,
+   "wait_p90": 11.235
+  },
+  {
+   "node": "mdt",
+   "label": "Tumour board",
+   "wait": 3.5,
+   "service": 0.5,
+   "share": 0.0824,
+   "wait_share": 0.0721,
+   "n_critical": 900,
+   "wait_median": 3.39,
+   "wait_p90": 6.377
+  },
+  {
+   "node": "ex_late",
+   "label": "Exercise test",
+   "wait": 3.02,
+   "service": 0.12,
+   "share": 0.0647,
+   "wait_share": 0.0622,
+   "n_critical": 100,
+   "wait_median": 23.222,
+   "wait_p90": 39.027
+  },
+  {
+   "node": "book_rt",
+   "label": "Waiting for radiotherapy",
+   "wait": 2.76,
+   "service": 0.0,
+   "share": 0.0569,
+   "wait_share": 0.0569,
+   "n_critical": 220,
+   "wait_median": 11.002,
+   "wait_p90": 16.397
+  },
+  {
+   "node": "bronch1",
+   "label": "Bronchoscopy",
+   "wait": 1.0,
+   "service": 1.48,
+   "share": 0.0511,
+   "wait_share": 0.0206,
+   "n_critical": 240,
+   "wait_median": 2.959,
+   "wait_p90": 5.974
+  },
+  {
+   "node": "workup",
+   "label": "Further tests after PET-CT",
+   "wait": 0.92,
+   "service": 0.53,
+   "share": 0.0299,
+   "wait_share": 0.019,
+   "n_critical": 91,
+   "wait_median": 7.237,
+   "wait_p90": 15.301
+  },
+  {
+   "node": "ttnb",
+   "label": "Needle biopsy",
+   "wait": 0.84,
+   "service": 0.5,
+   "share": 0.0276,
+   "wait_share": 0.0173,
+   "n_critical": 82,
+   "wait_median": 8.487,
+   "wait_p90": 12.968
+  },
+  {
+   "node": "bronch2",
+   "label": "Repeat bronchoscopy",
+   "wait": 0.38,
+   "service": 0.27,
+   "share": 0.0134,
+   "wait_share": 0.0078,
+   "n_critical": 39,
+   "wait_median": 7.75,
+   "wait_p90": 12.789
+  },
+  {
+   "node": "ex_early",
+   "label": "Exercise test",
+   "wait": 0.26,
+   "service": 0.02,
+   "share": 0.0058,
+   "wait_share": 0.0054,
+   "n_critical": 19,
+   "wait_median": 9.601,
+   "wait_p90": 16.825
+  },
+  {
+   "node": "ct_redo",
+   "label": "New CT",
+   "wait": 0.18,
+   "service": 0.0,
+   "share": 0.0037,
+   "wait_share": 0.0037,
+   "n_critical": 8,
+   "wait_median": 16.394,
+   "wait_p90": 41.092
+  },
+  {
+   "node": "ct",
+   "label": "CT scan",
+   "wait": 0.0,
+   "service": 0.0,
+   "share": 0.0,
+   "wait_share": 0.0,
+   "n_critical": 900,
+   "wait_median": 0.0,
+   "wait_p90": 0.0
+  },
+  {
+   "node": "treat",
+   "label": "Treatment starts",
+   "wait": 0.0,
+   "service": 0.0,
+   "share": 0.0,
+   "wait_share": 0.0,
+   "n_critical": 900,
+   "wait_median": 0.0,
+   "wait_p90": 0.0
+  }
+ ],
+ "cohort": {
+  "seed": 7,
+  "size": 40,
+  "horizon": 94.6,
+  "strata": {
+   "cancer": 40,
+   "other": 0,
+   "cancer_total": 900,
+   "other_total": 0
+  },
+  "time_zero": "each patient's own first contact (day 0)",
+  "patients": [
+   {
+    "id": 4,
+    "cohort": 201,
+    "g": "all",
+    "age": 54,
+    "cancer": 1,
+    "out": "treatment",
+    "exit": "treat",
+    "t_exit": 39.211,
+    "t_diag": 31.64,
+    "t_treat": 39.211,
+    "ft": 0,
+    "v": [
+     [
+      "ct",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1,
+      1
+     ],
+     [
+      "visit",
+      0.0,
+      6.794,
+      6.894,
+      6.894,
+      1,
+      1
+     ],
+     [
+      "ex_early",
+      6.894,
+      22.075,
+      22.175,
+      23.175,
+      1,
+      0
+     ],
+     [
+      "pet_late",
+      6.894,
+      29.286,
+      29.386,
+      31.64,
+      1,
+      1
+     ],
+     [
+      "mdt",
+      31.64,
+      34.513,
+      34.513,
+      35.013,
+      1,
+      1
+     ],
+     [
+      "book_surgery",
+      35.013,
+      39.211,
+      39.211,
+      39.211,
+      1,
+      1
+     ],
+     [
+      "treat",
+      39.211,
+      39.211,
+      39.211,
+      39.211,
+      null,
+      1
+     ]
+    ],
+    "c": [
+     [
+      "pet_timing",
+      0.0,
+      "pet_late",
+      [
+       "pet_on_time",
+       "pet_late"
+      ],
+      {
+       "pet_on_time": 0.0,
+       "pet_late": 1.0
+      }
+     ],
+     [
+      "sample_plan",
+      6.894,
+      "no_sampling",
+      [
+       "bronch1",
+       "no_sampling"
+      ],
+      {
+       "bronch1": 0.0,
+       "no_sampling": 1.0
+      }
+     ],
+     [
+      "ex_timing",
+      6.894,
+      "ex_early",
+      [
+       "ex_early",
+       "ex_late"
+      ],
+      {
+       "ex_early": 1.0,
+       "ex_late": 0.0
+      }
+     ]
+    ]
+   },
+   {
+    "id": 48,
+    "cohort": 201,
+    "g": "all",
+    "age": 55,
+    "cancer": 1,
+    "out": "treatment",
+    "exit": "treat",
+    "t_exit": 29.817,
+    "t_diag": 18.84,
+    "t_treat": 29.817,
+    "ft": 0,
+    "v": [
+     [
+      "ct",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1,
+      1
+     ],
+     [
+      "pet_triage",
+      0.0,
+      9.518,
+      9.618,
+      11.068,
+      1,
+      0
+     ],
+     [
+      "visit",
+      0.0,
+      13.387,
+      13.487,
+      13.487,
+      1,
+      1
+     ],
+     [
+      "bronch1",
+      13.487,
+      16.928,
+      17.028,
+      18.84,
+      1,
+      1
+     ],
+     [
+      "mdt",
+      18.84,
+      19.498,
+      19.498,
+      19.998,
+      1,
+      1
+     ],
+     [
+      "book_surgery",
+      19.998,
+      29.817,
+      29.817,
+      29.817,
+      1,
+      1
+     ],
+     [
+      "treat",
+      29.817,
+      29.817,
+      29.817,
+      29.817,
+      null,
+      1
+     ]
+    ],
+    "c": [
+     [
+      "pet_timing",
+      0.0,
+      "pet_on_time",
+      [
+       "pet_on_time",
+       "pet_late"
+      ],
+      {
+       "pet_on_time": 1.0,
+       "pet_late": 0.0
+      }
+     ],
+     [
+      "pet_on_time",
+      0.0,
+      "pet_triage",
+      [
+       "pet_triage",
+       "pet_early_route"
+      ],
+      {
+       "pet_triage": 1.0,
+       "pet_early_route": 0.0
+      }
+     ],
+     [
+      "sample_plan",
+      13.487,
+      "bronch1",
+      [
+       "bronch1",
+       "no_sampling"
+      ],
+      {
+       "bronch1": 1.0,
+       "no_sampling": 0.0
+      }
+     ]
+    ]
+   },
+   {
+    "id": 104,
+    "cohort": 201,
+    "g": "all",
+    "age": 70,
+    "cancer": 1,
+    "out": "treatment",
+    "exit": "treat",
+    "t_exit": 42.563,
+    "t_diag": 33.466,
+    "t_treat": 42.563,
+    "ft": 0,
+    "v": [
+     [
+      "ct",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1,
+      1
+     ],
+     [
+      "visit",
+      0.0,
+      10.39,
+      10.49,
+      10.49,
+      1,
+      0
+     ],
+     [
+      "pet_triage",
+      0.0,
+      29.296,
+      29.396,
+      33.466,
+      1,
+      1
+     ],
+     [
+      "bronch1",
+      10.49,
+      17.18,
+      17.28,
+      18.949,
+      1,
+      0
+     ],
+     [
+      "mdt",
+      33.466,
+      38.689,
+      38.689,
+      39.189,
+      1,
+      1
+     ],
+     [
+      "book_surgery",
+      39.189,
+      42.563,
+      42.563,
+      42.563,
+      1,
+      1
+     ],
+     [
+      "treat",
+      42.563,
+      42.563,
+      42.563,
+      42.563,
+      null,
+      1
+     ]
+    ],
+    "c": [
+     [
+      "pet_timing",
+      0.0,
+      "pet_on_time",
+      [
+       "pet_on_time",
+       "pet_late"
+      ],
+      {
+       "pet_on_time": 1.0,
+       "pet_late": 0.0
+      }
+     ],
+     [
+      "pet_on_time",
+      0.0,
+      "pet_triage",
+      [
+       "pet_triage",
+       "pet_early_route"
+      ],
+      {
+       "pet_triage": 1.0,
+       "pet_early_route": 0.0
+      }
+     ],
+     [
+      "sample_plan",
+      10.49,
+      "bronch1",
+      [
+       "bronch1",
+       "no_sampling"
+      ],
+      {
+       "bronch1": 1.0,
+       "no_sampling": 0.0
+      }
+     ]
+    ]
+   },
+   {
+    "id": 115,
+    "cohort": 201,
+    "g": "all",
+    "age": 76,
+    "cancer": 1,
+    "out": "treatment",
+    "exit": "treat",
+    "t_exit": 79.614,
+    "t_diag": 58.544,
+    "t_treat": 79.614,
+    "ft": 0,
+    "v": [
+     [
+      "ct",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1,
+      1
+     ],
+     [
+      "visit",
+      0.0,
+      28.806,
+      28.906,
+      28.906,
+      1,
+      1
+     ],
+     [
+      "bronch1",
+      28.906,
+      33.356,
+      33.456,
+      37.123,
+      null,
+      0
+     ],
+     [
+      "pet_late",
+      28.906,
+      54.259,
+      54.359,
+      58.544,
+      1,
+      1
+     ],
+     [
+      "bronch2",
+      37.123,
+      40.051,
+      40.151,
+      43.084,
+      null,
+      0
+     ],
+     [
+      "mdt",
+      58.544,
+      63.644,
+      63.644,
+      64.144,
+      1,
+      1
+     ],
+     [
+      "book_surgery",
+      64.144,
+      79.614,
+      79.614,
+      79.614,
+      1,
+      1
+     ],
+     [
+      "treat",
+      79.614,
+      79.614,
+      79.614,
+      79.614,
+      null,
+      1
+     ]
+    ],
+    "c": [
+     [
+      "pet_timing",
+      0.0,
+      "pet_late",
+      [
+       "pet_on_time",
+       "pet_late"
+      ],
+      {
+       "pet_on_time": 0.0,
+       "pet_late": 1.0
+      }
+     ],
+     [
+      "sample_plan",
+      28.906,
+      "bronch1",
+      [
+       "bronch1",
+       "no_sampling"
+      ],
+      {
+       "bronch1": 1.0,
+       "no_sampling": 0.0
+      }
+     ],
+     [
+      "after_bronch",
+      37.123,
+      "bronch2",
+      [
+       "ttnb",
+       "bronch2",
+       "no_more"
+      ],
+      {
+       "ttnb": 0.0,
+       "bronch2": 1.0,
+       "no_more": 0.0
+      }
+     ]
+    ]
+   },
+   {
+    "id": 195,
+    "cohort": 201,
+    "g": "all",
+    "age": 69,
+    "cancer": 1,
+    "out": "treatment",
+    "exit": "treat",
+    "t_exit": 24.9,
+    "t_diag": 16.177,
+    "t_treat": 24.9,
+    "ft": 0,
+    "v": [
+     [
+      "ct",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1,
+      1
+     ],
+     [
+      "visit",
+      0.0,
+      9.646,
+      9.746,
+      9.746,
+      1,
+      0
+     ],
+     [
+      "pet_triage",
+      0.0,
+      13.072,
+      13.172,
+      16.177,
+      1,
+      1
+     ],
+     [
+      "mdt",
+      16.177,
+      21.162,
+      21.162,
+      21.662,
+      1,
+      1
+     ],
+     [
+      "book_surgery",
+      21.662,
+      24.9,
+      24.9,
+      24.9,
+      1,
+      1
+     ],
+     [
+      "treat",
+      24.9,
+      24.9,
+      24.9,
+      24.9,
+      null,
+      1
+     ]
+    ],
+    "c": [
+     [
+      "pet_timing",
+      0.0,
+      "pet_on_time",
+      [
+       "pet_on_time",
+       "pet_late"
+      ],
+      {
+       "pet_on_time": 1.0,
+       "pet_late": 0.0
+      }
+     ],
+     [
+      "pet_on_time",
+      0.0,
+      "pet_triage",
+      [
+       "pet_triage",
+       "pet_early_route"
+      ],
+      {
+       "pet_triage": 1.0,
+       "pet_early_route": 0.0
+      }
+     ],
+     [
+      "sample_plan",
+      9.746,
+      "no_sampling",
+      [
+       "bronch1",
+       "no_sampling"
+      ],
+      {
+       "bronch1": 0.0,
+       "no_sampling": 1.0
+      }
+     ]
+    ]
+   },
+   {
+    "id": 225,
+    "cohort": 201,
+    "g": "all",
+    "age": 59,
+    "cancer": 1,
+    "out": "treatment",
+    "exit": "treat",
+    "t_exit": 36.804,
+    "t_diag": 29.025,
+    "t_treat": 36.804,
+    "ft": 0,
+    "v": [
+     [
+      "ct",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1,
+      1
+     ],
+     [
+      "visit",
+      0.0,
+      4.259,
+      4.359,
+      4.359,
+      1,
+      1
+     ],
+     [
+      "pet_triage",
+      0.0,
+      16.678,
+      16.778,
+      19.166,
+      1,
+      0
+     ],
+     [
+      "bronch1",
+      4.359,
+      9.065,
+      9.165,
+      12.041,
+      null,
+      1
+     ],
+     [
+      "ttnb",
+      12.041,
+      24.959,
+      25.059,
+      29.025,
+      1,
+      1
+     ],
+     [
+      "mdt",
+      29.025,
+      31.588,
+      31.588,
+      32.088,
+      1,
+      1
+     ],
+     [
+      "book_surgery",
+      32.088,
+      36.804,
+      36.804,
+      36.804,
+      1,
+      1
+     ],
+     [
+      "treat",
+      36.804,
+      36.804,
+      36.804,
+      36.804,
+      null,
+      1
+     ]
+    ],
+    "c": [
+     [
+      "pet_timing",
+      0.0,
+      "pet_on_time",
+      [
+       "pet_on_time",
+       "pet_late"
+      ],
+      {
+       "pet_on_time": 1.0,
+       "pet_late": 0.0
+      }
+     ],
+     [
+      "pet_on_time",
+      0.0,
+      "pet_triage",
+      [
+       "pet_triage",
+       "pet_early_route"
+      ],
+      {
+       "pet_triage": 1.0,
+       "pet_early_route": 0.0
+      }
+     ],
+     [
+      "sample_plan",
+      4.359,
+      "bronch1",
+      [
+       "bronch1",
+       "no_sampling"
+      ],
+      {
+       "bronch1": 1.0,
+       "no_sampling": 0.0
+      }
+     ],
+     [
+      "after_bronch",
+      12.041,
+      "ttnb",
+      [
+       "ttnb",
+       "bronch2",
+       "no_more"
+      ],
+      {
+       "ttnb": 1.0,
+       "bronch2": 0.0,
+       "no_more": 0.0
+      }
+     ]
+    ]
+   },
+   {
+    "id": 246,
+    "cohort": 201,
+    "g": "all",
+    "age": 72,
+    "cancer": 1,
+    "out": "treatment",
+    "exit": "treat",
+    "t_exit": 54.084,
+    "t_diag": 31.029,
+    "t_treat": 54.084,
+    "ft": 0,
+    "v": [
+     [
+      "ct",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1,
+      1
+     ],
+     [
+      "pet_triage",
+      0.0,
+      15.094,
+      15.194,
+      17.113,
+      1,
+      0
+     ],
+     [
+      "visit",
+      0.0,
+      19.449,
+      19.549,
+      19.549,
+      1,
+      1
+     ],
+     [
+      "bronch1",
+      19.549,
+      26.881,
+      26.981,
+      31.029,
+      null,
+      0
+     ],
+     [
+      "ex_late",
+      19.549,
+      42.367,
+      42.467,
+      43.467,
+      1,
+      1
+     ],
+     [
+      "mdt",
+      43.467,
+      48.246,
+      48.246,
+      48.746,
+      1,
+      1
+     ],
+     [
+      "book_surgery",
+      48.746,
+      54.084,
+      54.084,
+      54.084,
+      1,
+      1
+     ],
+     [
+      "treat",
+      54.084,
+      54.084,
+      54.084,
+      54.084,
+      null,
+      1
+     ]
+    ],
+    "c": [
+     [
+      "pet_timing",
+      0.0,
+      "pet_on_time",
+      [
+       "pet_on_time",
+       "pet_late"
+      ],
+      {
+       "pet_on_time": 1.0,
+       "pet_late": 0.0
+      }
+     ],
+     [
+      "pet_on_time",
+      0.0,
+      "pet_triage",
+      [
+       "pet_triage",
+       "pet_early_route"
+      ],
+      {
+       "pet_triage": 1.0,
+       "pet_early_route": 0.0
+      }
+     ],
+     [
+      "sample_plan",
+      19.549,
+      "bronch1",
+      [
+       "bronch1",
+       "no_sampling"
+      ],
+      {
+       "bronch1": 1.0,
+       "no_sampling": 0.0
+      }
+     ],
+     [
+      "ex_timing",
+      19.549,
+      "ex_late",
+      [
+       "ex_early",
+       "ex_late"
+      ],
+      {
+       "ex_early": 0.0,
+       "ex_late": 1.0
+      }
+     ],
+     [
+      "after_bronch",
+      31.029,
+      "no_more",
+      [
+       "ttnb",
+       "bronch2",
+       "no_more"
+      ],
+      {
+       "ttnb": 0.0,
+       "bronch2": 0.0,
+       "no_more": 1.0
+      }
+     ]
+    ]
+   },
+   {
+    "id": 248,
+    "cohort": 201,
+    "g": "all",
+    "age": 63,
+    "cancer": 1,
+    "out": "treatment",
+    "exit": "treat",
+    "t_exit": 32.571,
+    "t_diag": 25.021,
+    "t_treat": 32.571,
+    "ft": 0,
+    "v": [
+     [
+      "ct",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1,
+      1
+     ],
+     [
+      "visit",
+      0.0,
+      4.545,
+      4.645,
+      4.645,
+      1,
+      0
+     ],
+     [
+      "pet_triage",
+      0.0,
+      22.329,
+      22.429,
+      25.021,
+      1,
+      1
+     ],
+     [
+      "bronch1",
+      4.645,
+      6.211,
+      6.311,
+      9.411,
+      null,
+      0
+     ],
+     [
+      "mdt",
+      25.021,
+      27.261,
+      27.261,
+      27.761,
+      1,
+      1
+     ],
+     [
+      "book_surgery",
+      27.761,
+      32.571,
+      32.571,
+      32.571,
+      1,
+      1
+     ],
+     [
+      "treat",
+      32.571,
+      32.571,
+      32.571,
+      32.571,
+      null,
+      1
+     ]
+    ],
+    "c": [
+     [
+      "pet_timing",
+      0.0,
+      "pet_on_time",
+      [
+       "pet_on_time",
+       "pet_late"
+      ],
+      {
+       "pet_on_time": 1.0,
+       "pet_late": 0.0
+      }
+     ],
+     [
+      "pet_on_time",
+      0.0,
+      "pet_triage",
+      [
+       "pet_triage",
+       "pet_early_route"
+      ],
+      {
+       "pet_triage": 1.0,
+       "pet_early_route": 0.0
+      }
+     ],
+     [
+      "sample_plan",
+      4.645,
+      "bronch1",
+      [
+       "bronch1",
+       "no_sampling"
+      ],
+      {
+       "bronch1": 1.0,
+       "no_sampling": 0.0
+      }
+     ],
+     [
+      "after_bronch",
+      9.411,
+      "no_more",
+      [
+       "ttnb",
+       "bronch2",
+       "no_more"
+      ],
+      {
+       "ttnb": 0.0,
+       "bronch2": 0.0,
+       "no_more": 1.0
+      }
+     ]
+    ]
+   },
+   {
+    "id": 261,
+    "cohort": 201,
+    "g": "all",
+    "age": 82,
+    "cancer": 1,
+    "out": "treatment",
+    "exit": "treat",
+    "t_exit": 54.823,
+    "t_diag": 38.638,
+    "t_treat": 54.823,
+    "ft": 0,
+    "v": [
+     [
+      "ct",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1,
+      1
+     ],
+     [
+      "visit",
+      0.0,
+      7.831,
+      7.931,
+      7.931,
+      1,
+      0
+     ],
+     [
+      "pet_triage",
+      0.0,
+      30.728,
+      30.828,
+      32.331,
+      1,
+      1
+     ],
+     [
+      "workup",
+      32.331,
+      35.974,
+      36.074,
+      38.638,
+      1,
+      1
+     ],
+     [
+      "mdt",
+      38.638,
+      42.417,
+      42.417,
+      42.917,
+      1,
+      1
+     ],
+     [
+      "book_surgery",
+      42.917,
+      54.823,
+      54.823,
+      54.823,
+      1,
+      1
+     ],
+     [
+      "treat",
+      54.823,
+      54.823,
+      54.823,
+      54.823,
+      null,
+      1
+     ]
+    ],
+    "c": [
+     [
+      "pet_timing",
+      0.0,
+      "pet_on_time",
+      [
+       "pet_on_time",
+       "pet_late"
+      ],
+      {
+       "pet_on_time": 1.0,
+       "pet_late": 0.0
+      }
+     ],
+     [
+      "pet_on_time",
+      0.0,
+      "pet_triage",
+      [
+       "pet_triage",
+       "pet_early_route"
+      ],
+      {
+       "pet_triage": 1.0,
+       "pet_early_route": 0.0
+      }
+     ],
+     [
+      "sample_plan",
+      7.931,
+      "no_sampling",
+      [
+       "bronch1",
+       "no_sampling"
+      ],
+      {
+       "bronch1": 0.0,
+       "no_sampling": 1.0
+      }
+     ]
+    ]
+   },
+   {
+    "id": 267,
+    "cohort": 201,
+    "g": "all",
+    "age": 74,
+    "cancer": 1,
+    "out": "treatment",
+    "exit": "treat",
+    "t_exit": 75.746,
+    "t_diag": 62.866,
+    "t_treat": 75.746,
+    "ft": 0,
+    "v": [
+     [
+      "ct",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1,
+      1
+     ],
+     [
+      "visit",
+      0.0,
+      5.322,
+      5.422,
+      5.422,
+      1,
+      1
+     ],
+     [
+      "bronch1",
+      5.422,
+      7.922,
+      8.022,
+      11.397,
+      1,
+      0
+     ],
+     [
+      "pet_late",
+      5.422,
+      57.886,
+      57.986,
+      62.866,
+      1,
+      1
+     ],
+     [
+      "mdt",
+      62.866,
+      66.017,
+      66.017,
+      66.517,
+      1,
+      1
+     ],
+     [
+      "book_surgery",
+      66.517,
+      75.746,
+      75.746,
+      75.746,
+      1,
+      1
+     ],
+     [
+      "treat",
+      75.746,
+      75.746,
+      75.746,
+      75.746,
+      null,
+      1
+     ]
+    ],
+    "c": [
+     [
+      "pet_timing",
+      0.0,
+      "pet_late",
+      [
+       "pet_on_time",
+       "pet_late"
+      ],
+      {
+       "pet_on_time": 0.0,
+       "pet_late": 1.0
+      }
+     ],
+     [
+      "sample_plan",
+      5.422,
+      "bronch1",
+      [
+       "bronch1",
+       "no_sampling"
+      ],
+      {
+       "bronch1": 1.0,
+       "no_sampling": 0.0
+      }
+     ]
+    ]
+   },
+   {
+    "id": 1,
+    "cohort": 202,
+    "g": "all",
+    "age": 83,
+    "cancer": 1,
+    "out": "treatment",
+    "exit": "treat",
+    "t_exit": 56.542,
+    "t_diag": 35.094,
+    "t_treat": 56.542,
+    "ft": 0,
+    "v": [
+     [
+      "ct",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1,
+      1
+     ],
+     [
+      "pet_triage",
+      0.0,
+      26.585,
+      26.685,
+      28.806,
+      1,
+      0
+     ],
+     [
+      "visit",
+      0.0,
+      34.994,
+      35.094,
+      35.094,
+      1,
+      1
+     ],
+     [
+      "mdt",
+      35.094,
+      40.281,
+      40.281,
+      40.781,
+      1,
+      1
+     ],
+     [
+      "book_rt",
+      40.781,
+      56.542,
+      56.542,
+      56.542,
+      1,
+      1
+     ],
+     [
+      "treat",
+      56.542,
+      56.542,
+      56.542,
+      56.542,
+      null,
+      1
+     ]
+    ],
+    "c": [
+     [
+      "pet_timing",
+      0.0,
+      "pet_on_time",
+      [
+       "pet_on_time",
+       "pet_late"
+      ],
+      {
+       "pet_on_time": 1.0,
+       "pet_late": 0.0
+      }
+     ],
+     [
+      "pet_on_time",
+      0.0,
+      "pet_triage",
+      [
+       "pet_triage",
+       "pet_early_route"
+      ],
+      {
+       "pet_triage": 1.0,
+       "pet_early_route": 0.0
+      }
+     ],
+     [
+      "sample_plan",
+      35.094,
+      "no_sampling",
+      [
+       "bronch1",
+       "no_sampling"
+      ],
+      {
+       "bronch1": 0.0,
+       "no_sampling": 1.0
+      }
+     ]
+    ]
+   },
+   {
+    "id": 6,
+    "cohort": 202,
+    "g": "all",
+    "age": 68,
+    "cancer": 1,
+    "out": "treatment",
+    "exit": "treat",
+    "t_exit": 35.649,
+    "t_diag": 24.321,
+    "t_treat": 35.649,
+    "ft": 0,
+    "v": [
+     [
+      "ct",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1,
+      1
+     ],
+     [
+      "visit",
+      0.0,
+      5.727,
+      5.827,
+      5.827,
+      1,
+      0
+     ],
+     [
+      "pet_triage",
+      0.0,
+      21.278,
+      21.378,
+      24.321,
+      1,
+      1
+     ],
+     [
+      "mdt",
+      24.321,
+      30.765,
+      30.765,
+      31.265,
+      1,
+      1
+     ],
+     [
+      "book_surgery",
+      31.265,
+      35.649,
+      35.649,
+      35.649,
+      1,
+      1
+     ],
+     [
+      "treat",
+      35.649,
+      35.649,
+      35.649,
+      35.649,
+      null,
+      1
+     ]
+    ],
+    "c": [
+     [
+      "pet_timing",
+      0.0,
+      "pet_on_time",
+      [
+       "pet_on_time",
+       "pet_late"
+      ],
+      {
+       "pet_on_time": 1.0,
+       "pet_late": 0.0
+      }
+     ],
+     [
+      "pet_on_time",
+      0.0,
+      "pet_triage",
+      [
+       "pet_triage",
+       "pet_early_route"
+      ],
+      {
+       "pet_triage": 1.0,
+       "pet_early_route": 0.0
+      }
+     ],
+     [
+      "sample_plan",
+      5.827,
+      "no_sampling",
+      [
+       "bronch1",
+       "no_sampling"
+      ],
+      {
+       "bronch1": 0.0,
+       "no_sampling": 1.0
+      }
+     ]
+    ]
+   },
+   {
+    "id": 95,
+    "cohort": 202,
+    "g": "all",
+    "age": 55,
+    "cancer": 1,
+    "out": "treatment",
+    "exit": "treat",
+    "t_exit": 31.323,
+    "t_diag": 19.408,
+    "t_treat": 31.323,
+    "ft": 0,
+    "v": [
+     [
+      "ct",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1,
+      1
+     ],
+     [
+      "visit",
+      0.0,
+      16.468,
+      16.568,
+      16.568,
+      1,
+      0
+     ],
+     [
+      "pet_triage",
+      0.0,
+      18.151,
+      18.251,
+      19.408,
+      1,
+      1
+     ],
+     [
+      "mdt",
+      19.408,
+      21.177,
+      21.177,
+      21.677,
+      1,
+      1
+     ],
+     [
+      "book_surgery",
+      21.677,
+      31.323,
+      31.323,
+      31.323,
+      1,
+      1
+     ],
+     [
+      "treat",
+      31.323,
+      31.323,
+      31.323,
+      31.323,
+      null,
+      1
+     ]
+    ],
+    "c": [
+     [
+      "pet_timing",
+      0.0,
+      "pet_on_time",
+      [
+       "pet_on_time",
+       "pet_late"
+      ],
+      {
+       "pet_on_time": 1.0,
+       "pet_late": 0.0
+      }
+     ],
+     [
+      "pet_on_time",
+      0.0,
+      "pet_triage",
+      [
+       "pet_triage",
+       "pet_early_route"
+      ],
+      {
+       "pet_triage": 1.0,
+       "pet_early_route": 0.0
+      }
+     ],
+     [
+      "sample_plan",
+      16.568,
+      "no_sampling",
+      [
+       "bronch1",
+       "no_sampling"
+      ],
+      {
+       "bronch1": 0.0,
+       "no_sampling": 1.0
+      }
+     ]
+    ]
+   },
+   {
+    "id": 111,
+    "cohort": 202,
+    "g": "all",
+    "age": 63,
+    "cancer": 1,
+    "out": "treatment",
+    "exit": "treat",
+    "t_exit": 36.88,
+    "t_diag": 27.345,
+    "t_treat": 36.88,
+    "ft": 0,
+    "v": [
+     [
+      "ct",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1,
+      1
+     ],
+     [
+      "visit",
+      0.0,
+      4.174,
+      4.274,
+      4.274,
+      1,
+      1
+     ],
+     [
+      "pet_triage",
+      0.0,
+      24.187,
+      24.287,
+      26.533,
+      1,
+      0
+     ],
+     [
+      "bronch1",
+      4.274,
+      11.762,
+      11.862,
+      15.934,
+      null,
+      1
+     ],
+     [
+      "ct_redo",
+      4.274,
+      20.054,
+      20.154,
+      20.154,
+      1,
+      0
+     ],
+     [
+      "bronch2",
+      15.934,
+      24.085,
+      24.185,
+      27.345,
+      null,
+      1
+     ],
+     [
+      "mdt",
+      27.345,
+      27.607,
+      27.607,
+      28.107,
+      1,
+      1
+     ],
+     [
+      "book_rt",
+      28.107,
+      36.88,
+      36.88,
+      36.88,
+      1,
+      1
+     ],
+     [
+      "treat",
+      36.88,
+      36.88,
+      36.88,
+      36.88,
+      null,
+      1
+     ]
+    ],
+    "c": [
+     [
+      "pet_timing",
+      0.0,
+      "pet_on_time",
+      [
+       "pet_on_time",
+       "pet_late"
+      ],
+      {
+       "pet_on_time": 1.0,
+       "pet_late": 0.0
+      }
+     ],
+     [
+      "pet_on_time",
+      0.0,
+      "pet_triage",
+      [
+       "pet_triage",
+       "pet_early_route"
+      ],
+      {
+       "pet_triage": 1.0,
+       "pet_early_route": 0.0
+      }
+     ],
+     [
+      "sample_plan",
+      4.274,
+      "bronch1",
+      [
+       "bronch1",
+       "no_sampling"
+      ],
+      {
+       "bronch1": 1.0,
+       "no_sampling": 0.0
+      }
+     ],
+     [
+      "after_bronch",
+      15.934,
+      "bronch2",
+      [
+       "ttnb",
+       "bronch2",
+       "no_more"
+      ],
+      {
+       "ttnb": 0.0,
+       "bronch2": 1.0,
+       "no_more": 0.0
+      }
+     ]
+    ]
+   },
+   {
+    "id": 125,
+    "cohort": 202,
+    "g": "all",
+    "age": 64,
+    "cancer": 1,
+    "out": "treatment",
+    "exit": "treat",
+    "t_exit": 29.763,
+    "t_diag": 13.748,
+    "t_treat": 29.763,
+    "ft": 0,
+    "v": [
+     [
+      "ct",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1,
+      1
+     ],
+     [
+      "pet_triage",
+      0.0,
+      4.681,
+      4.781,
+      5.801,
+      1,
+      0
+     ],
+     [
+      "visit",
+      0.0,
+      8.319,
+      8.419,
+      8.419,
+      1,
+      1
+     ],
+     [
+      "bronch1",
+      8.419,
+      11.148,
+      11.248,
+      13.748,
+      1,
+      1
+     ],
+     [
+      "ct_redo",
+      8.419,
+      31.261,
+      31.361,
+      31.361,
+      null,
+      0
+     ],
+     [
+      "mdt",
+      13.748,
+      17.834,
+      17.834,
+      18.334,
+      1,
+      1
+     ],
+     [
+      "book_rt",
+      18.334,
+      29.763,
+      29.763,
+      29.763,
+      1,
+      1
+     ],
+     [
+      "treat",
+      29.763,
+      29.763,
+      29.763,
+      29.763,
+      null,
+      1
+     ]
+    ],
+    "c": [
+     [
+      "pet_timing",
+      0.0,
+      "pet_on_time",
+      [
+       "pet_on_time",
+       "pet_late"
+      ],
+      {
+       "pet_on_time": 1.0,
+       "pet_late": 0.0
+      }
+     ],
+     [
+      "pet_on_time",
+      0.0,
+      "pet_triage",
+      [
+       "pet_triage",
+       "pet_early_route"
+      ],
+      {
+       "pet_triage": 1.0,
+       "pet_early_route": 0.0
+      }
+     ],
+     [
+      "sample_plan",
+      8.419,
+      "bronch1",
+      [
+       "bronch1",
+       "no_sampling"
+      ],
+      {
+       "bronch1": 1.0,
+       "no_sampling": 0.0
+      }
+     ]
+    ]
+   },
+   {
+    "id": 137,
+    "cohort": 202,
+    "g": "all",
+    "age": 82,
+    "cancer": 1,
+    "out": "treatment",
+    "exit": "treat",
+    "t_exit": 60.84,
+    "t_diag": 51.207,
+    "t_treat": 60.84,
+    "ft": 0,
+    "v": [
+     [
+      "ct",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1,
+      1
+     ],
+     [
+      "visit",
+      0.0,
+      11.836,
+      11.936,
+      11.936,
+      1,
+      1
+     ],
+     [
+      "pet_late",
+      11.936,
+      48.315,
+      48.415,
+      51.207,
+      1,
+      1
+     ],
+     [
+      "mdt",
+      51.207,
+      53.972,
+      53.972,
+      54.472,
+      1,
+      1
+     ],
+     [
+      "book_surgery",
+      54.472,
+      60.84,
+      60.84,
+      60.84,
+      1,
+      1
+     ],
+     [
+      "treat",
+      60.84,
+      60.84,
+      60.84,
+      60.84,
+      null,
+      1
+     ]
+    ],
+    "c": [
+     [
+      "pet_timing",
+      0.0,
+      "pet_late",
+      [
+       "pet_on_time",
+       "pet_late"
+      ],
+      {
+       "pet_on_time": 0.0,
+       "pet_late": 1.0
+      }
+     ],
+     [
+      "sample_plan",
+      11.936,
+      "no_sampling",
+      [
+       "bronch1",
+       "no_sampling"
+      ],
+      {
+       "bronch1": 0.0,
+       "no_sampling": 1.0
+      }
+     ]
+    ]
+   },
+   {
+    "id": 149,
+    "cohort": 202,
+    "g": "all",
+    "age": 81,
+    "cancer": 1,
+    "out": "treatment",
+    "exit": "treat",
+    "t_exit": 55.484,
+    "t_diag": 34.014,
+    "t_treat": 55.484,
+    "ft": 0,
+    "v": [
+     [
+      "ct",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1,
+      1
+     ],
+     [
+      "visit",
+      0.0,
+      15.602,
+      15.702,
+      15.702,
+      1,
+      1
+     ],
+     [
+      "bronch1",
+      15.702,
+      16.242,
+      16.342,
+      18.014,
+      null,
+      0
+     ],
+     [
+      "pet_late",
+      15.702,
+      31.297,
+      31.397,
+      34.014,
+      1,
+      0
+     ],
+     [
+      "ex_late",
+      15.702,
+      45.216,
+      45.316,
+      46.316,
+      1,
+      1
+     ],
+     [
+      "ttnb",
+      18.014,
+      29.941,
+      30.041,
+      32.809,
+      1,
+      0
+     ],
+     [
+      "mdt",
+      46.316,
+      47.945,
+      47.945,
+      48.445,
+      1,
+      1
+     ],
+     [
+      "book_surgery",
+      48.445,
+      55.484,
+      55.484,
+      55.484,
+      1,
+      1
+     ],
+     [
+      "treat",
+      55.484,
+      55.484,
+      55.484,
+      55.484,
+      null,
+      1
+     ]
+    ],
+    "c": [
+     [
+      "pet_timing",
+      0.0,
+      "pet_late",
+      [
+       "pet_on_time",
+       "pet_late"
+      ],
+      {
+       "pet_on_time": 0.0,
+       "pet_late": 1.0
+      }
+     ],
+     [
+      "sample_plan",
+      15.702,
+      "bronch1",
+      [
+       "bronch1",
+       "no_sampling"
+      ],
+      {
+       "bronch1": 1.0,
+       "no_sampling": 0.0
+      }
+     ],
+     [
+      "ex_timing",
+      15.702,
+      "ex_late",
+      [
+       "ex_early",
+       "ex_late"
+      ],
+      {
+       "ex_early": 0.0,
+       "ex_late": 1.0
+      }
+     ],
+     [
+      "after_bronch",
+      18.014,
+      "ttnb",
+      [
+       "ttnb",
+       "bronch2",
+       "no_more"
+      ],
+      {
+       "ttnb": 1.0,
+       "bronch2": 0.0,
+       "no_more": 0.0
+      }
+     ]
+    ]
+   },
+   {
+    "id": 154,
+    "cohort": 202,
+    "g": "all",
+    "age": 73,
+    "cancer": 1,
+    "out": "treatment",
+    "exit": "treat",
+    "t_exit": 30.226,
+    "t_diag": 22.238,
+    "t_treat": 30.226,
+    "ft": 0,
+    "v": [
+     [
+      "ct",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1,
+      1
+     ],
+     [
+      "visit",
+      0.0,
+      6.984,
+      7.084,
+      7.084,
+      1,
+      1
+     ],
+     [
+      "pet_triage",
+      0.0,
+      9.504,
+      9.604,
+      13.209,
+      1,
+      0
+     ],
+     [
+      "bronch1",
+      7.084,
+      9.679,
+      9.779,
+      22.238,
+      1,
+      1
+     ],
+     [
+      "ex_early",
+      7.084,
+      20.068,
+      20.168,
+      21.168,
+      1,
+      0
+     ],
+     [
+      "ct_redo",
+      7.084,
+      27.316,
+      27.416,
+      27.416,
+      1,
+      0
+     ],
+     [
+      "mdt",
+      22.238,
+      23.37,
+      23.37,
+      23.87,
+      1,
+      1
+     ],
+     [
+      "book_surgery",
+      23.87,
+      30.226,
+      30.226,
+      30.226,
+      1,
+      1
+     ],
+     [
+      "treat",
+      30.226,
+      30.226,
+      30.226,
+      30.226,
+      null,
+      1
+     ]
+    ],
+    "c": [
+     [
+      "pet_timing",
+      0.0,
+      "pet_on_time",
+      [
+       "pet_on_time",
+       "pet_late"
+      ],
+      {
+       "pet_on_time": 1.0,
+       "pet_late": 0.0
+      }
+     ],
+     [
+      "pet_on_time",
+      0.0,
+      "pet_triage",
+      [
+       "pet_triage",
+       "pet_early_route"
+      ],
+      {
+       "pet_triage": 1.0,
+       "pet_early_route": 0.0
+      }
+     ],
+     [
+      "sample_plan",
+      7.084,
+      "bronch1",
+      [
+       "bronch1",
+       "no_sampling"
+      ],
+      {
+       "bronch1": 1.0,
+       "no_sampling": 0.0
+      }
+     ],
+     [
+      "ex_timing",
+      7.084,
+      "ex_early",
+      [
+       "ex_early",
+       "ex_late"
+      ],
+      {
+       "ex_early": 1.0,
+       "ex_late": 0.0
+      }
+     ]
+    ]
+   },
+   {
+    "id": 193,
+    "cohort": 202,
+    "g": "all",
+    "age": 73,
+    "cancer": 1,
+    "out": "treatment",
+    "exit": "treat",
+    "t_exit": 66.762,
+    "t_diag": 54.047,
+    "t_treat": 66.762,
+    "ft": 0,
+    "v": [
+     [
+      "ct",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1,
+      1
+     ],
+     [
+      "visit",
+      0.0,
+      14.382,
+      14.482,
+      14.482,
+      1,
+      1
+     ],
+     [
+      "bronch1",
+      14.482,
+      19.071,
+      19.171,
+      33.068,
+      null,
+      0
+     ],
+     [
+      "ex_late",
+      14.482,
+      36.167,
+      36.267,
+      37.267,
+      1,
+      0
+     ],
+     [
+      "pet_late",
+      14.482,
+      51.732,
+      51.832,
+      54.047,
+      1,
+      1
+     ],
+     [
+      "mdt",
+      54.047,
+      60.995,
+      60.995,
+      61.495,
+      1,
+      1
+     ],
+     [
+      "book_surgery",
+      61.495,
+      66.762,
+      66.762,
+      66.762,
+      1,
+      1
+     ],
+     [
+      "treat",
+      66.762,
+      66.762,
+      66.762,
+      66.762,
+      null,
+      1
+     ]
+    ],
+    "c": [
+     [
+      "pet_timing",
+      0.0,
+      "pet_late",
+      [
+       "pet_on_time",
+       "pet_late"
+      ],
+      {
+       "pet_on_time": 0.0,
+       "pet_late": 1.0
+      }
+     ],
+     [
+      "sample_plan",
+      14.482,
+      "bronch1",
+      [
+       "bronch1",
+       "no_sampling"
+      ],
+      {
+       "bronch1": 1.0,
+       "no_sampling": 0.0
+      }
+     ],
+     [
+      "ex_timing",
+      14.482,
+      "ex_late",
+      [
+       "ex_early",
+       "ex_late"
+      ],
+      {
+       "ex_early": 0.0,
+       "ex_late": 1.0
+      }
+     ],
+     [
+      "after_bronch",
+      33.068,
+      "no_more",
+      [
+       "ttnb",
+       "bronch2",
+       "no_more"
+      ],
+      {
+       "ttnb": 0.0,
+       "bronch2": 0.0,
+       "no_more": 1.0
+      }
+     ]
+    ]
+   },
+   {
+    "id": 200,
+    "cohort": 202,
+    "g": "all",
+    "age": 67,
+    "cancer": 1,
+    "out": "treatment",
+    "exit": "treat",
+    "t_exit": 38.452,
+    "t_diag": 29.458,
+    "t_treat": 38.452,
+    "ft": 0,
+    "v": [
+     [
+      "ct",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1,
+      1
+     ],
+     [
+      "pet_triage",
+      0.0,
+      19.817,
+      19.917,
+      21.765,
+      1,
+      0
+     ],
+     [
+      "visit",
+      0.0,
+      22.112,
+      22.212,
+      22.212,
+      1,
+      1
+     ],
+     [
+      "bronch1",
+      22.212,
+      24.641,
+      24.741,
+      29.458,
+      null,
+      1
+     ],
+     [
+      "mdt",
+      29.458,
+      34.715,
+      34.715,
+      35.215,
+      1,
+      1
+     ],
+     [
+      "book_surgery",
+      35.215,
+      38.452,
+      38.452,
+      38.452,
+      1,
+      1
+     ],
+     [
+      "treat",
+      38.452,
+      38.452,
+      38.452,
+      38.452,
+      null,
+      1
+     ]
+    ],
+    "c": [
+     [
+      "pet_timing",
+      0.0,
+      "pet_on_time",
+      [
+       "pet_on_time",
+       "pet_late"
+      ],
+      {
+       "pet_on_time": 1.0,
+       "pet_late": 0.0
+      }
+     ],
+     [
+      "pet_on_time",
+      0.0,
+      "pet_triage",
+      [
+       "pet_triage",
+       "pet_early_route"
+      ],
+      {
+       "pet_triage": 1.0,
+       "pet_early_route": 0.0
+      }
+     ],
+     [
+      "sample_plan",
+      22.212,
+      "bronch1",
+      [
+       "bronch1",
+       "no_sampling"
+      ],
+      {
+       "bronch1": 1.0,
+       "no_sampling": 0.0
+      }
+     ],
+     [
+      "after_bronch",
+      29.458,
+      "no_more",
+      [
+       "ttnb",
+       "bronch2",
+       "no_more"
+      ],
+      {
+       "ttnb": 0.0,
+       "bronch2": 0.0,
+       "no_more": 1.0
+      }
+     ]
+    ]
+   },
+   {
+    "id": 219,
+    "cohort": 202,
+    "g": "all",
+    "age": 80,
+    "cancer": 1,
+    "out": "treatment",
+    "exit": "treat",
+    "t_exit": 36.392,
+    "t_diag": 16.289,
+    "t_treat": 36.392,
+    "ft": 0,
+    "v": [
+     [
+      "ct",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1,
+      1
+     ],
+     [
+      "visit",
+      0.0,
+      6.532,
+      6.632,
+      6.632,
+      1,
+      0
+     ],
+     [
+      "pet_triage",
+      0.0,
+      13.596,
+      13.696,
+      16.289,
+      1,
+      1
+     ],
+     [
+      "bronch1",
+      6.632,
+      9.603,
+      9.703,
+      11.826,
+      null,
+      0
+     ],
+     [
+      "mdt",
+      16.289,
+      19.552,
+      19.552,
+      20.052,
+      1,
+      1
+     ],
+     [
+      "book_rt",
+      20.052,
+      36.392,
+      36.392,
+      36.392,
+      1,
+      1
+     ],
+     [
+      "treat",
+      36.392,
+      36.392,
+      36.392,
+      36.392,
+      null,
+      1
+     ]
+    ],
+    "c": [
+     [
+      "pet_timing",
+      0.0,
+      "pet_on_time",
+      [
+       "pet_on_time",
+       "pet_late"
+      ],
+      {
+       "pet_on_time": 1.0,
+       "pet_late": 0.0
+      }
+     ],
+     [
+      "pet_on_time",
+      0.0,
+      "pet_triage",
+      [
+       "pet_triage",
+       "pet_early_route"
+      ],
+      {
+       "pet_triage": 1.0,
+       "pet_early_route": 0.0
+      }
+     ],
+     [
+      "sample_plan",
+      6.632,
+      "bronch1",
+      [
+       "bronch1",
+       "no_sampling"
+      ],
+      {
+       "bronch1": 1.0,
+       "no_sampling": 0.0
+      }
+     ],
+     [
+      "after_bronch",
+      11.826,
+      "no_more",
+      [
+       "ttnb",
+       "bronch2",
+       "no_more"
+      ],
+      {
+       "ttnb": 0.0,
+       "bronch2": 0.0,
+       "no_more": 1.0
+      }
+     ]
+    ]
+   },
+   {
+    "id": 238,
+    "cohort": 202,
+    "g": "all",
+    "age": 82,
+    "cancer": 1,
+    "out": "treatment",
+    "exit": "treat",
+    "t_exit": 51.2,
+    "t_diag": 41.576,
+    "t_treat": 51.2,
+    "ft": 0,
+    "v": [
+     [
+      "ct",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1,
+      1
+     ],
+     [
+      "visit",
+      0.0,
+      8.31,
+      8.41,
+      8.41,
+      1,
+      1
+     ],
+     [
+      "bronch1",
+      8.41,
+      14.926,
+      15.026,
+      17.695,
+      1,
+      0
+     ],
+     [
+      "pet_late",
+      8.41,
+      37.691,
+      37.791,
+      41.576,
+      1,
+      1
+     ],
+     [
+      "mdt",
+      41.576,
+      44.121,
+      44.121,
+      44.621,
+      1,
+      1
+     ],
+     [
+      "book_surgery",
+      44.621,
+      51.2,
+      51.2,
+      51.2,
+      1,
+      1
+     ],
+     [
+      "treat",
+      51.2,
+      51.2,
+      51.2,
+      51.2,
+      null,
+      1
+     ]
+    ],
+    "c": [
+     [
+      "pet_timing",
+      0.0,
+      "pet_late",
+      [
+       "pet_on_time",
+       "pet_late"
+      ],
+      {
+       "pet_on_time": 0.0,
+       "pet_late": 1.0
+      }
+     ],
+     [
+      "sample_plan",
+      8.41,
+      "bronch1",
+      [
+       "bronch1",
+       "no_sampling"
+      ],
+      {
+       "bronch1": 1.0,
+       "no_sampling": 0.0
+      }
+     ]
+    ]
+   },
+   {
+    "id": 258,
+    "cohort": 202,
+    "g": "all",
+    "age": 55,
+    "cancer": 1,
+    "out": "treatment",
+    "exit": "treat",
+    "t_exit": 59.562,
+    "t_diag": 49.31,
+    "t_treat": 59.562,
+    "ft": 0,
+    "v": [
+     [
+      "ct",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1,
+      1
+     ],
+     [
+      "visit",
+      0.0,
+      26.42,
+      26.52,
+      26.52,
+      1,
+      1
+     ],
+     [
+      "pet_triage",
+      0.0,
+      30.392,
+      30.492,
+      32.959,
+      1,
+      0
+     ],
+     [
+      "bronch1",
+      26.52,
+      28.467,
+      28.567,
+      36.897,
+      null,
+      1
+     ],
+     [
+      "ex_early",
+      26.52,
+      40.17,
+      40.27,
+      41.27,
+      1,
+      0
+     ],
+     [
+      "ttnb",
+      36.897,
+      47.459,
+      47.559,
+      49.31,
+      1,
+      1
+     ],
+     [
+      "mdt",
+      49.31,
+      55.963,
+      55.963,
+      56.463,
+      1,
+      1
+     ],
+     [
+      "book_surgery",
+      56.463,
+      59.562,
+      59.562,
+      59.562,
+      1,
+      1
+     ],
+     [
+      "treat",
+      59.562,
+      59.562,
+      59.562,
+      59.562,
+      null,
+      1
+     ]
+    ],
+    "c": [
+     [
+      "pet_timing",
+      0.0,
+      "pet_on_time",
+      [
+       "pet_on_time",
+       "pet_late"
+      ],
+      {
+       "pet_on_time": 1.0,
+       "pet_late": 0.0
+      }
+     ],
+     [
+      "pet_on_time",
+      0.0,
+      "pet_triage",
+      [
+       "pet_triage",
+       "pet_early_route"
+      ],
+      {
+       "pet_triage": 1.0,
+       "pet_early_route": 0.0
+      }
+     ],
+     [
+      "sample_plan",
+      26.52,
+      "bronch1",
+      [
+       "bronch1",
+       "no_sampling"
+      ],
+      {
+       "bronch1": 1.0,
+       "no_sampling": 0.0
+      }
+     ],
+     [
+      "ex_timing",
+      26.52,
+      "ex_early",
+      [
+       "ex_early",
+       "ex_late"
+      ],
+      {
+       "ex_early": 1.0,
+       "ex_late": 0.0
+      }
+     ],
+     [
+      "after_bronch",
+      36.897,
+      "ttnb",
+      [
+       "ttnb",
+       "bronch2",
+       "no_more"
+      ],
+      {
+       "ttnb": 1.0,
+       "bronch2": 0.0,
+       "no_more": 0.0
+      }
+     ]
+    ]
+   },
+   {
+    "id": 290,
+    "cohort": 202,
+    "g": "all",
+    "age": 65,
+    "cancer": 1,
+    "out": "treatment",
+    "exit": "treat",
+    "t_exit": 56.866,
+    "t_diag": 39.252,
+    "t_treat": 56.866,
+    "ft": 0,
+    "v": [
+     [
+      "ct",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1,
+      1
+     ],
+     [
+      "visit",
+      0.0,
+      11.357,
+      11.457,
+      11.457,
+      1,
+      1
+     ],
+     [
+      "bronch1",
+      11.457,
+      16.999,
+      17.099,
+      19.416,
+      null,
+      0
+     ],
+     [
+      "pet_late",
+      11.457,
+      37.896,
+      37.996,
+      39.252,
+      1,
+      1
+     ],
+     [
+      "mdt",
+      39.252,
+      43.874,
+      43.874,
+      44.374,
+      1,
+      1
+     ],
+     [
+      "book_rt",
+      44.374,
+      56.866,
+      56.866,
+      56.866,
+      1,
+      1
+     ],
+     [
+      "treat",
+      56.866,
+      56.866,
+      56.866,
+      56.866,
+      null,
+      1
+     ]
+    ],
+    "c": [
+     [
+      "pet_timing",
+      0.0,
+      "pet_late",
+      [
+       "pet_on_time",
+       "pet_late"
+      ],
+      {
+       "pet_on_time": 0.0,
+       "pet_late": 1.0
+      }
+     ],
+     [
+      "sample_plan",
+      11.457,
+      "bronch1",
+      [
+       "bronch1",
+       "no_sampling"
+      ],
+      {
+       "bronch1": 1.0,
+       "no_sampling": 0.0
+      }
+     ],
+     [
+      "after_bronch",
+      19.416,
+      "no_more",
+      [
+       "ttnb",
+       "bronch2",
+       "no_more"
+      ],
+      {
+       "ttnb": 0.0,
+       "bronch2": 0.0,
+       "no_more": 1.0
+      }
+     ]
+    ]
+   },
+   {
+    "id": 28,
+    "cohort": 203,
+    "g": "all",
+    "age": 80,
+    "cancer": 1,
+    "out": "treatment",
+    "exit": "treat",
+    "t_exit": 45.467,
+    "t_diag": 35.255,
+    "t_treat": 45.467,
+    "ft": 0,
+    "v": [
+     [
+      "ct",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1,
+      1
+     ],
+     [
+      "visit",
+      0.0,
+      11.587,
+      11.687,
+      11.687,
+      1,
+      0
+     ],
+     [
+      "pet_triage",
+      0.0,
+      32.921,
+      33.021,
+      35.255,
+      1,
+      1
+     ],
+     [
+      "mdt",
+      35.255,
+      38.057,
+      38.057,
+      38.557,
+      1,
+      1
+     ],
+     [
+      "book_surgery",
+      38.557,
+      45.467,
+      45.467,
+      45.467,
+      1,
+      1
+     ],
+     [
+      "treat",
+      45.467,
+      45.467,
+      45.467,
+      45.467,
+      null,
+      1
+     ]
+    ],
+    "c": [
+     [
+      "pet_timing",
+      0.0,
+      "pet_on_time",
+      [
+       "pet_on_time",
+       "pet_late"
+      ],
+      {
+       "pet_on_time": 1.0,
+       "pet_late": 0.0
+      }
+     ],
+     [
+      "pet_on_time",
+      0.0,
+      "pet_triage",
+      [
+       "pet_triage",
+       "pet_early_route"
+      ],
+      {
+       "pet_triage": 1.0,
+       "pet_early_route": 0.0
+      }
+     ],
+     [
+      "sample_plan",
+      11.687,
+      "no_sampling",
+      [
+       "bronch1",
+       "no_sampling"
+      ],
+      {
+       "bronch1": 0.0,
+       "no_sampling": 1.0
+      }
+     ]
+    ]
+   },
+   {
+    "id": 36,
+    "cohort": 203,
+    "g": "all",
+    "age": 58,
+    "cancer": 1,
+    "out": "treatment",
+    "exit": "treat",
+    "t_exit": 30.935,
+    "t_diag": 21.594,
+    "t_treat": 30.935,
+    "ft": 0,
+    "v": [
+     [
+      "ct",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1,
+      1
+     ],
+     [
+      "visit",
+      0.0,
+      16.153,
+      16.253,
+      16.253,
+      1,
+      0
+     ],
+     [
+      "pet_triage",
+      0.0,
+      19.842,
+      19.942,
+      21.594,
+      1,
+      1
+     ],
+     [
+      "bronch1",
+      16.253,
+      17.95,
+      18.05,
+      20.136,
+      1,
+      0
+     ],
+     [
+      "mdt",
+      21.594,
+      26.834,
+      26.834,
+      27.334,
+      1,
+      1
+     ],
+     [
+      "book_surgery",
+      27.334,
+      30.935,
+      30.935,
+      30.935,
+      1,
+      1
+     ],
+     [
+      "treat",
+      30.935,
+      30.935,
+      30.935,
+      30.935,
+      null,
+      1
+     ]
+    ],
+    "c": [
+     [
+      "pet_timing",
+      0.0,
+      "pet_on_time",
+      [
+       "pet_on_time",
+       "pet_late"
+      ],
+      {
+       "pet_on_time": 1.0,
+       "pet_late": 0.0
+      }
+     ],
+     [
+      "pet_on_time",
+      0.0,
+      "pet_triage",
+      [
+       "pet_triage",
+       "pet_early_route"
+      ],
+      {
+       "pet_triage": 1.0,
+       "pet_early_route": 0.0
+      }
+     ],
+     [
+      "sample_plan",
+      16.253,
+      "bronch1",
+      [
+       "bronch1",
+       "no_sampling"
+      ],
+      {
+       "bronch1": 1.0,
+       "no_sampling": 0.0
+      }
+     ]
+    ]
+   },
+   {
+    "id": 71,
+    "cohort": 203,
+    "g": "all",
+    "age": 72,
+    "cancer": 1,
+    "out": "treatment",
+    "exit": "treat",
+    "t_exit": 36.802,
+    "t_diag": 15.709,
+    "t_treat": 36.802,
+    "ft": 0,
+    "v": [
+     [
+      "ct",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1,
+      1
+     ],
+     [
+      "visit",
+      0.0,
+      1.03,
+      1.13,
+      1.13,
+      1,
+      0
+     ],
+     [
+      "pet_triage",
+      0.0,
+      13.085,
+      13.185,
+      15.709,
+      1,
+      1
+     ],
+     [
+      "bronch1",
+      1.13,
+      3.983,
+      4.083,
+      6.7,
+      1,
+      0
+     ],
+     [
+      "mdt",
+      15.709,
+      20.444,
+      20.444,
+      20.944,
+      1,
+      1
+     ],
+     [
+      "book_rt",
+      20.944,
+      36.802,
+      36.802,
+      36.802,
+      1,
+      1
+     ],
+     [
+      "treat",
+      36.802,
+      36.802,
+      36.802,
+      36.802,
+      null,
+      1
+     ]
+    ],
+    "c": [
+     [
+      "pet_timing",
+      0.0,
+      "pet_on_time",
+      [
+       "pet_on_time",
+       "pet_late"
+      ],
+      {
+       "pet_on_time": 1.0,
+       "pet_late": 0.0
+      }
+     ],
+     [
+      "pet_on_time",
+      0.0,
+      "pet_triage",
+      [
+       "pet_triage",
+       "pet_early_route"
+      ],
+      {
+       "pet_triage": 1.0,
+       "pet_early_route": 0.0
+      }
+     ],
+     [
+      "sample_plan",
+      1.13,
+      "bronch1",
+      [
+       "bronch1",
+       "no_sampling"
+      ],
+      {
+       "bronch1": 1.0,
+       "no_sampling": 0.0
+      }
+     ]
+    ]
+   },
+   {
+    "id": 99,
+    "cohort": 203,
+    "g": "all",
+    "age": 81,
+    "cancer": 1,
+    "out": "treatment",
+    "exit": "treat",
+    "t_exit": 49.918,
+    "t_diag": 41.24,
+    "t_treat": 49.918,
+    "ft": 0,
+    "v": [
+     [
+      "ct",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1,
+      1
+     ],
+     [
+      "pet_triage",
+      0.0,
+      15.398,
+      15.498,
+      17.62,
+      1,
+      0
+     ],
+     [
+      "visit",
+      0.0,
+      35.523,
+      35.623,
+      35.623,
+      1,
+      1
+     ],
+     [
+      "workup",
+      17.62,
+      24.632,
+      24.732,
+      34.923,
+      1,
+      0
+     ],
+     [
+      "bronch1",
+      35.623,
+      37.206,
+      37.306,
+      41.24,
+      null,
+      1
+     ],
+     [
+      "mdt",
+      41.24,
+      45.109,
+      45.109,
+      45.609,
+      1,
+      1
+     ],
+     [
+      "book_surgery",
+      45.609,
+      49.918,
+      49.918,
+      49.918,
+      1,
+      1
+     ],
+     [
+      "treat",
+      49.918,
+      49.918,
+      49.918,
+      49.918,
+      null,
+      1
+     ]
+    ],
+    "c": [
+     [
+      "pet_timing",
+      0.0,
+      "pet_on_time",
+      [
+       "pet_on_time",
+       "pet_late"
+      ],
+      {
+       "pet_on_time": 1.0,
+       "pet_late": 0.0
+      }
+     ],
+     [
+      "pet_on_time",
+      0.0,
+      "pet_triage",
+      [
+       "pet_triage",
+       "pet_early_route"
+      ],
+      {
+       "pet_triage": 1.0,
+       "pet_early_route": 0.0
+      }
+     ],
+     [
+      "sample_plan",
+      35.623,
+      "bronch1",
+      [
+       "bronch1",
+       "no_sampling"
+      ],
+      {
+       "bronch1": 1.0,
+       "no_sampling": 0.0
+      }
+     ],
+     [
+      "after_bronch",
+      41.24,
+      "no_more",
+      [
+       "ttnb",
+       "bronch2",
+       "no_more"
+      ],
+      {
+       "ttnb": 0.0,
+       "bronch2": 0.0,
+       "no_more": 1.0
+      }
+     ]
+    ]
+   },
+   {
+    "id": 110,
+    "cohort": 203,
+    "g": "all",
+    "age": 82,
+    "cancer": 1,
+    "out": "treatment",
+    "exit": "treat",
+    "t_exit": 49.652,
+    "t_diag": 38.246,
+    "t_treat": 49.652,
+    "ft": 0,
+    "v": [
+     [
+      "ct",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1,
+      1
+     ],
+     [
+      "visit",
+      0.0,
+      14.506,
+      14.606,
+      14.606,
+      1,
+      1
+     ],
+     [
+      "pet_triage",
+      0.0,
+      23.422,
+      23.522,
+      25.813,
+      1,
+      0
+     ],
+     [
+      "bronch1",
+      14.606,
+      18.233,
+      18.333,
+      20.44,
+      null,
+      1
+     ],
+     [
+      "ttnb",
+      20.44,
+      34.278,
+      34.378,
+      38.246,
+      1,
+      1
+     ],
+     [
+      "mdt",
+      38.246,
+      44.643,
+      44.643,
+      45.143,
+      1,
+      1
+     ],
+     [
+      "book_surgery",
+      45.143,
+      49.652,
+      49.652,
+      49.652,
+      1,
+      1
+     ],
+     [
+      "treat",
+      49.652,
+      49.652,
+      49.652,
+      49.652,
+      null,
+      1
+     ]
+    ],
+    "c": [
+     [
+      "pet_timing",
+      0.0,
+      "pet_on_time",
+      [
+       "pet_on_time",
+       "pet_late"
+      ],
+      {
+       "pet_on_time": 1.0,
+       "pet_late": 0.0
+      }
+     ],
+     [
+      "pet_on_time",
+      0.0,
+      "pet_triage",
+      [
+       "pet_triage",
+       "pet_early_route"
+      ],
+      {
+       "pet_triage": 1.0,
+       "pet_early_route": 0.0
+      }
+     ],
+     [
+      "sample_plan",
+      14.606,
+      "bronch1",
+      [
+       "bronch1",
+       "no_sampling"
+      ],
+      {
+       "bronch1": 1.0,
+       "no_sampling": 0.0
+      }
+     ],
+     [
+      "after_bronch",
+      20.441,
+      "ttnb",
+      [
+       "ttnb",
+       "bronch2",
+       "no_more"
+      ],
+      {
+       "ttnb": 1.0,
+       "bronch2": 0.0,
+       "no_more": 0.0
+      }
+     ]
+    ]
+   },
+   {
+    "id": 119,
+    "cohort": 203,
+    "g": "all",
+    "age": 69,
+    "cancer": 1,
+    "out": "treatment",
+    "exit": "treat",
+    "t_exit": 35.33,
+    "t_diag": 26.222,
+    "t_treat": 35.33,
+    "ft": 0,
+    "v": [
+     [
+      "ct",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1,
+      1
+     ],
+     [
+      "pet_triage",
+      0.0,
+      11.782,
+      11.882,
+      14.996,
+      1,
+      0
+     ],
+     [
+      "visit",
+      0.0,
+      19.764,
+      19.864,
+      19.864,
+      1,
+      1
+     ],
+     [
+      "bronch1",
+      19.864,
+      22.254,
+      22.354,
+      26.222,
+      1,
+      1
+     ],
+     [
+      "mdt",
+      26.222,
+      28.796,
+      28.796,
+      29.296,
+      1,
+      1
+     ],
+     [
+      "book_surgery",
+      29.296,
+      35.33,
+      35.33,
+      35.33,
+      1,
+      1
+     ],
+     [
+      "treat",
+      35.33,
+      35.33,
+      35.33,
+      35.33,
+      null,
+      1
+     ]
+    ],
+    "c": [
+     [
+      "pet_timing",
+      0.0,
+      "pet_on_time",
+      [
+       "pet_on_time",
+       "pet_late"
+      ],
+      {
+       "pet_on_time": 1.0,
+       "pet_late": 0.0
+      }
+     ],
+     [
+      "pet_on_time",
+      0.0,
+      "pet_triage",
+      [
+       "pet_triage",
+       "pet_early_route"
+      ],
+      {
+       "pet_triage": 1.0,
+       "pet_early_route": 0.0
+      }
+     ],
+     [
+      "sample_plan",
+      19.864,
+      "bronch1",
+      [
+       "bronch1",
+       "no_sampling"
+      ],
+      {
+       "bronch1": 1.0,
+       "no_sampling": 0.0
+      }
+     ]
+    ]
+   },
+   {
+    "id": 122,
+    "cohort": 203,
+    "g": "all",
+    "age": 77,
+    "cancer": 1,
+    "out": "treatment",
+    "exit": "treat",
+    "t_exit": 57.703,
+    "t_diag": 44.805,
+    "t_treat": 57.703,
+    "ft": 0,
+    "v": [
+     [
+      "ct",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1,
+      1
+     ],
+     [
+      "pet_triage",
+      0.0,
+      13.993,
+      14.093,
+      16.008,
+      1,
+      0
+     ],
+     [
+      "visit",
+      0.0,
+      24.016,
+      24.116,
+      24.116,
+      1,
+      1
+     ],
+     [
+      "bronch1",
+      24.116,
+      28.196,
+      28.296,
+      32.925,
+      null,
+      1
+     ],
+     [
+      "ttnb",
+      32.925,
+      37.066,
+      37.166,
+      44.805,
+      1,
+      1
+     ],
+     [
+      "mdt",
+      44.805,
+      50.92,
+      50.92,
+      51.42,
+      1,
+      1
+     ],
+     [
+      "book_surgery",
+      51.42,
+      57.703,
+      57.703,
+      57.703,
+      1,
+      1
+     ],
+     [
+      "treat",
+      57.703,
+      57.703,
+      57.703,
+      57.703,
+      null,
+      1
+     ]
+    ],
+    "c": [
+     [
+      "pet_timing",
+      0.0,
+      "pet_on_time",
+      [
+       "pet_on_time",
+       "pet_late"
+      ],
+      {
+       "pet_on_time": 1.0,
+       "pet_late": 0.0
+      }
+     ],
+     [
+      "pet_on_time",
+      0.0,
+      "pet_triage",
+      [
+       "pet_triage",
+       "pet_early_route"
+      ],
+      {
+       "pet_triage": 1.0,
+       "pet_early_route": 0.0
+      }
+     ],
+     [
+      "sample_plan",
+      24.116,
+      "bronch1",
+      [
+       "bronch1",
+       "no_sampling"
+      ],
+      {
+       "bronch1": 1.0,
+       "no_sampling": 0.0
+      }
+     ],
+     [
+      "after_bronch",
+      32.925,
+      "ttnb",
+      [
+       "ttnb",
+       "bronch2",
+       "no_more"
+      ],
+      {
+       "ttnb": 1.0,
+       "bronch2": 0.0,
+       "no_more": 0.0
+      }
+     ]
+    ]
+   },
+   {
+    "id": 161,
+    "cohort": 203,
+    "g": "all",
+    "age": 72,
+    "cancer": 1,
+    "out": "treatment",
+    "exit": "treat",
+    "t_exit": 92.478,
+    "t_diag": 82.839,
+    "t_treat": 92.478,
+    "ft": 0,
+    "v": [
+     [
+      "ct",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1,
+      1
+     ],
+     [
+      "visit",
+      0.0,
+      15.374,
+      15.474,
+      15.474,
+      1,
+      1
+     ],
+     [
+      "bronch1",
+      15.474,
+      17.702,
+      17.802,
+      20.561,
+      1,
+      0
+     ],
+     [
+      "pet_late",
+      15.474,
+      80.29,
+      80.39,
+      82.839,
+      1,
+      1
+     ],
+     [
+      "mdt",
+      82.839,
+      83.289,
+      83.289,
+      83.789,
+      1,
+      1
+     ],
+     [
+      "book_surgery",
+      83.789,
+      92.478,
+      92.478,
+      92.478,
+      1,
+      1
+     ],
+     [
+      "treat",
+      92.478,
+      92.478,
+      92.478,
+      92.478,
+      null,
+      1
+     ]
+    ],
+    "c": [
+     [
+      "pet_timing",
+      0.0,
+      "pet_late",
+      [
+       "pet_on_time",
+       "pet_late"
+      ],
+      {
+       "pet_on_time": 0.0,
+       "pet_late": 1.0
+      }
+     ],
+     [
+      "sample_plan",
+      15.474,
+      "bronch1",
+      [
+       "bronch1",
+       "no_sampling"
+      ],
+      {
+       "bronch1": 1.0,
+       "no_sampling": 0.0
+      }
+     ]
+    ]
+   },
+   {
+    "id": 175,
+    "cohort": 203,
+    "g": "all",
+    "age": 56,
+    "cancer": 1,
+    "out": "treatment",
+    "exit": "treat",
+    "t_exit": 45.234,
+    "t_diag": 32.873,
+    "t_treat": 45.234,
+    "ft": 0,
+    "v": [
+     [
+      "ct",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1,
+      1
+     ],
+     [
+      "pet_triage",
+      0.0,
+      19.816,
+      19.916,
+      22.504,
+      1,
+      0
+     ],
+     [
+      "visit",
+      0.0,
+      20.827,
+      20.927,
+      20.927,
+      1,
+      1
+     ],
+     [
+      "bronch1",
+      20.927,
+      25.537,
+      25.637,
+      32.873,
+      1,
+      1
+     ],
+     [
+      "mdt",
+      32.873,
+      38.298,
+      38.298,
+      38.798,
+      1,
+      1
+     ],
+     [
+      "book_surgery",
+      38.798,
+      45.234,
+      45.234,
+      45.234,
+      1,
+      1
+     ],
+     [
+      "treat",
+      45.234,
+      45.234,
+      45.234,
+      45.234,
+      null,
+      1
+     ]
+    ],
+    "c": [
+     [
+      "pet_timing",
+      0.0,
+      "pet_on_time",
+      [
+       "pet_on_time",
+       "pet_late"
+      ],
+      {
+       "pet_on_time": 1.0,
+       "pet_late": 0.0
+      }
+     ],
+     [
+      "pet_on_time",
+      0.0,
+      "pet_triage",
+      [
+       "pet_triage",
+       "pet_early_route"
+      ],
+      {
+       "pet_triage": 1.0,
+       "pet_early_route": 0.0
+      }
+     ],
+     [
+      "sample_plan",
+      20.927,
+      "bronch1",
+      [
+       "bronch1",
+       "no_sampling"
+      ],
+      {
+       "bronch1": 1.0,
+       "no_sampling": 0.0
+      }
+     ]
+    ]
+   },
+   {
+    "id": 196,
+    "cohort": 203,
+    "g": "all",
+    "age": 56,
+    "cancer": 1,
+    "out": "treatment",
+    "exit": "treat",
+    "t_exit": 26.878,
+    "t_diag": 21.779,
+    "t_treat": 26.878,
+    "ft": 0,
+    "v": [
+     [
+      "ct",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1,
+      1
+     ],
+     [
+      "visit",
+      0.0,
+      15.888,
+      15.988,
+      15.988,
+      1,
+      0
+     ],
+     [
+      "pet_triage",
+      0.0,
+      19.662,
+      19.762,
+      21.779,
+      1,
+      1
+     ],
+     [
+      "bronch1",
+      15.988,
+      18.434,
+      18.534,
+      21.402,
+      1,
+      0
+     ],
+     [
+      "mdt",
+      21.779,
+      23.146,
+      23.146,
+      23.646,
+      1,
+      1
+     ],
+     [
+      "book_surgery",
+      23.646,
+      26.878,
+      26.878,
+      26.878,
+      1,
+      1
+     ],
+     [
+      "treat",
+      26.878,
+      26.878,
+      26.878,
+      26.878,
+      null,
+      1
+     ]
+    ],
+    "c": [
+     [
+      "pet_timing",
+      0.0,
+      "pet_on_time",
+      [
+       "pet_on_time",
+       "pet_late"
+      ],
+      {
+       "pet_on_time": 1.0,
+       "pet_late": 0.0
+      }
+     ],
+     [
+      "pet_on_time",
+      0.0,
+      "pet_triage",
+      [
+       "pet_triage",
+       "pet_early_route"
+      ],
+      {
+       "pet_triage": 1.0,
+       "pet_early_route": 0.0
+      }
+     ],
+     [
+      "sample_plan",
+      15.988,
+      "bronch1",
+      [
+       "bronch1",
+       "no_sampling"
+      ],
+      {
+       "bronch1": 1.0,
+       "no_sampling": 0.0
+      }
+     ]
+    ]
+   },
+   {
+    "id": 213,
+    "cohort": 203,
+    "g": "all",
+    "age": 61,
+    "cancer": 1,
+    "out": "treatment",
+    "exit": "treat",
+    "t_exit": 90.317,
+    "t_diag": 69.13,
+    "t_treat": 90.317,
+    "ft": 0,
+    "v": [
+     [
+      "ct",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1,
+      1
+     ],
+     [
+      "visit",
+      0.0,
+      1.881,
+      1.981,
+      1.981,
+      1,
+      1
+     ],
+     [
+      "bronch1",
+      1.981,
+      6.958,
+      7.058,
+      11.352,
+      1,
+      0
+     ],
+     [
+      "pet_late",
+      1.981,
+      67.116,
+      67.216,
+      69.13,
+      1,
+      1
+     ],
+     [
+      "mdt",
+      69.13,
+      72.877,
+      72.877,
+      73.377,
+      1,
+      1
+     ],
+     [
+      "book_rt",
+      73.377,
+      90.317,
+      90.317,
+      90.317,
+      1,
+      1
+     ],
+     [
+      "treat",
+      90.317,
+      90.317,
+      90.317,
+      90.317,
+      null,
+      1
+     ]
+    ],
+    "c": [
+     [
+      "pet_timing",
+      0.0,
+      "pet_late",
+      [
+       "pet_on_time",
+       "pet_late"
+      ],
+      {
+       "pet_on_time": 0.0,
+       "pet_late": 1.0
+      }
+     ],
+     [
+      "sample_plan",
+      1.982,
+      "bronch1",
+      [
+       "bronch1",
+       "no_sampling"
+      ],
+      {
+       "bronch1": 1.0,
+       "no_sampling": 0.0
+      }
+     ]
+    ]
+   },
+   {
+    "id": 278,
+    "cohort": 203,
+    "g": "all",
+    "age": 74,
+    "cancer": 1,
+    "out": "treatment",
+    "exit": "treat",
+    "t_exit": 94.587,
+    "t_diag": 72.172,
+    "t_treat": 94.587,
+    "ft": 0,
+    "v": [
+     [
+      "ct",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1,
+      1
+     ],
+     [
+      "visit",
+      0.0,
+      20.605,
+      20.705,
+      20.705,
+      1,
+      1
+     ],
+     [
+      "bronch1",
+      20.705,
+      23.387,
+      23.487,
+      28.468,
+      null,
+      0
+     ],
+     [
+      "pet_late",
+      20.705,
+      54.337,
+      54.437,
+      56.546,
+      1,
+      1
+     ],
+     [
+      "ttnb",
+      28.468,
+      35.768,
+      35.868,
+      40.914,
+      1,
+      0
+     ],
+     [
+      "workup",
+      56.546,
+      67.185,
+      67.285,
+      72.172,
+      1,
+      1
+     ],
+     [
+      "mdt",
+      72.172,
+      74.249,
+      74.249,
+      74.749,
+      1,
+      1
+     ],
+     [
+      "book_surgery",
+      74.749,
+      94.587,
+      94.587,
+      94.587,
+      1,
+      1
+     ],
+     [
+      "treat",
+      94.587,
+      94.587,
+      94.587,
+      94.587,
+      null,
+      1
+     ]
+    ],
+    "c": [
+     [
+      "pet_timing",
+      0.0,
+      "pet_late",
+      [
+       "pet_on_time",
+       "pet_late"
+      ],
+      {
+       "pet_on_time": 0.0,
+       "pet_late": 1.0
+      }
+     ],
+     [
+      "sample_plan",
+      20.705,
+      "bronch1",
+      [
+       "bronch1",
+       "no_sampling"
+      ],
+      {
+       "bronch1": 1.0,
+       "no_sampling": 0.0
+      }
+     ],
+     [
+      "after_bronch",
+      28.468,
+      "ttnb",
+      [
+       "ttnb",
+       "bronch2",
+       "no_more"
+      ],
+      {
+       "ttnb": 1.0,
+       "bronch2": 0.0,
+       "no_more": 0.0
+      }
+     ]
+    ]
+   },
+   {
+    "id": 280,
+    "cohort": 203,
+    "g": "all",
+    "age": 72,
+    "cancer": 1,
+    "out": "treatment",
+    "exit": "treat",
+    "t_exit": 39.554,
+    "t_diag": 20.216,
+    "t_treat": 39.554,
+    "ft": 0,
+    "v": [
+     [
+      "ct",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1,
+      1
+     ],
+     [
+      "visit",
+      0.0,
+      13.68,
+      13.78,
+      13.78,
+      1,
+      1
+     ],
+     [
+      "pet_triage",
+      0.0,
+      18.62,
+      18.72,
+      20.216,
+      1,
+      0
+     ],
+     [
+      "bronch1",
+      13.78,
+      15.171,
+      15.271,
+      17.484,
+      1,
+      0
+     ],
+     [
+      "ex_late",
+      13.78,
+      24.906,
+      25.006,
+      26.006,
+      1,
+      1
+     ],
+     [
+      "mdt",
+      26.006,
+      27.647,
+      27.647,
+      28.147,
+      1,
+      1
+     ],
+     [
+      "book_rt",
+      28.147,
+      39.554,
+      39.554,
+      39.554,
+      1,
+      1
+     ],
+     [
+      "treat",
+      39.554,
+      39.554,
+      39.554,
+      39.554,
+      null,
+      1
+     ]
+    ],
+    "c": [
+     [
+      "pet_timing",
+      0.0,
+      "pet_on_time",
+      [
+       "pet_on_time",
+       "pet_late"
+      ],
+      {
+       "pet_on_time": 1.0,
+       "pet_late": 0.0
+      }
+     ],
+     [
+      "pet_on_time",
+      0.0,
+      "pet_triage",
+      [
+       "pet_triage",
+       "pet_early_route"
+      ],
+      {
+       "pet_triage": 1.0,
+       "pet_early_route": 0.0
+      }
+     ],
+     [
+      "sample_plan",
+      13.78,
+      "bronch1",
+      [
+       "bronch1",
+       "no_sampling"
+      ],
+      {
+       "bronch1": 1.0,
+       "no_sampling": 0.0
+      }
+     ],
+     [
+      "ex_timing",
+      13.78,
+      "ex_late",
+      [
+       "ex_early",
+       "ex_late"
+      ],
+      {
+       "ex_early": 0.0,
+       "ex_late": 1.0
+      }
+     ]
+    ]
+   },
+   {
+    "id": 289,
+    "cohort": 203,
+    "g": "all",
+    "age": 82,
+    "cancer": 1,
+    "out": "treatment",
+    "exit": "treat",
+    "t_exit": 31.33,
+    "t_diag": 26.543,
+    "t_treat": 31.33,
+    "ft": 0,
+    "v": [
+     [
+      "ct",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1,
+      1
+     ],
+     [
+      "visit",
+      0.0,
+      7.136,
+      7.236,
+      7.236,
+      1,
+      0
+     ],
+     [
+      "pet_triage",
+      0.0,
+      23.784,
+      23.884,
+      26.543,
+      1,
+      1
+     ],
+     [
+      "bronch1",
+      7.236,
+      8.408,
+      8.508,
+      14.18,
+      null,
+      0
+     ],
+     [
+      "ct_redo",
+      7.236,
+      16.774,
+      16.874,
+      16.874,
+      1,
+      0
+     ],
+     [
+      "mdt",
+      26.543,
+      27.827,
+      27.827,
+      28.327,
+      1,
+      1
+     ],
+     [
+      "book_surgery",
+      28.327,
+      31.33,
+      31.33,
+      31.33,
+      1,
+      1
+     ],
+     [
+      "treat",
+      31.33,
+      31.33,
+      31.33,
+      31.33,
+      null,
+      1
+     ]
+    ],
+    "c": [
+     [
+      "pet_timing",
+      0.0,
+      "pet_on_time",
+      [
+       "pet_on_time",
+       "pet_late"
+      ],
+      {
+       "pet_on_time": 1.0,
+       "pet_late": 0.0
+      }
+     ],
+     [
+      "pet_on_time",
+      0.0,
+      "pet_triage",
+      [
+       "pet_triage",
+       "pet_early_route"
+      ],
+      {
+       "pet_triage": 1.0,
+       "pet_early_route": 0.0
+      }
+     ],
+     [
+      "sample_plan",
+      7.236,
+      "bronch1",
+      [
+       "bronch1",
+       "no_sampling"
+      ],
+      {
+       "bronch1": 1.0,
+       "no_sampling": 0.0
+      }
+     ],
+     [
+      "after_bronch",
+      14.18,
+      "no_more",
+      [
+       "ttnb",
+       "bronch2",
+       "no_more"
+      ],
+      {
+       "ttnb": 0.0,
+       "bronch2": 0.0,
+       "no_more": 1.0
+      }
+     ]
+    ]
+   },
+   {
+    "id": 290,
+    "cohort": 203,
+    "g": "all",
+    "age": 65,
+    "cancer": 1,
+    "out": "treatment",
+    "exit": "treat",
+    "t_exit": 50.255,
+    "t_diag": 41.552,
+    "t_treat": 50.255,
+    "ft": 0,
+    "v": [
+     [
+      "ct",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1,
+      1
+     ],
+     [
+      "visit",
+      0.0,
+      11.886,
+      11.986,
+      11.986,
+      1,
+      1
+     ],
+     [
+      "bronch1",
+      11.986,
+      16.421,
+      16.521,
+      26.103,
+      null,
+      1
+     ],
+     [
+      "pet_late",
+      11.986,
+      29.761,
+      29.861,
+      32.104,
+      1,
+      0
+     ],
+     [
+      "bronch2",
+      26.103,
+      35.938,
+      36.038,
+      41.552,
+      null,
+      1
+     ],
+     [
+      "mdt",
+      41.552,
+      44.454,
+      44.454,
+      44.954,
+      1,
+      1
+     ],
+     [
+      "book_surgery",
+      44.954,
+      50.255,
+      50.255,
+      50.255,
+      1,
+      1
+     ],
+     [
+      "treat",
+      50.255,
+      50.255,
+      50.255,
+      50.255,
+      null,
+      1
+     ]
+    ],
+    "c": [
+     [
+      "pet_timing",
+      0.0,
+      "pet_late",
+      [
+       "pet_on_time",
+       "pet_late"
+      ],
+      {
+       "pet_on_time": 0.0,
+       "pet_late": 1.0
+      }
+     ],
+     [
+      "sample_plan",
+      11.986,
+      "bronch1",
+      [
+       "bronch1",
+       "no_sampling"
+      ],
+      {
+       "bronch1": 1.0,
+       "no_sampling": 0.0
+      }
+     ],
+     [
+      "after_bronch",
+      26.103,
+      "bronch2",
+      [
+       "ttnb",
+       "bronch2",
+       "no_more"
+      ],
+      {
+       "ttnb": 0.0,
+       "bronch2": 1.0,
+       "no_more": 0.0
+      }
+     ]
+    ]
+   },
+   {
+    "id": 294,
+    "cohort": 203,
+    "g": "all",
+    "age": 54,
+    "cancer": 1,
+    "out": "treatment",
+    "exit": "treat",
+    "t_exit": 53.787,
+    "t_diag": 38.982,
+    "t_treat": 53.787,
+    "ft": 0,
+    "v": [
+     [
+      "ct",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1,
+      1
+     ],
+     [
+      "visit",
+      0.0,
+      10.82,
+      10.92,
+      10.92,
+      1,
+      1
+     ],
+     [
+      "pet_triage",
+      0.0,
+      35.666,
+      35.766,
+      38.982,
+      1,
+      0
+     ],
+     [
+      "ex_late",
+      10.92,
+      43.438,
+      43.538,
+      44.538,
+      1,
+      1
+     ],
+     [
+      "mdt",
+      44.538,
+      50.597,
+      50.597,
+      51.097,
+      1,
+      1
+     ],
+     [
+      "book_surgery",
+      51.097,
+      53.787,
+      53.787,
+      53.787,
+      1,
+      1
+     ],
+     [
+      "treat",
+      53.787,
+      53.787,
+      53.787,
+      53.787,
+      null,
+      1
+     ]
+    ],
+    "c": [
+     [
+      "pet_timing",
+      0.0,
+      "pet_on_time",
+      [
+       "pet_on_time",
+       "pet_late"
+      ],
+      {
+       "pet_on_time": 1.0,
+       "pet_late": 0.0
+      }
+     ],
+     [
+      "pet_on_time",
+      0.0,
+      "pet_triage",
+      [
+       "pet_triage",
+       "pet_early_route"
+      ],
+      {
+       "pet_triage": 1.0,
+       "pet_early_route": 0.0
+      }
+     ],
+     [
+      "sample_plan",
+      10.92,
+      "no_sampling",
+      [
+       "bronch1",
+       "no_sampling"
+      ],
+      {
+       "bronch1": 0.0,
+       "no_sampling": 1.0
+      }
+     ],
+     [
+      "ex_timing",
+      10.92,
+      "ex_late",
+      [
+       "ex_early",
+       "ex_late"
+      ],
+      {
+       "ex_early": 0.0,
+       "ex_late": 1.0
+      }
+     ]
+    ]
+   }
+  ]
+ },
+ "meta": {
+  "variant": "observed",
+  "label": "Observed pathway"
+ }
+}

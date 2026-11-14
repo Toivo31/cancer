@@ -1,0 +1,29 @@
+# Primary conditions. Prevalence = share of presenters (adds up to 1 over all conditions).
+- id: lung_cancer
+  label: Lung cancer
+  class: cancer
+  prevalence:
+    value: 0.016
+    source: assumption
+    grade: assumption
+    note: "placeholder near the Finnish scenario's 1.6% of chest-symptom presenters"
+    by:
+      smoking_status: {never: 0.004, former: 0.016, current: 0.03}
+  attributes:
+    stage:
+      values: {I: 0.25, II: 0.15, III: 0.25, IV: 0.35}
+      source: assumption
+      grade: assumption
+      note: illustrative
+    location:
+      values: {central: 0.35, peripheral: 0.65}
+      source: assumption
+      note: "as in scenarios/finland_lung.yaml attributes.location"
+- id: pneumonia
+  label: Pneumonia
+  class: other_illness
+  prevalence: {value: 0.25, source: assumption, note: illustrative}
+- id: healthy
+  label: No serious disease found
+  class: healthy
+  prevalence: {value: 0.734, source: assumption, note: "the remainder"}

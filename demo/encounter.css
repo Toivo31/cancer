@@ -1,0 +1,121 @@
+/* Primary-care loop page (demo/encounter.html). Paper theme: tokens and shared classes come from theme.css
+   (linked first); this file has layout and the page's own .enc- classes only: no token block of its own and no colour literals. */
+
+.enc-page{max-width:1840px}
+.enc-top{padding:var(--s5) 0 var(--s4)}
+.enc-head{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--s6)}
+.enc-crumb{margin:0 0 var(--s2)}
+.enc-crumb a{color:var(--brown)}
+.enc-top .page-title{font-size:32px}
+.enc-top .lede{font-size:17px;margin-top:var(--s2)}
+.enc-stamp{margin-top:var(--s5);text-decoration:none;color:var(--ink)}
+.enc-stamp:hover{color:var(--brown)}
+
+/* stage: graph on the left, the patient record on the right */
+.enc-stage{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:var(--s5);align-items:start}
+.enc-main{min-width:0}
+.enc-controls{display:flex;align-items:center;gap:var(--s3) var(--s4);flex-wrap:wrap;padding:0 0 var(--s3)}
+.enc-play{min-width:96px}
+.enc-clock{display:flex;flex-direction:column;gap:2px;min-width:72px}
+.enc-clock .num{font-size:32px;line-height:1}
+.enc-clock .label{font-size:10px;letter-spacing:.04em;white-space:nowrap}
+#slider{flex:1;min-width:100px;accent-color:var(--ink)}
+.enc-speed{display:flex;align-items:center;gap:var(--s2)}
+.enc-speed select{background:var(--card);border:1px solid var(--ink-3);border-radius:0;padding:var(--s1) var(--s2);
+  font:400 13px/1.2 var(--font-mono);color:var(--ink)}
+.enc-layers{display:flex;gap:var(--s2)}
+
+.enc-pane{background:var(--card);border:1px solid var(--ink);position:relative;min-width:0;padding:var(--s2)}
+.enc-gwrap{position:relative;width:100%;margin:0 auto;touch-action:none}
+.enc-gwrap svg{display:block;width:100%;height:auto}
+.enc-gwrap canvas{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none}
+.enc-hit{position:absolute;inset:0;cursor:default}
+.enc-gwrap svg text{font-family:var(--font-sans)}
+.enc-gwrap svg .mono{font-family:var(--font-mono)}
+
+.enc-legend{display:flex;gap:var(--s5);flex-wrap:wrap;margin:var(--s3) 0 0;font:400 12px/1.4 var(--font-mono);
+  letter-spacing:.04em;color:var(--ink-2)}
+.enc-legend i,.enc-counters i,.enc-olg i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:0}
+.enc-legend i.ring,.enc-counters i.ring{background:transparent;border:1.5px solid var(--brown)}
+.enc-main .caption{margin-top:var(--s2)}
+
+/* side: truth toggle, example patients, the record */
+.enc-side{position:sticky;top:var(--s4);max-height:calc(100vh - 32px);overflow:auto;display:flex;flex-direction:column;
+  gap:var(--s3);padding-right:2px}
+.enc-truth{align-self:flex-start}
+#side{display:flex;flex-direction:column;gap:var(--s3)}
+.enc-card{padding:var(--s4)}
+.enc-card h3{margin:0 0 var(--s2);font:700 12px/1.3 var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink)}
+.enc-card p{margin:0 0 var(--s2);font-size:13px;line-height:1.5;color:var(--ink-2)}
+.enc-x{float:right;cursor:pointer;color:var(--brown);font:400 12px var(--font-mono);text-transform:none;letter-spacing:0}
+.enc-ex{display:flex;flex-direction:column;gap:var(--s1)}
+.enc-ex button{text-align:left;background:transparent;border:1px solid var(--line);border-radius:0;color:var(--ink-2);
+  padding:6px var(--s2);font:400 13px/1.35 var(--font-sans);cursor:pointer}
+.enc-ex button:hover{border-color:var(--ink);color:var(--ink)}
+.enc-ex button.on{border-color:var(--ink);color:var(--ink);background:var(--inset)}
+.enc-ex button small{display:block;font:400 11px var(--font-mono);color:var(--ink-3);margin-top:2px}
+.enc-sum{font:400 12px/1.55 var(--font-mono);color:var(--ink-2);margin-bottom:var(--s2)}
+.enc-sum b{color:var(--ink)}
+
+/* the record's two layers: typed log (Courier, solid rule) vs the decider's words (Inter italic, dashed rule) */
+.enc-key{display:flex;flex-direction:column;gap:2px;font:400 11px/1.4 var(--font-mono);color:var(--ink-3);margin:2px 0 var(--s2)}
+.enc-key i{display:inline-block;width:0;height:11px;margin-right:7px;vertical-align:-1px;border-left:2px solid var(--ink-3)}
+.enc-key i.a{border-left-style:dashed;margin-left:var(--s3)}
+.enc-rec{display:flex;flex-direction:column;gap:3px}
+.enc-ln{padding:4px 8px;font-size:12.5px;line-height:1.45;border-left:2px solid var(--ink-3);cursor:pointer;display:-webkit-box;
+  -webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.enc-ln.open{display:block}
+.enc-ln.m{font-family:var(--font-mono);color:var(--ink);background:var(--inset)}
+.enc-ln.a{margin-left:var(--s4);font-family:var(--font-sans);font-style:italic;color:var(--ink-2);border-left-style:dashed}
+.enc-ln.a b{font:700 10px var(--font-mono);font-style:normal;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);margin-right:6px}
+.enc-ln.future{opacity:.3}
+.enc-ln.now{outline:1px solid var(--ink);outline-offset:-1px}
+.enc-mk{display:block;margin-top:3px;font:700 11px var(--font-mono);font-style:normal;letter-spacing:.02em}
+.enc-mk.bad{color:var(--brick)}.enc-mk.ok{color:var(--ink)}
+.enc-truthbox{border:1.5px solid var(--brown);background:var(--card);padding:var(--s2) var(--s3);margin:0 0 var(--s3);font-size:13px;
+  line-height:1.5;color:var(--ink)}
+.enc-truthbox h4{margin:0 0 var(--s1);font:700 11px var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--brown)}
+.enc-truthbox .bad{color:var(--brick);font-weight:600}
+.enc-truthbox .quiet{color:var(--ink-3)}
+
+/* decision-model proposals (optional bundle field) */
+.enc-prop{border:1px solid var(--line);padding:6px var(--s2);margin:0 0 var(--s2);background:var(--card)}
+.enc-prop .ph{display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px}
+.enc-prop .dl{font:700 10px var(--font-mono);letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--ink-3);color:var(--ink-3);padding:1px 5px}
+.enc-prop .dl.live{border-color:var(--ink);color:var(--ink)}.enc-prop .dl.placeholder{border-color:var(--mustard);color:var(--mustard-ink)}
+.enc-po{position:relative;display:flex;justify-content:space-between;gap:var(--s2);font-size:12px;color:var(--ink-2);padding:2px 4px;margin:1px 0}
+.enc-po u{position:absolute;left:0;bottom:0;height:2px;background:var(--faint)}
+.enc-po.pr{color:var(--ink)}.enc-po em{font:11px var(--font-mono);font-style:normal}
+.enc-po i{font:700 10px var(--font-mono);font-style:normal;color:var(--ink);margin-left:4px}.enc-po i.ch{color:var(--brown)}
+
+/* tooltip */
+.enc-tip{position:fixed;z-index:60;pointer-events:none;background:var(--card);border:1px solid var(--ink);padding:var(--s2) var(--s3);
+  font:400 12.5px/1.5 var(--font-sans);color:var(--ink-2);max-width:300px}
+.enc-tip b{color:var(--ink)}.enc-tip .m{font-family:var(--font-mono);color:var(--ink-3)}
+
+/* Details: counters, results, notes */
+.enc-counters{display:flex;gap:var(--s2) var(--s5);flex-wrap:wrap;font:400 13px/1.5 var(--font-mono);color:var(--ink-2);max-width:none}
+.enc-counters b{color:var(--ink)}
+.enc-res{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:var(--s3);margin:var(--s3) 0 var(--s4)}
+.enc-res .k{background:var(--card);border:1px solid var(--line);padding:var(--s2) var(--s3)}
+.enc-res .k b{display:block;font:700 24px/1.2 var(--font-sans);font-variant-numeric:tabular-nums;color:var(--ink)}
+.enc-res .k span{font:400 12px/1.35 var(--font-sans);color:var(--ink-3)}
+.enc-obar{display:flex;height:14px;overflow:hidden;margin:var(--s2) 0 var(--s1);max-width:900px;border:1px solid var(--ink)}
+.enc-obar i{display:block}
+.enc-olg{display:flex;gap:var(--s4);flex-wrap:wrap;font:400 12px var(--font-mono);color:var(--ink-2);margin-bottom:var(--s4)}
+.enc-olg b{color:var(--ink)}
+table.enc-gt{width:100%;max-width:1100px;border-collapse:collapse;font-size:13px}
+table.enc-gt th{font:400 11px var(--font-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);text-align:right;
+  padding:4px 8px;border-bottom:1px solid var(--ink)}
+table.enc-gt th:first-child,table.enc-gt td:first-child{text-align:left}
+table.enc-gt td{padding:4px 8px;border-bottom:1px solid var(--line);font-family:var(--font-mono);text-align:right;color:var(--ink-2)}
+table.enc-gt td:first-child{font-family:var(--font-sans);color:var(--ink)}
+table.enc-gt tr.gh td{font:700 11px var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink);padding-top:var(--s3);
+  text-align:left;border-bottom:1px solid var(--ink-3)}
+.enc-note,.enc-keys{max-width:80ch;font-size:15px;color:var(--ink-2)}
+.enc-note b{color:var(--ink)}
+.details .enc-small{font-size:13px;color:var(--ink-3);max-width:80ch}
+kbd{font:700 12px var(--font-mono);border:1px solid var(--ink-3);padding:0 4px}
+
+@media (min-width:1700px){.enc-stage{grid-template-columns:minmax(0,1fr) 480px}.enc-ln{font-size:13.5px}}
+@media (max-width:1100px){.enc-stage{grid-template-columns:1fr}.enc-side{position:static;max-height:none}}

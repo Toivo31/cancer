@@ -1,0 +1,2075 @@
+{
+ "scenario": "finland_lung",
+ "start": "baseline",
+ "config": {
+  "n_train": 18800,
+  "train_seeds": [
+   101,
+   102
+  ],
+  "heldout_seeds": [
+   201,
+   202,
+   203
+  ],
+  "n_heldout": null,
+  "top_k": 10,
+  "max_steps": 6,
+  "min_gain": 0.005,
+  "allow": [
+   "detach",
+   "relax",
+   "standardise",
+   "fast_track"
+  ],
+  "tests_tolerance": 0.02,
+  "noncancer_exit_tolerance": 1.0,
+  "exhaustive": false,
+  "confirmed_tolerance": 0.02,
+  "equity_guardrail": true,
+  "equity_days_tolerance": 1.0,
+  "equity_share_tolerance": 0.01,
+  "equity_min_cancers": 10,
+  "lookahead": 6
+ },
+ "candidates_evaluated": 35,
+ "rejected_by_guardrails": [
+  {
+   "change": "Nurse or GP first: always gp appointment",
+   "gain_pp": 1.34,
+   "blocked_by": [
+    "more missed cancers",
+    "more untreated cancers",
+    "fewer site-specific presenters on time",
+    "not better in every training cohort"
+   ]
+  },
+  {
+   "change": "Fast track patients after gp review of a negative film",
+   "gain_pp": 2.74,
+   "blocked_by": [
+    "not better in every training cohort"
+   ]
+  },
+  {
+   "change": "Nurse or GP first: always gp appointment",
+   "gain_pp": 2.95,
+   "blocked_by": [
+    "more missed cancers",
+    "more untreated cancers"
+   ]
+  }
+ ],
+ "steps": [
+  {
+   "kind": "fast_track",
+   "target": "triage",
+   "other": null,
+   "plain": "Fast track patients after referral handling at hospital",
+   "score": 1.051,
+   "evidence": {
+    "predicted_days_saved": 1.05,
+    "train_on_time_before": 0.1339,
+    "train_on_time_after": 0.5589,
+    "train_median_before": 106.14,
+    "train_median_after": 83.82,
+    "accepted_together_with": []
+   }
+  }
+ ],
+ "train": {
+  "before": {
+   "scenario": "finland_lung",
+   "flowchart": "baseline",
+   "seed": 101.5,
+   "n": 16120.5,
+   "n_cancer": 263.5,
+   "target_days": 90.0,
+   "median_days_to_treatment": 106.14,
+   "share_within_target": 0.1339,
+   "median_days_to_diagnosis": 72.875,
+   "mean_days_to_treatment": 109.695,
+   "missed_cancers": 24.0,
+   "confirmed_cancers": 0.0,
+   "untreated_cancers": 24.0,
+   "stuck": 0.0,
+   "false_treatments": 2.0,
+   "tests_per_patient": 0.4225,
+   "invasive_per_patient": 0.03,
+   "cost_per_patient": 79.05,
+   "median_days_to_exit_noncancer": 16.74,
+   "stage_breakdown": {
+    "detection": {
+     "wait": 29.98,
+     "service": 1.34
+    },
+    "referral": {
+     "wait": 17.59,
+     "service": 0.06
+    },
+    "diagnosis": {
+     "wait": 23.14,
+     "service": 12.04
+    },
+    "treatment_start": {
+     "wait": 20.43,
+     "service": 0.51
+    }
+   },
+   "node_breakdown": {
+    "nurse_visit": {
+     "wait": 1.5,
+     "service": 0.02,
+     "n": 120,
+     "test": "nurse_assessment",
+     "stage": "detection"
+    },
+    "cxr": {
+     "wait": 1.76,
+     "service": 1.27,
+     "n": 146,
+     "test": "chest_xray",
+     "stage": "detection"
+    },
+    "second_look": {
+     "wait": 0.52,
+     "service": 0.0,
+     "n": 39,
+     "test": "gp_second_look",
+     "stage": "detection"
+    },
+    "gp_referral": {
+     "wait": 2.23,
+     "service": 0.0,
+     "n": 126,
+     "test": "gp_referral_letter",
+     "stage": "referral"
+    },
+    "triage": {
+     "wait": 2.56,
+     "service": 0.0,
+     "n": 225,
+     "test": "referral_triage",
+     "stage": "referral"
+    },
+    "spec_visit": {
+     "wait": 12.8,
+     "service": 0.06,
+     "n": 225,
+     "test": "specialist_visit",
+     "stage": "referral"
+    },
+    "ct": {
+     "wait": 6.04,
+     "service": 3.94,
+     "n": 225,
+     "test": "chest_ct",
+     "stage": "diagnosis"
+    },
+    "bronch": {
+     "wait": 5.06,
+     "service": 2.58,
+     "n": 133,
+     "test": "bronchoscopy",
+     "stage": "diagnosis"
+    },
+    "pet": {
+     "wait": 7.49,
+     "service": 2.76,
+     "n": 225,
+     "test": "pet_ct",
+     "stage": "diagnosis"
+    },
+    "mdt": {
+     "wait": 4.68,
+     "service": 0.5,
+     "n": 225,
+     "test": "tumour_board",
+     "stage": "treatment_start"
+    },
+    "book_treat": {
+     "wait": 15.75,
+     "service": 0.01,
+     "n": 225,
+     "test": "treatment_booking",
+     "stage": "treatment_start"
+    },
+    "gp_visit": {
+     "wait": 6.14,
+     "service": 0.02,
+     "n": 105,
+     "test": "gp_assessment",
+     "stage": "detection"
+    },
+    "gp_after_nurse": {
+     "wait": 5.77,
+     "service": 0.02,
+     "n": 95,
+     "test": "gp_assessment_after_nurse",
+     "stage": "detection"
+    },
+    "persist": {
+     "wait": 0.0,
+     "service": 0.0,
+     "n": 99,
+     "test": "symptoms_persist",
+     "stage": "detection"
+    },
+    "represent": {
+     "wait": 14.29,
+     "service": 0.02,
+     "n": 99,
+     "test": "gp_represent",
+     "stage": "detection"
+    },
+    "ttnb": {
+     "wait": 4.56,
+     "service": 2.76,
+     "n": 123,
+     "test": "ttnb",
+     "stage": "diagnosis"
+    }
+   },
+   "stage_breakdown_all": {
+    "detection": {
+     "wait": 29.98,
+     "service": 1.34
+    },
+    "referral": {
+     "wait": 17.59,
+     "service": 0.06
+    },
+    "diagnosis": {
+     "wait": 23.14,
+     "service": 12.04
+    },
+    "treatment_start": {
+     "wait": 20.43,
+     "service": 0.51
+    }
+   },
+   "node_breakdown_all": {
+    "nurse_visit": {
+     "wait": 1.5,
+     "service": 0.02,
+     "n": 120,
+     "test": "nurse_assessment",
+     "stage": "detection"
+    },
+    "cxr": {
+     "wait": 1.76,
+     "service": 1.27,
+     "n": 146,
+     "test": "chest_xray",
+     "stage": "detection"
+    },
+    "second_look": {
+     "wait": 0.52,
+     "service": 0.0,
+     "n": 39,
+     "test": "gp_second_look",
+     "stage": "detection"
+    },
+    "gp_referral": {
+     "wait": 2.23,
+     "service": 0.0,
+     "n": 126,
+     "test": "gp_referral_letter",
+     "stage": "referral"
+    },
+    "triage": {
+     "wait": 2.56,
+     "service": 0.0,
+     "n": 225,
+     "test": "referral_triage",
+     "stage": "referral"
+    },
+    "spec_visit": {
+     "wait": 12.8,
+     "service": 0.06,
+     "n": 225,
+     "test": "specialist_visit",
+     "stage": "referral"
+    },
+    "ct": {
+     "wait": 6.04,
+     "service": 3.94,
+     "n": 225,
+     "test": "chest_ct",
+     "stage": "diagnosis"
+    },
+    "bronch": {
+     "wait": 5.06,
+     "service": 2.58,
+     "n": 133,
+     "test": "bronchoscopy",
+     "stage": "diagnosis"
+    },
+    "pet": {
+     "wait": 7.49,
+     "service": 2.76,
+     "n": 225,
+     "test": "pet_ct",
+     "stage": "diagnosis"
+    },
+    "mdt": {
+     "wait": 4.68,
+     "service": 0.5,
+     "n": 225,
+     "test": "tumour_board",
+     "stage": "treatment_start"
+    },
+    "book_treat": {
+     "wait": 15.75,
+     "service": 0.01,
+     "n": 225,
+     "test": "treatment_booking",
+     "stage": "treatment_start"
+    },
+    "gp_visit": {
+     "wait": 6.14,
+     "service": 0.02,
+     "n": 105,
+     "test": "gp_assessment",
+     "stage": "detection"
+    },
+    "gp_after_nurse": {
+     "wait": 5.77,
+     "service": 0.02,
+     "n": 95,
+     "test": "gp_assessment_after_nurse",
+     "stage": "detection"
+    },
+    "persist": {
+     "wait": 0.0,
+     "service": 0.0,
+     "n": 99,
+     "test": "symptoms_persist",
+     "stage": "detection"
+    },
+    "represent": {
+     "wait": 14.29,
+     "service": 0.02,
+     "n": 99,
+     "test": "gp_represent",
+     "stage": "detection"
+    },
+    "ttnb": {
+     "wait": 4.56,
+     "service": 2.76,
+     "n": 123,
+     "test": "ttnb",
+     "stage": "diagnosis"
+    }
+   },
+   "stage_breakdown_everyone": {
+    "detection": {
+     "wait": 19.64,
+     "service": 0.74
+    },
+    "referral": {
+     "wait": 1.65,
+     "service": 0.01
+    },
+    "diagnosis": {
+     "wait": 0.61,
+     "service": 0.34
+    },
+    "treatment_start": {
+     "wait": 0.33,
+     "service": 0.01
+    }
+   },
+   "by_group": {
+    "non_specific": {
+     "n": 13540.5,
+     "n_cancer": 173.0,
+     "median_days_to_treatment": 111.89,
+     "share_within_target": 0.074,
+     "median_days_to_diagnosis": 78.44,
+     "missed_cancers": 19.0,
+     "median_days_to_exit_all": 16.79
+    },
+    "site_specific": {
+     "n": 2580.0,
+     "n_cancer": 90.5,
+     "median_days_to_treatment": 99.535,
+     "share_within_target": 0.245,
+     "median_days_to_diagnosis": 66.455,
+     "missed_cancers": 5.0,
+     "median_days_to_exit_all": 17.15
+    }
+   },
+   "utilisation": {
+    "nurse_appt": 0.8666,
+    "gp_appt": 0.8949,
+    "xray": 0.8408,
+    "clinic": 0.7803,
+    "ct_scanner": 0.841,
+    "bronchoscopy": 0.8244,
+    "ttnb_slot": 0.8244,
+    "pet_scanner": 0.8817,
+    "treatment_slot": 0.3989
+   },
+   "cohort_objectives": [
+    -0.00932,
+    -0.14744
+   ]
+  },
+  "after": {
+   "scenario": "finland_lung",
+   "flowchart": "baseline_optimised",
+   "seed": 101.5,
+   "n": 16120.5,
+   "n_cancer": 263.5,
+   "target_days": 90.0,
+   "median_days_to_treatment": 83.82,
+   "share_within_target": 0.5589,
+   "median_days_to_diagnosis": 57.975,
+   "mean_days_to_treatment": 87.665,
+   "missed_cancers": 24.0,
+   "confirmed_cancers": 0.0,
+   "untreated_cancers": 24.0,
+   "stuck": 0.0,
+   "false_treatments": 2.0,
+   "tests_per_patient": 0.4225,
+   "invasive_per_patient": 0.03,
+   "cost_per_patient": 79.05,
+   "median_days_to_exit_noncancer": 16.73,
+   "stage_breakdown": {
+    "detection": {
+     "wait": 29.98,
+     "service": 1.34
+    },
+    "referral": {
+     "wait": 10.59,
+     "service": 0.06
+    },
+    "diagnosis": {
+     "wait": 11.44,
+     "service": 12.04
+    },
+    "treatment_start": {
+     "wait": 16.59,
+     "service": 0.51
+    }
+   },
+   "node_breakdown": {
+    "nurse_visit": {
+     "wait": 1.5,
+     "service": 0.02,
+     "n": 120,
+     "test": "nurse_assessment",
+     "stage": "detection"
+    },
+    "cxr": {
+     "wait": 1.76,
+     "service": 1.27,
+     "n": 146,
+     "test": "chest_xray",
+     "stage": "detection"
+    },
+    "second_look": {
+     "wait": 0.52,
+     "service": 0.0,
+     "n": 39,
+     "test": "gp_second_look",
+     "stage": "detection"
+    },
+    "gp_referral": {
+     "wait": 2.23,
+     "service": 0.0,
+     "n": 126,
+     "test": "gp_referral_letter",
+     "stage": "referral"
+    },
+    "triage": {
+     "wait": 2.56,
+     "service": 0.0,
+     "n": 225,
+     "test": "referral_triage",
+     "stage": "referral"
+    },
+    "spec_visit": {
+     "wait": 5.8,
+     "service": 0.06,
+     "n": 225,
+     "test": "specialist_visit",
+     "stage": "referral"
+    },
+    "ct": {
+     "wait": 2.13,
+     "service": 3.94,
+     "n": 225,
+     "test": "chest_ct",
+     "stage": "diagnosis"
+    },
+    "bronch": {
+     "wait": 2.91,
+     "service": 2.58,
+     "n": 133,
+     "test": "bronchoscopy",
+     "stage": "diagnosis"
+    },
+    "pet": {
+     "wait": 3.92,
+     "service": 2.76,
+     "n": 225,
+     "test": "pet_ct",
+     "stage": "diagnosis"
+    },
+    "mdt": {
+     "wait": 4.69,
+     "service": 0.5,
+     "n": 225,
+     "test": "tumour_board",
+     "stage": "treatment_start"
+    },
+    "book_treat": {
+     "wait": 11.9,
+     "service": 0.01,
+     "n": 225,
+     "test": "treatment_booking",
+     "stage": "treatment_start"
+    },
+    "gp_visit": {
+     "wait": 6.14,
+     "service": 0.02,
+     "n": 105,
+     "test": "gp_assessment",
+     "stage": "detection"
+    },
+    "gp_after_nurse": {
+     "wait": 5.77,
+     "service": 0.02,
+     "n": 95,
+     "test": "gp_assessment_after_nurse",
+     "stage": "detection"
+    },
+    "persist": {
+     "wait": 0.0,
+     "service": 0.0,
+     "n": 99,
+     "test": "symptoms_persist",
+     "stage": "detection"
+    },
+    "represent": {
+     "wait": 14.29,
+     "service": 0.02,
+     "n": 99,
+     "test": "gp_represent",
+     "stage": "detection"
+    },
+    "ttnb": {
+     "wait": 2.47,
+     "service": 2.76,
+     "n": 123,
+     "test": "ttnb",
+     "stage": "diagnosis"
+    }
+   },
+   "stage_breakdown_all": {
+    "detection": {
+     "wait": 29.98,
+     "service": 1.34
+    },
+    "referral": {
+     "wait": 10.59,
+     "service": 0.06
+    },
+    "diagnosis": {
+     "wait": 11.44,
+     "service": 12.04
+    },
+    "treatment_start": {
+     "wait": 16.59,
+     "service": 0.51
+    }
+   },
+   "node_breakdown_all": {
+    "nurse_visit": {
+     "wait": 1.5,
+     "service": 0.02,
+     "n": 120,
+     "test": "nurse_assessment",
+     "stage": "detection"
+    },
+    "cxr": {
+     "wait": 1.76,
+     "service": 1.27,
+     "n": 146,
+     "test": "chest_xray",
+     "stage": "detection"
+    },
+    "second_look": {
+     "wait": 0.52,
+     "service": 0.0,
+     "n": 39,
+     "test": "gp_second_look",
+     "stage": "detection"
+    },
+    "gp_referral": {
+     "wait": 2.23,
+     "service": 0.0,
+     "n": 126,
+     "test": "gp_referral_letter",
+     "stage": "referral"
+    },
+    "triage": {
+     "wait": 2.56,
+     "service": 0.0,
+     "n": 225,
+     "test": "referral_triage",
+     "stage": "referral"
+    },
+    "spec_visit": {
+     "wait": 5.8,
+     "service": 0.06,
+     "n": 225,
+     "test": "specialist_visit",
+     "stage": "referral"
+    },
+    "ct": {
+     "wait": 2.13,
+     "service": 3.94,
+     "n": 225,
+     "test": "chest_ct",
+     "stage": "diagnosis"
+    },
+    "bronch": {
+     "wait": 2.91,
+     "service": 2.58,
+     "n": 133,
+     "test": "bronchoscopy",
+     "stage": "diagnosis"
+    },
+    "pet": {
+     "wait": 3.92,
+     "service": 2.76,
+     "n": 225,
+     "test": "pet_ct",
+     "stage": "diagnosis"
+    },
+    "mdt": {
+     "wait": 4.69,
+     "service": 0.5,
+     "n": 225,
+     "test": "tumour_board",
+     "stage": "treatment_start"
+    },
+    "book_treat": {
+     "wait": 11.9,
+     "service": 0.01,
+     "n": 225,
+     "test": "treatment_booking",
+     "stage": "treatment_start"
+    },
+    "gp_visit": {
+     "wait": 6.14,
+     "service": 0.02,
+     "n": 105,
+     "test": "gp_assessment",
+     "stage": "detection"
+    },
+    "gp_after_nurse": {
+     "wait": 5.77,
+     "service": 0.02,
+     "n": 95,
+     "test": "gp_assessment_after_nurse",
+     "stage": "detection"
+    },
+    "persist": {
+     "wait": 0.0,
+     "service": 0.0,
+     "n": 99,
+     "test": "symptoms_persist",
+     "stage": "detection"
+    },
+    "represent": {
+     "wait": 14.29,
+     "service": 0.02,
+     "n": 99,
+     "test": "gp_represent",
+     "stage": "detection"
+    },
+    "ttnb": {
+     "wait": 2.47,
+     "service": 2.76,
+     "n": 123,
+     "test": "ttnb",
+     "stage": "diagnosis"
+    }
+   },
+   "stage_breakdown_everyone": {
+    "detection": {
+     "wait": 19.64,
+     "service": 0.74
+    },
+    "referral": {
+     "wait": 1.01,
+     "service": 0.01
+    },
+    "diagnosis": {
+     "wait": 0.29,
+     "service": 0.34
+    },
+    "treatment_start": {
+     "wait": 0.28,
+     "service": 0.01
+    }
+   },
+   "by_group": {
+    "non_specific": {
+     "n": 13540.5,
+     "n_cancer": 173.0,
+     "median_days_to_treatment": 90.67,
+     "share_within_target": 0.4478,
+     "median_days_to_diagnosis": 62.285,
+     "missed_cancers": 19.0,
+     "median_days_to_exit_all": 16.785
+    },
+    "site_specific": {
+     "n": 2580.0,
+     "n_cancer": 90.5,
+     "median_days_to_treatment": 78.48,
+     "share_within_target": 0.7697,
+     "median_days_to_diagnosis": 50.6,
+     "missed_cancers": 5.0,
+     "median_days_to_exit_all": 17.125
+    }
+   },
+   "utilisation": {
+    "nurse_appt": 0.8666,
+    "gp_appt": 0.8949,
+    "xray": 0.8408,
+    "clinic": 0.7835,
+    "ct_scanner": 0.8499,
+    "bronchoscopy": 0.8435,
+    "ttnb_slot": 0.8397,
+    "pet_scanner": 0.9046,
+    "treatment_slot": 0.4218
+   },
+   "cohort_objectives": [
+    0.49464,
+    0.28778
+   ]
+  }
+ },
+ "heldout": {
+  "before": {
+   "scenario": "finland_lung",
+   "flowchart": "baseline",
+   "seed": 202.0,
+   "n": 16158.3333,
+   "n_cancer": 247.6667,
+   "target_days": 90.0,
+   "median_days_to_treatment": 104.7067,
+   "share_within_target": 0.1748,
+   "median_days_to_diagnosis": 72.03,
+   "mean_days_to_treatment": 106.7067,
+   "missed_cancers": 27.0,
+   "confirmed_cancers": 0.0,
+   "untreated_cancers": 27.0,
+   "stuck": 0.0,
+   "false_treatments": 2.0,
+   "tests_per_patient": 0.419,
+   "invasive_per_patient": 0.0273,
+   "cost_per_patient": 74.3667,
+   "median_days_to_exit_noncancer": 16.8033,
+   "stage_breakdown": {
+    "detection": {
+     "wait": 28.37,
+     "service": 1.39
+    },
+    "referral": {
+     "wait": 17.67,
+     "service": 0.06
+    },
+    "diagnosis": {
+     "wait": 28.06,
+     "service": 11.77
+    },
+    "treatment_start": {
+     "wait": 21.05,
+     "service": 0.51
+    }
+   },
+   "node_breakdown": {
+    "nurse_visit": {
+     "wait": 1.53,
+     "service": 0.02,
+     "n": 127,
+     "test": "nurse_assessment",
+     "stage": "detection"
+    },
+    "gp_after_nurse": {
+     "wait": 5.36,
+     "service": 0.02,
+     "n": 94,
+     "test": "gp_assessment_after_nurse",
+     "stage": "detection"
+    },
+    "cxr": {
+     "wait": 1.86,
+     "service": 1.32,
+     "n": 165,
+     "test": "chest_xray",
+     "stage": "detection"
+    },
+    "gp_referral": {
+     "wait": 2.11,
+     "service": 0.0,
+     "n": 137,
+     "test": "gp_referral_letter",
+     "stage": "referral"
+    },
+    "triage": {
+     "wait": 2.78,
+     "service": 0.0,
+     "n": 240,
+     "test": "referral_triage",
+     "stage": "referral"
+    },
+    "spec_visit": {
+     "wait": 12.79,
+     "service": 0.06,
+     "n": 240,
+     "test": "specialist_visit",
+     "stage": "referral"
+    },
+    "ct": {
+     "wait": 6.26,
+     "service": 3.81,
+     "n": 240,
+     "test": "chest_ct",
+     "stage": "diagnosis"
+    },
+    "ttnb": {
+     "wait": 5.26,
+     "service": 2.66,
+     "n": 128,
+     "test": "ttnb",
+     "stage": "diagnosis"
+    },
+    "pet": {
+     "wait": 11.4,
+     "service": 2.76,
+     "n": 240,
+     "test": "pet_ct",
+     "stage": "diagnosis"
+    },
+    "mdt": {
+     "wait": 4.53,
+     "service": 0.5,
+     "n": 240,
+     "test": "tumour_board",
+     "stage": "treatment_start"
+    },
+    "book_treat": {
+     "wait": 16.53,
+     "service": 0.01,
+     "n": 240,
+     "test": "treatment_booking",
+     "stage": "treatment_start"
+    },
+    "bronch": {
+     "wait": 5.14,
+     "service": 2.54,
+     "n": 140,
+     "test": "bronchoscopy",
+     "stage": "diagnosis"
+    },
+    "persist": {
+     "wait": 0.0,
+     "service": 0.0,
+     "n": 103,
+     "test": "symptoms_persist",
+     "stage": "detection"
+    },
+    "represent": {
+     "wait": 13.06,
+     "service": 0.02,
+     "n": 103,
+     "test": "gp_represent",
+     "stage": "detection"
+    },
+    "gp_visit": {
+     "wait": 6.18,
+     "service": 0.02,
+     "n": 113,
+     "test": "gp_assessment",
+     "stage": "detection"
+    },
+    "second_look": {
+     "wait": 0.37,
+     "service": 0.0,
+     "n": 38,
+     "test": "gp_second_look",
+     "stage": "detection"
+    }
+   },
+   "stage_breakdown_all": {
+    "detection": {
+     "wait": 28.37,
+     "service": 1.39
+    },
+    "referral": {
+     "wait": 17.67,
+     "service": 0.06
+    },
+    "diagnosis": {
+     "wait": 28.06,
+     "service": 11.77
+    },
+    "treatment_start": {
+     "wait": 21.05,
+     "service": 0.51
+    }
+   },
+   "node_breakdown_all": {
+    "nurse_visit": {
+     "wait": 1.53,
+     "service": 0.02,
+     "n": 127,
+     "test": "nurse_assessment",
+     "stage": "detection"
+    },
+    "gp_after_nurse": {
+     "wait": 5.36,
+     "service": 0.02,
+     "n": 94,
+     "test": "gp_assessment_after_nurse",
+     "stage": "detection"
+    },
+    "cxr": {
+     "wait": 1.86,
+     "service": 1.32,
+     "n": 165,
+     "test": "chest_xray",
+     "stage": "detection"
+    },
+    "gp_referral": {
+     "wait": 2.11,
+     "service": 0.0,
+     "n": 137,
+     "test": "gp_referral_letter",
+     "stage": "referral"
+    },
+    "triage": {
+     "wait": 2.78,
+     "service": 0.0,
+     "n": 240,
+     "test": "referral_triage",
+     "stage": "referral"
+    },
+    "spec_visit": {
+     "wait": 12.79,
+     "service": 0.06,
+     "n": 240,
+     "test": "specialist_visit",
+     "stage": "referral"
+    },
+    "ct": {
+     "wait": 6.26,
+     "service": 3.81,
+     "n": 240,
+     "test": "chest_ct",
+     "stage": "diagnosis"
+    },
+    "ttnb": {
+     "wait": 5.26,
+     "service": 2.66,
+     "n": 128,
+     "test": "ttnb",
+     "stage": "diagnosis"
+    },
+    "pet": {
+     "wait": 11.4,
+     "service": 2.76,
+     "n": 240,
+     "test": "pet_ct",
+     "stage": "diagnosis"
+    },
+    "mdt": {
+     "wait": 4.53,
+     "service": 0.5,
+     "n": 240,
+     "test": "tumour_board",
+     "stage": "treatment_start"
+    },
+    "book_treat": {
+     "wait": 16.53,
+     "service": 0.01,
+     "n": 240,
+     "test": "treatment_booking",
+     "stage": "treatment_start"
+    },
+    "bronch": {
+     "wait": 5.14,
+     "service": 2.54,
+     "n": 140,
+     "test": "bronchoscopy",
+     "stage": "diagnosis"
+    },
+    "persist": {
+     "wait": 0.0,
+     "service": 0.0,
+     "n": 103,
+     "test": "symptoms_persist",
+     "stage": "detection"
+    },
+    "represent": {
+     "wait": 13.06,
+     "service": 0.02,
+     "n": 103,
+     "test": "gp_represent",
+     "stage": "detection"
+    },
+    "gp_visit": {
+     "wait": 6.18,
+     "service": 0.02,
+     "n": 113,
+     "test": "gp_assessment",
+     "stage": "detection"
+    },
+    "second_look": {
+     "wait": 0.37,
+     "service": 0.0,
+     "n": 38,
+     "test": "gp_second_look",
+     "stage": "detection"
+    }
+   },
+   "stage_breakdown_everyone": {
+    "detection": {
+     "wait": 19.62,
+     "service": 0.76
+    },
+    "referral": {
+     "wait": 1.6,
+     "service": 0.01
+    },
+    "diagnosis": {
+     "wait": 0.72,
+     "service": 0.34
+    },
+    "treatment_start": {
+     "wait": 0.36,
+     "service": 0.01
+    }
+   },
+   "by_group": {
+    "non_specific": {
+     "n": 13570.3333,
+     "n_cancer": 168.6667,
+     "median_days_to_treatment": 107.84,
+     "share_within_target": 0.122,
+     "median_days_to_diagnosis": 76.1367,
+     "missed_cancers": 22.0,
+     "median_days_to_exit_all": 16.8433
+    },
+    "site_specific": {
+     "n": 2588.0,
+     "n_cancer": 79.0,
+     "median_days_to_treatment": 96.7967,
+     "share_within_target": 0.2863,
+     "median_days_to_diagnosis": 64.88,
+     "missed_cancers": 5.0,
+     "median_days_to_exit_all": 17.1567
+    }
+   },
+   "utilisation": {
+    "nurse_appt": 0.8941,
+    "gp_appt": 0.9132,
+    "xray": 0.8776,
+    "clinic": 0.7874,
+    "ct_scanner": 0.8867,
+    "bronchoscopy": 0.9023,
+    "ttnb_slot": 0.9023,
+    "pet_scanner": 0.9219,
+    "treatment_slot": 0.4199
+   },
+   "cohort_objectives": [
+    -0.07584,
+    -0.0511,
+    0.0231
+   ]
+  },
+  "after": {
+   "scenario": "finland_lung",
+   "flowchart": "baseline_optimised",
+   "seed": 202.0,
+   "n": 16158.3333,
+   "n_cancer": 247.6667,
+   "target_days": 90.0,
+   "median_days_to_treatment": 82.36,
+   "share_within_target": 0.5744,
+   "median_days_to_diagnosis": 56.5667,
+   "mean_days_to_treatment": 84.6633,
+   "missed_cancers": 27.0,
+   "confirmed_cancers": 0.0,
+   "untreated_cancers": 27.0,
+   "stuck": 0.0,
+   "false_treatments": 2.0,
+   "tests_per_patient": 0.419,
+   "invasive_per_patient": 0.0273,
+   "cost_per_patient": 74.3667,
+   "median_days_to_exit_noncancer": 16.7933,
+   "stage_breakdown": {
+    "detection": {
+     "wait": 28.37,
+     "service": 1.39
+    },
+    "referral": {
+     "wait": 10.67,
+     "service": 0.06
+    },
+    "diagnosis": {
+     "wait": 16.4,
+     "service": 11.77
+    },
+    "treatment_start": {
+     "wait": 17.43,
+     "service": 0.51
+    }
+   },
+   "node_breakdown": {
+    "nurse_visit": {
+     "wait": 1.53,
+     "service": 0.02,
+     "n": 127,
+     "test": "nurse_assessment",
+     "stage": "detection"
+    },
+    "gp_after_nurse": {
+     "wait": 5.36,
+     "service": 0.02,
+     "n": 94,
+     "test": "gp_assessment_after_nurse",
+     "stage": "detection"
+    },
+    "cxr": {
+     "wait": 1.86,
+     "service": 1.32,
+     "n": 165,
+     "test": "chest_xray",
+     "stage": "detection"
+    },
+    "gp_referral": {
+     "wait": 2.11,
+     "service": 0.0,
+     "n": 137,
+     "test": "gp_referral_letter",
+     "stage": "referral"
+    },
+    "triage": {
+     "wait": 2.78,
+     "service": 0.0,
+     "n": 240,
+     "test": "referral_triage",
+     "stage": "referral"
+    },
+    "spec_visit": {
+     "wait": 5.79,
+     "service": 0.06,
+     "n": 240,
+     "test": "specialist_visit",
+     "stage": "referral"
+    },
+    "ct": {
+     "wait": 2.33,
+     "service": 3.81,
+     "n": 240,
+     "test": "chest_ct",
+     "stage": "diagnosis"
+    },
+    "ttnb": {
+     "wait": 3.26,
+     "service": 2.66,
+     "n": 128,
+     "test": "ttnb",
+     "stage": "diagnosis"
+    },
+    "pet": {
+     "wait": 7.9,
+     "service": 2.76,
+     "n": 240,
+     "test": "pet_ct",
+     "stage": "diagnosis"
+    },
+    "mdt": {
+     "wait": 4.64,
+     "service": 0.5,
+     "n": 240,
+     "test": "tumour_board",
+     "stage": "treatment_start"
+    },
+    "book_treat": {
+     "wait": 12.78,
+     "service": 0.01,
+     "n": 240,
+     "test": "treatment_booking",
+     "stage": "treatment_start"
+    },
+    "bronch": {
+     "wait": 2.91,
+     "service": 2.54,
+     "n": 140,
+     "test": "bronchoscopy",
+     "stage": "diagnosis"
+    },
+    "persist": {
+     "wait": 0.0,
+     "service": 0.0,
+     "n": 103,
+     "test": "symptoms_persist",
+     "stage": "detection"
+    },
+    "represent": {
+     "wait": 13.06,
+     "service": 0.02,
+     "n": 103,
+     "test": "gp_represent",
+     "stage": "detection"
+    },
+    "gp_visit": {
+     "wait": 6.18,
+     "service": 0.02,
+     "n": 113,
+     "test": "gp_assessment",
+     "stage": "detection"
+    },
+    "second_look": {
+     "wait": 0.37,
+     "service": 0.0,
+     "n": 38,
+     "test": "gp_second_look",
+     "stage": "detection"
+    }
+   },
+   "stage_breakdown_all": {
+    "detection": {
+     "wait": 28.37,
+     "service": 1.39
+    },
+    "referral": {
+     "wait": 10.67,
+     "service": 0.06
+    },
+    "diagnosis": {
+     "wait": 16.4,
+     "service": 11.77
+    },
+    "treatment_start": {
+     "wait": 17.43,
+     "service": 0.51
+    }
+   },
+   "node_breakdown_all": {
+    "nurse_visit": {
+     "wait": 1.53,
+     "service": 0.02,
+     "n": 127,
+     "test": "nurse_assessment",
+     "stage": "detection"
+    },
+    "gp_after_nurse": {
+     "wait": 5.36,
+     "service": 0.02,
+     "n": 94,
+     "test": "gp_assessment_after_nurse",
+     "stage": "detection"
+    },
+    "cxr": {
+     "wait": 1.86,
+     "service": 1.32,
+     "n": 165,
+     "test": "chest_xray",
+     "stage": "detection"
+    },
+    "gp_referral": {
+     "wait": 2.11,
+     "service": 0.0,
+     "n": 137,
+     "test": "gp_referral_letter",
+     "stage": "referral"
+    },
+    "triage": {
+     "wait": 2.78,
+     "service": 0.0,
+     "n": 240,
+     "test": "referral_triage",
+     "stage": "referral"
+    },
+    "spec_visit": {
+     "wait": 5.79,
+     "service": 0.06,
+     "n": 240,
+     "test": "specialist_visit",
+     "stage": "referral"
+    },
+    "ct": {
+     "wait": 2.33,
+     "service": 3.81,
+     "n": 240,
+     "test": "chest_ct",
+     "stage": "diagnosis"
+    },
+    "ttnb": {
+     "wait": 3.26,
+     "service": 2.66,
+     "n": 128,
+     "test": "ttnb",
+     "stage": "diagnosis"
+    },
+    "pet": {
+     "wait": 7.9,
+     "service": 2.76,
+     "n": 240,
+     "test": "pet_ct",
+     "stage": "diagnosis"
+    },
+    "mdt": {
+     "wait": 4.64,
+     "service": 0.5,
+     "n": 240,
+     "test": "tumour_board",
+     "stage": "treatment_start"
+    },
+    "book_treat": {
+     "wait": 12.78,
+     "service": 0.01,
+     "n": 240,
+     "test": "treatment_booking",
+     "stage": "treatment_start"
+    },
+    "bronch": {
+     "wait": 2.91,
+     "service": 2.54,
+     "n": 140,
+     "test": "bronchoscopy",
+     "stage": "diagnosis"
+    },
+    "persist": {
+     "wait": 0.0,
+     "service": 0.0,
+     "n": 103,
+     "test": "symptoms_persist",
+     "stage": "detection"
+    },
+    "represent": {
+     "wait": 13.06,
+     "service": 0.02,
+     "n": 103,
+     "test": "gp_represent",
+     "stage": "detection"
+    },
+    "gp_visit": {
+     "wait": 6.18,
+     "service": 0.02,
+     "n": 113,
+     "test": "gp_assessment",
+     "stage": "detection"
+    },
+    "second_look": {
+     "wait": 0.37,
+     "service": 0.0,
+     "n": 38,
+     "test": "gp_second_look",
+     "stage": "detection"
+    }
+   },
+   "stage_breakdown_everyone": {
+    "detection": {
+     "wait": 19.62,
+     "service": 0.76
+    },
+    "referral": {
+     "wait": 0.98,
+     "service": 0.01
+    },
+    "diagnosis": {
+     "wait": 0.38,
+     "service": 0.34
+    },
+    "treatment_start": {
+     "wait": 0.31,
+     "service": 0.01
+    }
+   },
+   "by_group": {
+    "non_specific": {
+     "n": 13570.3333,
+     "n_cancer": 168.6667,
+     "median_days_to_treatment": 86.2467,
+     "share_within_target": 0.498,
+     "median_days_to_diagnosis": 60.51,
+     "missed_cancers": 22.0,
+     "median_days_to_exit_all": 16.83
+    },
+    "site_specific": {
+     "n": 2588.0,
+     "n_cancer": 79.0,
+     "median_days_to_treatment": 75.8433,
+     "share_within_target": 0.7359,
+     "median_days_to_diagnosis": 50.0267,
+     "missed_cancers": 5.0,
+     "median_days_to_exit_all": 17.1367
+    }
+   },
+   "utilisation": {
+    "nurse_appt": 0.8941,
+    "gp_appt": 0.9132,
+    "xray": 0.8776,
+    "clinic": 0.7958,
+    "ct_scanner": 0.888,
+    "bronchoscopy": 0.8984,
+    "ttnb_slot": 0.9062,
+    "pet_scanner": 0.957,
+    "treatment_slot": 0.4434
+   },
+   "cohort_objectives": [
+    0.39536,
+    0.37244,
+    0.46134
+   ]
+  }
+ },
+ "selection_optimism_pp": 2.54,
+ "guardrails_heldout": [],
+ "flowchart_before": {
+  "id": "baseline",
+  "nodes": [
+   {
+    "id": "first_contact",
+    "kind": "choice",
+    "label": "Nurse or GP first",
+    "options": [
+     "nurse_visit",
+     "gp_visit"
+    ]
+   },
+   {
+    "id": "nurse_visit",
+    "kind": "step",
+    "test": "nurse_assessment",
+    "label": "Nurse assessment"
+   },
+   {
+    "id": "gp_visit",
+    "kind": "step",
+    "test": "gp_assessment",
+    "label": "GP appointment"
+   },
+   {
+    "id": "gp_after_nurse",
+    "kind": "step",
+    "test": "gp_assessment_after_nurse",
+    "when": "not nurse_visit",
+    "label": "GP appointment after nurse",
+    "after": [
+     "nurse_visit"
+    ]
+   },
+   {
+    "id": "cxr_ordered",
+    "kind": "step",
+    "when": "nurse_visit or gp_visit or gp_after_nurse",
+    "label": "Chest X-ray ordered",
+    "after_optional": [
+     "nurse_visit",
+     "gp_visit",
+     "gp_after_nurse"
+    ]
+   },
+   {
+    "id": "no_cxr",
+    "kind": "step",
+    "when": "not (nurse_visit or gp_visit or gp_after_nurse)",
+    "label": "No imaging ordered",
+    "after_optional": [
+     "nurse_visit",
+     "gp_visit",
+     "gp_after_nurse"
+    ]
+   },
+   {
+    "id": "cxr",
+    "kind": "step",
+    "test": "chest_xray",
+    "label": "Chest X-ray",
+    "after": [
+     "cxr_ordered"
+    ]
+   },
+   {
+    "id": "second_look",
+    "kind": "step",
+    "test": "gp_second_look",
+    "when": "not cxr",
+    "label": "GP review of a negative film",
+    "after": [
+     "cxr"
+    ]
+   },
+   {
+    "id": "gp_referral",
+    "kind": "step",
+    "test": "gp_referral_letter",
+    "when": "cxr or second_look",
+    "label": "GP writes referral",
+    "after_optional": [
+     "cxr",
+     "second_look"
+    ]
+   },
+   {
+    "id": "no_referral",
+    "kind": "step",
+    "when": "not gp_referral",
+    "label": "No referral",
+    "after_optional": [
+     "gp_referral"
+    ]
+   },
+   {
+    "id": "persist",
+    "kind": "step",
+    "test": "symptoms_persist",
+    "label": "Do symptoms persist",
+    "after": [
+     "no_referral"
+    ]
+   },
+   {
+    "id": "discharge_no_return",
+    "kind": "exit",
+    "when": "not persist",
+    "outcome": "discharged",
+    "label": "Discharged (does not return)",
+    "after": [
+     "persist"
+    ]
+   },
+   {
+    "id": "represent",
+    "kind": "step",
+    "test": "gp_represent",
+    "when": "persist",
+    "label": "Re-presents to GP",
+    "after": [
+     "persist"
+    ]
+   },
+   {
+    "id": "discharge_represent",
+    "kind": "exit",
+    "when": "not represent",
+    "outcome": "discharged",
+    "label": "Discharged after re-presentation",
+    "after": [
+     "represent"
+    ]
+   },
+   {
+    "id": "referral_in",
+    "kind": "step",
+    "when": "gp_referral or represent",
+    "label": "Specialist referral sent",
+    "after_optional": [
+     "gp_referral",
+     "represent"
+    ]
+   },
+   {
+    "id": "triage",
+    "kind": "step",
+    "test": "referral_triage",
+    "label": "Referral handling at hospital",
+    "after": [
+     "referral_in"
+    ]
+   },
+   {
+    "id": "spec_visit",
+    "kind": "step",
+    "test": "specialist_visit",
+    "label": "Specialist visit",
+    "after": [
+     "triage"
+    ]
+   },
+   {
+    "id": "discharge_spec",
+    "kind": "exit",
+    "when": "not spec_visit",
+    "outcome": "discharged",
+    "label": "Discharged by specialist",
+    "after": [
+     "spec_visit"
+    ]
+   },
+   {
+    "id": "ct",
+    "kind": "step",
+    "test": "chest_ct",
+    "when": "spec_visit",
+    "label": "CT chest",
+    "after": [
+     "spec_visit"
+    ]
+   },
+   {
+    "id": "discharge_ct",
+    "kind": "exit",
+    "when": "not ct",
+    "outcome": "discharged",
+    "label": "Discharged after negative CT",
+    "after": [
+     "ct"
+    ]
+   },
+   {
+    "id": "sample_choice",
+    "kind": "choice",
+    "when": "ct",
+    "label": "Choose sampling method",
+    "after": [
+     "ct"
+    ],
+    "options": [
+     "bronch",
+     "ttnb"
+    ]
+   },
+   {
+    "id": "bronch",
+    "kind": "step",
+    "test": "bronchoscopy",
+    "retry": {
+     "max": 0,
+     "true": "nondiagnostic",
+     "fallback": "ttnb"
+    },
+    "label": "Bronchoscopy"
+   },
+   {
+    "id": "ttnb",
+    "kind": "step",
+    "test": "ttnb",
+    "label": "Needle biopsy"
+   },
+   {
+    "id": "sampling_done",
+    "kind": "step",
+    "label": "Sampling finished",
+    "after_optional": [
+     "sample_choice",
+     "bronch",
+     "ttnb"
+    ]
+   },
+   {
+    "id": "diagnosis",
+    "kind": "milestone",
+    "milestone": "diagnosis",
+    "label": "Tissue diagnosis",
+    "after": [
+     "sampling_done"
+    ]
+   },
+   {
+    "id": "pet",
+    "kind": "step",
+    "test": "pet_ct",
+    "when": "bronch is not False and ttnb is not False",
+    "label": "PET-CT",
+    "after": [
+     "sampling_done"
+    ]
+   },
+   {
+    "id": "mdt",
+    "kind": "step",
+    "test": "tumour_board",
+    "label": "Tumour board",
+    "after": [
+     "sampling_done"
+    ],
+    "after_optional": [
+     "pet"
+    ]
+   },
+   {
+    "id": "book_treat",
+    "kind": "step",
+    "test": "treatment_booking",
+    "when": "bronch or ttnb or (pet and bronch is not False and ttnb is not False)",
+    "label": "Waiting for treatment slot",
+    "after": [
+     "mdt"
+    ]
+   },
+   {
+    "id": "discharge_mdt",
+    "kind": "exit",
+    "when": "not (bronch or ttnb or (pet and bronch is not False and ttnb is not False))",
+    "outcome": "discharged",
+    "label": "No cancer (board)",
+    "after": [
+     "mdt"
+    ]
+   },
+   {
+    "id": "treat",
+    "kind": "exit",
+    "outcome": "treatment",
+    "label": "Treatment starts",
+    "after": [
+     "book_treat"
+    ]
+   }
+  ],
+  "policy": {
+   "first_contact": {
+    "mix": {
+     "nurse_visit": 0.5,
+     "gp_visit": 0.5
+    },
+    "source": "KHALIFE2025"
+   },
+   "sample_choice": {
+    "rules": [
+     {
+      "when": "location == 'central'",
+      "choose": "bronch"
+     }
+    ],
+    "mix": {
+     "bronch": 0.35,
+     "ttnb": 0.65
+    },
+    "source": "assumption"
+   }
+  },
+  "description": "Finnish sequential pathway (nurse/GP, CXR, referral, specialist, CT, sampling, PET-CT, board, treatment)"
+ },
+ "flowchart_after": {
+  "id": "baseline_optimised",
+  "nodes": [
+   {
+    "id": "first_contact",
+    "kind": "choice",
+    "label": "Nurse or GP first",
+    "options": [
+     "nurse_visit",
+     "gp_visit"
+    ]
+   },
+   {
+    "id": "nurse_visit",
+    "kind": "step",
+    "test": "nurse_assessment",
+    "label": "Nurse assessment"
+   },
+   {
+    "id": "gp_visit",
+    "kind": "step",
+    "test": "gp_assessment",
+    "label": "GP appointment"
+   },
+   {
+    "id": "gp_after_nurse",
+    "kind": "step",
+    "test": "gp_assessment_after_nurse",
+    "when": "not nurse_visit",
+    "label": "GP appointment after nurse",
+    "after": [
+     "nurse_visit"
+    ]
+   },
+   {
+    "id": "cxr_ordered",
+    "kind": "step",
+    "when": "nurse_visit or gp_visit or gp_after_nurse",
+    "label": "Chest X-ray ordered",
+    "after_optional": [
+     "nurse_visit",
+     "gp_visit",
+     "gp_after_nurse"
+    ]
+   },
+   {
+    "id": "no_cxr",
+    "kind": "step",
+    "when": "not (nurse_visit or gp_visit or gp_after_nurse)",
+    "label": "No imaging ordered",
+    "after_optional": [
+     "nurse_visit",
+     "gp_visit",
+     "gp_after_nurse"
+    ]
+   },
+   {
+    "id": "cxr",
+    "kind": "step",
+    "test": "chest_xray",
+    "label": "Chest X-ray",
+    "after": [
+     "cxr_ordered"
+    ]
+   },
+   {
+    "id": "second_look",
+    "kind": "step",
+    "test": "gp_second_look",
+    "when": "not cxr",
+    "label": "GP review of a negative film",
+    "after": [
+     "cxr"
+    ]
+   },
+   {
+    "id": "gp_referral",
+    "kind": "step",
+    "test": "gp_referral_letter",
+    "when": "cxr or second_look",
+    "label": "GP writes referral",
+    "after_optional": [
+     "cxr",
+     "second_look"
+    ]
+   },
+   {
+    "id": "no_referral",
+    "kind": "step",
+    "when": "not gp_referral",
+    "label": "No referral",
+    "after_optional": [
+     "gp_referral"
+    ]
+   },
+   {
+    "id": "persist",
+    "kind": "step",
+    "test": "symptoms_persist",
+    "label": "Do symptoms persist",
+    "after": [
+     "no_referral"
+    ]
+   },
+   {
+    "id": "discharge_no_return",
+    "kind": "exit",
+    "when": "not persist",
+    "outcome": "discharged",
+    "label": "Discharged (does not return)",
+    "after": [
+     "persist"
+    ]
+   },
+   {
+    "id": "represent",
+    "kind": "step",
+    "test": "gp_represent",
+    "when": "persist",
+    "label": "Re-presents to GP",
+    "after": [
+     "persist"
+    ]
+   },
+   {
+    "id": "discharge_represent",
+    "kind": "exit",
+    "when": "not represent",
+    "outcome": "discharged",
+    "label": "Discharged after re-presentation",
+    "after": [
+     "represent"
+    ]
+   },
+   {
+    "id": "referral_in",
+    "kind": "step",
+    "when": "gp_referral or represent",
+    "label": "Specialist referral sent",
+    "after_optional": [
+     "gp_referral",
+     "represent"
+    ]
+   },
+   {
+    "id": "triage",
+    "kind": "step",
+    "test": "referral_triage",
+    "label": "Referral handling at hospital",
+    "after": [
+     "referral_in"
+    ],
+    "fast_track": true
+   },
+   {
+    "id": "spec_visit",
+    "kind": "step",
+    "test": "specialist_visit",
+    "label": "Specialist visit",
+    "after": [
+     "triage"
+    ]
+   },
+   {
+    "id": "discharge_spec",
+    "kind": "exit",
+    "when": "not spec_visit",
+    "outcome": "discharged",
+    "label": "Discharged by specialist",
+    "after": [
+     "spec_visit"
+    ]
+   },
+   {
+    "id": "ct",
+    "kind": "step",
+    "test": "chest_ct",
+    "when": "spec_visit",
+    "label": "CT chest",
+    "after": [
+     "spec_visit"
+    ]
+   },
+   {
+    "id": "discharge_ct",
+    "kind": "exit",
+    "when": "not ct",
+    "outcome": "discharged",
+    "label": "Discharged after negative CT",
+    "after": [
+     "ct"
+    ]
+   },
+   {
+    "id": "sample_choice",
+    "kind": "choice",
+    "when": "ct",
+    "label": "Choose sampling method",
+    "after": [
+     "ct"
+    ],
+    "options": [
+     "bronch",
+     "ttnb"
+    ]
+   },
+   {
+    "id": "bronch",
+    "kind": "step",
+    "test": "bronchoscopy",
+    "retry": {
+     "max": 0,
+     "true": "nondiagnostic",
+     "fallback": "ttnb"
+    },
+    "label": "Bronchoscopy"
+   },
+   {
+    "id": "ttnb",
+    "kind": "step",
+    "test": "ttnb",
+    "label": "Needle biopsy"
+   },
+   {
+    "id": "sampling_done",
+    "kind": "step",
+    "label": "Sampling finished",
+    "after_optional": [
+     "sample_choice",
+     "bronch",
+     "ttnb"
+    ]
+   },
+   {
+    "id": "diagnosis",
+    "kind": "milestone",
+    "milestone": "diagnosis",
+    "label": "Tissue diagnosis",
+    "after": [
+     "sampling_done"
+    ]
+   },
+   {
+    "id": "pet",
+    "kind": "step",
+    "test": "pet_ct",
+    "when": "bronch is not False and ttnb is not False",
+    "label": "PET-CT",
+    "after": [
+     "sampling_done"
+    ]
+   },
+   {
+    "id": "mdt",
+    "kind": "step",
+    "test": "tumour_board",
+    "label": "Tumour board",
+    "after": [
+     "sampling_done"
+    ],
+    "after_optional": [
+     "pet"
+    ]
+   },
+   {
+    "id": "book_treat",
+    "kind": "step",
+    "test": "treatment_booking",
+    "when": "bronch or ttnb or (pet and bronch is not False and ttnb is not False)",
+    "label": "Waiting for treatment slot",
+    "after": [
+     "mdt"
+    ]
+   },
+   {
+    "id": "discharge_mdt",
+    "kind": "exit",
+    "when": "not (bronch or ttnb or (pet and bronch is not False and ttnb is not False))",
+    "outcome": "discharged",
+    "label": "No cancer (board)",
+    "after": [
+     "mdt"
+    ]
+   },
+   {
+    "id": "treat",
+    "kind": "exit",
+    "outcome": "treatment",
+    "label": "Treatment starts",
+    "after": [
+     "book_treat"
+    ]
+   }
+  ],
+  "policy": {
+   "first_contact": {
+    "mix": {
+     "nurse_visit": 0.5,
+     "gp_visit": 0.5
+    },
+    "source": "KHALIFE2025"
+   },
+   "sample_choice": {
+    "rules": [
+     {
+      "when": "location == 'central'",
+      "choose": "bronch"
+     }
+    ],
+    "mix": {
+     "bronch": 0.35,
+     "ttnb": 0.65
+    },
+    "source": "assumption"
+   }
+  },
+  "description": "Finnish sequential pathway (nurse/GP, CXR, referral, specialist, CT, sampling, PET-CT, board, treatment)"
+ }
+}

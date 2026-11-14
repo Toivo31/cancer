@@ -1,0 +1,7 @@
+- id: history
+  label: History
+  category: history
+  outputs:
+    - {id: cough, type: binary, measures: cough, sensitivity: {value: 0.9, source: assumption}, specificity: {value: 0.9, source: assumption}}
+    - {id: fever, type: binary, measures: fever, sensitivity: {value: 0.9, source: assumption}, specificity: {value: 0.9, source: assumption}}   # MISTAKE unknown_variable
+  positive_when: "cough"

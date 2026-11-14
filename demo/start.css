@@ -1,0 +1,92 @@
+/* Overview page (demo/start.html). Layout only; colours, type and shared classes come from theme.css.
+   Page prefix: .ov-  Design constants (sizes of the small graphics) live here, not in start.js. */
+
+.ov-top{padding-top:var(--s6);padding-bottom:var(--s5)}
+.ov-top .lede{max-width:62ch;font-size:19px}
+
+/* ---------- The three cards (the video's look: outlined card, number, inset panel, one line) ---------- */
+.ov-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--s5);counter-reset:ovcard;margin-top:var(--s5)}
+.ov-card{position:relative;display:flex;flex-direction:column;gap:var(--s2);padding:var(--s5);min-width:0}
+.ov-card__title{display:flex;align-items:baseline;gap:var(--s3);font:700 20px/1.15 var(--font-sans);text-transform:uppercase;letter-spacing:.01em;color:var(--ink);min-height:2.3em}
+.ov-card__n{counter-increment:ovcard;flex:none}
+.ov-card__n::before{content:counter(ovcard)}
+.ov-card__graphic{position:relative;height:128px;display:flex;align-items:center;justify-content:center;padding:var(--s3) var(--s4);margin:var(--s1) 0 var(--s2)}
+.ov-card__num{display:flex;align-items:baseline;gap:var(--s2);margin-top:var(--s1)}
+.ov-card__num .num{font-size:48px;line-height:1}
+.ov-card__unit{font:600 18px/1 var(--font-sans);color:var(--ink)}
+.ov-arrow{font:400 28px/1 var(--font-sans);color:var(--ink-3);padding:0 var(--s1)}
+.ov-card__text{margin:0;font:400 15px/1.45 var(--font-sans);color:var(--ink-2)}
+.ov-card__range{margin:0;color:var(--ink-2);text-transform:none;letter-spacing:.02em}
+.ov-card__stamp{position:absolute;right:calc(-1 * var(--s3));bottom:calc(-1 * var(--s3));font-size:11px;background:var(--card)}
+
+/* Claim labels (D69): published / our simulation / our assumption, each a link to research.html#<claim id> */
+.ov-basis{margin:auto 0 0;padding-top:var(--s2);font:400 12px/1.4 var(--font-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+.ov-basis__link{color:var(--brown);text-decoration:none;border-bottom:1px dotted currentColor}
+.ov-basis__link:hover{color:var(--ink)}
+.ov-basis__link::before{content:"\25CF\00a0";font-size:9px;vertical-align:1px}
+.ov-basis--published::before{content:"\25CB\00a0"}
+.ov-basis--assumption::before{content:"\25B3\00a0"}
+
+/* Card I: mini pathway (inline SVG; the pile is the one mustard thing on the page) */
+.ov-path{width:100%;max-width:260px;height:100%}
+.ov-path__edge{fill:none;stroke:var(--ink-3);stroke-width:1.2}
+.ov-path__step{fill:var(--ink)}
+.ov-path__step--wait{fill:var(--card);stroke:var(--mustard);stroke-width:2.5}
+.ov-path__pile circle{fill:var(--mustard)}
+
+/* Card II: two bars, today (faint) and reordered (ink); heights set from the bundle in start.js */
+.ov-bars{display:flex;align-items:stretch;justify-content:center;gap:var(--s7);height:100px;width:100%}
+.ov-bars__col{display:flex;flex-direction:column;align-items:center;gap:var(--s1);height:100%}
+.ov-bars__track{position:relative;flex:1;width:56px;background:var(--card);border-bottom:1px solid var(--ink-3)}
+.ov-bars__bar{position:absolute;left:0;right:0;bottom:0;height:0}
+.ov-bars__bar--today{background:var(--faint)}
+.ov-bars__bar--after{background:var(--ink)}
+.ov-bars__bar::after{content:attr(data-v);position:absolute;left:100%;bottom:100%;transform:translate(4px,50%);font:400 12px/1 var(--font-mono);color:var(--ink-3)}
+
+/* Card III: dot and range on a shared 0-100 % axis; positions set from the bundle in start.js */
+.ov-range{width:100%;display:flex;flex-direction:column;gap:var(--s4)}
+.ov-range__row{display:grid;grid-template-columns:6.5em 1fr;align-items:center;gap:var(--s3)}
+.ov-range__axis{position:relative;height:16px;border-bottom:1px solid var(--line)}
+.ov-range__ring,.ov-range__dot{position:absolute;top:50%;width:12px;height:12px;border-radius:50%;transform:translate(-50%,-50%)}
+.ov-range__ring{border:2px solid var(--brown);background:transparent;width:16px;height:16px}
+.ov-range__dot{background:var(--ink);width:8px;height:8px}
+.ov-range__bar{position:absolute;top:50%;height:2px;background:var(--ink);transform:translateY(-50%)}
+.ov-range__bar::before,.ov-range__bar::after{content:"";position:absolute;top:-4px;width:1.5px;height:10px;background:var(--ink)}
+.ov-range__bar::before{left:0}
+.ov-range__bar::after{right:0}
+.ov-range__key{display:flex;align-items:center;justify-content:center;gap:var(--s1);flex-wrap:nowrap;font-size:11px;margin-top:var(--s1)}
+.ov-range__key > span{position:relative;transform:none;top:auto;display:inline-block;flex:none}
+.ov-range__ring--key{width:10px;height:10px;border-width:1.5px;margin-left:var(--s2)}
+.ov-range__ring--key{margin-left:0}
+.ov-range__dot--key{width:8px;height:8px;margin-left:var(--s3)}
+.ov-range__bar--key{width:18px;height:2px;margin-left:var(--s3)}
+.ov-range__bar--key::before,.ov-range__bar--key::after{top:-3px;height:8px}
+
+.ov-range__axis--scale::before,.ov-range__axis--scale::after{position:absolute;top:100%;margin-top:3px;font:400 10px/1 var(--font-mono);color:var(--ink-3)}
+.ov-range__axis--scale::before{content:"0%";left:0}
+.ov-range__axis--scale::after{content:"100%";right:0}
+.ov-link{font:400 14px/1.4 var(--font-sans);color:var(--brown)}
+
+/* ---------- DETAILS ---------- */
+.details .finding{max-width:64ch}
+.ov-detail{max-width:80ch}
+.ov-big{display:flex;align-items:baseline;gap:var(--s2);flex-wrap:wrap;margin:var(--s2) 0}
+.ov-big .num{font-size:32px;line-height:1.1}
+.ov-big .ov-arrow{font-size:22px}
+.ov-cap{margin:0 0 var(--s2);max-width:80ch;font:400 15px/1.55 var(--font-sans);color:var(--ink-2)}
+.ov-cap p{margin:0 0 var(--s2)}
+.ov-cap code,.ov-what code{background:var(--inset);padding:0 var(--s1)}
+.ov-what{max-width:80ch;font:400 15px/1.55 var(--font-sans);color:var(--ink-2);margin:0 0 var(--s3)}
+.ov-links{max-width:100ch;margin:var(--s3) 0 0;font:400 14px/1.6 var(--font-sans);color:var(--ink-3)}
+.ov-cmds{display:flex;flex-direction:column;align-items:flex-start;gap:var(--s1);margin:0 0 var(--s3)}
+.ov-pending{font:700 12px var(--font-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mustard-ink)}
+.ov-detail__stamp{margin:0 0 var(--s3)}
+.ov-more{margin:var(--s2) 0 var(--s3);padding:var(--s3) var(--s4);background:var(--inset);max-width:80ch}
+.ov-more summary{cursor:pointer;font:600 15px/1.4 var(--font-sans);color:var(--ink)}
+.ov-more .ov-cap{margin-top:var(--s2)}
+.ov-claims{list-style:none;margin:var(--s3) 0 0;padding:0;max-width:80ch}
+.ov-claims li{margin:0 0 var(--s1);font:400 13px/1.5 var(--font-sans);color:var(--ink-3)}
+.ov-claims .ov-basis__link{font:400 12px/1.4 var(--font-mono);letter-spacing:.06em;text-transform:uppercase}
+.ov-honest{max-width:80ch;margin:0;padding-left:var(--s5);font:400 15px/1.6 var(--font-sans);color:var(--ink-2)}
+
+@media (max-width:1100px){.ov-cards{grid-template-columns:1fr}}

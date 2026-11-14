@@ -1,0 +1,4362 @@
+[
+ {
+  "id": "norway_check",
+  "name": "Norway check (Stokstad 2019)",
+  "description": "Stokstad et al. 2019, St Olavs Hospital: 100 stage I-II lung cancer patients, clock from referral to treatment, 42-day target.",
+  "world": {
+   "schema_version": 1,
+   "id": "norway_check",
+   "name": "Norway check (Stokstad 2019)",
+   "clock_start": "referral_received",
+   "target_days": 42,
+   "default_n": 100,
+   "arrivals": {
+    "spread_days": 1095
+   },
+   "resources": {
+    "waits": {
+     "type": "delay",
+     "source": "assumption"
+    },
+    "tumour_board": {
+     "type": "batch",
+     "weekdays": [
+      2
+     ],
+     "cutoff_days": 2,
+     "source": "STOKSTAD2019"
+    }
+   },
+   "tests": {
+    "baseline_ct": {
+     "kind": "admin",
+     "resource": "none",
+     "stage": "detection",
+     "source": "STOKSTAD2019"
+    },
+    "first_visit": {
+     "kind": "visit",
+     "resource": "waits",
+     "stage": "referral",
+     "source": "STOKSTAD2019"
+    },
+    "bronchoscopy": {
+     "resource": "waits",
+     "stage": "diagnosis",
+     "invasive": true,
+     "cost_eur": 1200,
+     "source": "STOKSTAD2019"
+    },
+    "bronchoscopy_repeat": {
+     "resource": "waits",
+     "stage": "diagnosis",
+     "invasive": true,
+     "cost_eur": 1200,
+     "source": "STOKSTAD2019"
+    },
+    "ttnb": {
+     "resource": "waits",
+     "stage": "diagnosis",
+     "invasive": true,
+     "cost_eur": 900,
+     "source": "STOKSTAD2019"
+    },
+    "ct_redo": {
+     "resource": "waits",
+     "stage": "diagnosis",
+     "source": "STOKSTAD2019"
+    },
+    "further_workup": {
+     "resource": "waits",
+     "stage": "diagnosis",
+     "invasive": true,
+     "cost_eur": 1200,
+     "source": "assumption"
+    },
+    "pet_ct": {
+     "resource": "waits",
+     "stage": "diagnosis",
+     "cost_eur": 1500,
+     "source": "STOKSTAD2019"
+    },
+    "pet_ct_late": {
+     "resource": "waits",
+     "stage": "diagnosis",
+     "cost_eur": 1500,
+     "source": "STOKSTAD2019"
+    },
+    "exercise_test": {
+     "resource": "waits",
+     "stage": "diagnosis",
+     "cost_eur": 300,
+     "source": "STOKSTAD2019"
+    },
+    "exercise_test_late": {
+     "resource": "waits",
+     "stage": "diagnosis",
+     "cost_eur": 300,
+     "source": "STOKSTAD2019"
+    },
+    "tumour_board": {
+     "kind": "admin",
+     "resource": "tumour_board",
+     "stage": "treatment_start",
+     "source": "assumption"
+    },
+    "surgery_booking": {
+     "kind": "admin",
+     "resource": "waits",
+     "stage": "treatment_start",
+     "source": "STOKSTAD2019"
+    },
+    "radiotherapy_booking": {
+     "kind": "admin",
+     "resource": "waits",
+     "stage": "treatment_start",
+     "source": "STOKSTAD2019"
+    },
+    "treatment": {
+     "kind": "treatment",
+     "resource": "none",
+     "stage": "treatment_start",
+     "source": "assumption"
+    }
+   },
+   "published": {
+    "source": "STOKSTAD2019",
+    "observed": {
+     "share_within_target": 0.4,
+     "median_days_to_treatment": 46.5,
+     "ci95": [
+      0.31,
+      0.5
+     ]
+    },
+    "faster_pet": {
+     "share_within_target": 0.48,
+     "ci95": [
+      0.39,
+      0.58
+     ]
+    },
+    "optimal": {
+     "share_within_target": 0.8,
+     "ci95": [
+      0.72,
+      0.87
+     ]
+    },
+    "sampling_procedures": {
+     "observed": 112,
+     "optimal": 92
+    }
+   }
+  },
+  "flowcharts": [
+   {
+    "schema_version": 1,
+    "id": "observed",
+    "version": 1,
+    "parent_version": null,
+    "world_id": "norway_check",
+    "name": "Observed pathway (calibrated)",
+    "nodes": [
+     {
+      "id": "ct",
+      "kind": "step",
+      "label": "CT scan",
+      "test": "baseline_ct"
+     },
+     {
+      "id": "visit",
+      "kind": "step",
+      "label": "First hospital visit",
+      "test": "first_visit"
+     },
+     {
+      "id": "sample_plan",
+      "kind": "decision",
+      "label": "Tissue sampling planned?"
+     },
+     {
+      "id": "no_sampling",
+      "kind": "join",
+      "label": "No tissue sample"
+     },
+     {
+      "id": "bronch1",
+      "kind": "step",
+      "label": "Bronchoscopy",
+      "test": "bronchoscopy"
+     },
+     {
+      "id": "after_bronch",
+      "kind": "decision",
+      "label": "After an inconclusive bronchoscopy",
+      "when": "not bronch1"
+     },
+     {
+      "id": "ttnb",
+      "kind": "step",
+      "label": "Needle biopsy",
+      "test": "ttnb"
+     },
+     {
+      "id": "bronch2",
+      "kind": "step",
+      "label": "Repeat bronchoscopy",
+      "test": "bronchoscopy_repeat"
+     },
+     {
+      "id": "no_more",
+      "kind": "join",
+      "label": "Proceed without tissue"
+     },
+     {
+      "id": "sampling_done",
+      "kind": "join",
+      "label": "Sampling finished"
+     },
+     {
+      "id": "ct_redo",
+      "kind": "step",
+      "label": "New CT (first one inadequate)",
+      "test": "ct_redo",
+      "when": "ct_inadequate == 'yes'"
+     },
+     {
+      "id": "pet_timing",
+      "kind": "decision",
+      "label": "When PET-CT is ordered"
+     },
+     {
+      "id": "pet_on_time",
+      "kind": "decision",
+      "label": "PET-CT ordered at triage or at the first visit"
+     },
+     {
+      "id": "pet_triage",
+      "kind": "step",
+      "label": "PET-CT (ordered at referral triage)",
+      "test": "pet_ct"
+     },
+     {
+      "id": "pet_early_route",
+      "kind": "join",
+      "label": "PET-CT ordered at first visit"
+     },
+     {
+      "id": "pet_early",
+      "kind": "step",
+      "label": "PET-CT",
+      "test": "pet_ct"
+     },
+     {
+      "id": "pet_late",
+      "kind": "step",
+      "label": "PET-CT (ordered late)",
+      "test": "pet_ct_late"
+     },
+     {
+      "id": "pet_scan",
+      "kind": "join",
+      "label": "PET-CT result"
+     },
+     {
+      "id": "workup",
+      "kind": "step",
+      "label": "Further tests after PET-CT",
+      "test": "further_workup",
+      "when": "further_workup_after_pet == 'yes'"
+     },
+     {
+      "id": "pet",
+      "kind": "join",
+      "label": "PET-CT done"
+     },
+     {
+      "id": "ex_timing",
+      "kind": "decision",
+      "label": "When the exercise test is ordered",
+      "when": "needs_exercise_test == 'yes'"
+     },
+     {
+      "id": "ex_early",
+      "kind": "step",
+      "label": "Exercise test",
+      "test": "exercise_test"
+     },
+     {
+      "id": "ex_late",
+      "kind": "step",
+      "label": "Exercise test (ordered late)",
+      "test": "exercise_test_late"
+     },
+     {
+      "id": "exercise",
+      "kind": "join",
+      "label": "Exercise test done"
+     },
+     {
+      "id": "diagnosis",
+      "kind": "milestone",
+      "label": "Diagnostic workup complete",
+      "milestone": "diagnosis"
+     },
+     {
+      "id": "mdt",
+      "kind": "step",
+      "label": "Tumour board",
+      "test": "tumour_board"
+     },
+     {
+      "id": "book_surgery",
+      "kind": "step",
+      "label": "Waiting for surgery",
+      "test": "surgery_booking",
+      "when": "treatment == 'surgery'"
+     },
+     {
+      "id": "book_rt",
+      "kind": "step",
+      "label": "Waiting for radiotherapy",
+      "test": "radiotherapy_booking",
+      "when": "treatment == 'radiotherapy'"
+     },
+     {
+      "id": "treat",
+      "kind": "exit",
+      "label": "Treatment starts",
+      "test": "treatment",
+      "outcome": "treatment"
+     }
+    ],
+    "edges": [
+     {
+      "from": "ct",
+      "to": "visit",
+      "type": "required"
+     },
+     {
+      "from": "visit",
+      "to": "sample_plan",
+      "type": "required"
+     },
+     {
+      "from": "sample_plan",
+      "to": "bronch1",
+      "type": "option",
+      "index": 0
+     },
+     {
+      "from": "sample_plan",
+      "to": "no_sampling",
+      "type": "option",
+      "index": 1
+     },
+     {
+      "from": "bronch1",
+      "to": "after_bronch",
+      "type": "required"
+     },
+     {
+      "from": "after_bronch",
+      "to": "ttnb",
+      "type": "option",
+      "index": 0
+     },
+     {
+      "from": "after_bronch",
+      "to": "bronch2",
+      "type": "option",
+      "index": 1
+     },
+     {
+      "from": "after_bronch",
+      "to": "no_more",
+      "type": "option",
+      "index": 2
+     },
+     {
+      "from": "sample_plan",
+      "to": "sampling_done",
+      "type": "optional"
+     },
+     {
+      "from": "no_sampling",
+      "to": "sampling_done",
+      "type": "optional"
+     },
+     {
+      "from": "bronch1",
+      "to": "sampling_done",
+      "type": "optional"
+     },
+     {
+      "from": "after_bronch",
+      "to": "sampling_done",
+      "type": "optional"
+     },
+     {
+      "from": "ttnb",
+      "to": "sampling_done",
+      "type": "optional"
+     },
+     {
+      "from": "bronch2",
+      "to": "sampling_done",
+      "type": "optional"
+     },
+     {
+      "from": "no_more",
+      "to": "sampling_done",
+      "type": "optional"
+     },
+     {
+      "from": "visit",
+      "to": "ct_redo",
+      "type": "required"
+     },
+     {
+      "from": "ct",
+      "to": "pet_timing",
+      "type": "required"
+     },
+     {
+      "from": "pet_timing",
+      "to": "pet_on_time",
+      "type": "option",
+      "index": 0
+     },
+     {
+      "from": "pet_timing",
+      "to": "pet_late",
+      "type": "option",
+      "index": 1
+     },
+     {
+      "from": "pet_on_time",
+      "to": "pet_triage",
+      "type": "option",
+      "index": 0
+     },
+     {
+      "from": "pet_on_time",
+      "to": "pet_early_route",
+      "type": "option",
+      "index": 1
+     },
+     {
+      "from": "visit",
+      "to": "pet_early_route",
+      "type": "required"
+     },
+     {
+      "from": "pet_early_route",
+      "to": "pet_early",
+      "type": "required"
+     },
+     {
+      "from": "ct_redo",
+      "to": "pet_early",
+      "type": "optional"
+     },
+     {
+      "from": "visit",
+      "to": "pet_late",
+      "type": "required"
+     },
+     {
+      "from": "ct_redo",
+      "to": "pet_late",
+      "type": "optional"
+     },
+     {
+      "from": "pet_triage",
+      "to": "pet_scan",
+      "type": "any"
+     },
+     {
+      "from": "pet_early",
+      "to": "pet_scan",
+      "type": "any"
+     },
+     {
+      "from": "pet_late",
+      "to": "pet_scan",
+      "type": "any"
+     },
+     {
+      "from": "pet_scan",
+      "to": "workup",
+      "type": "required"
+     },
+     {
+      "from": "pet_scan",
+      "to": "pet",
+      "type": "required"
+     },
+     {
+      "from": "workup",
+      "to": "pet",
+      "type": "optional"
+     },
+     {
+      "from": "visit",
+      "to": "ex_timing",
+      "type": "required"
+     },
+     {
+      "from": "ex_timing",
+      "to": "ex_early",
+      "type": "option",
+      "index": 0
+     },
+     {
+      "from": "ex_timing",
+      "to": "ex_late",
+      "type": "option",
+      "index": 1
+     },
+     {
+      "from": "visit",
+      "to": "exercise",
+      "type": "required"
+     },
+     {
+      "from": "ex_timing",
+      "to": "exercise",
+      "type": "optional"
+     },
+     {
+      "from": "ex_early",
+      "to": "exercise",
+      "type": "optional"
+     },
+     {
+      "from": "ex_late",
+      "to": "exercise",
+      "type": "optional"
+     },
+     {
+      "from": "sampling_done",
+      "to": "diagnosis",
+      "type": "required"
+     },
+     {
+      "from": "pet",
+      "to": "diagnosis",
+      "type": "required"
+     },
+     {
+      "from": "diagnosis",
+      "to": "mdt",
+      "type": "required"
+     },
+     {
+      "from": "exercise",
+      "to": "mdt",
+      "type": "required"
+     },
+     {
+      "from": "mdt",
+      "to": "book_surgery",
+      "type": "required"
+     },
+     {
+      "from": "mdt",
+      "to": "book_rt",
+      "type": "required"
+     },
+     {
+      "from": "mdt",
+      "to": "treat",
+      "type": "required"
+     },
+     {
+      "from": "book_surgery",
+      "to": "treat",
+      "type": "optional"
+     },
+     {
+      "from": "book_rt",
+      "to": "treat",
+      "type": "optional"
+     }
+    ],
+    "decision_policy": {
+     "backend": "stub",
+     "mode": "sample",
+     "points": {
+      "sample_plan": {
+       "default": {
+        "bronch1": 0.78,
+        "no_sampling": 0.22
+       },
+       "source": "STOKSTAD2019"
+      },
+      "after_bronch": {
+       "default": {
+        "ttnb": 0.3,
+        "bronch2": 0.16,
+        "no_more": 0.54
+       },
+       "source": "STOKSTAD2019"
+      },
+      "pet_timing": {
+       "default": {
+        "pet_on_time": 0.73,
+        "pet_late": 0.27
+       },
+       "source": "STOKSTAD2019"
+      },
+      "pet_on_time": {
+       "default": {
+        "pet_triage": 0.5,
+        "pet_early_route": 0.5
+       },
+       "source": "assumption"
+      },
+      "ex_timing": {
+       "default": {
+        "ex_early": 0.24,
+        "ex_late": 0.76
+       },
+       "source": "STOKSTAD2019"
+      }
+     }
+    },
+    "test_overrides": {},
+    "resource_overrides": {},
+    "edits_from_parent": []
+   },
+   {
+    "schema_version": 1,
+    "id": "faster_pet",
+    "version": 1,
+    "parent_version": null,
+    "world_id": "norway_check",
+    "name": "Observed order, PET-CT within 7 days",
+    "nodes": [
+     {
+      "id": "ct",
+      "kind": "step",
+      "label": "CT scan",
+      "test": "baseline_ct"
+     },
+     {
+      "id": "visit",
+      "kind": "step",
+      "label": "First hospital visit",
+      "test": "first_visit"
+     },
+     {
+      "id": "sample_plan",
+      "kind": "decision",
+      "label": "Tissue sampling planned?"
+     },
+     {
+      "id": "no_sampling",
+      "kind": "join",
+      "label": "No tissue sample"
+     },
+     {
+      "id": "bronch1",
+      "kind": "step",
+      "label": "Bronchoscopy",
+      "test": "bronchoscopy"
+     },
+     {
+      "id": "after_bronch",
+      "kind": "decision",
+      "label": "After an inconclusive bronchoscopy",
+      "when": "not bronch1"
+     },
+     {
+      "id": "ttnb",
+      "kind": "step",
+      "label": "Needle biopsy",
+      "test": "ttnb"
+     },
+     {
+      "id": "bronch2",
+      "kind": "step",
+      "label": "Repeat bronchoscopy",
+      "test": "bronchoscopy_repeat"
+     },
+     {
+      "id": "no_more",
+      "kind": "join",
+      "label": "Proceed without tissue"
+     },
+     {
+      "id": "sampling_done",
+      "kind": "join",
+      "label": "Sampling finished"
+     },
+     {
+      "id": "ct_redo",
+      "kind": "step",
+      "label": "New CT (first one inadequate)",
+      "test": "ct_redo",
+      "when": "ct_inadequate == 'yes'"
+     },
+     {
+      "id": "pet_timing",
+      "kind": "decision",
+      "label": "When PET-CT is ordered"
+     },
+     {
+      "id": "pet_on_time",
+      "kind": "decision",
+      "label": "PET-CT ordered at triage or at the first visit"
+     },
+     {
+      "id": "pet_triage",
+      "kind": "step",
+      "label": "PET-CT (ordered at referral triage)",
+      "test": "pet_ct"
+     },
+     {
+      "id": "pet_early_route",
+      "kind": "join",
+      "label": "PET-CT ordered at first visit"
+     },
+     {
+      "id": "pet_early",
+      "kind": "step",
+      "label": "PET-CT",
+      "test": "pet_ct"
+     },
+     {
+      "id": "pet_late",
+      "kind": "step",
+      "label": "PET-CT (ordered late)",
+      "test": "pet_ct_late"
+     },
+     {
+      "id": "pet_scan",
+      "kind": "join",
+      "label": "PET-CT result"
+     },
+     {
+      "id": "workup",
+      "kind": "step",
+      "label": "Further tests after PET-CT",
+      "test": "further_workup",
+      "when": "further_workup_after_pet == 'yes'"
+     },
+     {
+      "id": "pet",
+      "kind": "join",
+      "label": "PET-CT done"
+     },
+     {
+      "id": "ex_timing",
+      "kind": "decision",
+      "label": "When the exercise test is ordered",
+      "when": "needs_exercise_test == 'yes'"
+     },
+     {
+      "id": "ex_early",
+      "kind": "step",
+      "label": "Exercise test",
+      "test": "exercise_test"
+     },
+     {
+      "id": "ex_late",
+      "kind": "step",
+      "label": "Exercise test (ordered late)",
+      "test": "exercise_test_late"
+     },
+     {
+      "id": "exercise",
+      "kind": "join",
+      "label": "Exercise test done"
+     },
+     {
+      "id": "diagnosis",
+      "kind": "milestone",
+      "label": "Diagnostic workup complete",
+      "milestone": "diagnosis"
+     },
+     {
+      "id": "mdt",
+      "kind": "step",
+      "label": "Tumour board",
+      "test": "tumour_board"
+     },
+     {
+      "id": "book_surgery",
+      "kind": "step",
+      "label": "Waiting for surgery",
+      "test": "surgery_booking",
+      "when": "treatment == 'surgery'"
+     },
+     {
+      "id": "book_rt",
+      "kind": "step",
+      "label": "Waiting for radiotherapy",
+      "test": "radiotherapy_booking",
+      "when": "treatment == 'radiotherapy'"
+     },
+     {
+      "id": "treat",
+      "kind": "exit",
+      "label": "Treatment starts",
+      "test": "treatment",
+      "outcome": "treatment"
+     }
+    ],
+    "edges": [
+     {
+      "from": "ct",
+      "to": "visit",
+      "type": "required"
+     },
+     {
+      "from": "visit",
+      "to": "sample_plan",
+      "type": "required"
+     },
+     {
+      "from": "sample_plan",
+      "to": "bronch1",
+      "type": "option",
+      "index": 0
+     },
+     {
+      "from": "sample_plan",
+      "to": "no_sampling",
+      "type": "option",
+      "index": 1
+     },
+     {
+      "from": "bronch1",
+      "to": "after_bronch",
+      "type": "required"
+     },
+     {
+      "from": "after_bronch",
+      "to": "ttnb",
+      "type": "option",
+      "index": 0
+     },
+     {
+      "from": "after_bronch",
+      "to": "bronch2",
+      "type": "option",
+      "index": 1
+     },
+     {
+      "from": "after_bronch",
+      "to": "no_more",
+      "type": "option",
+      "index": 2
+     },
+     {
+      "from": "sample_plan",
+      "to": "sampling_done",
+      "type": "optional"
+     },
+     {
+      "from": "no_sampling",
+      "to": "sampling_done",
+      "type": "optional"
+     },
+     {
+      "from": "bronch1",
+      "to": "sampling_done",
+      "type": "optional"
+     },
+     {
+      "from": "after_bronch",
+      "to": "sampling_done",
+      "type": "optional"
+     },
+     {
+      "from": "ttnb",
+      "to": "sampling_done",
+      "type": "optional"
+     },
+     {
+      "from": "bronch2",
+      "to": "sampling_done",
+      "type": "optional"
+     },
+     {
+      "from": "no_more",
+      "to": "sampling_done",
+      "type": "optional"
+     },
+     {
+      "from": "visit",
+      "to": "ct_redo",
+      "type": "required"
+     },
+     {
+      "from": "ct",
+      "to": "pet_timing",
+      "type": "required"
+     },
+     {
+      "from": "pet_timing",
+      "to": "pet_on_time",
+      "type": "option",
+      "index": 0
+     },
+     {
+      "from": "pet_timing",
+      "to": "pet_late",
+      "type": "option",
+      "index": 1
+     },
+     {
+      "from": "pet_on_time",
+      "to": "pet_triage",
+      "type": "option",
+      "index": 0
+     },
+     {
+      "from": "pet_on_time",
+      "to": "pet_early_route",
+      "type": "option",
+      "index": 1
+     },
+     {
+      "from": "visit",
+      "to": "pet_early_route",
+      "type": "required"
+     },
+     {
+      "from": "pet_early_route",
+      "to": "pet_early",
+      "type": "required"
+     },
+     {
+      "from": "ct_redo",
+      "to": "pet_early",
+      "type": "optional"
+     },
+     {
+      "from": "visit",
+      "to": "pet_late",
+      "type": "required"
+     },
+     {
+      "from": "ct_redo",
+      "to": "pet_late",
+      "type": "optional"
+     },
+     {
+      "from": "pet_triage",
+      "to": "pet_scan",
+      "type": "any"
+     },
+     {
+      "from": "pet_early",
+      "to": "pet_scan",
+      "type": "any"
+     },
+     {
+      "from": "pet_late",
+      "to": "pet_scan",
+      "type": "any"
+     },
+     {
+      "from": "pet_scan",
+      "to": "workup",
+      "type": "required"
+     },
+     {
+      "from": "pet_scan",
+      "to": "pet",
+      "type": "required"
+     },
+     {
+      "from": "workup",
+      "to": "pet",
+      "type": "optional"
+     },
+     {
+      "from": "visit",
+      "to": "ex_timing",
+      "type": "required"
+     },
+     {
+      "from": "ex_timing",
+      "to": "ex_early",
+      "type": "option",
+      "index": 0
+     },
+     {
+      "from": "ex_timing",
+      "to": "ex_late",
+      "type": "option",
+      "index": 1
+     },
+     {
+      "from": "visit",
+      "to": "exercise",
+      "type": "required"
+     },
+     {
+      "from": "ex_timing",
+      "to": "exercise",
+      "type": "optional"
+     },
+     {
+      "from": "ex_early",
+      "to": "exercise",
+      "type": "optional"
+     },
+     {
+      "from": "ex_late",
+      "to": "exercise",
+      "type": "optional"
+     },
+     {
+      "from": "sampling_done",
+      "to": "diagnosis",
+      "type": "required"
+     },
+     {
+      "from": "pet",
+      "to": "diagnosis",
+      "type": "required"
+     },
+     {
+      "from": "diagnosis",
+      "to": "mdt",
+      "type": "required"
+     },
+     {
+      "from": "exercise",
+      "to": "mdt",
+      "type": "required"
+     },
+     {
+      "from": "mdt",
+      "to": "book_surgery",
+      "type": "required"
+     },
+     {
+      "from": "mdt",
+      "to": "book_rt",
+      "type": "required"
+     },
+     {
+      "from": "mdt",
+      "to": "treat",
+      "type": "required"
+     },
+     {
+      "from": "book_surgery",
+      "to": "treat",
+      "type": "optional"
+     },
+     {
+      "from": "book_rt",
+      "to": "treat",
+      "type": "optional"
+     }
+    ],
+    "decision_policy": {
+     "backend": "stub",
+     "mode": "sample",
+     "points": {
+      "sample_plan": {
+       "default": {
+        "bronch1": 0.78,
+        "no_sampling": 0.22
+       },
+       "source": "STOKSTAD2019"
+      },
+      "after_bronch": {
+       "default": {
+        "ttnb": 0.3,
+        "bronch2": 0.16,
+        "no_more": 0.54
+       },
+       "source": "STOKSTAD2019"
+      },
+      "pet_timing": {
+       "default": {
+        "pet_on_time": 0.73,
+        "pet_late": 0.27
+       },
+       "source": "STOKSTAD2019"
+      },
+      "pet_on_time": {
+       "default": {
+        "pet_triage": 0.5,
+        "pet_early_route": 0.5
+       },
+       "source": "assumption"
+      },
+      "ex_timing": {
+       "default": {
+        "ex_early": 0.24,
+        "ex_late": 0.76
+       },
+       "source": "STOKSTAD2019"
+      }
+     }
+    },
+    "test_overrides": {
+     "pet_ct": {
+      "wait": {
+       "dist": "uniform",
+       "low": 2,
+       "high": 4.5
+      }
+     },
+     "pet_ct_late": {
+      "wait": {
+       "dist": "uniform",
+       "low": 2,
+       "high": 4.5
+      }
+     }
+    },
+    "resource_overrides": {},
+    "edits_from_parent": []
+   },
+   {
+    "schema_version": 1,
+    "id": "optimal",
+    "version": 1,
+    "parent_version": null,
+    "world_id": "norway_check",
+    "name": "Authors' optimal pathway (Stokstad et al. 2019)",
+    "nodes": [
+     {
+      "id": "ct",
+      "kind": "step",
+      "label": "CT scan",
+      "test": "baseline_ct"
+     },
+     {
+      "id": "visit",
+      "kind": "step",
+      "label": "First hospital visit",
+      "test": "first_visit"
+     },
+     {
+      "id": "ct_redo",
+      "kind": "step",
+      "label": "New CT (first one inadequate)",
+      "test": "ct_redo",
+      "when": "ct_inadequate == 'yes'"
+     },
+     {
+      "id": "pet_on_time",
+      "kind": "decision",
+      "label": "PET-CT ordered at triage or at the first visit"
+     },
+     {
+      "id": "pet_triage",
+      "kind": "step",
+      "label": "PET-CT (ordered at referral triage)",
+      "test": "pet_ct"
+     },
+     {
+      "id": "pet_early_route",
+      "kind": "join",
+      "label": "PET-CT ordered at first visit"
+     },
+     {
+      "id": "pet_early",
+      "kind": "step",
+      "label": "PET-CT",
+      "test": "pet_ct"
+     },
+     {
+      "id": "pet_scan",
+      "kind": "join",
+      "label": "PET-CT result"
+     },
+     {
+      "id": "workup",
+      "kind": "step",
+      "label": "Further tests after PET-CT",
+      "test": "further_workup",
+      "when": "further_workup_after_pet == 'yes'"
+     },
+     {
+      "id": "pet",
+      "kind": "join",
+      "label": "PET-CT done"
+     },
+     {
+      "id": "ex_test",
+      "kind": "step",
+      "label": "Exercise test",
+      "test": "exercise_test",
+      "when": "needs_exercise_test == 'yes'"
+     },
+     {
+      "id": "exercise",
+      "kind": "join",
+      "label": "Exercise test done"
+     },
+     {
+      "id": "mdt",
+      "kind": "step",
+      "label": "Tumour board",
+      "test": "tumour_board"
+     },
+     {
+      "id": "book_surgery",
+      "kind": "step",
+      "label": "Waiting for surgery",
+      "test": "surgery_booking",
+      "when": "treatment == 'surgery'"
+     },
+     {
+      "id": "book_rt",
+      "kind": "step",
+      "label": "Waiting for radiotherapy",
+      "test": "radiotherapy_booking",
+      "when": "treatment == 'radiotherapy'"
+     },
+     {
+      "id": "sample_plan",
+      "kind": "decision",
+      "label": "Tissue sampling planned?"
+     },
+     {
+      "id": "no_sampling",
+      "kind": "join",
+      "label": "No tissue sample"
+     },
+     {
+      "id": "method",
+      "kind": "decision",
+      "label": "Choose sampling method"
+     },
+     {
+      "id": "bronch1",
+      "kind": "step",
+      "label": "Bronchoscopy",
+      "test": "bronchoscopy"
+     },
+     {
+      "id": "ttnb1",
+      "kind": "step",
+      "label": "Needle biopsy",
+      "test": "ttnb"
+     },
+     {
+      "id": "after_bronch",
+      "kind": "decision",
+      "label": "After an inconclusive bronchoscopy",
+      "when": "not bronch1"
+     },
+     {
+      "id": "ttnb",
+      "kind": "step",
+      "label": "Needle biopsy",
+      "test": "ttnb"
+     },
+     {
+      "id": "bronch2",
+      "kind": "step",
+      "label": "Repeat bronchoscopy",
+      "test": "bronchoscopy_repeat"
+     },
+     {
+      "id": "no_more",
+      "kind": "join",
+      "label": "Proceed without tissue"
+     },
+     {
+      "id": "sampling_done",
+      "kind": "join",
+      "label": "Sampling finished"
+     },
+     {
+      "id": "diagnosis",
+      "kind": "milestone",
+      "label": "Diagnostic workup complete",
+      "milestone": "diagnosis"
+     },
+     {
+      "id": "treat",
+      "kind": "exit",
+      "label": "Treatment starts",
+      "test": "treatment",
+      "outcome": "treatment"
+     }
+    ],
+    "edges": [
+     {
+      "from": "ct",
+      "to": "visit",
+      "type": "required"
+     },
+     {
+      "from": "visit",
+      "to": "ct_redo",
+      "type": "required"
+     },
+     {
+      "from": "ct",
+      "to": "pet_on_time",
+      "type": "required"
+     },
+     {
+      "from": "pet_on_time",
+      "to": "pet_triage",
+      "type": "option",
+      "index": 0
+     },
+     {
+      "from": "pet_on_time",
+      "to": "pet_early_route",
+      "type": "option",
+      "index": 1
+     },
+     {
+      "from": "visit",
+      "to": "pet_early_route",
+      "type": "required"
+     },
+     {
+      "from": "pet_early_route",
+      "to": "pet_early",
+      "type": "required"
+     },
+     {
+      "from": "ct_redo",
+      "to": "pet_early",
+      "type": "optional"
+     },
+     {
+      "from": "pet_triage",
+      "to": "pet_scan",
+      "type": "any"
+     },
+     {
+      "from": "pet_early",
+      "to": "pet_scan",
+      "type": "any"
+     },
+     {
+      "from": "pet_scan",
+      "to": "workup",
+      "type": "required"
+     },
+     {
+      "from": "pet_scan",
+      "to": "pet",
+      "type": "required"
+     },
+     {
+      "from": "workup",
+      "to": "pet",
+      "type": "optional"
+     },
+     {
+      "from": "visit",
+      "to": "ex_test",
+      "type": "required"
+     },
+     {
+      "from": "visit",
+      "to": "exercise",
+      "type": "required"
+     },
+     {
+      "from": "ex_test",
+      "to": "exercise",
+      "type": "optional"
+     },
+     {
+      "from": "pet",
+      "to": "mdt",
+      "type": "required"
+     },
+     {
+      "from": "exercise",
+      "to": "mdt",
+      "type": "required"
+     },
+     {
+      "from": "mdt",
+      "to": "book_surgery",
+      "type": "required"
+     },
+     {
+      "from": "mdt",
+      "to": "book_rt",
+      "type": "required"
+     },
+     {
+      "from": "mdt",
+      "to": "sample_plan",
+      "type": "required"
+     },
+     {
+      "from": "sample_plan",
+      "to": "method",
+      "type": "option",
+      "index": 0
+     },
+     {
+      "from": "sample_plan",
+      "to": "no_sampling",
+      "type": "option",
+      "index": 1
+     },
+     {
+      "from": "method",
+      "to": "bronch1",
+      "type": "option",
+      "index": 0
+     },
+     {
+      "from": "method",
+      "to": "ttnb1",
+      "type": "option",
+      "index": 1
+     },
+     {
+      "from": "bronch1",
+      "to": "after_bronch",
+      "type": "required"
+     },
+     {
+      "from": "after_bronch",
+      "to": "ttnb",
+      "type": "option",
+      "index": 0
+     },
+     {
+      "from": "after_bronch",
+      "to": "bronch2",
+      "type": "option",
+      "index": 1
+     },
+     {
+      "from": "after_bronch",
+      "to": "no_more",
+      "type": "option",
+      "index": 2
+     },
+     {
+      "from": "sample_plan",
+      "to": "sampling_done",
+      "type": "optional"
+     },
+     {
+      "from": "no_sampling",
+      "to": "sampling_done",
+      "type": "optional"
+     },
+     {
+      "from": "method",
+      "to": "sampling_done",
+      "type": "optional"
+     },
+     {
+      "from": "bronch1",
+      "to": "sampling_done",
+      "type": "optional"
+     },
+     {
+      "from": "ttnb1",
+      "to": "sampling_done",
+      "type": "optional"
+     },
+     {
+      "from": "after_bronch",
+      "to": "sampling_done",
+      "type": "optional"
+     },
+     {
+      "from": "ttnb",
+      "to": "sampling_done",
+      "type": "optional"
+     },
+     {
+      "from": "bronch2",
+      "to": "sampling_done",
+      "type": "optional"
+     },
+     {
+      "from": "no_more",
+      "to": "sampling_done",
+      "type": "optional"
+     },
+     {
+      "from": "sampling_done",
+      "to": "diagnosis",
+      "type": "required"
+     },
+     {
+      "from": "mdt",
+      "to": "treat",
+      "type": "required"
+     },
+     {
+      "from": "sampling_done",
+      "to": "treat",
+      "type": "required"
+     },
+     {
+      "from": "book_surgery",
+      "to": "treat",
+      "type": "optional"
+     },
+     {
+      "from": "book_rt",
+      "to": "treat",
+      "type": "optional"
+     }
+    ],
+    "decision_policy": {
+     "backend": "stub",
+     "mode": "sample",
+     "points": {
+      "sample_plan": {
+       "default": {
+        "method": 0.78,
+        "no_sampling": 0.22
+       },
+       "source": "assumption"
+      },
+      "method": {
+       "default": {
+        "bronch1": 0.0,
+        "ttnb1": 1.0
+       },
+       "rules": [
+        {
+         "when": "location == 'central'",
+         "probs": {
+          "bronch1": 1.0,
+          "ttnb1": 0.0
+         }
+        }
+       ],
+       "source": "assumption"
+      },
+      "after_bronch": {
+       "default": {
+        "ttnb": 0.3,
+        "bronch2": 0.16,
+        "no_more": 0.54
+       },
+       "source": "assumption"
+      },
+      "pet_on_time": {
+       "default": {
+        "pet_triage": 0.5,
+        "pet_early_route": 0.5
+       },
+       "source": "assumption"
+      }
+     }
+    },
+    "test_overrides": {
+     "pet_ct": {
+      "wait": {
+       "dist": "uniform",
+       "low": 2,
+       "high": 4.5
+      }
+     }
+    },
+    "resource_overrides": {},
+    "edits_from_parent": []
+   }
+  ]
+ },
+ {
+  "id": "finland_lung",
+  "name": "Finnish lung cancer pathway (synthetic)",
+  "description": "Synthetic Finnish lung pathway in one wellbeing services county, clock from first contact to treatment, 90-day provisional target.",
+  "world": {
+   "schema_version": 1,
+   "id": "finland_lung",
+   "name": "Finnish lung cancer pathway (synthetic)",
+   "clock_start": "first_contact",
+   "target_days": 90,
+   "default_n": 18800,
+   "arrivals": {
+    "rate_per_day": 44
+   },
+   "resources": {
+    "nurse_appt": {
+     "type": "server",
+     "capacity_per_day": 35,
+     "min_lead_days": 2,
+     "source": "assumption"
+    },
+    "gp_appt": {
+     "type": "server",
+     "capacity_per_day": 74,
+     "min_lead_days": 12,
+     "source": "KHALIFE2025"
+    },
+    "xray": {
+     "type": "server",
+     "capacity_per_day": 24,
+     "min_lead_days": 2,
+     "source": "assumption"
+    },
+    "clinic": {
+     "type": "server",
+     "capacity_per_day": 7,
+     "min_lead_days": 12,
+     "source": "assumption"
+    },
+    "ct_scanner": {
+     "type": "server",
+     "capacity_per_day": 3,
+     "min_lead_days": 4,
+     "source": "assumption"
+    },
+    "bronchoscopy": {
+     "type": "server",
+     "capacity_per_day": 1,
+     "min_lead_days": 6,
+     "source": "assumption"
+    },
+    "ttnb_slot": {
+     "type": "server",
+     "capacity_per_day": 1,
+     "min_lead_days": 6,
+     "source": "assumption"
+    },
+    "pet_scanner": {
+     "type": "server",
+     "capacity_per_day": 1,
+     "min_lead_days": 4,
+     "source": "assumption"
+    },
+    "tumour_board": {
+     "type": "batch",
+     "weekdays": [
+      2
+     ],
+     "cutoff_days": 1,
+     "source": "assumption"
+    },
+    "treatment_slot": {
+     "type": "server",
+     "capacity_per_day": 2,
+     "min_lead_days": 10,
+     "source": "assumption"
+    },
+    "paper": {
+     "type": "none",
+     "source": "assumption"
+    }
+   },
+   "tests": {
+    "nurse_assessment": {
+     "kind": "visit",
+     "resource": "nurse_appt",
+     "stage": "detection",
+     "source": "assumption"
+    },
+    "gp_assessment": {
+     "kind": "visit",
+     "resource": "gp_appt",
+     "stage": "detection",
+     "source": "assumption"
+    },
+    "gp_assessment_after_nurse": {
+     "kind": "visit",
+     "resource": "gp_appt",
+     "stage": "detection",
+     "source": "assumption"
+    },
+    "chest_xray": {
+     "kind": "test",
+     "resource": "xray",
+     "stage": "detection",
+     "cost_eur": 40,
+     "source": "BRADLEY2021"
+    },
+    "gp_second_look": {
+     "kind": "visit",
+     "resource": "paper",
+     "stage": "detection",
+     "source": "assumption"
+    },
+    "symptoms_persist": {
+     "kind": "admin",
+     "resource": "paper",
+     "stage": "detection",
+     "source": "assumption"
+    },
+    "gp_represent": {
+     "kind": "visit",
+     "resource": "gp_appt",
+     "stage": "detection",
+     "source": "assumption"
+    },
+    "gp_referral_letter": {
+     "kind": "admin",
+     "resource": "paper",
+     "stage": "referral",
+     "source": "assumption"
+    },
+    "referral_triage": {
+     "kind": "admin",
+     "resource": "paper",
+     "stage": "referral",
+     "source": "PIRHA_PATH"
+    },
+    "specialist_visit": {
+     "kind": "visit",
+     "resource": "clinic",
+     "stage": "referral",
+     "source": "assumption"
+    },
+    "chest_ct": {
+     "kind": "test",
+     "resource": "ct_scanner",
+     "stage": "diagnosis",
+     "cost_eur": 250,
+     "source": "assumption"
+    },
+    "bronchoscopy": {
+     "kind": "test",
+     "resource": "bronchoscopy",
+     "stage": "diagnosis",
+     "invasive": true,
+     "cost_eur": 1200,
+     "source": "RIVERA2013"
+    },
+    "ttnb": {
+     "kind": "test",
+     "resource": "ttnb_slot",
+     "stage": "diagnosis",
+     "invasive": true,
+     "cost_eur": 900,
+     "source": "UZUN2017"
+    },
+    "pet_ct": {
+     "kind": "test",
+     "resource": "pet_scanner",
+     "stage": "diagnosis",
+     "cost_eur": 1500,
+     "source": "GOULD2001"
+    },
+    "tumour_board": {
+     "kind": "admin",
+     "resource": "tumour_board",
+     "stage": "treatment_start",
+     "source": "assumption"
+    },
+    "treatment_booking": {
+     "kind": "admin",
+     "resource": "treatment_slot",
+     "stage": "treatment_start",
+     "source": "assumption"
+    },
+    "specialist_visit_fast": {
+     "kind": "visit",
+     "resource": "clinic",
+     "stage": "referral",
+     "source": "assumption"
+    },
+    "chest_ct_fast": {
+     "kind": "test",
+     "resource": "ct_scanner",
+     "stage": "diagnosis",
+     "cost_eur": 250,
+     "source": "assumption"
+    },
+    "bronchoscopy_fast": {
+     "kind": "test",
+     "resource": "bronchoscopy",
+     "stage": "diagnosis",
+     "invasive": true,
+     "cost_eur": 1200,
+     "source": "assumption"
+    },
+    "ttnb_fast": {
+     "kind": "test",
+     "resource": "ttnb_slot",
+     "stage": "diagnosis",
+     "invasive": true,
+     "cost_eur": 900,
+     "source": "assumption"
+    },
+    "pet_ct_fast": {
+     "kind": "test",
+     "resource": "pet_scanner",
+     "stage": "diagnosis",
+     "cost_eur": 1500,
+     "source": "assumption"
+    },
+    "treatment_booking_fast": {
+     "kind": "admin",
+     "resource": "treatment_slot",
+     "stage": "treatment_start",
+     "source": "assumption"
+    }
+   }
+  },
+  "flowcharts": [
+   {
+    "schema_version": 1,
+    "id": "baseline",
+    "version": 1,
+    "parent_version": null,
+    "world_id": "finland_lung",
+    "name": "Finnish sequential pathway (nurse/GP, CXR, referral, specialist, CT, sampling, PET-CT, board, treatment)",
+    "nodes": [
+     {
+      "id": "first_contact",
+      "kind": "decision",
+      "label": "Nurse or GP first"
+     },
+     {
+      "id": "nurse_visit",
+      "kind": "step",
+      "label": "Nurse assessment",
+      "test": "nurse_assessment"
+     },
+     {
+      "id": "gp_visit",
+      "kind": "step",
+      "label": "GP appointment",
+      "test": "gp_assessment"
+     },
+     {
+      "id": "gp_after_nurse",
+      "kind": "step",
+      "label": "GP appointment after nurse",
+      "test": "gp_assessment_after_nurse",
+      "when": "not nurse_visit"
+     },
+     {
+      "id": "cxr_ordered",
+      "kind": "join",
+      "label": "Chest X-ray ordered",
+      "when": "nurse_visit or gp_visit or gp_after_nurse"
+     },
+     {
+      "id": "no_cxr",
+      "kind": "join",
+      "label": "No imaging ordered",
+      "when": "not (nurse_visit or gp_visit or gp_after_nurse)"
+     },
+     {
+      "id": "cxr",
+      "kind": "step",
+      "label": "Chest X-ray",
+      "test": "chest_xray"
+     },
+     {
+      "id": "second_look",
+      "kind": "step",
+      "label": "GP review of a negative film",
+      "test": "gp_second_look",
+      "when": "not cxr"
+     },
+     {
+      "id": "gp_referral",
+      "kind": "step",
+      "label": "GP writes referral",
+      "test": "gp_referral_letter",
+      "when": "cxr or second_look"
+     },
+     {
+      "id": "no_referral",
+      "kind": "join",
+      "label": "No referral",
+      "when": "not gp_referral"
+     },
+     {
+      "id": "persist",
+      "kind": "step",
+      "label": "Do symptoms persist",
+      "test": "symptoms_persist"
+     },
+     {
+      "id": "discharge_no_return",
+      "kind": "exit",
+      "label": "Discharged (does not return)",
+      "when": "not persist",
+      "outcome": "discharged"
+     },
+     {
+      "id": "represent",
+      "kind": "step",
+      "label": "Re-presents to GP",
+      "test": "gp_represent",
+      "when": "persist"
+     },
+     {
+      "id": "discharge_represent",
+      "kind": "exit",
+      "label": "Discharged after re-presentation",
+      "when": "not represent",
+      "outcome": "discharged"
+     },
+     {
+      "id": "referral_in",
+      "kind": "join",
+      "label": "Specialist referral sent",
+      "when": "gp_referral or represent"
+     },
+     {
+      "id": "triage",
+      "kind": "step",
+      "label": "Referral handling at hospital",
+      "test": "referral_triage"
+     },
+     {
+      "id": "spec_visit",
+      "kind": "step",
+      "label": "Specialist visit",
+      "test": "specialist_visit"
+     },
+     {
+      "id": "discharge_spec",
+      "kind": "exit",
+      "label": "Discharged by specialist",
+      "when": "not spec_visit",
+      "outcome": "discharged"
+     },
+     {
+      "id": "ct",
+      "kind": "step",
+      "label": "CT chest",
+      "test": "chest_ct",
+      "when": "spec_visit"
+     },
+     {
+      "id": "discharge_ct",
+      "kind": "exit",
+      "label": "Discharged after negative CT",
+      "when": "not ct",
+      "outcome": "discharged"
+     },
+     {
+      "id": "sample_choice",
+      "kind": "decision",
+      "label": "Choose sampling method",
+      "when": "ct"
+     },
+     {
+      "id": "bronch",
+      "kind": "step",
+      "label": "Bronchoscopy",
+      "test": "bronchoscopy",
+      "retry": {
+       "max": 0,
+       "true": "nondiagnostic",
+       "fallback": "ttnb"
+      }
+     },
+     {
+      "id": "ttnb",
+      "kind": "step",
+      "label": "Needle biopsy",
+      "test": "ttnb"
+     },
+     {
+      "id": "sampling_done",
+      "kind": "join",
+      "label": "Sampling finished"
+     },
+     {
+      "id": "diagnosis",
+      "kind": "milestone",
+      "label": "Tissue diagnosis",
+      "milestone": "diagnosis"
+     },
+     {
+      "id": "pet",
+      "kind": "step",
+      "label": "PET-CT",
+      "test": "pet_ct",
+      "when": "bronch is not False and ttnb is not False"
+     },
+     {
+      "id": "mdt",
+      "kind": "step",
+      "label": "Tumour board",
+      "test": "tumour_board"
+     },
+     {
+      "id": "book_treat",
+      "kind": "step",
+      "label": "Waiting for treatment slot",
+      "test": "treatment_booking",
+      "when": "bronch or ttnb or (pet and bronch is not False and ttnb is not False)"
+     },
+     {
+      "id": "discharge_mdt",
+      "kind": "exit",
+      "label": "No cancer (board)",
+      "when": "not (bronch or ttnb or (pet and bronch is not False and ttnb is not False))",
+      "outcome": "discharged"
+     },
+     {
+      "id": "treat",
+      "kind": "exit",
+      "label": "Treatment starts",
+      "outcome": "treatment"
+     }
+    ],
+    "edges": [
+     {
+      "from": "first_contact",
+      "to": "nurse_visit",
+      "type": "option",
+      "index": 0
+     },
+     {
+      "from": "first_contact",
+      "to": "gp_visit",
+      "type": "option",
+      "index": 1
+     },
+     {
+      "from": "nurse_visit",
+      "to": "gp_after_nurse",
+      "type": "required"
+     },
+     {
+      "from": "nurse_visit",
+      "to": "cxr_ordered",
+      "type": "optional"
+     },
+     {
+      "from": "gp_visit",
+      "to": "cxr_ordered",
+      "type": "optional"
+     },
+     {
+      "from": "gp_after_nurse",
+      "to": "cxr_ordered",
+      "type": "optional"
+     },
+     {
+      "from": "nurse_visit",
+      "to": "no_cxr",
+      "type": "optional"
+     },
+     {
+      "from": "gp_visit",
+      "to": "no_cxr",
+      "type": "optional"
+     },
+     {
+      "from": "gp_after_nurse",
+      "to": "no_cxr",
+      "type": "optional"
+     },
+     {
+      "from": "cxr_ordered",
+      "to": "cxr",
+      "type": "required"
+     },
+     {
+      "from": "cxr",
+      "to": "second_look",
+      "type": "required"
+     },
+     {
+      "from": "cxr",
+      "to": "gp_referral",
+      "type": "optional"
+     },
+     {
+      "from": "second_look",
+      "to": "gp_referral",
+      "type": "optional"
+     },
+     {
+      "from": "gp_referral",
+      "to": "no_referral",
+      "type": "optional"
+     },
+     {
+      "from": "no_referral",
+      "to": "persist",
+      "type": "required"
+     },
+     {
+      "from": "persist",
+      "to": "discharge_no_return",
+      "type": "required"
+     },
+     {
+      "from": "persist",
+      "to": "represent",
+      "type": "required"
+     },
+     {
+      "from": "represent",
+      "to": "discharge_represent",
+      "type": "required"
+     },
+     {
+      "from": "gp_referral",
+      "to": "referral_in",
+      "type": "optional"
+     },
+     {
+      "from": "represent",
+      "to": "referral_in",
+      "type": "optional"
+     },
+     {
+      "from": "referral_in",
+      "to": "triage",
+      "type": "required"
+     },
+     {
+      "from": "triage",
+      "to": "spec_visit",
+      "type": "required"
+     },
+     {
+      "from": "spec_visit",
+      "to": "discharge_spec",
+      "type": "required"
+     },
+     {
+      "from": "spec_visit",
+      "to": "ct",
+      "type": "required"
+     },
+     {
+      "from": "ct",
+      "to": "discharge_ct",
+      "type": "required"
+     },
+     {
+      "from": "ct",
+      "to": "sample_choice",
+      "type": "required"
+     },
+     {
+      "from": "sample_choice",
+      "to": "bronch",
+      "type": "option",
+      "index": 0
+     },
+     {
+      "from": "sample_choice",
+      "to": "ttnb",
+      "type": "option",
+      "index": 1
+     },
+     {
+      "from": "sample_choice",
+      "to": "sampling_done",
+      "type": "optional"
+     },
+     {
+      "from": "bronch",
+      "to": "sampling_done",
+      "type": "optional"
+     },
+     {
+      "from": "ttnb",
+      "to": "sampling_done",
+      "type": "optional"
+     },
+     {
+      "from": "sampling_done",
+      "to": "diagnosis",
+      "type": "required"
+     },
+     {
+      "from": "sampling_done",
+      "to": "pet",
+      "type": "required"
+     },
+     {
+      "from": "sampling_done",
+      "to": "mdt",
+      "type": "required"
+     },
+     {
+      "from": "pet",
+      "to": "mdt",
+      "type": "optional"
+     },
+     {
+      "from": "mdt",
+      "to": "book_treat",
+      "type": "required"
+     },
+     {
+      "from": "mdt",
+      "to": "discharge_mdt",
+      "type": "required"
+     },
+     {
+      "from": "book_treat",
+      "to": "treat",
+      "type": "required"
+     }
+    ],
+    "decision_policy": {
+     "backend": "stub",
+     "mode": "sample",
+     "points": {
+      "first_contact": {
+       "default": {
+        "nurse_visit": 0.5,
+        "gp_visit": 0.5
+       },
+       "source": "KHALIFE2025"
+      },
+      "sample_choice": {
+       "default": {
+        "bronch": 0.35,
+        "ttnb": 0.65
+       },
+       "rules": [
+        {
+         "when": "location == 'central'",
+         "probs": {
+          "bronch": 1.0,
+          "ttnb": 0.0
+         }
+        }
+       ],
+       "source": "assumption"
+      }
+     }
+    },
+    "test_overrides": {},
+    "resource_overrides": {},
+    "edits_from_parent": []
+   },
+   {
+    "schema_version": 1,
+    "id": "direct_ct",
+    "version": 1,
+    "parent_version": null,
+    "world_id": "finland_lung",
+    "name": "GPs order CT directly (alarm symptoms skip the chest X-ray; suspicious film goes to CT before referral). Needs about 2.7x the CT slots (CT demand is 7-8 a weekday against 2.6 in the baseline); with the baseline's 3 slots the CT queue grows without bound",
+    "nodes": [
+     {
+      "id": "first_contact",
+      "kind": "decision",
+      "label": "Nurse or GP first"
+     },
+     {
+      "id": "nurse_visit",
+      "kind": "step",
+      "label": "Nurse assessment",
+      "test": "nurse_assessment"
+     },
+     {
+      "id": "gp_visit",
+      "kind": "step",
+      "label": "GP appointment",
+      "test": "gp_assessment"
+     },
+     {
+      "id": "gp_after_nurse",
+      "kind": "step",
+      "label": "GP appointment after nurse",
+      "test": "gp_assessment_after_nurse",
+      "when": "not nurse_visit"
+     },
+     {
+      "id": "img_ordered",
+      "kind": "join",
+      "label": "Imaging ordered",
+      "when": "nurse_visit or gp_visit or gp_after_nurse"
+     },
+     {
+      "id": "no_img",
+      "kind": "join",
+      "label": "No imaging ordered",
+      "when": "not (nurse_visit or gp_visit or gp_after_nurse)"
+     },
+     {
+      "id": "imaging_route",
+      "kind": "decision",
+      "label": "Chest X-ray or direct CT"
+     },
+     {
+      "id": "route_cxr",
+      "kind": "join",
+      "label": "Chest X-ray first"
+     },
+     {
+      "id": "route_ct",
+      "kind": "join",
+      "label": "Direct CT"
+     },
+     {
+      "id": "cxr",
+      "kind": "step",
+      "label": "Chest X-ray",
+      "test": "chest_xray"
+     },
+     {
+      "id": "second_look",
+      "kind": "step",
+      "label": "GP review of a negative film",
+      "test": "gp_second_look",
+      "when": "not cxr"
+     },
+     {
+      "id": "ct_first",
+      "kind": "step",
+      "label": "CT ordered by GP (no X-ray)",
+      "test": "chest_ct"
+     },
+     {
+      "id": "ct_gp",
+      "kind": "step",
+      "label": "CT ordered by GP after suspicious film",
+      "test": "chest_ct",
+      "when": "cxr"
+     },
+     {
+      "id": "gp_referral",
+      "kind": "step",
+      "label": "GP writes referral",
+      "test": "gp_referral_letter",
+      "when": "ct_first or ct_gp or second_look"
+     },
+     {
+      "id": "no_referral",
+      "kind": "join",
+      "label": "No referral",
+      "when": "not gp_referral"
+     },
+     {
+      "id": "persist",
+      "kind": "step",
+      "label": "Do symptoms persist",
+      "test": "symptoms_persist"
+     },
+     {
+      "id": "discharge_no_return",
+      "kind": "exit",
+      "label": "Discharged (does not return)",
+      "when": "not persist",
+      "outcome": "discharged"
+     },
+     {
+      "id": "represent",
+      "kind": "step",
+      "label": "Re-presents to GP",
+      "test": "gp_represent",
+      "when": "persist"
+     },
+     {
+      "id": "discharge_represent",
+      "kind": "exit",
+      "label": "Discharged after re-presentation",
+      "when": "not represent",
+      "outcome": "discharged"
+     },
+     {
+      "id": "referral_in",
+      "kind": "join",
+      "label": "Specialist referral sent",
+      "when": "gp_referral or represent"
+     },
+     {
+      "id": "triage",
+      "kind": "step",
+      "label": "Referral handling at hospital",
+      "test": "referral_triage"
+     },
+     {
+      "id": "spec_visit",
+      "kind": "step",
+      "label": "Specialist visit",
+      "test": "specialist_visit"
+     },
+     {
+      "id": "discharge_spec",
+      "kind": "exit",
+      "label": "Discharged by specialist",
+      "when": "not spec_visit",
+      "outcome": "discharged"
+     },
+     {
+      "id": "ct_spec",
+      "kind": "step",
+      "label": "CT ordered by specialist (none done yet)",
+      "test": "chest_ct",
+      "when": "spec_visit and not (ct_first or ct_gp)"
+     },
+     {
+      "id": "ct_known",
+      "kind": "join",
+      "label": "Suspicious CT available",
+      "when": "spec_visit and (ct_first or ct_gp or ct_spec)"
+     },
+     {
+      "id": "discharge_ct",
+      "kind": "exit",
+      "label": "Discharged after negative CT",
+      "when": "spec_visit and not (ct_first or ct_gp or ct_spec)",
+      "outcome": "discharged"
+     },
+     {
+      "id": "sample_choice",
+      "kind": "decision",
+      "label": "Choose sampling method"
+     },
+     {
+      "id": "bronch",
+      "kind": "step",
+      "label": "Bronchoscopy",
+      "test": "bronchoscopy",
+      "retry": {
+       "max": 0,
+       "true": "nondiagnostic",
+       "fallback": "ttnb"
+      }
+     },
+     {
+      "id": "ttnb",
+      "kind": "step",
+      "label": "Needle biopsy",
+      "test": "ttnb"
+     },
+     {
+      "id": "sampling_done",
+      "kind": "join",
+      "label": "Sampling finished"
+     },
+     {
+      "id": "diagnosis",
+      "kind": "milestone",
+      "label": "Tissue diagnosis",
+      "milestone": "diagnosis"
+     },
+     {
+      "id": "pet",
+      "kind": "step",
+      "label": "PET-CT",
+      "test": "pet_ct",
+      "when": "bronch is not False and ttnb is not False"
+     },
+     {
+      "id": "mdt",
+      "kind": "step",
+      "label": "Tumour board",
+      "test": "tumour_board"
+     },
+     {
+      "id": "book_treat",
+      "kind": "step",
+      "label": "Waiting for treatment slot",
+      "test": "treatment_booking",
+      "when": "bronch or ttnb or (pet and bronch is not False and ttnb is not False)"
+     },
+     {
+      "id": "discharge_mdt",
+      "kind": "exit",
+      "label": "No cancer (board)",
+      "when": "not (bronch or ttnb or (pet and bronch is not False and ttnb is not False))",
+      "outcome": "discharged"
+     },
+     {
+      "id": "treat",
+      "kind": "exit",
+      "label": "Treatment starts",
+      "outcome": "treatment"
+     }
+    ],
+    "edges": [
+     {
+      "from": "first_contact",
+      "to": "nurse_visit",
+      "type": "option",
+      "index": 0
+     },
+     {
+      "from": "first_contact",
+      "to": "gp_visit",
+      "type": "option",
+      "index": 1
+     },
+     {
+      "from": "nurse_visit",
+      "to": "gp_after_nurse",
+      "type": "required"
+     },
+     {
+      "from": "nurse_visit",
+      "to": "img_ordered",
+      "type": "optional"
+     },
+     {
+      "from": "gp_visit",
+      "to": "img_ordered",
+      "type": "optional"
+     },
+     {
+      "from": "gp_after_nurse",
+      "to": "img_ordered",
+      "type": "optional"
+     },
+     {
+      "from": "nurse_visit",
+      "to": "no_img",
+      "type": "optional"
+     },
+     {
+      "from": "gp_visit",
+      "to": "no_img",
+      "type": "optional"
+     },
+     {
+      "from": "gp_after_nurse",
+      "to": "no_img",
+      "type": "optional"
+     },
+     {
+      "from": "img_ordered",
+      "to": "imaging_route",
+      "type": "required"
+     },
+     {
+      "from": "imaging_route",
+      "to": "route_cxr",
+      "type": "option",
+      "index": 0
+     },
+     {
+      "from": "imaging_route",
+      "to": "route_ct",
+      "type": "option",
+      "index": 1
+     },
+     {
+      "from": "route_cxr",
+      "to": "cxr",
+      "type": "required"
+     },
+     {
+      "from": "cxr",
+      "to": "second_look",
+      "type": "required"
+     },
+     {
+      "from": "route_ct",
+      "to": "ct_first",
+      "type": "required"
+     },
+     {
+      "from": "cxr",
+      "to": "ct_gp",
+      "type": "required"
+     },
+     {
+      "from": "ct_first",
+      "to": "gp_referral",
+      "type": "optional"
+     },
+     {
+      "from": "ct_gp",
+      "to": "gp_referral",
+      "type": "optional"
+     },
+     {
+      "from": "second_look",
+      "to": "gp_referral",
+      "type": "optional"
+     },
+     {
+      "from": "gp_referral",
+      "to": "no_referral",
+      "type": "optional"
+     },
+     {
+      "from": "no_referral",
+      "to": "persist",
+      "type": "required"
+     },
+     {
+      "from": "persist",
+      "to": "discharge_no_return",
+      "type": "required"
+     },
+     {
+      "from": "persist",
+      "to": "represent",
+      "type": "required"
+     },
+     {
+      "from": "represent",
+      "to": "discharge_represent",
+      "type": "required"
+     },
+     {
+      "from": "gp_referral",
+      "to": "referral_in",
+      "type": "optional"
+     },
+     {
+      "from": "represent",
+      "to": "referral_in",
+      "type": "optional"
+     },
+     {
+      "from": "referral_in",
+      "to": "triage",
+      "type": "required"
+     },
+     {
+      "from": "triage",
+      "to": "spec_visit",
+      "type": "required"
+     },
+     {
+      "from": "spec_visit",
+      "to": "discharge_spec",
+      "type": "required"
+     },
+     {
+      "from": "spec_visit",
+      "to": "ct_spec",
+      "type": "required"
+     },
+     {
+      "from": "spec_visit",
+      "to": "ct_known",
+      "type": "required"
+     },
+     {
+      "from": "ct_spec",
+      "to": "ct_known",
+      "type": "optional"
+     },
+     {
+      "from": "ct_first",
+      "to": "ct_known",
+      "type": "optional"
+     },
+     {
+      "from": "ct_gp",
+      "to": "ct_known",
+      "type": "optional"
+     },
+     {
+      "from": "spec_visit",
+      "to": "discharge_ct",
+      "type": "required"
+     },
+     {
+      "from": "ct_spec",
+      "to": "discharge_ct",
+      "type": "optional"
+     },
+     {
+      "from": "ct_first",
+      "to": "discharge_ct",
+      "type": "optional"
+     },
+     {
+      "from": "ct_gp",
+      "to": "discharge_ct",
+      "type": "optional"
+     },
+     {
+      "from": "ct_known",
+      "to": "sample_choice",
+      "type": "required"
+     },
+     {
+      "from": "sample_choice",
+      "to": "bronch",
+      "type": "option",
+      "index": 0
+     },
+     {
+      "from": "sample_choice",
+      "to": "ttnb",
+      "type": "option",
+      "index": 1
+     },
+     {
+      "from": "sample_choice",
+      "to": "sampling_done",
+      "type": "optional"
+     },
+     {
+      "from": "bronch",
+      "to": "sampling_done",
+      "type": "optional"
+     },
+     {
+      "from": "ttnb",
+      "to": "sampling_done",
+      "type": "optional"
+     },
+     {
+      "from": "sampling_done",
+      "to": "diagnosis",
+      "type": "required"
+     },
+     {
+      "from": "sampling_done",
+      "to": "pet",
+      "type": "required"
+     },
+     {
+      "from": "sampling_done",
+      "to": "mdt",
+      "type": "required"
+     },
+     {
+      "from": "pet",
+      "to": "mdt",
+      "type": "optional"
+     },
+     {
+      "from": "mdt",
+      "to": "book_treat",
+      "type": "required"
+     },
+     {
+      "from": "mdt",
+      "to": "discharge_mdt",
+      "type": "required"
+     },
+     {
+      "from": "book_treat",
+      "to": "treat",
+      "type": "required"
+     }
+    ],
+    "decision_policy": {
+     "backend": "stub",
+     "mode": "sample",
+     "points": {
+      "first_contact": {
+       "default": {
+        "nurse_visit": 0.5,
+        "gp_visit": 0.5
+       },
+       "source": "KHALIFE2025"
+      },
+      "imaging_route": {
+       "default": {
+        "route_cxr": 1.0,
+        "route_ct": 0.0
+       },
+       "rules": [
+        {
+         "when": "group == 'site_specific'",
+         "probs": {
+          "route_cxr": 0.0,
+          "route_ct": 1.0
+         }
+        }
+       ],
+       "source": "assumption"
+      },
+      "sample_choice": {
+       "default": {
+        "bronch": 0.35,
+        "ttnb": 0.65
+       },
+       "rules": [
+        {
+         "when": "location == 'central'",
+         "probs": {
+          "bronch": 1.0,
+          "ttnb": 0.0
+         }
+        }
+       ],
+       "source": "assumption"
+      }
+     }
+    },
+    "test_overrides": {},
+    "resource_overrides": {
+     "ct_scanner": {
+      "capacity_per_day": 8
+     }
+    },
+    "edits_from_parent": []
+   },
+   {
+    "schema_version": 1,
+    "id": "bundled_workup",
+    "version": 1,
+    "parent_version": null,
+    "world_id": "finland_lung",
+    "name": "CT and PET-CT ordered together at the specialist visit, board before sampling, sampling while treatment is booked. Orders about 2.8x as many PET-CT scans (PET demand 2.3 a weekday against 0.8), so it needs 3 PET slots a day; with 1 slot the PET queue grows without bound",
+    "nodes": [
+     {
+      "id": "first_contact",
+      "kind": "decision",
+      "label": "Nurse or GP first"
+     },
+     {
+      "id": "nurse_visit",
+      "kind": "step",
+      "label": "Nurse assessment",
+      "test": "nurse_assessment"
+     },
+     {
+      "id": "gp_visit",
+      "kind": "step",
+      "label": "GP appointment",
+      "test": "gp_assessment"
+     },
+     {
+      "id": "gp_after_nurse",
+      "kind": "step",
+      "label": "GP appointment after nurse",
+      "test": "gp_assessment_after_nurse",
+      "when": "not nurse_visit"
+     },
+     {
+      "id": "cxr_ordered",
+      "kind": "join",
+      "label": "Chest X-ray ordered",
+      "when": "nurse_visit or gp_visit or gp_after_nurse"
+     },
+     {
+      "id": "no_cxr",
+      "kind": "join",
+      "label": "No imaging ordered",
+      "when": "not (nurse_visit or gp_visit or gp_after_nurse)"
+     },
+     {
+      "id": "cxr",
+      "kind": "step",
+      "label": "Chest X-ray",
+      "test": "chest_xray"
+     },
+     {
+      "id": "second_look",
+      "kind": "step",
+      "label": "GP review of a negative film",
+      "test": "gp_second_look",
+      "when": "not cxr"
+     },
+     {
+      "id": "gp_referral",
+      "kind": "step",
+      "label": "GP writes referral",
+      "test": "gp_referral_letter",
+      "when": "cxr or second_look"
+     },
+     {
+      "id": "no_referral",
+      "kind": "join",
+      "label": "No referral",
+      "when": "not gp_referral"
+     },
+     {
+      "id": "persist",
+      "kind": "step",
+      "label": "Do symptoms persist",
+      "test": "symptoms_persist"
+     },
+     {
+      "id": "discharge_no_return",
+      "kind": "exit",
+      "label": "Discharged (does not return)",
+      "when": "not persist",
+      "outcome": "discharged"
+     },
+     {
+      "id": "represent",
+      "kind": "step",
+      "label": "Re-presents to GP",
+      "test": "gp_represent",
+      "when": "persist"
+     },
+     {
+      "id": "discharge_represent",
+      "kind": "exit",
+      "label": "Discharged after re-presentation",
+      "when": "not represent",
+      "outcome": "discharged"
+     },
+     {
+      "id": "referral_in",
+      "kind": "join",
+      "label": "Specialist referral sent",
+      "when": "gp_referral or represent"
+     },
+     {
+      "id": "triage",
+      "kind": "step",
+      "label": "Referral handling at hospital",
+      "test": "referral_triage"
+     },
+     {
+      "id": "spec_visit",
+      "kind": "step",
+      "label": "Specialist visit",
+      "test": "specialist_visit"
+     },
+     {
+      "id": "discharge_spec",
+      "kind": "exit",
+      "label": "Discharged by specialist",
+      "when": "not spec_visit",
+      "outcome": "discharged"
+     },
+     {
+      "id": "ct",
+      "kind": "step",
+      "label": "CT chest",
+      "test": "chest_ct",
+      "when": "spec_visit"
+     },
+     {
+      "id": "pet_early",
+      "kind": "step",
+      "label": "PET-CT ordered with the CT",
+      "test": "pet_ct",
+      "when": "spec_visit and cxr"
+     },
+     {
+      "id": "pet_after_ct",
+      "kind": "step",
+      "label": "PET-CT after CT (no suspicious film)",
+      "test": "pet_ct",
+      "when": "ct and not cxr"
+     },
+     {
+      "id": "discharge_ct",
+      "kind": "exit",
+      "label": "Discharged after negative CT",
+      "when": "not ct",
+      "outcome": "discharged"
+     },
+     {
+      "id": "mdt",
+      "kind": "step",
+      "label": "Tumour board (before sampling)",
+      "test": "tumour_board",
+      "when": "ct"
+     },
+     {
+      "id": "book_treat",
+      "kind": "step",
+      "label": "Treatment slot booked while sampling (PET not negative)",
+      "test": "treatment_booking",
+      "when": "pet_early is not False and pet_after_ct is not False"
+     },
+     {
+      "id": "sample_choice",
+      "kind": "decision",
+      "label": "Choose sampling method"
+     },
+     {
+      "id": "bronch",
+      "kind": "step",
+      "label": "Bronchoscopy",
+      "test": "bronchoscopy",
+      "retry": {
+       "max": 0,
+       "true": "nondiagnostic",
+       "fallback": "ttnb"
+      }
+     },
+     {
+      "id": "ttnb",
+      "kind": "step",
+      "label": "Needle biopsy",
+      "test": "ttnb"
+     },
+     {
+      "id": "sampling_done",
+      "kind": "join",
+      "label": "Sampling finished"
+     },
+     {
+      "id": "diagnosis",
+      "kind": "milestone",
+      "label": "Tissue diagnosis",
+      "milestone": "diagnosis"
+     },
+     {
+      "id": "book_late",
+      "kind": "step",
+      "label": "Treatment slot booked after sampling (PET was negative)",
+      "test": "treatment_booking",
+      "when": "(bronch or ttnb or ((pet_early or pet_after_ct) and bronch is not False and ttnb is not False)) and not book_treat"
+     },
+     {
+      "id": "discharge_end",
+      "kind": "exit",
+      "label": "No cancer (sampling / PET)",
+      "when": "not (bronch or ttnb or ((pet_early or pet_after_ct) and bronch is not False and ttnb is not False))",
+      "outcome": "discharged"
+     },
+     {
+      "id": "treat",
+      "kind": "exit",
+      "label": "Treatment starts",
+      "when": "(bronch or ttnb or ((pet_early or pet_after_ct) and bronch is not False and ttnb is not False))",
+      "outcome": "treatment"
+     }
+    ],
+    "edges": [
+     {
+      "from": "first_contact",
+      "to": "nurse_visit",
+      "type": "option",
+      "index": 0
+     },
+     {
+      "from": "first_contact",
+      "to": "gp_visit",
+      "type": "option",
+      "index": 1
+     },
+     {
+      "from": "nurse_visit",
+      "to": "gp_after_nurse",
+      "type": "required"
+     },
+     {
+      "from": "nurse_visit",
+      "to": "cxr_ordered",
+      "type": "optional"
+     },
+     {
+      "from": "gp_visit",
+      "to": "cxr_ordered",
+      "type": "optional"
+     },
+     {
+      "from": "gp_after_nurse",
+      "to": "cxr_ordered",
+      "type": "optional"
+     },
+     {
+      "from": "nurse_visit",
+      "to": "no_cxr",
+      "type": "optional"
+     },
+     {
+      "from": "gp_visit",
+      "to": "no_cxr",
+      "type": "optional"
+     },
+     {
+      "from": "gp_after_nurse",
+      "to": "no_cxr",
+      "type": "optional"
+     },
+     {
+      "from": "cxr_ordered",
+      "to": "cxr",
+      "type": "required"
+     },
+     {
+      "from": "cxr",
+      "to": "second_look",
+      "type": "required"
+     },
+     {
+      "from": "cxr",
+      "to": "gp_referral",
+      "type": "optional"
+     },
+     {
+      "from": "second_look",
+      "to": "gp_referral",
+      "type": "optional"
+     },
+     {
+      "from": "gp_referral",
+      "to": "no_referral",
+      "type": "optional"
+     },
+     {
+      "from": "no_referral",
+      "to": "persist",
+      "type": "required"
+     },
+     {
+      "from": "persist",
+      "to": "discharge_no_return",
+      "type": "required"
+     },
+     {
+      "from": "persist",
+      "to": "represent",
+      "type": "required"
+     },
+     {
+      "from": "represent",
+      "to": "discharge_represent",
+      "type": "required"
+     },
+     {
+      "from": "gp_referral",
+      "to": "referral_in",
+      "type": "optional"
+     },
+     {
+      "from": "represent",
+      "to": "referral_in",
+      "type": "optional"
+     },
+     {
+      "from": "referral_in",
+      "to": "triage",
+      "type": "required"
+     },
+     {
+      "from": "triage",
+      "to": "spec_visit",
+      "type": "required"
+     },
+     {
+      "from": "spec_visit",
+      "to": "discharge_spec",
+      "type": "required"
+     },
+     {
+      "from": "spec_visit",
+      "to": "ct",
+      "type": "required"
+     },
+     {
+      "from": "spec_visit",
+      "to": "pet_early",
+      "type": "required"
+     },
+     {
+      "from": "ct",
+      "to": "pet_after_ct",
+      "type": "required"
+     },
+     {
+      "from": "ct",
+      "to": "discharge_ct",
+      "type": "required"
+     },
+     {
+      "from": "ct",
+      "to": "mdt",
+      "type": "required"
+     },
+     {
+      "from": "pet_early",
+      "to": "mdt",
+      "type": "optional"
+     },
+     {
+      "from": "pet_after_ct",
+      "to": "mdt",
+      "type": "optional"
+     },
+     {
+      "from": "mdt",
+      "to": "book_treat",
+      "type": "required"
+     },
+     {
+      "from": "mdt",
+      "to": "sample_choice",
+      "type": "required"
+     },
+     {
+      "from": "sample_choice",
+      "to": "bronch",
+      "type": "option",
+      "index": 0
+     },
+     {
+      "from": "sample_choice",
+      "to": "ttnb",
+      "type": "option",
+      "index": 1
+     },
+     {
+      "from": "sample_choice",
+      "to": "sampling_done",
+      "type": "optional"
+     },
+     {
+      "from": "bronch",
+      "to": "sampling_done",
+      "type": "optional"
+     },
+     {
+      "from": "ttnb",
+      "to": "sampling_done",
+      "type": "optional"
+     },
+     {
+      "from": "sampling_done",
+      "to": "diagnosis",
+      "type": "required"
+     },
+     {
+      "from": "sampling_done",
+      "to": "book_late",
+      "type": "required"
+     },
+     {
+      "from": "book_treat",
+      "to": "book_late",
+      "type": "optional"
+     },
+     {
+      "from": "sampling_done",
+      "to": "discharge_end",
+      "type": "required"
+     },
+     {
+      "from": "sampling_done",
+      "to": "treat",
+      "type": "required"
+     },
+     {
+      "from": "book_treat",
+      "to": "treat",
+      "type": "optional"
+     },
+     {
+      "from": "book_late",
+      "to": "treat",
+      "type": "optional"
+     }
+    ],
+    "decision_policy": {
+     "backend": "stub",
+     "mode": "sample",
+     "points": {
+      "first_contact": {
+       "default": {
+        "nurse_visit": 0.5,
+        "gp_visit": 0.5
+       },
+       "source": "KHALIFE2025"
+      },
+      "sample_choice": {
+       "default": {
+        "bronch": 0.35,
+        "ttnb": 0.65
+       },
+       "rules": [
+        {
+         "when": "location == 'central'",
+         "probs": {
+          "bronch": 1.0,
+          "ttnb": 0.0
+         }
+        }
+       ],
+       "source": "assumption"
+      }
+     }
+    },
+    "test_overrides": {},
+    "resource_overrides": {
+     "pet_scanner": {
+      "capacity_per_day": 3
+     }
+    },
+    "edits_from_parent": []
+   },
+   {
+    "schema_version": 1,
+    "id": "fast_track_nonspecific",
+    "version": 1,
+    "parent_version": null,
+    "world_id": "finland_lung",
+    "name": "Baseline plus a fast lane for non-specific presenters with a suspicious X-ray (priority, reserved clinic and CT slots, short booking leads)",
+    "nodes": [
+     {
+      "id": "first_contact",
+      "kind": "decision",
+      "label": "Nurse or GP first"
+     },
+     {
+      "id": "nurse_visit",
+      "kind": "step",
+      "label": "Nurse assessment",
+      "test": "nurse_assessment"
+     },
+     {
+      "id": "gp_visit",
+      "kind": "step",
+      "label": "GP appointment",
+      "test": "gp_assessment"
+     },
+     {
+      "id": "gp_after_nurse",
+      "kind": "step",
+      "label": "GP appointment after nurse",
+      "test": "gp_assessment_after_nurse",
+      "when": "not nurse_visit"
+     },
+     {
+      "id": "cxr_ordered",
+      "kind": "join",
+      "label": "Chest X-ray ordered",
+      "when": "nurse_visit or gp_visit or gp_after_nurse"
+     },
+     {
+      "id": "no_cxr",
+      "kind": "join",
+      "label": "No imaging ordered",
+      "when": "not (nurse_visit or gp_visit or gp_after_nurse)"
+     },
+     {
+      "id": "cxr",
+      "kind": "step",
+      "label": "Chest X-ray",
+      "test": "chest_xray"
+     },
+     {
+      "id": "fast_lane",
+      "kind": "join",
+      "label": "Fast lane (non-specific with suspicious film)",
+      "when": "cxr and group == 'non_specific'",
+      "fast_track": true
+     },
+     {
+      "id": "second_look",
+      "kind": "step",
+      "label": "GP review of a negative film",
+      "test": "gp_second_look",
+      "when": "not cxr"
+     },
+     {
+      "id": "gp_referral",
+      "kind": "step",
+      "label": "GP writes referral",
+      "test": "gp_referral_letter",
+      "when": "cxr or second_look"
+     },
+     {
+      "id": "no_referral",
+      "kind": "join",
+      "label": "No referral",
+      "when": "not gp_referral"
+     },
+     {
+      "id": "persist",
+      "kind": "step",
+      "label": "Do symptoms persist",
+      "test": "symptoms_persist"
+     },
+     {
+      "id": "discharge_no_return",
+      "kind": "exit",
+      "label": "Discharged (does not return)",
+      "when": "not persist",
+      "outcome": "discharged"
+     },
+     {
+      "id": "represent",
+      "kind": "step",
+      "label": "Re-presents to GP",
+      "test": "gp_represent",
+      "when": "persist"
+     },
+     {
+      "id": "discharge_represent",
+      "kind": "exit",
+      "label": "Discharged after re-presentation",
+      "when": "not represent",
+      "outcome": "discharged"
+     },
+     {
+      "id": "referral_in",
+      "kind": "join",
+      "label": "Specialist referral sent",
+      "when": "gp_referral or represent"
+     },
+     {
+      "id": "triage",
+      "kind": "step",
+      "label": "Referral handling at hospital",
+      "test": "referral_triage"
+     },
+     {
+      "id": "spec_visit",
+      "kind": "step",
+      "label": "Specialist visit",
+      "test": "specialist_visit",
+      "when": "not fast_lane"
+     },
+     {
+      "id": "spec_visit_fast",
+      "kind": "step",
+      "label": "Specialist visit (fast lane)",
+      "test": "specialist_visit_fast",
+      "when": "fast_lane"
+     },
+     {
+      "id": "spec_ok",
+      "kind": "join",
+      "label": "Specialist orders work-up",
+      "when": "spec_visit or spec_visit_fast"
+     },
+     {
+      "id": "discharge_spec",
+      "kind": "exit",
+      "label": "Discharged by specialist",
+      "when": "not (spec_visit or spec_visit_fast)",
+      "outcome": "discharged"
+     },
+     {
+      "id": "ct",
+      "kind": "step",
+      "label": "CT chest",
+      "test": "chest_ct",
+      "when": "not fast_lane"
+     },
+     {
+      "id": "ct_fast",
+      "kind": "step",
+      "label": "CT chest (fast lane)",
+      "test": "chest_ct_fast",
+      "when": "fast_lane"
+     },
+     {
+      "id": "ct_ok",
+      "kind": "join",
+      "label": "Suspicious CT",
+      "when": "ct or ct_fast"
+     },
+     {
+      "id": "discharge_ct",
+      "kind": "exit",
+      "label": "Discharged after negative CT",
+      "when": "not (ct or ct_fast)",
+      "outcome": "discharged"
+     },
+     {
+      "id": "sample_choice",
+      "kind": "decision",
+      "label": "Choose sampling method",
+      "when": "not fast_lane"
+     },
+     {
+      "id": "sample_choice_fast",
+      "kind": "decision",
+      "label": "Choose sampling method (fast lane)",
+      "when": "fast_lane"
+     },
+     {
+      "id": "bronch",
+      "kind": "step",
+      "label": "Bronchoscopy",
+      "test": "bronchoscopy",
+      "retry": {
+       "max": 0,
+       "true": "nondiagnostic",
+       "fallback": "ttnb"
+      }
+     },
+     {
+      "id": "ttnb",
+      "kind": "step",
+      "label": "Needle biopsy",
+      "test": "ttnb"
+     },
+     {
+      "id": "bronch_fast",
+      "kind": "step",
+      "label": "Bronchoscopy (fast lane)",
+      "test": "bronchoscopy_fast",
+      "retry": {
+       "max": 0,
+       "true": "nondiagnostic",
+       "fallback": "ttnb_fast"
+      }
+     },
+     {
+      "id": "ttnb_fast",
+      "kind": "step",
+      "label": "Needle biopsy (fast lane)",
+      "test": "ttnb_fast"
+     },
+     {
+      "id": "sampling_done",
+      "kind": "join",
+      "label": "Sampling finished"
+     },
+     {
+      "id": "diagnosis",
+      "kind": "milestone",
+      "label": "Tissue diagnosis",
+      "milestone": "diagnosis"
+     },
+     {
+      "id": "pet",
+      "kind": "step",
+      "label": "PET-CT",
+      "test": "pet_ct",
+      "when": "not fast_lane and (bronch is not False and ttnb is not False and bronch_fast is not False and ttnb_fast is not False)"
+     },
+     {
+      "id": "pet_fast",
+      "kind": "step",
+      "label": "PET-CT (fast lane)",
+      "test": "pet_ct_fast",
+      "when": "fast_lane and (bronch is not False and ttnb is not False and bronch_fast is not False and ttnb_fast is not False)"
+     },
+     {
+      "id": "mdt",
+      "kind": "step",
+      "label": "Tumour board",
+      "test": "tumour_board"
+     },
+     {
+      "id": "book_treat",
+      "kind": "step",
+      "label": "Waiting for treatment slot",
+      "test": "treatment_booking",
+      "when": "not fast_lane and ((bronch or ttnb or bronch_fast or ttnb_fast) or ((pet or pet_fast) and (bronch is not False and ttnb is not False and bronch_fast is not False and ttnb_fast is not False)))"
+     },
+     {
+      "id": "book_treat_fast",
+      "kind": "step",
+      "label": "Waiting for treatment slot (fast lane)",
+      "test": "treatment_booking_fast",
+      "when": "fast_lane and ((bronch or ttnb or bronch_fast or ttnb_fast) or ((pet or pet_fast) and (bronch is not False and ttnb is not False and bronch_fast is not False and ttnb_fast is not False)))"
+     },
+     {
+      "id": "discharge_mdt",
+      "kind": "exit",
+      "label": "No cancer (board)",
+      "when": "not ((bronch or ttnb or bronch_fast or ttnb_fast) or ((pet or pet_fast) and (bronch is not False and ttnb is not False and bronch_fast is not False and ttnb_fast is not False)))",
+      "outcome": "discharged"
+     },
+     {
+      "id": "treat",
+      "kind": "exit",
+      "label": "Treatment starts",
+      "when": "book_treat or book_treat_fast",
+      "outcome": "treatment"
+     }
+    ],
+    "edges": [
+     {
+      "from": "first_contact",
+      "to": "nurse_visit",
+      "type": "option",
+      "index": 0
+     },
+     {
+      "from": "first_contact",
+      "to": "gp_visit",
+      "type": "option",
+      "index": 1
+     },
+     {
+      "from": "nurse_visit",
+      "to": "gp_after_nurse",
+      "type": "required"
+     },
+     {
+      "from": "nurse_visit",
+      "to": "cxr_ordered",
+      "type": "optional"
+     },
+     {
+      "from": "gp_visit",
+      "to": "cxr_ordered",
+      "type": "optional"
+     },
+     {
+      "from": "gp_after_nurse",
+      "to": "cxr_ordered",
+      "type": "optional"
+     },
+     {
+      "from": "nurse_visit",
+      "to": "no_cxr",
+      "type": "optional"
+     },
+     {
+      "from": "gp_visit",
+      "to": "no_cxr",
+      "type": "optional"
+     },
+     {
+      "from": "gp_after_nurse",
+      "to": "no_cxr",
+      "type": "optional"
+     },
+     {
+      "from": "cxr_ordered",
+      "to": "cxr",
+      "type": "required"
+     },
+     {
+      "from": "cxr",
+      "to": "fast_lane",
+      "type": "required"
+     },
+     {
+      "from": "cxr",
+      "to": "second_look",
+      "type": "required"
+     },
+     {
+      "from": "cxr",
+      "to": "gp_referral",
+      "type": "optional"
+     },
+     {
+      "from": "second_look",
+      "to": "gp_referral",
+      "type": "optional"
+     },
+     {
+      "from": "gp_referral",
+      "to": "no_referral",
+      "type": "optional"
+     },
+     {
+      "from": "no_referral",
+      "to": "persist",
+      "type": "required"
+     },
+     {
+      "from": "persist",
+      "to": "discharge_no_return",
+      "type": "required"
+     },
+     {
+      "from": "persist",
+      "to": "represent",
+      "type": "required"
+     },
+     {
+      "from": "represent",
+      "to": "discharge_represent",
+      "type": "required"
+     },
+     {
+      "from": "gp_referral",
+      "to": "referral_in",
+      "type": "optional"
+     },
+     {
+      "from": "represent",
+      "to": "referral_in",
+      "type": "optional"
+     },
+     {
+      "from": "referral_in",
+      "to": "triage",
+      "type": "required"
+     },
+     {
+      "from": "triage",
+      "to": "spec_visit",
+      "type": "required"
+     },
+     {
+      "from": "triage",
+      "to": "spec_visit_fast",
+      "type": "required"
+     },
+     {
+      "from": "triage",
+      "to": "spec_ok",
+      "type": "required"
+     },
+     {
+      "from": "spec_visit",
+      "to": "spec_ok",
+      "type": "optional"
+     },
+     {
+      "from": "spec_visit_fast",
+      "to": "spec_ok",
+      "type": "optional"
+     },
+     {
+      "from": "triage",
+      "to": "discharge_spec",
+      "type": "required"
+     },
+     {
+      "from": "spec_visit",
+      "to": "discharge_spec",
+      "type": "optional"
+     },
+     {
+      "from": "spec_visit_fast",
+      "to": "discharge_spec",
+      "type": "optional"
+     },
+     {
+      "from": "spec_ok",
+      "to": "ct",
+      "type": "required"
+     },
+     {
+      "from": "spec_ok",
+      "to": "ct_fast",
+      "type": "required"
+     },
+     {
+      "from": "spec_ok",
+      "to": "ct_ok",
+      "type": "required"
+     },
+     {
+      "from": "ct",
+      "to": "ct_ok",
+      "type": "optional"
+     },
+     {
+      "from": "ct_fast",
+      "to": "ct_ok",
+      "type": "optional"
+     },
+     {
+      "from": "spec_ok",
+      "to": "discharge_ct",
+      "type": "required"
+     },
+     {
+      "from": "ct",
+      "to": "discharge_ct",
+      "type": "optional"
+     },
+     {
+      "from": "ct_fast",
+      "to": "discharge_ct",
+      "type": "optional"
+     },
+     {
+      "from": "ct_ok",
+      "to": "sample_choice",
+      "type": "required"
+     },
+     {
+      "from": "sample_choice",
+      "to": "bronch",
+      "type": "option",
+      "index": 0
+     },
+     {
+      "from": "sample_choice",
+      "to": "ttnb",
+      "type": "option",
+      "index": 1
+     },
+     {
+      "from": "ct_ok",
+      "to": "sample_choice_fast",
+      "type": "required"
+     },
+     {
+      "from": "sample_choice_fast",
+      "to": "bronch_fast",
+      "type": "option",
+      "index": 0
+     },
+     {
+      "from": "sample_choice_fast",
+      "to": "ttnb_fast",
+      "type": "option",
+      "index": 1
+     },
+     {
+      "from": "sample_choice",
+      "to": "sampling_done",
+      "type": "optional"
+     },
+     {
+      "from": "sample_choice_fast",
+      "to": "sampling_done",
+      "type": "optional"
+     },
+     {
+      "from": "bronch",
+      "to": "sampling_done",
+      "type": "optional"
+     },
+     {
+      "from": "ttnb",
+      "to": "sampling_done",
+      "type": "optional"
+     },
+     {
+      "from": "bronch_fast",
+      "to": "sampling_done",
+      "type": "optional"
+     },
+     {
+      "from": "ttnb_fast",
+      "to": "sampling_done",
+      "type": "optional"
+     },
+     {
+      "from": "sampling_done",
+      "to": "diagnosis",
+      "type": "required"
+     },
+     {
+      "from": "sampling_done",
+      "to": "pet",
+      "type": "required"
+     },
+     {
+      "from": "sampling_done",
+      "to": "pet_fast",
+      "type": "required"
+     },
+     {
+      "from": "sampling_done",
+      "to": "mdt",
+      "type": "required"
+     },
+     {
+      "from": "pet",
+      "to": "mdt",
+      "type": "optional"
+     },
+     {
+      "from": "pet_fast",
+      "to": "mdt",
+      "type": "optional"
+     },
+     {
+      "from": "mdt",
+      "to": "book_treat",
+      "type": "required"
+     },
+     {
+      "from": "mdt",
+      "to": "book_treat_fast",
+      "type": "required"
+     },
+     {
+      "from": "mdt",
+      "to": "discharge_mdt",
+      "type": "required"
+     },
+     {
+      "from": "book_treat",
+      "to": "treat",
+      "type": "optional"
+     },
+     {
+      "from": "book_treat_fast",
+      "to": "treat",
+      "type": "optional"
+     }
+    ],
+    "decision_policy": {
+     "backend": "stub",
+     "mode": "sample",
+     "points": {
+      "first_contact": {
+       "default": {
+        "nurse_visit": 0.5,
+        "gp_visit": 0.5
+       },
+       "source": "KHALIFE2025"
+      },
+      "sample_choice": {
+       "default": {
+        "bronch": 0.35,
+        "ttnb": 0.65
+       },
+       "rules": [
+        {
+         "when": "location == 'central'",
+         "probs": {
+          "bronch": 1.0,
+          "ttnb": 0.0
+         }
+        }
+       ],
+       "source": "assumption"
+      },
+      "sample_choice_fast": {
+       "default": {
+        "bronch_fast": 0.35,
+        "ttnb_fast": 0.65
+       },
+       "rules": [
+        {
+         "when": "location == 'central'",
+         "probs": {
+          "bronch_fast": 1.0,
+          "ttnb_fast": 0.0
+         }
+        }
+       ],
+       "source": "assumption"
+      }
+     }
+    },
+    "test_overrides": {},
+    "resource_overrides": {
+     "clinic": {
+      "urgent_reserved_share": 0.14
+     },
+     "ct_scanner": {
+      "urgent_reserved_share": 0.32
+     }
+    },
+    "edits_from_parent": []
+   },
+   {
+    "schema_version": 1,
+    "id": "baseline_plus_capacity",
+    "version": 1,
+    "parent_version": null,
+    "world_id": "finland_lung",
+    "name": "Baseline order with the extra CT (8 slots) and PET-CT (3 slots) capacity that direct_ct and bundled_workup need (capacity-only control)",
+    "nodes": [
+     {
+      "id": "first_contact",
+      "kind": "decision",
+      "label": "Nurse or GP first"
+     },
+     {
+      "id": "nurse_visit",
+      "kind": "step",
+      "label": "Nurse assessment",
+      "test": "nurse_assessment"
+     },
+     {
+      "id": "gp_visit",
+      "kind": "step",
+      "label": "GP appointment",
+      "test": "gp_assessment"
+     },
+     {
+      "id": "gp_after_nurse",
+      "kind": "step",
+      "label": "GP appointment after nurse",
+      "test": "gp_assessment_after_nurse",
+      "when": "not nurse_visit"
+     },
+     {
+      "id": "cxr_ordered",
+      "kind": "join",
+      "label": "Chest X-ray ordered",
+      "when": "nurse_visit or gp_visit or gp_after_nurse"
+     },
+     {
+      "id": "no_cxr",
+      "kind": "join",
+      "label": "No imaging ordered",
+      "when": "not (nurse_visit or gp_visit or gp_after_nurse)"
+     },
+     {
+      "id": "cxr",
+      "kind": "step",
+      "label": "Chest X-ray",
+      "test": "chest_xray"
+     },
+     {
+      "id": "second_look",
+      "kind": "step",
+      "label": "GP review of a negative film",
+      "test": "gp_second_look",
+      "when": "not cxr"
+     },
+     {
+      "id": "gp_referral",
+      "kind": "step",
+      "label": "GP writes referral",
+      "test": "gp_referral_letter",
+      "when": "cxr or second_look"
+     },
+     {
+      "id": "no_referral",
+      "kind": "join",
+      "label": "No referral",
+      "when": "not gp_referral"
+     },
+     {
+      "id": "persist",
+      "kind": "step",
+      "label": "Do symptoms persist",
+      "test": "symptoms_persist"
+     },
+     {
+      "id": "discharge_no_return",
+      "kind": "exit",
+      "label": "Discharged (does not return)",
+      "when": "not persist",
+      "outcome": "discharged"
+     },
+     {
+      "id": "represent",
+      "kind": "step",
+      "label": "Re-presents to GP",
+      "test": "gp_represent",
+      "when": "persist"
+     },
+     {
+      "id": "discharge_represent",
+      "kind": "exit",
+      "label": "Discharged after re-presentation",
+      "when": "not represent",
+      "outcome": "discharged"
+     },
+     {
+      "id": "referral_in",
+      "kind": "join",
+      "label": "Specialist referral sent",
+      "when": "gp_referral or represent"
+     },
+     {
+      "id": "triage",
+      "kind": "step",
+      "label": "Referral handling at hospital",
+      "test": "referral_triage"
+     },
+     {
+      "id": "spec_visit",
+      "kind": "step",
+      "label": "Specialist visit",
+      "test": "specialist_visit"
+     },
+     {
+      "id": "discharge_spec",
+      "kind": "exit",
+      "label": "Discharged by specialist",
+      "when": "not spec_visit",
+      "outcome": "discharged"
+     },
+     {
+      "id": "ct",
+      "kind": "step",
+      "label": "CT chest",
+      "test": "chest_ct",
+      "when": "spec_visit"
+     },
+     {
+      "id": "discharge_ct",
+      "kind": "exit",
+      "label": "Discharged after negative CT",
+      "when": "not ct",
+      "outcome": "discharged"
+     },
+     {
+      "id": "sample_choice",
+      "kind": "decision",
+      "label": "Choose sampling method",
+      "when": "ct"
+     },
+     {
+      "id": "bronch",
+      "kind": "step",
+      "label": "Bronchoscopy",
+      "test": "bronchoscopy",
+      "retry": {
+       "max": 0,
+       "true": "nondiagnostic",
+       "fallback": "ttnb"
+      }
+     },
+     {
+      "id": "ttnb",
+      "kind": "step",
+      "label": "Needle biopsy",
+      "test": "ttnb"
+     },
+     {
+      "id": "sampling_done",
+      "kind": "join",
+      "label": "Sampling finished"
+     },
+     {
+      "id": "diagnosis",
+      "kind": "milestone",
+      "label": "Tissue diagnosis",
+      "milestone": "diagnosis"
+     },
+     {
+      "id": "pet",
+      "kind": "step",
+      "label": "PET-CT",
+      "test": "pet_ct",
+      "when": "bronch is not False and ttnb is not False"
+     },
+     {
+      "id": "mdt",
+      "kind": "step",
+      "label": "Tumour board",
+      "test": "tumour_board"
+     },
+     {
+      "id": "book_treat",
+      "kind": "step",
+      "label": "Waiting for treatment slot",
+      "test": "treatment_booking",
+      "when": "bronch or ttnb or (pet and bronch is not False and ttnb is not False)"
+     },
+     {
+      "id": "discharge_mdt",
+      "kind": "exit",
+      "label": "No cancer (board)",
+      "when": "not (bronch or ttnb or (pet and bronch is not False and ttnb is not False))",
+      "outcome": "discharged"
+     },
+     {
+      "id": "treat",
+      "kind": "exit",
+      "label": "Treatment starts",
+      "outcome": "treatment"
+     }
+    ],
+    "edges": [
+     {
+      "from": "first_contact",
+      "to": "nurse_visit",
+      "type": "option",
+      "index": 0
+     },
+     {
+      "from": "first_contact",
+      "to": "gp_visit",
+      "type": "option",
+      "index": 1
+     },
+     {
+      "from": "nurse_visit",
+      "to": "gp_after_nurse",
+      "type": "required"
+     },
+     {
+      "from": "nurse_visit",
+      "to": "cxr_ordered",
+      "type": "optional"
+     },
+     {
+      "from": "gp_visit",
+      "to": "cxr_ordered",
+      "type": "optional"
+     },
+     {
+      "from": "gp_after_nurse",
+      "to": "cxr_ordered",
+      "type": "optional"
+     },
+     {
+      "from": "nurse_visit",
+      "to": "no_cxr",
+      "type": "optional"
+     },
+     {
+      "from": "gp_visit",
+      "to": "no_cxr",
+      "type": "optional"
+     },
+     {
+      "from": "gp_after_nurse",
+      "to": "no_cxr",
+      "type": "optional"
+     },
+     {
+      "from": "cxr_ordered",
+      "to": "cxr",
+      "type": "required"
+     },
+     {
+      "from": "cxr",
+      "to": "second_look",
+      "type": "required"
+     },
+     {
+      "from": "cxr",
+      "to": "gp_referral",
+      "type": "optional"
+     },
+     {
+      "from": "second_look",
+      "to": "gp_referral",
+      "type": "optional"
+     },
+     {
+      "from": "gp_referral",
+      "to": "no_referral",
+      "type": "optional"
+     },
+     {
+      "from": "no_referral",
+      "to": "persist",
+      "type": "required"
+     },
+     {
+      "from": "persist",
+      "to": "discharge_no_return",
+      "type": "required"
+     },
+     {
+      "from": "persist",
+      "to": "represent",
+      "type": "required"
+     },
+     {
+      "from": "represent",
+      "to": "discharge_represent",
+      "type": "required"
+     },
+     {
+      "from": "gp_referral",
+      "to": "referral_in",
+      "type": "optional"
+     },
+     {
+      "from": "represent",
+      "to": "referral_in",
+      "type": "optional"
+     },
+     {
+      "from": "referral_in",
+      "to": "triage",
+      "type": "required"
+     },
+     {
+      "from": "triage",
+      "to": "spec_visit",
+      "type": "required"
+     },
+     {
+      "from": "spec_visit",
+      "to": "discharge_spec",
+      "type": "required"
+     },
+     {
+      "from": "spec_visit",
+      "to": "ct",
+      "type": "required"
+     },
+     {
+      "from": "ct",
+      "to": "discharge_ct",
+      "type": "required"
+     },
+     {
+      "from": "ct",
+      "to": "sample_choice",
+      "type": "required"
+     },
+     {
+      "from": "sample_choice",
+      "to": "bronch",
+      "type": "option",
+      "index": 0
+     },
+     {
+      "from": "sample_choice",
+      "to": "ttnb",
+      "type": "option",
+      "index": 1
+     },
+     {
+      "from": "sample_choice",
+      "to": "sampling_done",
+      "type": "optional"
+     },
+     {
+      "from": "bronch",
+      "to": "sampling_done",
+      "type": "optional"
+     },
+     {
+      "from": "ttnb",
+      "to": "sampling_done",
+      "type": "optional"
+     },
+     {
+      "from": "sampling_done",
+      "to": "diagnosis",
+      "type": "required"
+     },
+     {
+      "from": "sampling_done",
+      "to": "pet",
+      "type": "required"
+     },
+     {
+      "from": "sampling_done",
+      "to": "mdt",
+      "type": "required"
+     },
+     {
+      "from": "pet",
+      "to": "mdt",
+      "type": "optional"
+     },
+     {
+      "from": "mdt",
+      "to": "book_treat",
+      "type": "required"
+     },
+     {
+      "from": "mdt",
+      "to": "discharge_mdt",
+      "type": "required"
+     },
+     {
+      "from": "book_treat",
+      "to": "treat",
+      "type": "required"
+     }
+    ],
+    "decision_policy": {
+     "backend": "stub",
+     "mode": "sample",
+     "points": {
+      "first_contact": {
+       "default": {
+        "nurse_visit": 0.5,
+        "gp_visit": 0.5
+       },
+       "source": "KHALIFE2025"
+      },
+      "sample_choice": {
+       "default": {
+        "bronch": 0.35,
+        "ttnb": 0.65
+       },
+       "rules": [
+        {
+         "when": "location == 'central'",
+         "probs": {
+          "bronch": 1.0,
+          "ttnb": 0.0
+         }
+        }
+       ],
+       "source": "assumption"
+      }
+     }
+    },
+    "test_overrides": {},
+    "resource_overrides": {
+     "ct_scanner": {
+      "capacity_per_day": 8
+     },
+     "pet_scanner": {
+      "capacity_per_day": 3
+     }
+    },
+    "edits_from_parent": []
+   }
+  ]
+ }
+]

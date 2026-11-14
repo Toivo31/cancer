@@ -1,0 +1,1074 @@
+# Hidden variables. `given` = distribution per primary condition; `default` covers the conditions not listed.
+# Symptom and sign frequencies for lung cancer come from the CAPER GP records (ADES2014) and the Walter 2015 referral cohort; most
+# look-alike frequencies are assumptions (the research note could not source them). Conditions without a number of their own fall
+# back to `default`, which for symptoms is the rate in matched adults in GP records (a floor, not a presenter rate).
+- id: cough
+  label: Cough
+  kind: symptom
+  type: binary
+  given:
+    lung_cancer:
+      p: 0.648
+      source: ADES2014
+      grade: B
+      note: >-
+        Symptom recorded in GP records at any time in the 2 years before diagnosis (CAPER, Exeter
+        1998-2002, 247 cases; stage IV includes missing stage). Controls 29.5%. Referred-to-hospital
+        cohort (WALTER2015): 56.2%. HAMILTON2005 reports 65% in the same data. Read through a
+        summarising tool; re-check against the page.
+    pneumonia:
+      p: 0.833
+      source: METLAY_UW
+      grade: C
+      note: >-
+        Derived by us from the likelihood ratios of METLAY_UW (midpoints of the ranges; sensitivity =
+        1 - LR- x specificity, specificity solved from LR+); secondary teaching page, so grade C. LR+
+        1.8, LR- 0.31. Read through a summarising tool; re-check against the page.
+    copd_exacerbation:
+      p: 0.95
+      source: assumption
+      grade: assumption
+      note: >-
+        Cough, breathlessness and sputum are the defining symptoms of an exacerbation (NICE_NG114,
+        qualitative only); the frequency is not sourced.
+    asthma:
+      p: 0.8
+      source: assumption
+      grade: assumption
+      note: >-
+        Research note section 9 suggestion; clinical knowledge, to be replaced by GINA or Kaypa hoito.
+    tuberculosis:
+      p: 0.8
+      source: assumption
+      grade: assumption
+      note: "Research note section 9 suggestion; WHO or ECDC frequencies not opened."
+    reflux_postinfectious_cough:
+      p: 0.95
+      source: assumption
+      grade: assumption
+      note: "Cough is the defining complaint of this condition; not sourced."
+    viral_self_limiting:
+      p: 0.9
+      source: assumption
+      grade: assumption
+      note: "Research note section 9 suggestion; GRACE symptom tables not extracted."
+    benign_nodule:
+      p: 0.9
+      source: VANVUGT2012
+      grade: C
+      note: >-
+        Catalogue check D59: the prevalence of this condition comes from GRACE, where every patient
+        presented with acute cough and the nodule was an incidental radiograph finding (VANVUGT2012), so
+        cough is the presenting symptom by construction; 0.9 leaves room for nodules found when imaging
+        is done for another chest symptom (assumption). Was the population floor 0.295, which left
+        about a third of these presenters with no symptom at all (out of the catalogue's own scope). Read
+        through a summarising tool; re-check against the page.
+    worried_well: {p: 0.3, source: assumption, grade: assumption, note: "D47: each symptom drawn independently with a moderate rate, so the set is incoherent; alarm symptoms (haemoptysis, weight loss) are rare. Not sourced."}
+    default:
+      p: 0.295
+      source: ADES2014
+      grade: C
+      note: >-
+        Population rate in age and sex matched adults in GP records over 2 years (CAPER controls,
+        ADES2014), not a rate among chest-symptom presenters; used as a floor for conditions with no
+        number of their own. Grade lowered one step (B to C) for the different population. Read
+        through a summarising tool; re-check against the page.
+
+- id: haemoptysis
+  label: "Haemoptysis (coughing blood)"
+  kind: symptom
+  type: binary
+  given:
+    lung_cancer:
+      p: 0.202
+      source: ADES2014
+      grade: B
+      note: >-
+        Symptom recorded in GP records at any time in the 2 years before diagnosis (CAPER, Exeter
+        1998-2002, 247 cases; stage IV includes missing stage). Controls 1.5%. Referred-to-hospital
+        cohort (WALTER2015): 21.6%. HAMILTON2005 also 20%. By stage I 29%, II 29%, III 13%, IV 19%
+        (noisy). Read through a summarising tool; re-check against the page.
+    tuberculosis: {p: 0.2, source: assumption, grade: assumption, note: "Research note section 9 suggestion; not sourced."}
+    worried_well: {p: 0.02, source: assumption, grade: assumption, note: "D47: each symptom drawn independently with a moderate rate, so the set is incoherent; alarm symptoms (haemoptysis, weight loss) are rare. Not sourced."}
+    default:
+      p: 0.015
+      source: ADES2014
+      grade: C
+      note: >-
+        Population rate in age and sex matched adults in GP records over 2 years (CAPER controls,
+        ADES2014), not a rate among chest-symptom presenters; used as a floor for conditions with no
+        number of their own. Grade lowered one step (B to C) for the different population. Read
+        through a summarising tool; re-check against the page.
+
+- id: dyspnoea
+  label: Breathlessness
+  kind: symptom
+  type: binary
+  given:
+    lung_cancer:
+      p: 0.563
+      source: ADES2014
+      grade: B
+      note: >-
+        Symptom recorded in GP records at any time in the 2 years before diagnosis (CAPER, Exeter
+        1998-2002, 247 cases; stage IV includes missing stage). Controls 15.5%. Referred-to-hospital
+        cohort (WALTER2015): 41.2%. Stage I 38.7% rising to III 64.5% and IV 59.5%; the all-case value
+        is used because the stage rows are noisy (stage II has 17 cases). Read through a summarising
+        tool; re-check against the page.
+    pneumonia:
+      p: 0.633
+      source: METLAY_UW
+      grade: C
+      note: >-
+        Derived by us from the likelihood ratios of METLAY_UW (midpoints of the ranges; sensitivity =
+        1 - LR- x specificity, specificity solved from LR+); secondary teaching page, so grade C. LR+
+        1.4, LR- 0.67. Read through a summarising tool; re-check against the page.
+    copd_exacerbation:
+      p: 0.95
+      source: assumption
+      grade: assumption
+      note: "Defining symptom of an exacerbation (NICE_NG114, qualitative); not sourced."
+    asthma: {p: 0.8, source: assumption, grade: assumption, note: "Research note section 9 suggestion; clinical knowledge."}
+    heart_failure:
+      p: 0.89
+      source: MANT2009
+      grade: A
+      note: >-
+        Sensitivity of dyspnoea for heart failure (specificity 51%) in a systematic review with
+        individual patient data from nine primary-care studies of patients with symptoms suggestive of
+        heart failure. Read through a summarising tool; re-check against the page.
+    worried_well: {p: 0.3, source: assumption, grade: assumption, note: "D47: each symptom drawn independently with a moderate rate, so the set is incoherent; alarm symptoms (haemoptysis, weight loss) are rare. Not sourced."}
+    default:
+      p: 0.155
+      source: ADES2014
+      grade: C
+      note: >-
+        Population rate in age and sex matched adults in GP records over 2 years (CAPER controls,
+        ADES2014), not a rate among chest-symptom presenters; used as a floor for conditions with no
+        number of their own. Grade lowered one step (B to C) for the different population. Read
+        through a summarising tool; re-check against the page.
+
+- id: chest_pain
+  label: "Chest pain"
+  kind: symptom
+  type: binary
+  given:
+    lung_cancer:
+      p: 0.405
+      source: ADES2014
+      grade: B
+      note: >-
+        Symptom recorded in GP records at any time in the 2 years before diagnosis (CAPER, Exeter
+        1998-2002, 247 cases; stage IV includes missing stage). Controls 12.1%. Referred-to-hospital
+        cohort (WALTER2015): 35.3% (chest or shoulder pain). Read through a summarising tool; re-check
+        against the page.
+    worried_well: {p: 0.35, source: assumption, grade: assumption, note: "D47: each symptom drawn independently with a moderate rate, so the set is incoherent; alarm symptoms (haemoptysis, weight loss) are rare. Not sourced."}
+    default:
+      p: 0.121
+      source: ADES2014
+      grade: C
+      note: >-
+        Population rate in age and sex matched adults in GP records over 2 years (CAPER controls,
+        ADES2014), not a rate among chest-symptom presenters; used as a floor for conditions with no
+        number of their own. Grade lowered one step (B to C) for the different population. Read
+        through a summarising tool; re-check against the page.
+
+- id: weight_loss
+  label: "Unintended weight loss"
+  kind: symptom
+  type: binary
+  given:
+    lung_cancer:
+      p: 0.271
+      source: ADES2014
+      grade: B
+      note: >-
+        Symptom recorded in GP records at any time in the 2 years before diagnosis (CAPER, Exeter
+        1998-2002, 247 cases; stage IV includes missing stage). Controls 4.4%. Referred-to-hospital
+        cohort (WALTER2015): 15.0%. Stage II 41% and IV 29%, I 13% (noisy). Read through a summarising
+        tool; re-check against the page.
+    tuberculosis: {p: 0.5, source: assumption, grade: assumption, note: "Research note section 9 suggestion; not sourced."}
+    worried_well: {p: 0.08, source: assumption, grade: assumption, note: "D47: each symptom drawn independently with a moderate rate, so the set is incoherent; alarm symptoms (haemoptysis, weight loss) are rare. Not sourced."}
+    default:
+      p: 0.044
+      source: ADES2014
+      grade: C
+      note: >-
+        Population rate in age and sex matched adults in GP records over 2 years (CAPER controls,
+        ADES2014), not a rate among chest-symptom presenters; used as a floor for conditions with no
+        number of their own. Grade lowered one step (B to C) for the different population. Read
+        through a summarising tool; re-check against the page.
+
+- id: fatigue
+  label: Fatigue
+  kind: symptom
+  type: binary
+  given:
+    lung_cancer:
+      p: 0.352
+      source: ADES2014
+      grade: B
+      note: >-
+        Symptom recorded in GP records at any time in the 2 years before diagnosis (CAPER, Exeter
+        1998-2002, 247 cases; stage IV includes missing stage). Controls 15.1%. Referred-to-hospital
+        cohort (WALTER2015): 45.1%. Read through a summarising tool; re-check against the page.
+    worried_well: {p: 0.4, source: assumption, grade: assumption, note: "D47: each symptom drawn independently with a moderate rate, so the set is incoherent; alarm symptoms (haemoptysis, weight loss) are rare. Not sourced."}
+    default:
+      p: 0.151
+      source: ADES2014
+      grade: C
+      note: >-
+        Population rate in age and sex matched adults in GP records over 2 years (CAPER controls,
+        ADES2014), not a rate among chest-symptom presenters; used as a floor for conditions with no
+        number of their own. Grade lowered one step (B to C) for the different population. Read
+        through a summarising tool; re-check against the page.
+
+- id: appetite_loss
+  label: "Loss of appetite"
+  kind: symptom
+  type: binary
+  given:
+    lung_cancer:
+      p: 0.19
+      source: ADES2014
+      grade: B
+      note: >-
+        Symptom recorded in GP records at any time in the 2 years before diagnosis (CAPER, Exeter
+        1998-2002, 247 cases; stage IV includes missing stage). Controls 4.0%. Referred-to-hospital
+        cohort (WALTER2015): 22.2%. Read through a summarising tool; re-check against the page.
+    worried_well: {p: 0.15, source: assumption, grade: assumption, note: "D47: each symptom drawn independently with a moderate rate, so the set is incoherent; alarm symptoms (haemoptysis, weight loss) are rare. Not sourced."}
+    default:
+      p: 0.04
+      source: ADES2014
+      grade: C
+      note: >-
+        Population rate in age and sex matched adults in GP records over 2 years (CAPER controls,
+        ADES2014), not a rate among chest-symptom presenters; used as a floor for conditions with no
+        number of their own. Grade lowered one step (B to C) for the different population. Read
+        through a summarising tool; re-check against the page.
+
+- id: fever
+  label: Fever
+  kind: symptom
+  type: binary
+  given:
+    lung_cancer:
+      p: 0.046
+      source: WALTER2015
+      grade: B
+      note: >-
+        'Feverish and unwell' reported by 7 of 153 lung cancers among adults referred with suspected
+        lung cancer (East and North East England); partial proxy for fever only (research note section
+        9: 0.05). Read through a summarising tool; re-check against the page.
+    pneumonia:
+      p: 0.532
+      source: METLAY_UW
+      grade: C
+      note: >-
+        Derived by us from the likelihood ratios of METLAY_UW (midpoints of the ranges; sensitivity =
+        1 - LR- x specificity, specificity solved from LR+); secondary teaching page, so grade C. LR+
+        1.7-2.1, LR- 0.59-0.71. Read through a summarising tool; re-check against the page.
+    tuberculosis: {p: 0.5, source: assumption, grade: assumption, note: "Research note section 9 suggestion; not sourced."}
+    viral_self_limiting:
+      p: 0.4
+      source: assumption
+      grade: assumption
+      note: "Research note section 9 suggestion; not sourced."
+    worried_well: {p: 0.08, source: assumption, grade: assumption, note: "D47: each symptom drawn independently with a moderate rate, so the set is incoherent; alarm symptoms (haemoptysis, weight loss) are rare. Not sourced."}
+    default:
+      p: 0.03
+      source: assumption
+      grade: assumption
+      note: >-
+        No control rate was found for fever. Placeholder baseline of a few percent for adults without
+        an infection; the clinician should set it.
+
+- id: hoarseness
+  label: "Persistent hoarseness"
+  kind: symptom
+  type: binary
+  given:
+    lung_cancer:
+      p: 0.124
+      source: WALTER2015
+      grade: B
+      note: >-
+        Reported by 19 of 153 lung cancers (referred cohort); first symptom in 6.5%. HAMILTON2005
+        found it not independently associated with cancer. Read through a summarising tool; re-check
+        against the page.
+    worried_well: {p: 0.1, source: assumption, grade: assumption, note: "D47: each symptom drawn independently with a moderate rate, so the set is incoherent; alarm symptoms (haemoptysis, weight loss) are rare. Not sourced."}
+    default:
+      p: 0.03
+      source: assumption
+      grade: assumption
+      note: >-
+        No control rate found. Placeholder; BRADLEY2021 had change in voice below 1% positive
+        predictive value, which says nothing about its frequency in non-cancer presenters.
+
+- id: recurrent_chest_infection
+  label: "Recurrent or persistent chest infection"
+  kind: symptom
+  type: binary
+  given:
+    lung_cancer:
+      p: 0.033
+      source: WALTER2015
+      grade: B
+      note: >-
+        5 of 153 reported a chest infection as the first symptom; zero as an 'any time' symptom in the
+        table as read, which looks like a coding artefact. Treat as at most a few percent. Read
+        through a summarising tool; re-check against the page.
+    copd_exacerbation:
+      p: 0.25
+      source: assumption
+      grade: assumption
+      note: "Repeated infections are common in COPD; not sourced."
+    worried_well: {p: 0.05, source: assumption, grade: assumption, note: "D47: each symptom drawn independently with a moderate rate, so the set is incoherent; alarm symptoms (haemoptysis, weight loss) are rare. Not sourced."}
+    default: {p: 0.04, source: assumption, grade: assumption, note: "No control rate found; placeholder."}
+
+- id: wheeze
+  label: Wheeze
+  kind: symptom
+  type: binary
+  given:
+    asthma: {p: 0.7, source: assumption, grade: assumption, note: "Research note section 9 suggestion; clinical knowledge."}
+    copd_exacerbation: {p: 0.6, source: assumption, grade: assumption, note: "Not sourced; clinical knowledge."}
+    worried_well: {p: 0.1, source: assumption, grade: assumption, note: "D47: each symptom drawn independently with a moderate rate, so the set is incoherent; alarm symptoms (haemoptysis, weight loss) are rare. Not sourced."}
+    default: {p: 0.05, source: assumption, grade: assumption, note: "No control rate found; placeholder."}
+
+- id: finger_clubbing
+  label: "Finger clubbing"
+  kind: sign
+  type: binary
+  given:
+    lung_cancer:
+      p: 0.075
+      source: assumption
+      grade: assumption
+      note: >-
+        Clinically evident clubbing; research note section 9 suggests 0.05 to 0.10. The only published
+        figure is a research index in a hospital series: about one third (28-37%) of bronchogenic
+        carcinoma, COPD 11%, controls 0 of 55 (CLUBBING1998); clinical clubbing will be rarer.
+      low: 0.05
+      high: 0.1
+    default:
+      p: 0.005
+      source: assumption
+      grade: assumption
+      note: "Rare in other conditions; controls 0 of 55 on the research index (CLUBBING1998)."
+
+- id: abnormal_chest_sounds
+  label: "Abnormal chest sounds (crackles, wheeze, bronchial breathing)"
+  kind: sign
+  type: binary
+  given:
+    lung_cancer:
+      p: 0.25
+      source: assumption
+      grade: assumption
+      note: "Research note section 9 suggestion (Hamilton 2005 table not accessible)."
+    pneumonia:
+      p: 0.65
+      source: METLAY_UW
+      grade: C
+      note: >-
+        Rales in the right lung: sensitivity 0.54 to 0.75 across examiners (Wipf, via the same
+        teaching page); midpoint taken. Crackles LR+ 1.6-2.7 on the same page (secondary). Read
+        through a summarising tool; re-check against the page.
+    copd_exacerbation: {p: 0.8, source: assumption, grade: assumption, note: "Not sourced; clinical knowledge."}
+    asthma: {p: 0.7, source: assumption, grade: assumption, note: "Wheeze on examination; not sourced."}
+    heart_failure:
+      p: 0.6
+      source: assumption
+      grade: assumption
+      note: "Crepitations: MANT2009 gives specificity 0.81 only; the frequency is not sourced."
+    viral_self_limiting: {p: 0.1, source: assumption, grade: assumption, note: "Research note section 9 suggestion."}
+    default: {p: 0.05, source: assumption, grade: assumption, note: "No control rate found; placeholder."}
+
+- id: neck_nodes
+  label: "Enlarged neck or supraclavicular lymph nodes"
+  kind: sign
+  type: binary
+  given:
+    lung_cancer:
+      p: 0.05
+      source: assumption
+      grade: assumption
+      note: >-
+        Research note section 9: no primary-care figure found; NG12 lists the sign as a trigger only.
+    default: {p: 0.01, source: assumption, grade: assumption, note: "Placeholder; not sourced."}
+
+- id: ankle_oedema
+  label: "Ankle oedema"
+  kind: sign
+  type: binary
+  given:
+    heart_failure:
+      p: 0.53
+      source: MANT2009
+      grade: A
+      note: >-
+        Sensitivity of oedema for heart failure (specificity 72%), same review as dyspnoea. Read
+        through a summarising tool; re-check against the page.
+    default: {p: 0.05, source: assumption, grade: assumption, note: "Placeholder background rate; not sourced."}
+
+- id: hb_true
+  label: "Haemoglobin (true value)"
+  kind: lab_true
+  type: continuous
+  unit: "g/L"
+  range: {min: 40, max: 220}
+  given:
+    lung_cancer:
+      dist: empirical
+      values: [98, 107, 112, 116, 119, 122, 125, 127, 130, 132, 134, 136, 139, 141, 144, 147, 150, 154, 159, 168]
+      source: CHEN2021
+      grade: C
+      note: >-
+        Stages I to III: 20 equally likely values at the quantiles of a normal distribution, mean 133
+        and SD 18 g/L. This is our modelling choice: the research note says to shrink the anaemia
+        share to about 0.15 to 0.20 below stage IV; here about 16% are below 115 g/L. Stage IV (by
+        stage): quantiles of mean 123.3, SD 20.3 g/L, 32.1% anaemic (Hb below 120 men or 110 women),
+        4,874 stage IV NSCLC patients at first visit, Zhejiang, China. The catalogue format has no
+        normal distribution (see the report). Read through a summarising tool; re-check against the
+        page.
+      by:
+        stage:
+          IV:
+            values: [84, 94, 100, 104, 108, 111, 114, 117, 119, 122, 125, 127, 130, 133, 135, 139, 142, 147, 153, 163]
+            source: CHEN2021
+            grade: C
+            note: "Mean 123.3, SD 20.3 g/L; Chinese stage IV only."
+    default:
+      dist: uniform
+      low: 120
+      high: 165
+      source: assumption
+      grade: assumption
+      note: >-
+        Normal reference interval, as the research note suggests for non-cancer conditions (about 120
+        to 165 g/L; the interval was not read on a page). Anaemia of chronic disease in COPD, heart
+        failure or tuberculosis is not modelled.
+
+- id: platelets_true
+  label: "Platelet count (true value)"
+  kind: lab_true
+  type: continuous
+  unit: "10^9/L"
+  range: {min: 20, max: 1500}
+  given:
+    lung_cancer:
+      dist: lognormal
+      median: 340
+      p90: 506
+      source: assumption
+      grade: assumption
+      note: >-
+        Chosen so that 30% are above 400 x10^9/L (research note section 9; HAMILTON2005: 26% of the
+        132 tested cases, 34/132, versus 4.8% of controls). Median 340, p90 506 gives about 30% above
+        400.
+    default:
+      dist: lognormal
+      median: 260
+      p90: 340
+      source: assumption
+      grade: assumption
+      note: >-
+        Chosen so that about 2% are above 400 x10^9/L (thrombocytosis threshold from BAILEY2017; 1.5
+        to 2.2% in primary care consulters aged 40 and over). Median 260 is an assumed centre of the
+        reference interval.
+
+- id: crp_true
+  label: "C-reactive protein (true value)"
+  kind: lab_true
+  type: continuous
+  unit: "mg/L"
+  range: {min: 0, max: 500}
+  given:
+    pneumonia:
+      dist: lognormal
+      median: 60
+      p90: 200
+      source: assumption
+      grade: assumption
+      note: >-
+        Research note section 9: median about 60, p90 about 200 mg/L, anchored on MINNAARD2016 study
+        medians (96 in a 43% pneumonia emergency study, IQR 20 to 258; 50 in a 20% general-practice
+        study). No pneumonia-only distribution is published.
+    lung_cancer:
+      dist: lognormal
+      median: 10
+      p90: 70
+      source: assumption
+      grade: assumption
+      note: >-
+        No CRP distribution for lung cancer was found. As non-pneumonia with a heavier tail (research
+        note section 9).
+    tuberculosis:
+      dist: lognormal
+      median: 30
+      p90: 100
+      source: assumption
+      grade: assumption
+      note: "Group marker (D50): CRP is raised in TB, moderately; not sourced."
+    copd_exacerbation:
+      dist: lognormal
+      median: 25
+      p90: 90
+      source: assumption
+      grade: assumption
+      note: "Group marker (D50): a bacterial or viral exacerbation raises CRP; not sourced."
+    default:
+      dist: lognormal
+      median: 8
+      p90: 40
+      source: assumption
+      grade: assumption
+      note: >-
+        Research note section 9: non-pneumonia primary care, anchored on MINNAARD2016 medians of 7 and
+        14 mg/L at 5 to 13% pneumonia.
+
+- id: calcium_true
+  label: "Corrected calcium (true value)"
+  kind: lab_true
+  type: continuous
+  unit: "mmol/L"
+  range: {min: 1.5, max: 4.5}
+  given:
+    lung_cancer:
+      dist: lognormal
+      median: 2.4
+      p90: 2.59
+      source: CHAN2020
+      grade: B
+      note: >-
+        Fitted by us so that the share above 2.62 mmol/L (hypercalcaemia) is 7.1%, as in 624
+        tissue-proven lung cancers in Cork, Ireland (all stages and histologies); median 2.40 is
+        assumed. By histology: squamous 12.2%, non-squamous NSCLC 4.3%, small cell 3.9%. Read through
+        a summarising tool; re-check against the page.
+      by:
+        histology:
+          squamous: {median: 2.4, p90: 2.64, source: CHAN2020, grade: B, note: "Fitted to 12.2% above 2.62."}
+          adenocarcinoma:
+            median: 2.4
+            p90: 2.56
+            source: CHAN2020
+            grade: B
+            note: "Fitted to 4.3% above 2.62 (non-squamous NSCLC)."
+          small_cell: {median: 2.4, p90: 2.56, source: CHAN2020, grade: B, note: "Fitted to 3.9% above 2.62."}
+    default:
+      dist: lognormal
+      median: 2.38
+      p90: 2.5
+      source: assumption
+      grade: assumption
+      note: >-
+        Median 2.38 and p90 2.50 mmol/L give under 1% above 2.62; the reference interval was not read
+        on a page.
+
+- id: alp_true
+  label: "Alkaline phosphatase (true value)"
+  kind: lab_true
+  type: continuous
+  unit: "U/L"
+  range: {min: 20, max: 1500}
+  given:
+    lung_cancer:
+      dist: lognormal
+      median: 106
+      p90: 126
+      source: YE2025
+      grade: C
+      note: >-
+        NSCLC without bone metastasis (n=80): mean 106.2, SD 15.5 U/L; median taken as the mean and
+        p90 as mean + 1.28 SD (our normal-to-lognormal approximation). Chinese hospital cohort, normal
+        range there 45 to 125 U/L. The by-level uses the bone-metastasis group (n=68, mean 115.3, SD
+        21.6) for any distant spread, which overstates ALP for non-bone spread. Read through a
+        summarising tool; re-check against the page.
+      by:
+        distant_spread:
+          "true":
+            median: 115
+            p90: 143
+            source: YE2025
+            grade: C
+            note: "Mean 115.3, SD 21.6 U/L in NSCLC with bone metastasis."
+    default:
+      dist: uniform
+      low: 45
+      high: 125
+      source: assumption
+      grade: assumption
+      note: >-
+        Normal reference interval 45 to 125 U/L as stated in YE2025; uniform within it is our
+        simplification.
+
+- id: ldh_true
+  label: "Lactate dehydrogenase (true value)"
+  kind: lab_true
+  type: continuous
+  unit: "U/L"
+  range: {min: 50, max: 3000}
+  given:
+    lung_cancer:
+      dist: lognormal
+      median: 200
+      p90: 280
+      source: assumption
+      grade: assumption
+      note: >-
+        Stages I to III: slightly above the non-cancer values; no all-stage LDH distribution was found
+        (research note). Stage IV by stage: LEE2016, 394 stage IV NSCLC in Korea, median 477 IU/L,
+        56.9% above 450 IU/L; the p90 of 733 follows from that share (sigma 0.335) and ignores the
+        long upper tail (range up to 2,850).
+      by:
+        stage:
+          IV:
+            median: 477
+            p90: 733
+            source: LEE2016
+            grade: C
+            note: "Median 477 IU/L; centre-specific cut-off 450. Re-check against the page."
+    default:
+      dist: lognormal
+      median: 190
+      p90: 240
+      source: assumption
+      grade: assumption
+      note: >-
+        Assumed centre 190 U/L with p90 240; the Finnish reference interval was not read on a page.
+
+- id: lung_lesion
+  label: "Lung lesion present (nodule, mass or shadow)"
+  kind: imaging_true
+  type: binary
+  given:
+    lung_cancer: {p: 1.0, source: assumption, grade: assumption, note: "A lung cancer is a lesion by definition."}
+    benign_nodule: {p: 1.0, source: assumption, grade: assumption, note: "A benign nodule or scar is a lesion by definition."}
+    tuberculosis:
+      p: 0.5
+      source: GETNET2019
+      grade: C
+      note: >-
+        Value unchanged by the catalogue check D59, now sourced: 45.6% (95% CI 40.9-50.4%) of 434 new
+        pulmonary TB patients had cavities on the radiograph (GETNET2019, Ethiopia, pastoralist setting
+        with long diagnostic delay, so cavitation is if anything higher than in Finland). Nodular or
+        cavitary lesion here; infiltrates are `consolidation`, which is drawn given this variable so
+        that nearly every pulmonary TB has some radiographic abnormality. Read through a summarising tool;
+        re-check against the page.
+    default:
+      p: 0.01
+      source: assumption
+      grade: assumption
+      note: >-
+        Incidental small nodule alongside another condition. VANVUGT2012 had 'suspected nodules or
+        shadows' in 1.8% of acute-cough presenters including cancers and the benign nodule class; the
+        remainder is set here to 0.01.
+
+- id: lesion_size_mm
+  label: "Size of the largest lung lesion"
+  kind: imaging_true
+  type: size_mm
+  only_if: lung_lesion
+  range: {min: 1, max: 150}
+  given:
+    lung_cancer:
+      dist: lognormal
+      median: 30
+      p90: 70
+      source: assumption
+      grade: assumption
+      note: >-
+        Research note section 9: lognormal, median 30 mm, p10 12 mm, p90 70 mm (consistent with
+        surgical means of 37 to 46 mm, YANG2010, and smaller screening-detected cancers); no
+        presenting-population size figure exists. Stage I is smaller by definition (stage I is a
+        tumour of 4 cm or less): median 20, p90 35 is our assumption.
+      by:
+        stage:
+          I:
+            median: 20
+            p90: 35
+            source: assumption
+            grade: assumption
+            note: >-
+              Stage I tumours are 4 cm or less by definition; values chosen so almost all are below 4
+              cm.
+    benign_nodule:
+      dist: lognormal
+      median: 8
+      p90: 15
+      source: assumption
+      grade: assumption
+      note: "Incidental nodules are mostly small; no size distribution was sourced."
+    tuberculosis:
+      dist: lognormal
+      median: 27
+      p90: 42
+      source: GETNET2019
+      grade: C
+      note: >-
+        Catalogue check D59: TB fell back to the incidental-nodule default (median 8 mm), so most TB
+        lesions were under 10 mm and the chest radiograph (sensitivity 0.47 below 10 mm) missed about
+        half of them. Cavity diameter in 434 new pulmonary TB patients was mean 2.8 cm, SD 1.0
+        (GETNET2019, Ethiopia, long diagnostic delay); a lognormal with median 27 mm and 90th
+        percentile 42 mm roughly matches that. Tuberculomas and nodular lesions are often 1 to 3 cm
+        too. High-burden setting with late diagnosis, so likely somewhat large for Finland. Read
+        through a summarising tool; re-check against the page.
+    default:
+      dist: lognormal
+      median: 8
+      p90: 15
+      source: assumption
+      grade: assumption
+      note: "Incidental lesion in another condition: as for benign nodules."
+
+- id: lesion_location
+  label: "Location of the largest lung lesion"
+  kind: imaging_true
+  type: categorical
+  values: [central, peripheral]
+  only_if: lung_lesion
+  given:
+    lung_cancer:
+      values: {central: 0.377, peripheral: 0.623}
+      source: assumption
+      grade: assumption
+      note: >-
+        By construction follows the cancer's location attribute (KOSIN2014 shares are on the
+        condition); the base shares are only shown for reference.
+      by:
+        location:
+          central:
+            values: {central: 1.0, peripheral: 0.0}
+            source: assumption
+            grade: assumption
+            note: "Follows the attribute."
+          peripheral:
+            values: {central: 0.0, peripheral: 1.0}
+            source: assumption
+            grade: assumption
+            note: "Follows the attribute."
+    default:
+      values: {central: 0.1, peripheral: 0.9}
+      source: assumption
+      grade: assumption
+      note: >-
+        Benign and incidental lesions are mostly peripheral (scenario: 'most lung cancers and nodules
+        are peripheral'); the split is our assumption.
+
+- id: mediastinal_nodes
+  label: "Enlarged or involved mediastinal lymph nodes"
+  kind: imaging_true
+  type: binary
+  given:
+    lung_cancer:
+      p: 0.4
+      source: assumption
+      grade: assumption
+      note: >-
+        Research note section 9: about 0.40 of the whole presenting population (a rough bound from
+        N0M0 shares by size, LEE2006 0.55-0.91, YANG2010 0.33-0.71; GELBERG2014 about 30% among those
+        staged). By stage (our assumption, tuned so the mix gives about 0.40): stage I has no nodal
+        spread by definition, stage II is hilar (N1), stage III is mediastinal (N2/N3) in most.
+      by:
+        stage:
+          I: {p: 0.0, source: assumption, grade: assumption, note: "Stage I is node-negative by definition."}
+          II:
+            p: 0.05
+            source: assumption
+            grade: assumption
+            note: "Stage II is N1 (hilar); mediastinal involvement is rare."
+          III: {p: 0.9, source: assumption, grade: assumption, note: "Stage III is N2 or N3 disease in most."}
+          IV: {p: 0.45, source: assumption, grade: assumption, note: "Chosen so that the overall share is about 0.40."}
+    default:
+      p: 0.02
+      source: assumption
+      grade: assumption
+      note: "Reactive enlarged nodes (infection, sarcoid); placeholder."
+
+- id: distant_spread
+  label: "Distant metastases present"
+  kind: imaging_true
+  type: binary
+  given:
+    lung_cancer:
+      p: 0.59
+      source: assumption
+      grade: assumption
+      note: >-
+        Stage IV is distant spread by definition (M1). Share equals the stage IV share of the
+        condition; research note: 0.605 for IIIB, IV or not staged is an upper bound (PAAPPANEN2025).
+      by:
+        stage:
+          I: {p: 0.0, source: assumption, grade: assumption, note: "Not stage IV."}
+          II: {p: 0.0, source: assumption, grade: assumption, note: "Not stage IV."}
+          III: {p: 0.0, source: assumption, grade: assumption, note: "Not stage IV."}
+          IV: {p: 1.0, source: assumption, grade: assumption, note: "Definition of stage IV."}
+    default: {p: 0.0, source: assumption, grade: assumption, note: "No cancer, no metastases."}
+
+- id: consolidation
+  label: "Consolidation on chest imaging (truth)"
+  kind: imaging_true
+  type: binary
+  given:
+    pneumonia:
+      p: 0.95
+      source: assumption
+      grade: assumption
+      note: >-
+        GRACE defined pneumonia by the chest radiograph (VANVUGT2012), so nearly all have
+        consolidation; clinical pneumonia without radiographic change exists.
+    tuberculosis:
+      p: 0.625
+      source: assumption
+      grade: assumption
+      note: >-
+        Catalogue check D59: was 0.5 drawn independently of `lung_lesion` (0.5), which left a quarter
+        of pulmonary TB with a truly normal chest image; the chest radiograph has high sensitivity for
+        pulmonary TB (WHO 2016 guidance, qualitative; a normal film is uncommon outside HIV). Now drawn
+        given the lesion: infiltrate in 0.85 of TB without a nodular or cavitary lesion and 0.4 of TB
+        with one, so about 7.5% have neither and 0.625 overall have consolidation (the base value is
+        that overall figure). The shares are our assumption.
+      by:
+        lung_lesion:
+          "true": {p: 0.4, source: assumption, grade: assumption, note: "Infiltrate around a cavity or nodule; assumption."}
+          "false": {p: 0.85, source: assumption, grade: assumption, note: "Non-cavitary pulmonary TB shows as an infiltrate on most films; assumption."}
+    default: {p: 0.01, source: assumption, grade: assumption, note: "Background rate; not sourced."}
+
+- id: brain_metastasis
+  label: "Brain metastases present"
+  kind: imaging_true
+  type: binary
+  given:
+    lung_cancer:
+      p: 0.052
+      source: BROCKELSBY_PRENDECKI
+      grade: B
+      note: >-
+        Asymptomatic brain metastases on pre-treatment imaging: stage III 10 of 193 (0.052). UK
+        multicentre real-world cohort. Combined with later detection the study reports 6.0% (III). By
+        stage below. Read through a summarising tool; re-check against the page.
+      by:
+        stage:
+          I: {p: 0.01, source: assumption, grade: assumption, note: "No stage I figure on the pages read; set low."}
+          II:
+            p: 0.021
+            source: BROCKELSBY_PRENDECKI
+            grade: B
+            note: "1 of 47 stage II, tiny numerator (6.2% combined with later detection)."
+          IV:
+            p: 0.15
+            source: assumption
+            grade: assumption
+            note: "No stage IV figure on the pages read; set above stage III. The clinician should set it."
+    default: {p: 0.0, source: assumption, grade: assumption, note: "No cancer, no brain metastases."}
+
+- id: airflow_obstruction
+  label: "Airflow obstruction on spirometry (FEV1/FVC below 0.70)"
+  kind: function_true
+  type: binary
+  given:
+    lung_cancer:
+      p: 0.5
+      source: YOUNG2009
+      grade: B
+      note: >-
+        Spirometric COPD in about 50% of lung cancer patients against 8% of a matched community
+        control group (odds ratio 11.6); 56-61% in a subgroup with spirometry before diagnosis.
+        Authors and country not captured by the research lane. Read through a summarising tool;
+        re-check against the page.
+    copd_exacerbation:
+      p: 0.9
+      source: assumption
+      grade: assumption
+      note: "COPD is defined by obstruction; some are misdiagnosed. Not sourced."
+    asthma:
+      p: 0.3
+      source: NICE_NG245
+      grade: C
+      note: >-
+        Value unchanged by the catalogue check D59, now sourced: in the NICE/BTS/SIGN 2024 evidence
+        review on spirometry for diagnosing asthma in adults, obstruction (FEV1/FVC below 70%) had
+        sensitivity 0.30 to 0.35 (2 studies, n 47 and 118) and below the LLN 0.37 (95% CI 0.26-0.50),
+        specificity 0.96 to 1.00; very low to low quality, no pooling. Asthma between attacks often
+        has normal spirometry, so 0.3 at a single visit is plausible. Read through a summarising tool;
+        re-check against the page.
+    default:
+      p: 0.08
+      source: YOUNG2009
+      grade: C
+      note: >-
+        The 8% of matched community controls with spirometric COPD (matched for age, sex and
+        pack-years, so smokers); applied to non-cancer presenters, a different population. Read
+        through a summarising tool; re-check against the page.
+
+- id: fev1_pct_predicted
+  label: "FEV1 as percent of predicted"
+  kind: function_true
+  type: continuous
+  unit: "% predicted"
+  range: {min: 10, max: 140}
+  given:
+    default:
+      dist: empirical
+      values: [77, 79, 81, 83, 85, 87, 89, 91, 93, 95, 97, 99, 101, 103, 105, 107, 109, 111, 113, 115]
+      source: assumption
+      grade: assumption
+      note: >-
+        Without obstruction: 20 equally likely values from 77 to 115 percent (normal range; not
+        sourced). With obstruction (by below): GOLD stage shares of 6,283 UK general-practice COPD
+        patients, I 17.1%, II 52.2%, III 25.5%, IV 5.2% (HAUGHNEY2014), as 40 equally likely values
+        spread within the stage bands (I 80 or more, II 50-79, III 30-49, IV below 30); the bands are
+        the standard GOLD definition, not read on a page, and the spread inside a band is ours.
+      by:
+        airflow_obstruction:
+          "true":
+            values:
+              [22, 27, 31, 33, 35, 37, 39, 41, 43, 45, 47, 49, 50, 51, 53, 54, 56, 57, 59, 60, 62, 63, 64, 66, 67,
+               69, 70, 72, 73, 75, 76, 78, 79, 80, 83, 86, 89, 92, 96, 100]
+            source: HAUGHNEY2014
+            grade: B
+            note: >-
+              Stage shares HAUGHNEY2014 (UK general practice, GOLD 2007); values within bands are an
+              assumption. Re-check against the page.
+
+- id: lesion_malignant
+  label: "Malignant tissue present in the lesion"
+  kind: tissue_true
+  type: binary
+  given:
+    lung_cancer: {p: 1.0, source: assumption, grade: assumption, note: "A lung cancer is malignant by definition."}
+    default:
+      p: 0.0
+      source: assumption
+      grade: assumption
+      note: >-
+        No malignancy when the primary condition is not a cancer; an undetected second cancer is out
+        of scope.
+
+- id: histology_group
+  label: "Histology group of the cancer"
+  kind: tissue_true
+  type: categorical
+  values: [adenocarcinoma, squamous, small_cell, other]
+  only_if: lesion_malignant
+  given:
+    lung_cancer:
+      values: {adenocarcinoma: 0.402, squamous: 0.343, small_cell: 0.175, other: 0.08}
+      source: assumption
+      grade: assumption
+      note: >-
+        By construction follows the cancer's histology attribute (shares on the condition, FILHA2026
+        and PAAPPANEN2025); base shares shown for reference.
+      by:
+        histology:
+          adenocarcinoma:
+            values: {adenocarcinoma: 1.0, squamous: 0.0, small_cell: 0.0, other: 0.0}
+            source: assumption
+            grade: assumption
+            note: "Follows the attribute."
+          squamous:
+            values: {adenocarcinoma: 0.0, squamous: 1.0, small_cell: 0.0, other: 0.0}
+            source: assumption
+            grade: assumption
+            note: "Follows the attribute."
+          small_cell:
+            values: {adenocarcinoma: 0.0, squamous: 0.0, small_cell: 1.0, other: 0.0}
+            source: assumption
+            grade: assumption
+            note: "Follows the attribute."
+          other:
+            values: {adenocarcinoma: 0.0, squamous: 0.0, small_cell: 0.0, other: 1.0}
+            source: assumption
+            grade: assumption
+            note: "Follows the attribute."
+    default:
+      values: {adenocarcinoma: 0.25, squamous: 0.25, small_cell: 0.25, other: 0.25}
+      source: assumption
+      grade: assumption
+      note: "Never used: the variable exists only when the tissue is malignant."
+
+# ---- Group marker (D50): one hidden variable several conditions cause, read by a cheap test (NT-proBNP).
+- id: cardiac_strain
+  label: "Raised natriuretic peptide (cardiac wall strain)"
+  kind: lab_true
+  type: binary
+  given:
+    heart_failure: {p: 0.95, source: assumption, grade: assumption, note: "High sensitivity is why the test is used to rule heart failure out; not sourced (MANT2009 abstract has no natriuretic peptide figure)."}
+    copd_exacerbation: {p: 0.2, source: assumption, grade: assumption, note: "Right heart strain and age raise it in some; not sourced."}
+    pneumonia: {p: 0.15, source: assumption, grade: assumption, note: "Raised in some older patients with acute infection; not sourced."}
+    default: {p: 0.08, source: assumption, grade: assumption, note: "Raised with age and kidney disease in people without heart failure; not sourced."}
+
+# ---- Definitive markers (D46): one binary hidden fact per condition, measured only by that condition's definitive test.
+
+- id: dx_lung_cancer
+  label: "Lung cancer is the truth (definitive-test marker)"
+  kind: tissue_true
+  type: binary
+  given:
+    lung_cancer: {p: 1, source: assumption, grade: assumption, note: "True exactly when the condition is active (D46); a definition, not a measurement."}
+    default: {p: 0, source: assumption, grade: assumption, note: "False when the condition is not active."}
+
+- id: dx_pneumonia
+  label: "Pneumonia is the truth (definitive-test marker)"
+  kind: imaging_true
+  type: binary
+  given:
+    pneumonia: {p: 1, source: assumption, grade: assumption, note: "True exactly when the condition is active (D46); a definition, not a measurement."}
+    default: {p: 0, source: assumption, grade: assumption, note: "False when the condition is not active."}
+
+- id: dx_copd_exacerbation
+  label: "Copd exacerbation is the truth (definitive-test marker)"
+  kind: function_true
+  type: binary
+  given:
+    copd_exacerbation: {p: 1, source: assumption, grade: assumption, note: "True exactly when the condition is active (D46); a definition, not a measurement."}
+    default: {p: 0, source: assumption, grade: assumption, note: "False when the condition is not active."}
+
+- id: dx_asthma
+  label: "Asthma is the truth (definitive-test marker)"
+  kind: function_true
+  type: binary
+  given:
+    asthma: {p: 1, source: assumption, grade: assumption, note: "True exactly when the condition is active (D46); a definition, not a measurement."}
+    default: {p: 0, source: assumption, grade: assumption, note: "False when the condition is not active."}
+
+- id: dx_heart_failure
+  label: "Heart failure is the truth (definitive-test marker)"
+  kind: imaging_true
+  type: binary
+  given:
+    heart_failure: {p: 1, source: assumption, grade: assumption, note: "True exactly when the condition is active (D46); a definition, not a measurement."}
+    default: {p: 0, source: assumption, grade: assumption, note: "False when the condition is not active."}
+
+- id: dx_tuberculosis
+  label: "Tuberculosis is the truth (definitive-test marker)"
+  kind: lab_true
+  type: binary
+  given:
+    tuberculosis: {p: 1, source: assumption, grade: assumption, note: "True exactly when the condition is active (D46); a definition, not a measurement."}
+    default: {p: 0, source: assumption, grade: assumption, note: "False when the condition is not active."}
+
+- id: dx_benign_nodule
+  label: "Benign nodule is the truth (definitive-test marker)"
+  kind: imaging_true
+  type: binary
+  given:
+    benign_nodule: {p: 1, source: assumption, grade: assumption, note: "True exactly when the condition is active (D46); a definition, not a measurement."}
+    default: {p: 0, source: assumption, grade: assumption, note: "False when the condition is not active."}
+
+- id: dx_reflux_postinfectious_cough
+  label: "Reflux postinfectious cough is the truth (definitive-test marker)"
+  kind: function_true
+  type: binary
+  given:
+    reflux_postinfectious_cough: {p: 1, source: assumption, grade: assumption, note: "True exactly when the condition is active (D46); a definition, not a measurement."}
+    default: {p: 0, source: assumption, grade: assumption, note: "False when the condition is not active."}
+
+- id: dx_viral_self_limiting
+  label: "Viral self limiting is the truth (definitive-test marker)"
+  kind: lab_true
+  type: binary
+  given:
+    viral_self_limiting: {p: 1, source: assumption, grade: assumption, note: "True exactly when the condition is active (D46); a definition, not a measurement."}
+    default: {p: 0, source: assumption, grade: assumption, note: "False when the condition is not active."}

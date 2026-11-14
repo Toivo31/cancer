@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Decision model: JEV, the team's decision model</title>
+<link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="jev.css">
+</head>
+<body>
+<nav class="site-nav" data-page="model" aria-label="Site"></nav>
+
+<main class="page">
+  <section class="page-top" aria-labelledby="jev-title">
+    <h1 class="page-title" id="jev-title">Decision model</h1>
+    <p class="lede">At each clinical decision the model scores the allowed next steps from the visible record; a person decides.</p>
+
+    <figure class="figure jev-fig" id="jev-fig" aria-label="One decision, from the record to a person's choice">
+      <ol class="jev-flow" id="jev-flow">
+        <li class="jev-step" id="fig-record"><span class="label">The record</span><div class="jev-step__body"></div></li>
+        <li class="jev-step" id="fig-question"><span class="label">The decision</span><div class="jev-step__body"></div></li>
+        <li class="jev-step jev-step--answers" id="fig-answers"><span class="label">Allowed answers, scored</span><div class="jev-step__body"></div></li>
+        <li class="jev-step jev-step--person" id="fig-person"><span class="label">A person decides</span><div class="jev-step__body"></div></li>
+      </ol>
+      <figcaption class="caption" id="fig-caption">Synthetic record. Scores are relative candidate scores over the offered answers, not probabilities: add or remove an answer and the others can change.</figcaption>
+    </figure>
+
+    <div class="page-actions">
+      <a class="btn btn--primary" href="jev.html#examples" id="go-examples">Try the examples</a>
+      <a href="jev.html#model-card">Read the model card</a>
+    </div>
+  </section>
+
+  <section class="jev-examples" id="examples" aria-labelledby="ex-title">
+    <h2 id="ex-title">Examples</h2>
+    <p class="jev-examples__lede">Pick an example, or write your own. Every output says where it came from: a recording of the deployed model, a live call, or nothing yet.</p>
+    <div class="jev-endpoint inset" id="endpoint" aria-label="Where answers come from">
+      <span class="label">Answers come from</span>
+      <select id="ep-mode" aria-label="Endpoint"></select>
+      <input id="ep-url" type="url" placeholder="https://host/api/decision" aria-label="Endpoint URL" hidden>
+      <span class="jev-endpoint__status" id="ep-status"></span>
+    </div>
+    <div class="jev-presets" id="presets" role="tablist" aria-label="Examples"></div>
+    <section class="jev-work card" id="work" aria-live="polite"></section>
+  </section>
+
+  <section class="details" id="details" aria-label="Details">
+    <div class="details-rule">Details</div>
+
+    <h3 class="finding">Read the scores with three caveats: they are relative, the data is synthetic, and a person decides.</h3>
+    <p class="jev-honest" id="honest"></p>
+    <p class="jev-claim" id="claim-headlines">No headline number on this site depends on this model: the simulator's headline runs use placeholder tables and rules.</p>
+
+    <h3 class="finding" id="model-card-title">Model card: JEV is a decision model, not a chatbot.</h3>
+    <section class="jev-mc" id="model-card" aria-labelledby="model-card-title">
+      <div class="jev-mc__head">
+        <p class="jev-mc__lede">It reads a context, takes a question with a fixed list of allowed answers, and returns one score per answer in a single pass. The answers are what the pathway allows at that node, so it can only propose a step that exists.</p>
+        <div class="jev-hf" id="hf"></div>
+      </div>
+      <div class="jev-mc__body">
+        <div class="jev-arch">
+          <div class="jev-diagram" id="diagram" aria-label="Architecture diagram">
+            <div class="jev-lane jev-lane--refine"><span class="jev-box jev-box--opt">Optional, off by default: the backbone's original language head calls read-only tools and writes a short evidence summary</span><span class="jev-arr">appended to the context</span></div>
+            <div class="jev-lane">
+              <span class="jev-box jev-box--in">Context<small>record, symptoms, notes, tool results</small></span><span class="jev-arr">→</span>
+              <span class="jev-box">Frozen backbone + trained adapters<small id="d-enc"></small></span><span class="jev-arr">→</span>
+              <span class="jev-box jev-box--vec">context vector</span>
+            </div>
+            <div class="jev-lane">
+              <span class="jev-box jev-box--in">Each answer, with its question<small>encoded on its own</small></span><span class="jev-arr">→</span>
+              <span class="jev-box">same encoder</span><span class="jev-arr">→</span>
+              <span class="jev-box jev-box--vec">one vector per answer</span>
+            </div>
+            <div class="jev-lane jev-lane--join">
+              <span class="jev-box jev-box--head">Scoring head: the answers attend to each other<small>score = direct match with the context + a correction from the whole answer set</small></span><span class="jev-arr">→</span>
+              <span class="jev-box">one score per answer<small>softmax over the offered answers</small></span><span class="jev-arr">→</span>
+              <span class="jev-box jev-box--person">a person accepts or overrides</span>
+            </div>
+          </div>
+          <p class="jev-short" id="arch-short"></p>
+          <details class="jev-fold"><summary>How it works, step by step</summary><ol class="jev-steps" id="arch-text"></ol></details>
+        </div>
+        <div class="jev-factcol"><dl class="jev-facts" id="facts"></dl></div>
+      </div>
+    </section>
+
+    <h3 class="finding">Live calls need an endpoint and start only when you press a button.</h3>
+    <p>Opened from the file, the page shows recordings only and makes no network call. Choose an endpoint in the bar above the examples, or add <code>?api=hosted</code>, <code>?api=same</code> or <code>?api=&lt;url&gt;</code> to the address. To serve this folder and the decision proxy on one origin:</p>
+    <pre class="cmd">python demo/serve_jev.py</pre>
+    <p>Model code: <code>decision_api/runtime/decision_model/</code> (on main). The adapter the simulator calls: <code>jev/birch.py</code>. Page data: <code>demo/data/jev_bundle.js</code>, built by <code>demo/export_jev.py</code>.</p>
+  </section>
+</main>
+
+<footer class="footer-strip" id="footer">Synthetic patients only · not clinically reviewed · every answer is a proposal for a person to review</footer>
+
+<script src="data/jev_bundle.js"></script>
+<script src="site.js"></script>
+<script src="jev.js"></script>
+</body>
+</html>

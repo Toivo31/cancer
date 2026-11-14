@@ -1,0 +1,859 @@
+{
+ "fixture": true,
+ "generated_at": "2026-11-14T22:00:00Z",
+ "scenarios": [
+  {
+   "id": "stokstad",
+   "title": "Norwegian validation",
+   "description": "Rebuilt from a published Norwegian study of 100 early-stage lung cancer patients",
+   "target_days": 42,
+   "baseline": {
+    "label": "Observed pathway",
+    "metrics": {
+     "n": 100,
+     "n_cancer": 100,
+     "median_days_to_treatment": 46.5,
+     "share_within_target": 0.4,
+     "median_days_to_diagnosis": 31.0,
+     "missed_cancers": 0,
+     "tests_per_patient": 4.6,
+     "invasive_per_patient": 0.9,
+     "cost_per_patient": 5200,
+     "median_days_to_exit_noncancer": null,
+     "stage_breakdown": {
+      "detection": {
+       "wait": 4.2,
+       "service": 1.3
+      },
+      "referral": {
+       "wait": 6.5,
+       "service": 2.0
+      },
+      "diagnosis": {
+       "wait": 24.0,
+       "service": 6.5
+      },
+      "treatment_start": {
+       "wait": 9.0,
+       "service": 1.5
+      }
+     },
+     "node_breakdown": {
+      "ct": {
+       "wait": 4.2,
+       "service": 1.3,
+       "n": 100
+      },
+      "first_visit": {
+       "wait": 6.5,
+       "service": 2.0,
+       "n": 100
+      },
+      "bronch": {
+       "wait": 5.5,
+       "service": 1.5,
+       "n": 100
+      },
+      "pathology": {
+       "wait": 0.0,
+       "service": 2.0,
+       "n": 100
+      },
+      "pet": {
+       "wait": 14.5,
+       "service": 2.0,
+       "n": 100
+      },
+      "exercise_test": {
+       "wait": 4.0,
+       "service": 1.0,
+       "n": 100
+      },
+      "tumour_board": {
+       "wait": 7.5,
+       "service": 0.5,
+       "n": 100
+      },
+      "surgery": {
+       "wait": 1.5,
+       "service": 1.0,
+       "n": 100
+      }
+     }
+    }
+   },
+   "variants": [
+    {
+     "label": "Faster PET only",
+     "metrics": {
+      "n": 100,
+      "n_cancer": 100,
+      "median_days_to_treatment": 43.0,
+      "share_within_target": 0.48,
+      "median_days_to_diagnosis": 28.5,
+      "missed_cancers": 0,
+      "tests_per_patient": 4.6,
+      "invasive_per_patient": 0.9,
+      "cost_per_patient": 5200,
+      "median_days_to_exit_noncancer": null,
+      "stage_breakdown": {
+       "detection": {
+        "wait": 4.2,
+        "service": 1.3
+       },
+       "referral": {
+        "wait": 6.5,
+        "service": 2.0
+       },
+       "diagnosis": {
+        "wait": 14.5,
+        "service": 6.5
+       },
+       "treatment_start": {
+        "wait": 9.0,
+        "service": 1.5
+       }
+      },
+      "node_breakdown": {
+       "ct": {
+        "wait": 4.2,
+        "service": 1.3,
+        "n": 100
+       },
+       "first_visit": {
+        "wait": 6.5,
+        "service": 2.0,
+        "n": 100
+       },
+       "bronch": {
+        "wait": 5.5,
+        "service": 1.5,
+        "n": 100
+       },
+       "pathology": {
+        "wait": 0.0,
+        "service": 2.0,
+        "n": 100
+       },
+       "pet": {
+        "wait": 5.0,
+        "service": 2.0,
+        "n": 100
+       },
+       "exercise_test": {
+        "wait": 4.0,
+        "service": 1.0,
+        "n": 100
+       },
+       "tumour_board": {
+        "wait": 7.5,
+        "service": 0.5,
+        "n": 100
+       },
+       "surgery": {
+        "wait": 1.5,
+        "service": 1.0,
+        "n": 100
+       }
+      }
+     }
+    },
+    {
+     "label": "Optimiser proposal",
+     "metrics": {
+      "n": 100,
+      "n_cancer": 100,
+      "median_days_to_treatment": 31.0,
+      "share_within_target": 0.78,
+      "median_days_to_diagnosis": 19.5,
+      "missed_cancers": 0,
+      "tests_per_patient": 4.8,
+      "invasive_per_patient": 0.9,
+      "cost_per_patient": 5300,
+      "median_days_to_exit_noncancer": null,
+      "stage_breakdown": {
+       "detection": {
+        "wait": 4.2,
+        "service": 1.3
+       },
+       "referral": {
+        "wait": 6.5,
+        "service": 2.0
+       },
+       "diagnosis": {
+        "wait": 6.0,
+        "service": 6.5
+       },
+       "treatment_start": {
+        "wait": 4.5,
+        "service": 1.7
+       }
+      },
+      "node_breakdown": {
+       "ct": {
+        "wait": 4.2,
+        "service": 1.3,
+        "n": 100
+       },
+       "first_visit": {
+        "wait": 6.5,
+        "service": 2.0,
+        "n": 100
+       },
+       "pet": {
+        "wait": 3.0,
+        "service": 2.0,
+        "n": 100
+       },
+       "exercise_test": {
+        "wait": 1.0,
+        "service": 1.0,
+        "n": 100
+       },
+       "bronch": {
+        "wait": 2.0,
+        "service": 1.5,
+        "n": 100
+       },
+       "pathology": {
+        "wait": 0.0,
+        "service": 2.0,
+        "n": 100
+       },
+       "tumour_board": {
+        "wait": 3.0,
+        "service": 0.5,
+        "n": 100
+       },
+       "surgery": {
+        "wait": 1.5,
+        "service": 1.0,
+        "n": 100
+       },
+       "book_treatment": {
+        "wait": 0.0,
+        "service": 0.2,
+        "n": 100
+       }
+      }
+     },
+     "changes": [
+      "Order the PET-CT scan and the exercise test together at the first hospital visit, instead of one after the other",
+      "Hold the tumour board straight after those two, without waiting for the sampling result",
+      "Take the tissue sample after the tumour board decision, while the surgery slot is being booked"
+     ]
+    }
+   ],
+   "published": {
+    "baseline_share": 0.4,
+    "faster_pet_share": 0.48,
+    "optimal_share": 0.8,
+    "source": "Stokstad et al. 2019 (STOKSTAD2019)"
+   },
+   "flowchart_before": {
+    "nodes": [
+     {
+      "id": "ct",
+      "label": "CT scan of the chest",
+      "stage": "detection",
+      "test": "chest_ct"
+     },
+     {
+      "id": "first_visit",
+      "label": "First hospital visit",
+      "stage": "referral",
+      "after": [
+       "ct"
+      ]
+     },
+     {
+      "id": "bronch",
+      "label": "Sampling (bronchoscopy or needle biopsy)",
+      "stage": "diagnosis",
+      "after": [
+       "first_visit"
+      ]
+     },
+     {
+      "id": "pathology",
+      "label": "Pathology report",
+      "stage": "diagnosis",
+      "after": [
+       "bronch"
+      ]
+     },
+     {
+      "id": "pet",
+      "label": "PET-CT scan",
+      "stage": "diagnosis",
+      "after": [
+       "pathology"
+      ]
+     },
+     {
+      "id": "exercise_test",
+      "label": "Exercise test (fitness for surgery)",
+      "stage": "diagnosis",
+      "after": [
+       "pet"
+      ]
+     },
+     {
+      "id": "tumour_board",
+      "label": "Weekly tumour board decision",
+      "stage": "treatment_start",
+      "after": [
+       "exercise_test"
+      ]
+     },
+     {
+      "id": "surgery",
+      "label": "Surgery",
+      "stage": "treatment_start",
+      "after": [
+       "tumour_board"
+      ],
+      "kind": "exit"
+     }
+    ]
+   },
+   "flowchart_after": {
+    "nodes": [
+     {
+      "id": "ct",
+      "label": "CT scan of the chest",
+      "stage": "detection",
+      "test": "chest_ct"
+     },
+     {
+      "id": "first_visit",
+      "label": "First hospital visit",
+      "stage": "referral",
+      "after": [
+       "ct"
+      ]
+     },
+     {
+      "id": "pet",
+      "label": "PET-CT scan",
+      "stage": "diagnosis",
+      "after": [
+       "first_visit"
+      ]
+     },
+     {
+      "id": "exercise_test",
+      "label": "Exercise test (fitness for surgery)",
+      "stage": "diagnosis",
+      "after": [
+       "first_visit"
+      ]
+     },
+     {
+      "id": "tumour_board",
+      "label": "Tumour board decision",
+      "stage": "treatment_start",
+      "after": [
+       "pet",
+       "exercise_test"
+      ]
+     },
+     {
+      "id": "bronch",
+      "label": "Sampling (bronchoscopy or needle biopsy)",
+      "stage": "diagnosis",
+      "after": [
+       "tumour_board"
+      ]
+     },
+     {
+      "id": "book_treatment",
+      "label": "Book the surgery slot",
+      "stage": "treatment_start",
+      "after": [
+       "tumour_board"
+      ]
+     },
+     {
+      "id": "pathology",
+      "label": "Pathology report",
+      "stage": "diagnosis",
+      "after": [
+       "bronch"
+      ]
+     },
+     {
+      "id": "surgery",
+      "label": "Surgery",
+      "stage": "treatment_start",
+      "after": [
+       "pathology",
+       "book_treatment"
+      ],
+      "kind": "exit"
+     }
+    ]
+   }
+  },
+  {
+   "id": "finland_lung",
+   "title": "Finland, lung cancer",
+   "description": "Synthetic Finnish lung cancer pathway, 1,000 simulated patients",
+   "target_days": 42,
+   "baseline": {
+    "label": "Today's pathway",
+    "metrics": {
+     "n": 1000,
+     "n_cancer": 30,
+     "median_days_to_treatment": 55.0,
+     "share_within_target": 0.3333333333333333,
+     "median_days_to_diagnosis": 41.0,
+     "missed_cancers": 1,
+     "tests_per_patient": 3.4,
+     "invasive_per_patient": 0.5,
+     "cost_per_patient": 2900,
+     "median_days_to_exit_noncancer": 8.5,
+     "stage_breakdown": {
+      "detection": {
+       "wait": 9.5,
+       "service": 1.0
+      },
+      "referral": {
+       "wait": 11.0,
+       "service": 1.0
+      },
+      "diagnosis": {
+       "wait": 22.0,
+       "service": 5.3
+      },
+      "treatment_start": {
+       "wait": 10.0,
+       "service": 1.5
+      }
+     },
+     "node_breakdown": {
+      "nurse_visit": {
+       "wait": 3.0,
+       "service": 0.3,
+       "n": 30
+      },
+      "gp_visit": {
+       "wait": 5.0,
+       "service": 0.5,
+       "n": 30
+      },
+      "cxr": {
+       "wait": 1.5,
+       "service": 0.2,
+       "n": 30
+      },
+      "specialist_referral": {
+       "wait": 2.0,
+       "service": 0.5,
+       "n": 30
+      },
+      "specialist_visit": {
+       "wait": 9.0,
+       "service": 0.5,
+       "n": 30
+      },
+      "ct": {
+       "wait": 5.0,
+       "service": 0.3,
+       "n": 30
+      },
+      "pet_ct": {
+       "wait": 11.0,
+       "service": 1.0,
+       "n": 30
+      },
+      "bronch": {
+       "wait": 5.0,
+       "service": 1.0,
+       "n": 30
+      },
+      "pathology": {
+       "wait": 1.0,
+       "service": 3.0,
+       "n": 30
+      },
+      "tumour_board": {
+       "wait": 6.0,
+       "service": 0.5,
+       "n": 30
+      },
+      "treatment_booking": {
+       "wait": 4.0,
+       "service": 1.0,
+       "n": 30
+      }
+     },
+     "by_group": {
+      "site_specific": {
+       "median_days_to_treatment": 47.0,
+       "share_within_target": 0.4444444444444444,
+       "n_cancer": 18
+      },
+      "non_specific": {
+       "median_days_to_treatment": 70.0,
+       "share_within_target": 0.16666666666666666,
+       "n_cancer": 12
+      }
+     },
+     "utilisation": {
+      "ct": 0.83,
+      "pet_ct": 0.91,
+      "bronch": 0.72
+     }
+    }
+   },
+   "variants": [
+    {
+     "label": "Optimiser proposal",
+     "metrics": {
+      "n": 1000,
+      "n_cancer": 30,
+      "median_days_to_treatment": 36.0,
+      "share_within_target": 0.6,
+      "median_days_to_diagnosis": 26.0,
+      "missed_cancers": 1,
+      "tests_per_patient": 3.7,
+      "invasive_per_patient": 0.5,
+      "cost_per_patient": 3000,
+      "median_days_to_exit_noncancer": 8.9,
+      "stage_breakdown": {
+       "detection": {
+        "wait": 9.5,
+        "service": 1.0
+       },
+       "referral": {
+        "wait": 6.5,
+        "service": 1.0
+       },
+       "diagnosis": {
+        "wait": 14.0,
+        "service": 5.3
+       },
+       "treatment_start": {
+        "wait": 3.5,
+        "service": 1.5
+       }
+      },
+      "node_breakdown": {
+       "nurse_visit": {
+        "wait": 3.0,
+        "service": 0.3,
+        "n": 30
+       },
+       "gp_visit": {
+        "wait": 5.0,
+        "service": 0.5,
+        "n": 30
+       },
+       "cxr": {
+        "wait": 1.5,
+        "service": 0.2,
+        "n": 30
+       },
+       "specialist_referral": {
+        "wait": 1.5,
+        "service": 0.5,
+        "n": 30
+       },
+       "specialist_visit": {
+        "wait": 5.0,
+        "service": 0.5,
+        "n": 30
+       },
+       "ct": {
+        "wait": 3.0,
+        "service": 0.3,
+        "n": 30
+       },
+       "pet_ct": {
+        "wait": 7.0,
+        "service": 1.0,
+        "n": 30
+       },
+       "bronch": {
+        "wait": 3.0,
+        "service": 1.0,
+        "n": 30
+       },
+       "pathology": {
+        "wait": 1.0,
+        "service": 3.0,
+        "n": 30
+       },
+       "tumour_board": {
+        "wait": 3.0,
+        "service": 0.5,
+        "n": 30
+       },
+       "treatment_booking": {
+        "wait": 0.5,
+        "service": 1.0,
+        "n": 30
+       }
+      },
+      "by_group": {
+       "site_specific": {
+        "median_days_to_treatment": 30.0,
+        "share_within_target": 0.6666666666666666,
+        "n_cancer": 18
+       },
+       "non_specific": {
+        "median_days_to_treatment": 44.0,
+        "share_within_target": 0.5,
+        "n_cancer": 12
+       }
+      },
+      "utilisation": {
+       "ct": 0.86,
+       "pet_ct": 0.84,
+       "bronch": 0.66
+      }
+     },
+     "changes": [
+      "Order the CT scan together with the chest X-ray at the health centre, so the patient does not wait for a second visit",
+      "Book the PET-CT scan and the sampling at the first specialist visit, side by side instead of one after the other",
+      "Send patients with vague, non-specific symptoms through the same fast lane as clear lung symptoms",
+      "Hold the tumour board as soon as the scans are ready, without waiting for the next routine slot"
+     ]
+    }
+   ],
+   "flowchart_before": {
+    "nodes": [
+     {
+      "id": "nurse_visit",
+      "label": "Nurse appointment",
+      "stage": "detection"
+     },
+     {
+      "id": "gp_visit",
+      "label": "Health centre doctor",
+      "stage": "detection",
+      "after": [
+       "nurse_visit"
+      ]
+     },
+     {
+      "id": "cxr",
+      "label": "Chest X-ray",
+      "stage": "detection",
+      "after": [
+       "gp_visit"
+      ]
+     },
+     {
+      "id": "specialist_referral",
+      "label": "Referral to specialist care",
+      "stage": "referral",
+      "after": [
+       "cxr"
+      ]
+     },
+     {
+      "id": "specialist_visit",
+      "label": "Specialist visit",
+      "stage": "referral",
+      "after": [
+       "specialist_referral"
+      ]
+     },
+     {
+      "id": "ct",
+      "label": "CT scan",
+      "stage": "diagnosis",
+      "after": [
+       "specialist_visit"
+      ]
+     },
+     {
+      "id": "pet_ct",
+      "label": "PET-CT scan",
+      "stage": "diagnosis",
+      "after": [
+       "ct"
+      ]
+     },
+     {
+      "id": "bronch",
+      "label": "Sampling (bronchoscopy)",
+      "stage": "diagnosis",
+      "after": [
+       "pet_ct"
+      ]
+     },
+     {
+      "id": "pathology",
+      "label": "Pathology report",
+      "stage": "diagnosis",
+      "after": [
+       "bronch"
+      ]
+     },
+     {
+      "id": "tumour_board",
+      "label": "Tumour board decision",
+      "stage": "treatment_start",
+      "after": [
+       "pathology"
+      ]
+     },
+     {
+      "id": "treatment_booking",
+      "label": "Treatment start",
+      "stage": "treatment_start",
+      "after": [
+       "tumour_board"
+      ],
+      "kind": "exit"
+     }
+    ]
+   },
+   "flowchart_after": {
+    "nodes": [
+     {
+      "id": "nurse_visit",
+      "label": "Nurse appointment",
+      "stage": "detection"
+     },
+     {
+      "id": "gp_visit",
+      "label": "Health centre doctor",
+      "stage": "detection",
+      "after": [
+       "nurse_visit"
+      ]
+     },
+     {
+      "id": "cxr",
+      "label": "Chest X-ray",
+      "stage": "detection",
+      "after": [
+       "gp_visit"
+      ]
+     },
+     {
+      "id": "ct",
+      "label": "CT scan, ordered together with the X-ray",
+      "stage": "diagnosis",
+      "after": [
+       "gp_visit"
+      ]
+     },
+     {
+      "id": "specialist_referral",
+      "label": "Referral to specialist care",
+      "stage": "referral",
+      "after": [
+       "cxr",
+       "ct"
+      ]
+     },
+     {
+      "id": "specialist_visit",
+      "label": "Specialist visit",
+      "stage": "referral",
+      "after": [
+       "specialist_referral"
+      ]
+     },
+     {
+      "id": "pet_ct",
+      "label": "PET-CT scan, booked at the visit",
+      "stage": "diagnosis",
+      "after": [
+       "specialist_visit"
+      ]
+     },
+     {
+      "id": "bronch",
+      "label": "Sampling (bronchoscopy), booked at the visit",
+      "stage": "diagnosis",
+      "after": [
+       "specialist_visit"
+      ]
+     },
+     {
+      "id": "pathology",
+      "label": "Pathology report",
+      "stage": "diagnosis",
+      "after": [
+       "bronch"
+      ]
+     },
+     {
+      "id": "tumour_board",
+      "label": "Tumour board decision",
+      "stage": "treatment_start",
+      "after": [
+       "pet_ct",
+       "pathology"
+      ]
+     },
+     {
+      "id": "treatment_booking",
+      "label": "Treatment start",
+      "stage": "treatment_start",
+      "after": [
+       "tumour_board"
+      ],
+      "kind": "exit"
+     }
+    ]
+   }
+  }
+ ],
+ "assumptions": [
+  {
+   "parameter": "Share of lung patients first seen by a nurse",
+   "value": "40-60 %",
+   "source": "IHE Cancer Dashboard Finland 2026",
+   "status": "sourced"
+  },
+  {
+   "parameter": "Wait for a health centre appointment",
+   "value": "14 days",
+   "source": "Khalife et al. 2025",
+   "status": "sourced"
+  },
+  {
+   "parameter": "Wait from PET-CT referral to report (Norway)",
+   "value": "median 20.5 days",
+   "source": "Stokstad et al. 2019",
+   "status": "sourced"
+  },
+  {
+   "parameter": "Wait from sampling to pathology report (Norway)",
+   "value": "median 4.5 days",
+   "source": "Stokstad et al. 2019",
+   "status": "sourced"
+  },
+  {
+   "parameter": "Treatment target",
+   "value": "42 days from first visit",
+   "source": "Stokstad et al. 2019",
+   "status": "sourced"
+  },
+  {
+   "parameter": "Share of cancer patients with vague (non-specific) symptoms",
+   "value": "40 %",
+   "source": "Team assumption, to be checked",
+   "status": "assumption"
+  },
+  {
+   "parameter": "CT scanner capacity (Finnish synthetic pathway)",
+   "value": "83 % busy",
+   "source": "Team assumption",
+   "status": "assumption"
+  },
+  {
+   "parameter": "Wait for the tumour board",
+   "value": "6 days",
+   "source": "Team assumption",
+   "status": "assumption"
+  }
+ ]
+}
