@@ -103,6 +103,18 @@ def parse_seeds(s: str) -> list[int]:
     return [int(x) for x in s.split(",")]
 
 
+UNSAFE_RESULTS_PROMPTS = ("g2@1",)    # report text of these cards gives away false alarms and misses (review B1)
+
+
+def prompt_warning(lib) -> str | None:
+    if lib.manifest.model in (None, "fake"):       # template cards (ref500) have no model-written report text
+        return None
+    pr = (lib.manifest.prompts or {}).get("results", "")
+    bad = [v for v in str(pr).split("+") if v in UNSAFE_RESULTS_PROMPTS]
+    return (f"results prompt {pr}: the test-report text gives away which results are false alarms or misses; "
+            f"rows are for pipeline testing only, not for training or testing a text-reading model") if bad else None
+
+
 def patients_for(n: int, lib) -> int:
     return min(n, max(MIN_PATIENTS, PER_CARD * lib.manifest.n_cards))
 
@@ -227,12 +239,17 @@ def main(argv=None) -> int:
 
     print(f"world {args.world}  catalogue {world.catalogue.version_hash[:12]}  mix {args.mix}  seeds {seeds}  explore {args.explore}")
     plan = [(n, lb, False) for n, lb in train] + [(hold_name, hold_lib, True)]
+    warnings: list[str] = []
     print(f"{'library':<22}{'id':<20}{'cards':>6}{'patients':>10}  role      {'generator':<24}")
     for n, lb, is_hold in plan:
         m = lb.manifest
         print(f"{n:<22}{lb.id:<20}{m.n_cards:>6}{patients_for(args.n, lb):>10}  {'TEST' if is_hold else 'train':<9} "
               f"{m.generator + ':' + str(m.model):<24}")
-        print(f"{'':<22}{backgrounds_check(lb)}")
+        print(f"{'':<22}prompts {dict(m.prompts) or '-'}   {backgrounds_check(lb)}")
+        w = prompt_warning(lb)
+        if w:
+            print(f"{'':<22}WARNING {w}")
+            warnings.append(f"{n}: {w}")
     for n, why in skipped:
         print(f"skipped {n}: {why}")
     ids = Counter(c.id for _, lb, _ in plan for c in lb.cards)
@@ -323,6 +340,10 @@ def main(argv=None) -> int:
     print(f"information boundary: {bound.checked} rows checked, {len([v for v in bound.violations if v != '...'])} with a problem")
     for v in bound.violations[:10]:
         print("   ", v)
+    if warnings:
+        print(f"WARNING: {len(warnings)} library(ies) use results prompt g2@1; these files are for pipeline testing only:")
+        for w in warnings:
+            print("   ", w[:110])
     leak = set(stats["train"]["library"]) & set(stats["test"]["library"])
     print(f"libraries in both files: {sorted(leak) or 'none'}")
 
@@ -331,8 +352,8 @@ def main(argv=None) -> int:
         "seeds": seeds, "explore": args.explore, "n": args.n,
         "libraries": [{"name": n, "id": lb.id, "cards": lb.manifest.n_cards, "model": lb.manifest.model,
                        "generator": lb.manifest.generator, "role": "test" if h else "train",
-                       "patients_per_seed": patients_for(args.n, lb), "backgrounds": backgrounds_check(lb)} for n, lb, h in plan],
-        "skipped": skipped,
+                       "prompts": dict(lb.manifest.prompts), "patients_per_seed": patients_for(args.n, lb), "backgrounds": backgrounds_check(lb)} for n, lb, h in plan],
+        "skipped": skipped, "warnings": warnings,
         "files": {k: {"path": str(files[k]), "rows": stats[k]["rows"], "patients": len(stats[k]["patients"]),
                       "bytes": files[k].stat().st_size,
                       "sha256": hashlib.sha256(files[k].read_bytes()).hexdigest(),

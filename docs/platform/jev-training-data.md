@@ -157,12 +157,17 @@ Written by Gemini (`gemini-3.8-flash`) on the lead's machine, two calls per card
 findings, the second the test results and the GP note. Reference frequencies guide both calls; a validator checks each card
 and gives one repair try. `ref500` has no language model: numbers are drawn from the catalogue, the text is a template.
 
-| Library | Cards | Audit (38 checks) | Pack-years fix (never-smokers have 0) |
-|---|---|---|---|
-| `ref500` (`L_0dbfc37e2e45d8d4`; old id `L_224663a5217ab516`) | 500 | pass 38 of 38 | yes, regenerated 14 Nov. Training data exported from the old id is stale |
-| `gemini_trial` | 5 | pass (32 checks ran; the rest need more cards) | no: 2 of 2 never-smokers have pack-years above 0 |
-| `gemini_s2_30` | 30 | pass 38 of 38 | no: 6 of 6 |
-| `gemini_s3_500` ... `gemini_s7_500` | 500 each | not yet in the repo. Run `python -m patient_engine audit <dir> --catalogue catalogue/lung-primary-care --out /tmp/audit` | expected yes. The build command prints the count per library |
+Ids, card counts, models, prompt versions and audit status are in each library's `manifest.json` (`python -m patient_engine library-info <dir>`)
+and `audit.md`; `libraries/` lists what exists. Not hard-coded here because they change. Status on 14 Nov evening:
+
+* `ref500`: template cards, audit 38 of 38, regenerated for the pack-years fix and again for a realistic population, so its id changes; re-export old training data.
+* `gemini_trial` (5 cards) and `gemini_s2_30` (30 cards): audit pass, made before the pack-years fix (never-smokers with pack-years above 0) and with prompt `g2@1`.
+* `gemini_s*_500`: 500 cards each, added by the integrator. Run `python -m patient_engine audit <dir> --catalogue catalogue/lung-primary-care --out /tmp/audit`.
+
+**Prompt `g2@1` warning.** In cards made with result prompt `g2@1` the wording of the test report gives away which results are false alarms or
+misses (review finding B1). Do not train or test a text-reading model on that text. `build_training_set.py` prints the prompt versions of every library
+it uses and warns on `g2@1`; with such libraries its output is for pipeline testing only. The fix is prompt `g2@2` and rebuilding report text from values;
+all model-written libraries will be regenerated after it lands.
 
 ```
 python -m pathway_sim run scenarios/finland_encounter.yaml --flowchart encounter --library libraries/gemini_s2_30 --n 2000
@@ -179,4 +184,4 @@ A library made for another catalogue (hash mismatch) is refused.
 * Behaviour numbers (waits, visit counts, referral rates) are assumptions, and the encounter loop is being retuned, so row counts and
   outcomes will change. Rebuild the files after that.
 * Some audit checks have small counts at 5 or 30 cards. The model-written libraries were not clinician-reviewed.
-* `gemini_trial` and `gemini_s2_30` were made before the pack-years fix.
+* Libraries with result prompt `g2@1` leak through report wording (above).

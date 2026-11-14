@@ -7,8 +7,8 @@ Status 14 Nov, evening. Everything here is synthetic; no real patient data exist
 | Layer | What | Where |
 |---|---|---|
 | Catalogue (locked `catalogue-v1`, hash `2bcb9c78b2e0`) | 11 conditions (lung cancer, pneumonia, COPD flare, asthma, heart failure, TB, benign nodule, reflux/post-infectious cough, viral, no disease, worried well), 42 hidden variables (symptoms, signs, lab, imaging, function, tissue, one definitive marker per condition), 26 tests with accuracy, turnaround, cost | `catalogue/lung-primary-care/` |
-| Patient cards | One patient = background, hidden conditions and findings, and the pre-written result of every test per state and attempt (misses and false alarms drawn from the catalogue's accuracy) | `libraries/ref500` (500 cards, template text, audit 38/38, id `L_0dbfc37e2e45d8d4`); handoff `libraries/ref500.md` |
-| Model-written cards | Same structure. Gemini wrote the story and the findings, then the test results and the GP note, with reference frequencies as guidance and a checker with one repair try. Not template text | `libraries/gemini_trial` (5), `libraries/gemini_s2_30` (30), and `gemini_s3_500` to `gemini_s7_500` (500 each) when the integrator adds them |
+| Patient cards | One patient = background, hidden conditions and findings, and the pre-written result of every test per state and attempt (misses and false alarms drawn from the catalogue's accuracy) | `libraries/ref500` (500 cards, template text; id and audit status in its `manifest.json` and `audit.md`; regenerated more than once on 14 Nov, so old exports are stale); handoff `libraries/ref500.md` |
+| Model-written cards | Same structure. Gemini wrote the story and the findings, then the test results and the GP note, with reference frequencies as guidance and a checker with one repair try. Not template text | `libraries/gemini_trial` (5), `libraries/gemini_s2_30` (30), and the 500-card `gemini_s*_500` libraries when the integrator adds them (see `libraries/`) |
 | Training rows | One row per decision taken in the simulated primary-care loop | `python -m pathway_sim export-training ...` (below) |
 
 ## A training row
@@ -51,6 +51,12 @@ share: use it to train on rare conditions, then report on the realistic test fil
 4. **In the loop**: connect the model with `--jev birch` (or a URL) and compare outcomes against the placeholder tables on the same patients; `python -m jev.walk --pick cancer` steps one patient with the model proposing.
 
 ## Limitations (say these out loud)
+
+- **Do not use report text from g2@1 libraries to train or test a text-reading model.** In model-written cards made with result prompt `g2@1`
+  (`gemini_trial`, `gemini_s2_30` and the first 500-card libraries; `python -m patient_engine library-info <dir>` shows `prompts`),
+  the wording of a test report gives away which results are false alarms or misses (review finding B1). Values, the complaint and the history text are fine.
+  Output of `scripts/build_training_set.py` from `g2@1` libraries is for **pipeline testing only**; the script prints a warning.
+  A fixed prompt (`g2@2`) and a rebuild of report text from values are coming; all Gemini libraries will be regenerated, and ref500 gets a new id again. Rebuild the files then.
 
 - **It teaches the catalogue, not medicine.** 177 of about 260 numbers are our assumptions; no clinician has reviewed it. A model trained here is right about our synthetic world only.
 - **`chosen` is a placeholder.** Decision tables and random exploration made it, not doctors. Do not imitate it. Use `outcome` with `behaviour_probs`, or the belief plus costs and delays.

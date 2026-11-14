@@ -15,6 +15,7 @@ Handoff notes per library: `libraries/<name>.md` (start with `libraries/ref500.m
 Work folders (`<name>.work/`: cache, call log, discard log) are not committed. Training exports
 (`runs/training/`) are regenerated from their command and seed, not committed.
 
-Libraries now here: `ref500` (template cards; id `L_0dbfc37e2e45d8d4` since the 14 Nov pack-years fix, old id
-`L_224663a5217ab516`), `gemini_trial` (5 cards) and `gemini_s2_30` (30 cards), both written by Gemini before that fix
-(never-smokers with pack-years above 0). `gemini_s3_500` to `gemini_s7_500` follow. All are stratified evenly by condition.
+Libraries here change often: read ids, counts, prompts and models from each `manifest.json` (`library-info`), not from prose.
+`ref500` is the template-card library (its id changed on 14 Nov for the pack-years fix and changes again for a realistic
+population). `gemini_*` are model-written; those with results prompt `g2@1` (including `gemini_trial` and `gemini_s2_30`)
+leak through report wording and are for pipeline testing only (review B1). All are stratified evenly by condition.
