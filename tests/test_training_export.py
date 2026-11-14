@@ -163,3 +163,42 @@ def test_jev_accepts_a_factory_kind(tmp_path):
     assert s["rows"] > 0 and s["jev_calls"][0]["failures"] == 0
     with pytest.raises(SystemExit, match="not usable"):
         export(WORLD, 10, [1], str(tmp_path / "u.jsonl.gz"), jev="no_such_backend", quiet=True)
+
+
+def _assessment_authors(rows):
+    return [a["author"] for r in rows for a in r["request"]["context"].get("assessments", [])]
+
+
+def test_table_assessments_are_stripped_by_default_and_kept_on_request(tmp_path):
+    kept, dflt = str(tmp_path / "k.jsonl.gz"), str(tmp_path / "d.jsonl.gz")
+    sk = export(WORLD, 150, [1], kept, explore=0.3, quiet=True, keep_table_notes=True)
+    sd = export(WORLD, 150, [1], dflt, explore=0.3, quiet=True)
+    rk, rd = read(kept), read(dflt)
+    ak = _assessment_authors(rk)
+    assert ak and all(a.endswith("/table") for a in ak)          # the placeholder tables wrote them
+    assert any("Table rule" in a.get("note", "") for r in rk for a in r["request"]["context"]["assessments"])
+    assert _assessment_authors(rd) == []
+    assert not any("Table rule" in json.dumps(r["request"]) for r in rd)
+    assert sd["rows"] == sk["rows"] and sd["rows_with_table_assessments_removed"] > 0
+    assert sk["rows_with_table_assessments_removed"] == 0
+    # nothing else changes: same rows, same choices, same labels
+    assert [(r["chosen"], r["label"], r["meta"]) for r in rd] == [(r["chosen"], r["label"], r["meta"]) for r in rk]
+
+
+def test_real_decider_assessments_stay():
+    from pathway_sim.training_export import strip_placeholder_assessments
+    req = {"context": {"assessments": [{"author": "gp_encounter/table", "note": "Table rule: x."},
+                                       {"author": "gp_encounter/birch", "note": "model says"},
+                                       {"author": "nurse_encounter/stub-model", "note": "y"}]}}
+    assert strip_placeholder_assessments(req) == 1
+    assert [a["author"] for a in req["context"]["assessments"]] == ["gp_encounter/birch", "nurse_encounter/stub-model"]
+
+
+def test_with_text_writes_the_birch_adapters_own_rendering(tmp_path):
+    out = str(tmp_path / "t.jsonl.gz")
+    export(WORLD, 60, [1], out, quiet=True, with_text=True)
+    rows = read(out)
+    assert rows and all(set(r) == {"request", "request_text", "chosen", "policy", "behaviour_probs", "label", "outcome", "meta"} for r in rows)
+    assert all(r["request_text"]["context"].startswith("Patient in Finnish primary care") for r in rows)
+    assert any(r["request_text"]["evidence"] for r in rows)
+    assert not any("Table rule" in json.dumps(r["request_text"]) for r in rows)

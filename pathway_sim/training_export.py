@@ -38,16 +38,50 @@ class _NoBackend:
         return BackendInfo(name="export", model="export")
 
 
+PLACEHOLDER_AUTHORS = ("table",)      # the engine writes an assessment's author as "<role>_encounter/<backend_name>"
+
+
+def is_placeholder_assessment(a: dict) -> bool:
+    """True for an assessment the placeholder decision tables wrote (author ``gp_encounter/table``), or the
+    uniform draw of an explore row (it is written under the same backend name). A real decider's author
+    (``gp_encounter/birch``, an HTTP JEV's backend name, ...) is never matched."""
+    return str(a.get("author", "")).rsplit("/", 1)[-1] in PLACEHOLDER_AUTHORS
+
+
+def strip_placeholder_assessments(req_dict: dict) -> int:
+    """Remove placeholder-authored entries from ``request.context.assessments`` in place; return how many."""
+    ctx = req_dict.get("context") or {}
+    old = ctx.get("assessments") or []
+    new = [a for a in old if not is_placeholder_assessment(a)]
+    if len(new) != len(old):
+        ctx["assessments"] = new
+    return len(old) - len(new)
+
+
 class CapturingPolicy:
-    """Delegates to ``inner`` (the world's decision tables), optionally explores, keeps every request."""
+    """Delegates to ``inner`` (the world's decision tables), optionally explores, keeps every request.
+
+    By default the assessments the placeholder tables wrote into the record ("Table rule: ...") are removed from the
+    kept request (``keep_table_notes=True`` keeps them): a model trained on them would learn rule names that do not
+    exist when the real decision model decides. Assessments of a real decider stay. ``with_text`` also keeps the
+    text the Birch adapter would send for the same decision, rendered by the adapter's own functions."""
 
     decision_mode = "sample"
 
-    def __init__(self, inner, world, seed: int, explore: float = 0.0):
+    def __init__(self, inner, world, seed: int, explore: float = 0.0, keep_table_notes: bool = False,
+                 with_text: bool = False):
         from jev.adapter import BackendPolicy
         self.inner, self.seed, self.explore = inner, seed, float(explore)
+        self.keep_table_notes, self.with_text = keep_table_notes, with_text
+        self.stripped_rows = self.stripped_entries = 0
+        self._text = None
+        if with_text:
+            from jev.birch import BirchBackend, BirchPolicy
+            be = BirchBackend(cache_dir=None, max_calls=0)         # never called: only its request mapping is used
+            self._text = BirchPolicy(be, mode="sample", scenario=world.scenario, flowchart=world.flowchart,
+                                     catalogue=world.catalogue, care=world.care)
         self._req = BackendPolicy(_NoBackend(), mode="sample", scenario=world.scenario, flowchart=world.flowchart)
-        self.captured: dict[int, list] = {}          # cohort index -> [(node, request json, offered, probs, tag)]
+        self.captured: dict[int, list] = {}          # cohort index -> [(node, request json, offered, probs, tag, text json or None)]
         self._n: Counter = Counter()
 
     @property
@@ -60,6 +94,15 @@ class CapturingPolicy:
 
     def choose_with_note(self, view, options):
         req = self._req.request_for(view, list(options))          # the live path's request builder
+        req_d = req.to_dict()
+        if not self.keep_table_notes:
+            k_out = strip_placeholder_assessments(req_d)
+            self.stripped_rows += bool(k_out)
+            self.stripped_entries += k_out
+        text = None
+        if self._text is not None:
+            from jev.birch import map_request
+            text = map_request(self._text.request_for(view, list(options)), self._text.backend.include_assessments)["case"]
         k = self._n[view.patient_id]
         self._n[view.patient_id] += 1
         if self.explore > 0 and uniform(self.seed, view.patient_id, "explore", k) < self.explore:
@@ -69,8 +112,9 @@ class CapturingPolicy:
             out = self.inner.choose_with_note(view, options)
             tag = self.backend_name
         self.captured.setdefault(view.patient_id, []).append(
-            (view.node, json.dumps(req.to_dict(), ensure_ascii=False, separators=(",", ":")),
-             list(options), {k2: round(float(v), 4) for k2, v in out[0].items()}, tag))
+            (view.node, json.dumps(req_d, ensure_ascii=False, separators=(",", ":")),
+             list(options), {k2: round(float(v), 4) for k2, v in out[0].items()}, tag,
+             None if text is None else json.dumps(text, ensure_ascii=False, separators=(",", ":"))))
         return out
 
     def choose(self, view, options):
@@ -275,11 +319,11 @@ def rows_for_run(world, log, cohort, pol: CapturingPolicy, seed: int, split_by: 
             split = split_of(card_key if split_by == "card" else f"{seed}:{pid}")
         meta = {"catalogue": f"{world.catalogue.id}@{cat_hash}", "library": cohort.library_id, "generator": generator,
                 "seed": seed, "policy_model": pol.model_id, "patient": f"P{pid:06d}", "split": split}
-        for (node, req_json, offered, probs, tag), ch in zip(caps, chosen):
+        for (node, req_json, offered, probs, tag, text_json), ch in zip(caps, chosen):
             if ch["node"] != node or ch["offered"] != offered:
                 raise RuntimeError(f"patient {pid}: captured request does not match the engine's choice at {node}")
             pol_tag = f"{pol.model_id}|explore" if tag == "explore" else pol.model_id
-            line = ('{"request":' + req_json + ',"chosen":' + json.dumps(ch["chosen"]) + ',"policy":' + json.dumps(pol_tag)
+            line = ('{"request":' + req_json + ("" if text_json is None else ',"request_text":' + text_json) + ',"chosen":' + json.dumps(ch["chosen"]) + ',"policy":' + json.dumps(pol_tag)
                     + ',"behaviour_probs":' + json.dumps(probs, separators=(",", ":"))
                     + ',"label":' + json.dumps(label, separators=(",", ":"))
                     + ',"outcome":' + json.dumps(out, separators=(",", ":"))
@@ -290,7 +334,7 @@ def rows_for_run(world, log, cohort, pol: CapturingPolicy, seed: int, split_by: 
 def export(scenario: str, n: int, seeds: list[int], out: str, explore: float = 0.0, split_by: str = "card",
            holdout_generator: str | None = None, quiet: bool = False, libraries: list[str] | None = None,
            holdout_libraries: list[str] | None = None, jev: str | None = None, jev_model: str | None = None,
-           jev_timeout: float = 5.0) -> dict:
+           jev_timeout: float = 5.0, keep_table_notes: bool = False, with_text: bool = False) -> dict:
     from .encounter import load_world, run_encounter
     t0 = time.time()
     world = load_world(scenario)
@@ -304,12 +348,12 @@ def export(scenario: str, n: int, seeds: list[int], out: str, explore: float = 0
     tmp = out + ".tmp"
     by_point, by_label, by_class, by_split, by_chosen, by_policy = Counter(), Counter(), Counter(), Counter(), Counter(), Counter()
     patients = set()
-    rows = 0
+    rows = stripped_rows = stripped_entries = 0
     with open(tmp, "wb") as raw, gzip.GzipFile(filename="", mode="wb", fileobj=raw, mtime=0, compresslevel=6) as gz:
         for (lib, is_hold), seed in ((lp, sd) for lp in plan for sd in seeds):
             cohort = library_cohort(world, lib, n, seed)
             inner = jev_policy(world, jev, jev_model, jev_timeout) if jev else world.policy
-            pol = CapturingPolicy(inner, world, seed, explore)
+            pol = CapturingPolicy(inner, world, seed, explore, keep_table_notes, with_text)
             try:
                 log = run_encounter(world, n, seed, policy=pol, cohort=cohort)
             except Exception as e:
@@ -326,6 +370,8 @@ def export(scenario: str, n: int, seeds: list[int], out: str, explore: float = 0
                 by_label[primary] += 1
                 by_split[split] += 1
                 by_policy[tag] += 1
+            stripped_rows += pol.stripped_rows
+            stripped_entries += pol.stripped_entries
             patients.update((seed, pid) for pid in pol.captured)
             by_class.update(world.catalogue.conditions[cohort.card(pid).primary_condition].cls for pid in pol.captured)
             if not quiet:
@@ -337,6 +383,8 @@ def export(scenario: str, n: int, seeds: list[int], out: str, explore: float = 0
                "rows_per_decision_point": dict(by_point), "rows_per_primary_condition": dict(sorted(by_label.items())),
                "rows_per_split": dict(by_split), "rows_per_policy": dict(by_policy),
                "libraries": [{"id": lib.id, "generator": generator_name(lib), "holdout": h} for lib, h in plan],
+               "keep_table_notes": keep_table_notes, "with_text": with_text,
+               "rows_with_table_assessments_removed": stripped_rows, "table_assessments_removed": stripped_entries,
                "jev": jev, "jev_calls": jev_stats or None, "patients_per_class": dict(by_class), "file": out, "file_bytes": os.path.getsize(out),
                "seconds": round(time.time() - t0, 1)}
     sp = out[:-len(".jsonl.gz")] + ".summary.json" if out.endswith(".jsonl.gz") else out + ".summary.json"
@@ -349,13 +397,15 @@ def cmd_export(a) -> None:
     from .__main__ import _seeds
     s = export(a.scenario, a.n, _seeds(a.seeds), a.out, a.explore, a.split_by, a.holdout_generator,
                libraries=a.library, holdout_libraries=a.holdout_library, jev=a.jev, jev_model=a.jev_model,
-               jev_timeout=a.jev_timeout)
+               jev_timeout=a.jev_timeout, keep_table_notes=a.keep_table_notes, with_text=a.with_text)
     print(f"wrote {s['file']}: {s['rows']} rows from {s['patients']} patients, {s['file_bytes'] / 1e6:.1f} MB, {s['seconds']} s")
     print("rows per decision point:", s["rows_per_decision_point"])
     print("rows per split:", s["rows_per_split"], "| policy:", s["rows_per_policy"])
     print("label (primary condition):", s["rows_per_primary_condition"])
     for sm in s["jev_calls"] or []:
         print(format_jev_summary(sm))
+    print(f"table assessments removed from requests: {s['table_assessments_removed']} entries in "
+          f"{s['rows_with_table_assessments_removed']} of {s['rows']} rows" + (" (kept: --keep-table-notes)" if s["keep_table_notes"] else ""))
     print("summary:", s["summary_file"])
 
 
@@ -374,5 +424,9 @@ def add_cli(sub) -> None:
     p.add_argument("--jev", metavar="URL|KIND", help="decide with the JEV instead of the decision tables: an HTTP URL (host must be in JEV_ALLOWED_HOSTS or be JEV_DEFAULT_URL) or a jev.factory backend kind (stub, birch, ...)")
     p.add_argument("--jev-model", help="model id to ask the JEV for")
     p.add_argument("--jev-timeout", type=float, default=5.0, help="seconds per JEV call (the client caps it at 5)")
+    p.add_argument("--keep-table-notes", action="store_true",
+                   help="keep the placeholder decision tables' own assessments (\"Table rule: ...\") in request.context.assessments; by default they are removed, a real decider's stay")
+    p.add_argument("--with-text", action="store_true",
+                   help="also write request_text per row: the case text and evidence lines the Birch adapter would send (jev.birch.map_request), for training on rendered text")
     p.add_argument("--out", required=True, help="path ending in .jsonl.gz")
     p.set_defaults(f=cmd_export)

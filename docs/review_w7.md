@@ -144,9 +144,11 @@ optimiser's change now gives 33%; 61% is the conditional urgent-booking result. 
    found.ankle_oedema and found.dyspnoea.") are in `request.context.assessments` of 580 of 730 rows. A model trained to
    imitate learns the tables' rule names, which do not exist when the real JEV decides. Fix: leave `assessments` out of
    exported requests, or export a flag. `pathway_sim/training_export.py`, `jev/record_context.py:64-73`.
+   *Fixed (w8/minors):* `export-training` removes assessments authored by the placeholder tables (author `<role>_encounter/table`) from each row's request by default; `--keep-table-notes` keeps them; a real decider's assessments stay. On `--n 300 --seeds 1 --library libraries/ref500`, 6 812 entries removed from 1 201 of 1 501 rows. The request builder is unchanged.
 2. **Training input differs from Birch's input.** Exported `request` is the JSON context; Birch receives the rendered
    text (`record_text`). `docs/platform/jev-training-data.md:43` says "training input equals inference input"; true
    for HTTP JEVs only. Say so.
+   *Fixed (w8/minors):* `docs/platform/jev-training-data.md` now says it plainly and `export-training --with-text` writes `request_text`, the case text and evidence the Birch adapter would send, built by the adapter's own functions.
 3. **Hospital decisions never go to the JEV.** In the encounter world the hospital part keeps the flowchart's rule
    policy (`pathway_sim/encounter.py:541` passes `None`). D51 says only the JEV decides at every node. State it as a
    limitation.

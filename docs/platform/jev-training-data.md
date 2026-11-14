@@ -22,6 +22,8 @@ The same arguments give the same bytes (gzip header has no timestamp).
 | `--holdout-library DIR` (repeatable) | the patients of this library all go to the `test` split: train on one generator, test on the other |
 | `--holdout-generator reference\|llm` | rows from cards of that generator go to `test` |
 | `--split-by card\|patient` | default `card`: every patient drawn from one library card shares a split (a library has few hundred cards, each reused by many patients, so a per-patient split would put the same card in train and test) |
+| `--keep-table-notes` | keep the placeholder tables' own assessments ("Table rule: ...") in `request.context.assessments`. Default: removed, because a model trained on them would learn rule names that will not exist when the real decider decides. Assessments of a real decider (author `<role>_encounter/<backend>` other than `table`) always stay. On `--n 300 --seeds 1 --library libraries/ref500`: 6 812 entries removed from 1 201 of 1 501 rows |
+| `--with-text` | also write `request_text` on each row: the `case` (context text and evidence lines) the Birch adapter would send, produced by `jev.birch.BirchPolicy.request_for` and `map_request`, so it cannot drift from the adapter |
 | `--jev URL\|KIND` | decide with the JEV instead of the decision tables: an HTTP URL or any `jev.factory` backend kind (`stub`, `birch`, ...) (below) |
 
 ## One row (one decision)
@@ -40,7 +42,7 @@ The same arguments give the same bytes (gzip header has no timestamp).
 ```
 
 * `request` is exactly what the JEV receives live: it is built by `jev.adapter.BackendPolicy.request_for`
-  (`build_context` -> `jev.record_context.context_from_record`) from the patient's record, in the call the engine makes. Training input equals inference input. Options are bare ids, as live.
+  (`build_context` -> `jev.record_context.context_from_record`) from the patient's record, in the call the engine makes. Options are bare ids, as live. This is the input of a decision model called over HTTP with the JSON context. The team's fine-tuned model (the "Birch" adapter, `jev/birch.py`) does not receive this JSON: it receives rendered text (`patient_engine/record_text.py`, mapped by `jev.birch.map_request`). To train a model that will run behind Birch, export with `--with-text` and train on `request_text` (the exact case text and evidence lines the adapter sends; earlier assessments are left out of it unless the adapter is told to include them), not on `request`.
 * `label` and `outcome` are the hidden side and never appear in `request` (I1; tested: no condition id, hidden field name,
   card id or the primary condition's word in the request, except the clinician's own prose in `notes` and `assessments`, a definitive test's own result, and earlier action ids such as `order_dx_pneumonia`).
 * `outcome` is for the whole patient, repeated on each of its rows. `days_to_correct_treatment`: first treatment that matches a true condition, or the hospital treatment start; null if none.
