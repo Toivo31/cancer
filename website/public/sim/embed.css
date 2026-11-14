@@ -1,0 +1,4 @@
+/* Embedded in the site: no own nav or footer, no links to pages that are not part of this site, neutral type. */
+:root{--font-mono:Inter,Arial,sans-serif;--mono:Inter,Arial,sans-serif}
+.site-nav,.footer-strip,.sim-footer,.sim-scn,#flip-link,.sim-head a,.sim-quiet{display:none!important}
+.label,.caption,.stamp,.btn,.num{letter-spacing:.02em}
