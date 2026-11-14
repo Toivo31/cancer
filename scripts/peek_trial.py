@@ -13,9 +13,9 @@ a = ap.parse_args()
 rows = [json.loads(l) for l in gzip.open(Path(a.lib) / "cards.jsonl.gz", "rt")]
 rnd = random.Random(1)
 for c in rnd.sample(rows, min(a.cards, len(rows))):
-    cond = c["hidden"]["conditions"]
+    cond = ", ".join(f"{x['role']}={x['id']}" for x in c["hidden"]["conditions"])
     print("=" * 100)
-    print(c["id"], "| condition:", cond.get("primary"), "| age", c["background"].get("age"), c["background"].get("sex"), c["background"].get("smoking_status"))
+    print(c["id"], "| condition:", cond, "| age", c["background"].get("age"), c["background"].get("sex"), c["background"].get("smoking_status"))
     for st, p in c["presenting"].items():
         print(f"  [{st}] complaint: {p.get('text')}")
     for n in c["notes"][:2]:
