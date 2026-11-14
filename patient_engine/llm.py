@@ -285,7 +285,7 @@ class _BaseClient:
                            tokens_in=tin, tokens_out=tout, latency_s=round(time.monotonic() - t0, 3))
             if not problems:
                 if cp:
-                    tmp = cp.with_suffix(f".{threading.get_ident()}.tmp")
+                    tmp = cp.with_suffix(f".{os.getpid()}.{threading.get_ident()}.tmp")   # a cache dir may be shared
                     tmp.write_text(json.dumps(obj, ensure_ascii=False, sort_keys=True), encoding="utf-8")
                     os.replace(tmp, cp)
                 return obj

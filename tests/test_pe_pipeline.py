@@ -56,7 +56,11 @@ def test_50_lung_cards_offline_all_valid_and_loadable(lung, tmp_path):
     manifest, rep = generate_library_with_report(lung, design, 1, fake, out_dir=tmp_path / "L")
     lib = load_library(tmp_path / "L", lung)
     assert len(lib) == design.n and manifest.n_cards == design.n and not rep.partial
-    assert rep.accepted == design.n and rep.discarded == 0 and rep.calls == design.n + sum(len(c.states) for c in lib.cards) and rep.repairs == {"0": design.n}
+    # g2@3: one G1 call per card and one bank call per distinct (test, result pattern) of the whole library
+    from patient_engine.authors import report_pattern
+    patterns = {(t, report_pattern(lung.tests[t], a.status, dict(a.values)))
+                for c in lib.cards for st in c.states for t, atts in c.observations[st].items() for a in atts}
+    assert rep.accepted == design.n and rep.discarded == 0 and rep.calls == design.n + len(patterns) and rep.repairs == {"0": design.n}
     assert any(len(c.states) > 1 for c in lib.cards)           # multi-state cards are written too
     for c in lib.cards:
         from patient_engine.card import card_to_json
@@ -211,7 +215,8 @@ def test_budget_stops_cleanly_with_a_partial_library_and_resume_finishes(tiny, t
     cfg = GenerationConfig(concurrency=1)
     fake = reference_fake_client(tiny, design, 1, cache_dir=work / "cache")
     manifest, rep = generate_library_with_report(tiny, design, 1, fake, budget=Budget(max_calls=5),
-                                                 out_dir=tmp_path / "L", work_dir=work, config=cfg)
+                                                 out_dir=tmp_path / "L", work_dir=work, config=cfg,
+                                                 results_prompt="g2@2")      # one G2 call per state: counts below
     assert rep.partial and rep.stop_reason == "budget" and 1 <= rep.accepted <= 3 and rep.accepted + rep.not_completed == 8
     assert len(load_library(tmp_path / "L")) == rep.accepted
     saved = json.loads((work / "generation_report.json").read_text())
@@ -219,23 +224,25 @@ def test_budget_stops_cleanly_with_a_partial_library_and_resume_finishes(tiny, t
 
     with pytest.raises(GenerationError):                      # not silently replaced
         generate_library(tiny, design, 1, reference_fake_client(tiny, design, 1, cache_dir=work / "cache"),
-                         out_dir=tmp_path / "L", work_dir=work)
+                         out_dir=tmp_path / "L", work_dir=work, results_prompt="g2@2")
     fake2 = reference_fake_client(tiny, design, 1, cache_dir=work / "cache")
     m2, rep2 = generate_library_with_report(tiny, design, 1, fake2, out_dir=tmp_path / "L", work_dir=work,
-                                            config=cfg, resume=True)
+                                            config=cfg, resume=True, results_prompt="g2@2")
     assert not rep2.partial and rep2.accepted == 8
     total = sum(1 + len(make_skeleton(tiny, i, design, 1).states) for i in range(8))
     assert len(fake2.calls) == total - 5                       # the 5 answered before the stop are cached
     assert len(load_library(tmp_path / "L")) == 8
     with pytest.raises(GenerationError):                       # a complete library is never replaced
-        generate_library(tiny, design, 1, fake2, out_dir=tmp_path / "L", work_dir=work, resume=True)
+        generate_library(tiny, design, 1, fake2, out_dir=tmp_path / "L", work_dir=work, resume=True,
+                         results_prompt="g2@2")
 
 
 def test_budget_with_concurrency_never_loses_a_finished_card(tiny, tmp_path):
     design = tiny_design(tiny, 12)
     fake = reference_fake_client(tiny, design, 1)
     manifest, rep = generate_library_with_report(tiny, design, 1, fake, budget=Budget(max_calls=7),
-                                                 out_dir=tmp_path / "L", config=GenerationConfig(concurrency=4))
+                                                 out_dir=tmp_path / "L", config=GenerationConfig(concurrency=4),
+                                                 results_prompt="g2@2")
     assert rep.partial and 1 <= rep.accepted <= 3
     assert len(load_library(tmp_path / "L")) == rep.accepted
 
@@ -281,7 +288,7 @@ def test_no_api_key_in_files_logs_or_exceptions(tiny, tmp_path, stub_factory_fix
 
 def test_estimate_cost_counts_one_g1_call_and_one_g2_call_per_state(lung):
     design = make_design(lung, {k: 3 for k in lung.conditions})
-    e = estimate_cost(lung, design, 1, sample=2)
+    e = estimate_cost(lung, design, 1, sample=2, results_prompt="g2@2")
     assert 2 <= e["calls_per_card"] <= 5 and e["input_tokens_per_card"] > 1000 and e["total_calls"] == round(design.n * e["calls_per_card"])
 
 
@@ -292,7 +299,7 @@ def test_cli_fake_and_partial_exit_code(tmp_path, capsys):
     assert len(load_library(out)) == 10
     out2 = tmp_path / "L2"
     rc = main(["generate", "--catalogue", TINY, "--n", "10", "--seed", "1", "--out", str(out2), "--fake",
-               "--max-calls", "5", "--concurrency", "1"])
+               "--max-calls", "12", "--concurrency", "1"])   # g2@3: card 1 needs its bank calls
     assert rc == 3 and "PARTIAL" in capsys.readouterr().err
     assert main(["generate", "--catalogue", TINY, "--n", "10", "--out", str(out2), "--fake"]) == 1   # taken
     assert main(["generate", "--catalogue", TINY, "--n", "4", "--out", str(tmp_path / "E"), "--estimate"]) == 0

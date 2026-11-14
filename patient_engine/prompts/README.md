@@ -10,12 +10,18 @@ and in the library manifest, so libraries made with different wording stay disti
 |---|---|---|---|
 | G1 patient author | `g1@1` | `g1_patient.v1.*` | findings with causes, what the patient reports, the patient's account |
 | G2 result author | `g2@1` | `g2_results.v1.*` | every test result (status, values, report) following the error plan, and a GP note |
-| G2 result author | `g2@2` (default) | `g2_results.v2.*` | report wording only, for values the engine decided, and a GP note |
+| G2 result author | `g2@2` | `g2_results.v2.*` | report wording only, for values the engine decided, and a GP note (not served: review w8 B1) |
+| G2 result author | `g2@3` (default) | `g2_results.v3.*` | 4 wordings of one result pattern (test + one attempt's values), shared by every card |
 
 `g2@2` (review w7 B1). A prompt whose text reaches the revealed side may hold only what a reader of that text has.
 `g2@1` told the model the hidden findings and each attempt's planned outcome, and the wording gave the plan away
 (half of false alarms hedged). `g2@2` is built by `authors.results_user` from public inputs only (age, sex, smoking,
-reported symptoms, each attempt's status and values); it is in `reveal.SAFE_RESULTS_PROMPTS`. A new result-author
+reported symptoms, each attempt's status and values). Review w8 B1: those values include the definitive and tissue
+tests and the other attempts, which tell a false alarm from a true positive (AUC 1.00), so `g2@2` left
+`reveal.SAFE_RESULTS_PROMPTS`. `g2@3` (D59) asks for the wording of one result at a time: `authors.report_user` of the
+test and that attempt's own pattern (binary and categorical values, numbers as `{output}` placeholders), nothing else.
+The answers form a bank keyed by (test, pattern), cached by prompt and shared by every card and run; the engine picks
+one wording per attempt with a keyed number and fills in the numbers. `g2@3` is the one version in the set. A new result-author
 version joins that set only when it keeps this property and the audit's `report_wording` check passes on a library
 made with it. `g2@1` stays selectable (`Authors(cat, "g2@1")`, `results_prompt=` in the pipeline) for comparison;
 its reports never reach a decider.

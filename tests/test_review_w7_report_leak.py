@@ -133,12 +133,12 @@ def test_request_context_report_is_derived_from_values_only(attempts):
 
 
 def test_safe_cards_keep_their_own_report():
-    """The gate passes the stored text of a card whose results prompt is safe (g2@2) or that is template text."""
+    """The gate passes the stored text of a card whose results prompt is safe (g2@3) or that is template text."""
     from patient_engine.reveal import results_text_is_safe
     for c in _cards():
         card = card_from_json(c)
         assert not results_text_is_safe(card.provenance)                  # the Gemini libraries are g2@1
-        safe = card_from_json({**c, "provenance": {**c["provenance"], "prompts": {"patient": "g1@1", "results": "g2@2"}}})
+        safe = card_from_json({**c, "provenance": {**c["provenance"], "prompts": {"patient": "g1@1", "results": "g2@3"}}})
         h = RevealHandle(safe, catalogue=_cat())
         assert h.reveal("chest_xray", 0).report == c["observations"]["all_active"]["chest_xray"][0]["report"]
         break

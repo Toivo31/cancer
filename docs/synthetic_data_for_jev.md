@@ -56,7 +56,8 @@ share: use it to train on rare conditions, then report on the realistic test fil
   (`gemini_trial`, `gemini_s2_30` and the first 500-card libraries; `python -m patient_engine library-info <dir>` shows `prompts`),
   the wording of a test report gives away which results are false alarms or misses (review finding B1). Values, the complaint and the history text are fine.
   Output of `scripts/build_training_set.py` from `g2@1` libraries is for **pipeline testing only**; the script prints a warning.
-  A fixed prompt (`g2@2`) and a rebuild of report text from values are coming; all Gemini libraries will be regenerated, and ref500 gets a new id again. Rebuild the files then.
+  A fixed prompt and a rebuild of report text from values are coming; all Gemini libraries will be regenerated, and ref500 gets a new id again. Rebuild the files then.
+  Update (D59): `g2@2` turned out not to be blind either (review w8 B1) and its text is rebuilt from values too; the report text that may be used comes from `g2@3` libraries.
 
 - **It teaches the catalogue, not medicine.** 177 of about 260 numbers are our assumptions; no clinician has reviewed it. A model trained here is right about our synthetic world only.
 - **`chosen` is a placeholder.** Decision tables and random exploration made it, not doctors. Do not imitate it. Use `outcome` with `behaviour_probs`, or the belief plus costs and delays.

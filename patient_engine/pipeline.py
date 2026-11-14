@@ -11,9 +11,11 @@ Per card (``generate_card``)::
     make_skeleton                      engine: condition, attributes, background, persona, nominal plan
     G1  patient author  (model)        findings with causes, what the patient reports, the account
     settle_error_plan                  engine: the plan for the findings G1 wrote (``guided`` mode)
-    G2  result author                  g2@2 (default): the engine writes every value from the plan, the model
-                                       writes only the report wording and a GP note from public inputs
-                                       (review w7 B1); g2@1: the model wrote values and reports from the plan
+    G2  result author                  g2@3 (default, D59): the engine writes every value from the plan and picks
+                                       each report from a bank of wordings the model wrote per (test, result
+                                       pattern) with nothing else in the prompt; one bank call per pattern, shared
+                                       by every card. g2@2: one call per state with every value (not served,
+                                       review w8 B1); g2@1: the model wrote values and reports from the plan
     validate_card                      schema and rules 1 to 9; ``card_reveals_condition`` counts as an error here
     repair, at most ``max_repairs``    the failing author gets its own answer back with ``repair_prompt``;
                                        a G1 repair re-asks G2 (the findings, hence the plan, changed)
@@ -151,6 +153,10 @@ def generate_card(authors: Authors, sk: Skeleton, client, results_client=None, c
                 for st in states:
                     if st not in g2:
                         plans[st] = settle_error_plan(cat, sk, authors.findings_of(g1, st), st)[st]  # engine
+                        if authors.v3:                    # g2@3: wordings from the bank, one result at a time
+                            bank = authors.report_bank(rclient, cfg.g2_temperature, cfg.max_repairs)
+                            g2[st] = authors.g2v3_part(sk, g1, plans[st], st, bank)
+                            continue
                         reqs[st] = authors.g2_request(sk, g1, plans[st], st)
                         g2[st] = ask(rclient, reqs[st], f"g2:{st}", cfg.g2_temperature)
                 for st in states:
@@ -181,6 +187,11 @@ def generate_card(authors: Authors, sk: Skeleton, client, results_client=None, c
             if rep == cfg.max_repairs:
                 allp = [*r1, *(p for ps in r2.values() for p in ps)]
                 return CardOutcome(sk.id, "discarded", None, rep, "errors remain after the last repair",
+                                   [str(p) for p in allp[:20]])
+            if r2 and not r1 and authors.v3:
+                # g2@3 has no per-card call to repair: its wordings were checked in the bank (a pipeline bug)
+                allp = [p for ps in r2.values() for p in ps]
+                return CardOutcome(sk.id, "discarded", None, rep, "result text failed card validation (g2@3)",
                                    [str(p) for p in allp[:20]])
             if r1:
                 g1 = ask(client, req1, f"g1:r{rep + 1}", cfg.g1_temperature,
@@ -235,7 +246,7 @@ def generate_library_with_report(catalogue: Catalogue, design: Design, seed: int
 
     ``budget`` replaces the client's own budget (and the results client's) when given. ``results_client``
     is G2's client when G2 uses another model or temperature (it should share the budget and log).
-    ``results_prompt`` picks the result-author version (default ``PROMPT_VERSIONS["results"]``, g2@2)."""
+    ``results_prompt`` picks the result-author version (default ``PROMPT_VERSIONS["results"]``, g2@3)."""
     cfg = config or GenerationConfig()
     out_dir = Path(out_dir)
     work = Path(work_dir) if work_dir else _work_dir(out_dir)
@@ -345,6 +356,9 @@ def reference_fake_client(catalogue: Catalogue, design: Design, seed: int, *,
         return cache[index]
 
     def fn(system: str, user: str, schema: dict) -> dict:
+        if "variants" in schema["properties"]:                  # g2@3: one result pattern, no patient at all
+            ans = _fake_g2v3(catalogue, user)
+            return transform("g2", None, ans, user) if transform else ans
         if "reports" in schema["properties"]:                   # g2@2: written from the prompt alone (no card id)
             ans = _fake_g2v2(catalogue, user)
             return transform("g2", None, ans, user) if transform else ans
@@ -372,7 +386,7 @@ def reference_fake_client(catalogue: Catalogue, design: Design, seed: int, *,
 
 
 _TEST_RX = re.compile(r"^### ([a-z0-9_]+): ", re.M)
-_ATTEMPT_RX = re.compile(r"^  attempt (\d+): (ok \| (.*)|non-diagnostic)$", re.M)
+_ATTEMPT_RX = re.compile(r"^  attempt (\d+): (ok \| ?(.*)|non-diagnostic)$", re.M)
 _GP_RX = re.compile(r"^Summarise attempt 1 of these tests: (.*)$", re.M)
 
 
@@ -391,6 +405,8 @@ def parse_results_prompt(catalogue: Catalogue, user: str) -> dict[str, list[dict
                 continue
             vals = {}
             for item in m.group(3).split("; "):
+                if not item.strip():                       # an ok attempt with every output null (M2: histology)
+                    continue
                 oid, _, text = item.partition(": ")
                 vals[oid] = parse_value(text, test.output(oid))
             atts.append({"status": "ok", "values": vals})
@@ -411,6 +427,36 @@ def _fake_g2v2(catalogue: Catalogue, user: str) -> dict:
     return {"reports": reports, "gp_note": {"text": f"Synthetic GP note. {reports[t][0]}", "mentions": [t]}}
 
 
+_V3_TEST_RX = re.compile(r"^Test: ([a-z0-9_]+)$", re.M)
+_V3_LINE_RX = re.compile(r"^- ([a-z0-9_]+): (.*?)(?: \(a measurement.*\))?$", re.M)
+
+
+def parse_bank_prompt(catalogue: Catalogue, user: str) -> tuple[str, tuple]:
+    """The test id and result pattern of a g2@3 prompt (``authors.report_pattern``'s shape). Offline fake and tests."""
+    from .authors import report_pattern
+    test = catalogue.tests[_V3_TEST_RX.search(user).group(1)]
+    if "status: ok" not in user:
+        return test.id, report_pattern(test, "non_diagnostic", {})
+    pat = [("status", "ok")]
+    shown = {m.group(1): m.group(2) for m in _V3_LINE_RX.finditer(user.split("\n---\n")[0])}
+    pat += [(o.id, shown[o.id]) for o in test.outputs if shown.get(o.id, "none") != "none"]
+    return test.id, tuple(pat)
+
+
+def _fake_g2v3(catalogue: Catalogue, user: str) -> dict:
+    """The reference generator's template text for a g2@3 prompt, ``N_VARIANTS`` numbered versions."""
+    from .authors import N_VARIANTS, NUMERIC_TYPES, parse_value
+    from .reference import report_text
+    tid, pat = parse_bank_prompt(catalogue, user)
+    test = catalogue.tests[tid]
+    shown = dict(pat)
+    vals = {o.id: (shown[o.id] if o.type in NUMERIC_TYPES else parse_value(shown[o.id], o))
+            for o in test.outputs if o.id in shown}
+    base = report_text(test, "ok" if shown["status"] == "ok" else "non_diagnostic", vals)
+    return {"variants": [base.replace("(synthetic report)", f"(synthetic report, wording {i + 1})")
+                         for i in range(N_VARIANTS)]}
+
+
 def estimate_cost(catalogue: Catalogue, design: Design, seed: int, sample: int = 30,
                   results_prompt: str | None = None) -> dict:
     """Prompt and answer sizes for ``sample`` cards through the reference fake (no model call). Tokens are
@@ -426,7 +472,18 @@ def estimate_cost(catalogue: Catalogue, design: Design, seed: int, sample: int =
     chars_in = sum(len(s) + len(u) for s, u in fake.calls)
     per_in = chars_in / 4 / n
     per_out = sum(answers) / 4 / n
-    return {"sample_cards": n, "calls_per_card": len(fake.calls) / n, "input_tokens_per_card": round(per_in),
-            "output_tokens_per_card_reference": round(per_out), "output_tokens_per_card_model": round(per_out * 1.5),
-            "cards": design.n, "total_calls": round(design.n * len(fake.calls) / n),
-            "total_input_tokens": round(per_in * design.n), "total_output_tokens": round(per_out * 1.5 * design.n)}
+    out = {"sample_cards": n, "calls_per_card": len(fake.calls) / n, "input_tokens_per_card": round(per_in),
+           "output_tokens_per_card_reference": round(per_out), "output_tokens_per_card_model": round(per_out * 1.5),
+           "cards": design.n, "total_calls": round(design.n * len(fake.calls) / n),
+           "total_input_tokens": round(per_in * design.n), "total_output_tokens": round(per_out * 1.5 * design.n)}
+    if authors.v3:
+        # g2@3: one bank call per distinct (test, result pattern), shared by every card, so bank calls do not grow
+        # with the cards (500 fake cards: about 400 patterns; 2,500: about 900). The per-card figures above count
+        # the sample's bank calls as if they repeated, so they are an upper bound; the totals here are per G1 card
+        # plus the sample's patterns (a lower bound).
+        bank = [(s_, u) for s_, u in fake.calls if "RESULT OF ONE ATTEMPT" in u]
+        g1n = len(fake.calls) - len(bank)
+        out.update({"bank_calls_in_sample": len(bank),
+                    "total_calls": round(design.n * g1n / n) + len(bank),
+                    "note": "g2@3 bank calls are shared across cards; see the docstring"})
+    return out
