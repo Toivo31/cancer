@@ -147,7 +147,7 @@ export function FlowCanvas({ flowchart, world, selected, onSelect, overlay, path
     <div style={{ position: 'absolute', inset: 0 }} data-testid="canvas">
       <ReactFlow
         key={`${key}/${refit ?? ''}`} nodes={nodes} edges={edges} nodeTypes={nodeTypes} edgeTypes={edgeTypes}
-        fitView fitViewOptions={{ padding: 0.12 }} minZoom={0.15} maxZoom={1.8}
+        fitView fitViewOptions={{ padding: { top: '84px', right: '24px', bottom: '24px', left: '24px' } }} minZoom={0.15} maxZoom={1.8}
         nodesDraggable={false} nodesConnectable={false} elementsSelectable
         proOptions={{ hideAttribution: true }}
         onNodeClick={(_, n) => onSelect?.(n.id)} onPaneClick={() => onSelect?.(null)}

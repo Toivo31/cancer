@@ -61,9 +61,9 @@ Critical path to the first browser loop:
 | [x] | M3-6 | Run panel: settings, start, progress, cancel, history | M | M3-3, M2-6 | A run started in the browser finishes and appears in history |
 | [ ] | M3-7 | Report tab: existing dashboard embedded and fed by the run's bundle | M | M3-6 | All dashboard screens render for a fresh run |
 | [ ] | M3-8 | Compare two runs: headline table and the Compare layer on the graph | S | M3-6, M3-10 | Deltas shown on steps and edges; different-patient runs refused with a reason |
-| [ ] | M3-10 | **Run layers on the flowchart**: flow counts, time per step, decisions' chosen shares, queues; "where time is lost" list | M | M3-4, M2-11 | After a run the Norway graph shows the PET and tumour-board waits as the darkest steps; counts match the metrics |
-| [ ] | M3-11 | **Playback**: time slider, play, speed, dots moving along the graph, live counters | M | M3-10 | A 300-patient cohort plays through the Finnish scenario at 60 frames a second on a laptop; counters at the end equal the run's totals |
-| [ ] | M3-12 | Patient trace: click a dot or list row; steps with wait/took/result, decisions with offered probabilities, critical path highlighted | S | M3-11 | Trace of one patient equals that patient's record in the run log |
+| [x] | M3-10 | **Run layers on the flowchart**: flow counts, time per step, decisions' chosen shares, queues; "where time is lost" list | M | M3-4, M2-11 | After a run the Norway graph shows the PET and tumour-board waits as the darkest steps; counts match the metrics |
+| [x] | M3-11 | **Playback**: time slider, play, speed, dots moving along the graph, live counters | M | M3-10 | A 300-patient cohort plays through the Finnish scenario at 60 frames a second on a laptop; counters at the end equal the run's totals |
+| [x] | M3-12 | Patient trace: click a dot or list row; steps with wait/took/result, decisions with offered probabilities, critical path highlighted | S | M3-11 | Trace of one patient equals that patient's record in the run log |
 | [ ] | M3-13 | Offline flow page `demo/flow.html` (no build): graph, flow/time/decision layers and playback from precomputed logs; fallback demo | M | M2-11 shape agreed | Opens from disk with no server; shows Norway observed vs optimised side by side |
 | [ ] | M3-9 | Scripted browser pass with screenshots | S | M3-7 | One command opens a template, edits a probability, runs, saves screenshots |
 

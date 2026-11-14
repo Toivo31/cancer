@@ -181,3 +181,5 @@ table.t tr.on td { background: rgba(98,176,255,.1); }
 input[type=range] { accent-color: var(--mint); }
 
 .panelbtn { position: absolute; right: 12px; top: 12px; z-index: 9; background: rgba(17,26,36,.94); }
+
+@media (max-width: 1500px), (max-height: 820px) { .react-flow__minimap { display: none; } }

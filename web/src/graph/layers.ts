@@ -48,7 +48,7 @@ export function buildOverlay(fc: Flowchart, flow: FlowData, layer: Layer, labelO
     const st = flow.steps[n.id], dc = flow.decisions[n.id], ex = flow.exits[n.id]
     const o: NodeOverlay = {}
     if (layer === 'flow') {
-      if (n.kind === 'exit' && ex) o.sub = `${fmt(ex.n)} patients${ex.n_cancer && ex.outcome !== 'treatment' ? ` (${fmt(ex.n_cancer)} cancer)` : ''}`
+      if (n.kind === 'exit' && ex) o.sub = `${fmt(ex.n)} patients${ex.n_cancer && ex.outcome !== 'treatment' ? ` · ${fmt(ex.n_cancer)} cancer` : ''}`
       else if (dc) o.sub = `${fmt(dc.n)} decisions`
       else if (st) o.sub = `${fmt(st.n)} patients`
     } else if (layer === 'time') {

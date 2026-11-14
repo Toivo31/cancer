@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useApi } from '../ApiContext'
 import type { Flowchart, FlowchartSummary, Problem, Project, World } from '../api/types'
 import { Clock } from '../graph/clock'
@@ -28,7 +28,7 @@ export function ProjectScreen({ pid, route }: { pid: string; route: Route }) {
   const [fc, setFc] = useState<Flowchart | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [selected, setSelected] = useState<string | null>(null)
-  const { runs, reload: reloadRuns, error: runsError } = useRuns(api, pid)
+  const { runs, reload: reloadRuns, error: runsError, loaded: runsLoaded } = useRuns(api, pid)
 
   const tab: Tab = route.q.get('tab') === 'decisions' ? 'decisions' : 'flowchart'
   const fid = route.q.get('f')
@@ -82,6 +82,17 @@ export function ProjectScreen({ pid, route }: { pid: string; route: Route }) {
       if (err.problems) setProblems(err.problems as Problem[]); else setError(err.message)
     } finally { setSaving(false) }
   }, [api, pid, fc, initial, draft, cur, selectedRun])
+
+  // a project just created from a template starts one default run, so the graph fills with patients without a click
+  const autoStarted = useRef(false)
+  useEffect(() => {
+    if (route.q.get('autorun') !== '1' || autoStarted.current || !runsLoaded || !fc || !cur || !world) return
+    autoStarted.current = true
+    if (runs.length > 0) { replace(`p/${pid}`, { f: cur.id, v: curVer, run: runs[0].id }); return }
+    api.startRun(pid, { flowchart: { id: fc.id, version: fc.version }, n: world.default_n ?? 1000, seeds: [301], decision_policy: null, label: `${fc.id} v${fc.version}, default run` })
+      .then((r) => { replace(`p/${pid}`, { f: fc.id, v: fc.version, run: r.run_id }); void reloadRuns() })
+      .catch(() => replace(`p/${pid}`, { f: cur.id, v: curVer }))
+  }, [route.q, runsLoaded, fc, cur, world, runs, api, pid, curVer, reloadRuns])
 
   // ---- run layers: the selected run's flow document drawn on the same canvas ----
   const autoRun = cur ? runs.find((r) => r.status === 'succeeded' && r.flowchart.id === cur.id && r.flowchart.version === curVer) : undefined
@@ -140,7 +151,7 @@ export function ProjectScreen({ pid, route }: { pid: string; route: Route }) {
         <div className="workspace">
           <div className="canvas-col">
             <div className="canvas-wrap" style={{ flex: 1 }}>
-              <FlowCanvas refit={panelOpen ? 'p' : 'c'} flowchart={fc} world={world} selected={selected} onSelect={setSelected} overlay={overlay} path={path}
+              <FlowCanvas refit={`${panelOpen ? 'p' : 'c'}${flow && layer !== 'structure' ? 'b' : ''}`} flowchart={fc} world={world} selected={selected} onSelect={setSelected} overlay={overlay} path={path}
                 playback={clock && layer !== 'structure' ? { clock, patients: pps, transit, selectedPatient: patientIdx, onPick: pickPatient } : null} />
               <button className="btn small panelbtn" onClick={() => setPanelOpen((o) => !o)} aria-pressed={panelOpen} title={panelOpen ? 'Hide the side panel for more room' : 'Show the side panel'}>{panelOpen ? 'Hide panel ›' : '‹ Panel'}</button>
               {flow && (

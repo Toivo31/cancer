@@ -21,7 +21,7 @@ export function Projects() {
     setBusy(t.id); setError(null)
     try {
       const p = await api.createProject(name.trim() || t.name, t.id)
-      go(`p/${p.id}`)
+      go(`p/${p.id}`, { autorun: 1 })
     } catch (e) { setError((e as Error).message); setBusy(null) }
   }
   async function remove(p: Project) {

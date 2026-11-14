@@ -2,7 +2,7 @@ import type { FlowData } from '../api/types'
 import type { PPatient } from '../graph/playback'
 
 const d1 = (x: number) => (Math.round(x * 10) / 10).toFixed(1)
-const RESULT: Record<string, string> = { '1': 'positive', '0': 'negative', null: 'no result' }
+const RESULT: Record<string, string> = { '1': 'positive', '0': 'negative', null: '–' }
 
 export function TracePanel({ flow, pp, labelOf, patients, onPick }: { flow: FlowData; pp: PPatient | null; labelOf: (id: string) => string; patients: PPatient[]; onPick: (idx: number | null) => void }) {
   if (!pp) {
@@ -40,8 +40,8 @@ export function TracePanel({ flow, pp, labelOf, patients, onPick }: { flow: Flow
           {visits.map((v, i) => (
             <tr key={i}>
               <td>{v[6] ? <span title="On the critical path" style={{ color: 'var(--text)' }}>● </span> : <span className="dim">○ </span>}{labelOf(v[0])}<div className="dim num" style={{ fontSize: 10.5 }}>from day {d1(v[1])}</div></td>
-              <td className="num" style={{ textAlign: 'right', color: v[2] - v[1] > 7 ? 'var(--amber)' : undefined }}>{d1(v[2] - v[1])} d</td>
-              <td className="num" style={{ textAlign: 'right' }}>{d1(Math.max(0, v[4] - v[2]))} d</td>
+              <td className="num" style={{ textAlign: 'right', whiteSpace: 'nowrap', color: v[2] - v[1] > 7 ? 'var(--amber)' : undefined }}>{d1(v[2] - v[1])} d</td>
+              <td className="num" style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>{d1(Math.max(0, v[4] - v[2]))} d</td>
               <td>{RESULT[String(v[5])]}</td>
             </tr>
           ))}
