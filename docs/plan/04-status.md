@@ -1,7 +1,7 @@
 # Status
 
 The only file in this folder that changes often. Written by the integrator at every sync point.
-Last update: **Sat 14 Nov 2026, about 17:00 Helsinki.** Deadline: Sun 15 Nov 10:00 Helsinki.
+Last update: **Sat 14 Nov 2026, 18:30 UTC (20:30 Helsinki).** Deadline: Sun 15 Nov 10:00 Helsinki; freeze 04:00 UTC.
 
 ## Branches
 
@@ -37,32 +37,39 @@ M1-9 (GP judgement as a decision; now C3 E4 and C4 J4), M3-7, M3-8, M3-9, M4-1 t
 M5-9, M6-5, M6-6, M7-1, M7-3, M7-4 (written, never run), M7-6 web part, M8-1 to M8-6 (in
 progress on `plat/evidence`). See `components/C6-platform.md` for how they are regrouped.
 
-## Running now (14 Nov, 16:40 UTC)
+## Running now (14 Nov, 18:30 UTC; Tuomas away until about 21:20 UTC, the architect integrates alone)
 
-Merged and green since the last update: encounter loop engine, card states, care content with
-definitive and group tests, record to JEV request, model-written cards (offline-tested), MCP
-investigation (verdict: after the submission), the encounter-loop demo page, and `main` (the
-decision-model kit `decision_api/`). Catalogue locked as `catalogue-v1` (hash 2bcb9c78b2e0).
+Merged, green and pushed since 16:40: loop-tune (consistency with the chain **not** reached), library audit,
+training export, Norway robustness (band 62 to 86%, not 78 to 86%), the decision-model adapter and `jev.walk`,
+the start page and presenter's script, `main` with PR #5 (reasoning preview, off by default), the web lane
+(dot paths, draggable boxes, Optimise tab, minimal editor), a library-reader fix (libraries written on a Mac
+now load on Linux), and a patient-background fix (pack-years follows smoking status; `ref500` regenerated,
+new id `L_0dbfc37e2e45d8d4`, **training data exported from the old one is stale**).
 
-| Lane | Package | State |
+Model-written cards (Gemini, on Tuomas's Mac): `gemini_trial` (5) and `gemini_s2_30` (30) are in the repo and
+pass the audit. Five libraries of 500 (`gemini_s3_500` to `gemini_s7_500`) are being generated, about 30 cards
+a minute, expected about 19:45 UTC.
+
+| Lane | What | Model |
 |---|---|---|
-| `w4/loop-tune` | Tune placeholder decisions to match the calibrated chain; second finding | resumed after the usage limit |
-| `w4/audit` | Library audit G4 | resumed |
-| `w4/train-export` | JEV training export, `--library`, `--jev` for encounter runs | resumed |
-| `w3/norway-robust` | Norway validation robustness | resumed |
-| `w5/birch` | Connect the team's decision model to the nodes; `python -m jev.walk` | resumed |
-| `w5/demo-path` | One start page and a presenter's script | running |
+| `w7/review` | Independent review: information boundary end to end, numbers, patient realism, demo path, judge questions (`docs/review_w7.md`) | Opus |
+| `w7/loop` | Encounter loop: second attempt at consistency with the calibrated chain, then rerun the primary-care finding | Opus |
+| `w7/norway-opt` | Optimiser on the 184 extended-grid settings, ablation of the four changes, structure check against the paper | Sonnet |
+| `w7/web` | Run-list bug, side-by-side graph diff, add/delete step and undo, Norway graph readability | Sonnet |
+| `w7/demo` | Regenerate bundles, honest Norway framing (67 against 80), synthetic-patients card, presenter walk-through | Sonnet |
+| `w7/train` | Library merge command, end-to-end smoke, one-command training and test sets, JEV data docs | Sonnet |
+| `w7/sec` | Service hardening: F16 first, then F2 remainder, F3, F5 to F7; security suite green | Sonnet |
+| `w7/pitch` | Numbers sheet, pitch files corrected to current results, hard questions | Sonnet |
 
 ## Next (in order)
 
 | # | What | When |
 |---|---|---|
-| 1 | Merge the six lanes as they finish; regenerate `demo/data/encounter_bundle.js` after loop-tune | as they finish |
-| 2 | End-to-end smoke: offline library → encounter run with `--library` → training export → `jev.walk` against the mock; then against the live model when the owner's GPU is up | after 1 |
-| 3 | Independent review (Opus, read-only): information boundary end to end, the second finding's numbers, demo path, what a judge would challenge | after 2, before 01:00 UTC |
-| 4 | Pitch numbers for the second finding (with Eemeli's pitch and video files) | after 3 |
-| 5 | Gemini-written library (Tuomas runs it) → audit → held-out test set for the JEV | when Tuomas has it |
-| 6 | 01:00 UTC checkpoint; freeze 04:00 UTC | |
+| 1 | Merge the eight lanes as they finish; gate after each; push | as they finish |
+| 2 | Audit each 500-card Gemini library, commit, merge into one library, build training and held-out sets | from about 19:45 UTC |
+| 3 | Act on the review's blockers and majors (second wave of lanes) | after the review |
+| 4 | Rerun demo exports after the loop lane; final numbers into `docs/pitch/numbers_sheet.md` | after 1 |
+| 5 | 01:00 UTC checkpoint; freeze 04:00 UTC | |
 
 ## Waiting for a human
 
