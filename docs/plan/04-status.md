@@ -81,23 +81,20 @@ decision-model kit `decision_api/`). Catalogue locked as `catalogue-v1` (hash 2b
 | A clinician to read the catalogue | Until then it is labelled draft | 14 Nov |
 | Earlier pending decisions D17, D18, D20, D25, D27 | See `docs/decisions.md` | 14 Nov |
 
-## Security review (`docs/platform/security-review.md`, reviewed the tree before access control was merged)
+## Security review (`docs/platform/security-review.md`; per-finding status and proving tests are in its Status table)
 
-18 findings: 3 high, 7 medium, 8 low. Rerun on the current tree, file by file:
+18 findings: 3 high, 7 medium, 8 low. State at the 14 Nov freeze (WP-C6-SEC1 merged, plus a wall-clock deadline for outside decision calls):
 
 | Finding | State now |
 |---|---|
-| F1 no access token (high) | Fixed by the deployment lane; the review's test now passes |
-| F2 outside decision service can be pointed at any host (high) | Allowlist in place, credentials and echoed response text no longer returned (three of the review's tests now pass). Still open: client-chosen long timeout, slow calls stalling the API |
-| F16 the flow endpoint re-simulates inside the API process (high) | **Open** |
-| F4 wrong-typed decision policy gave a 500 | Fixed |
-| F13 missing security headers | Fixed |
-| F3 NaN and Infinity stored; F5 response size; F6 tracebacks in job errors; F7 deleted project's jobs keep running; F14 quotas; F18 memory; the low ones | **Open** |
+| F1 no access token (high) | Fixed (deployment lane) |
+| F2 outside decision service can be pointed at any host (high) | Fixed: allowlist, no credentials, no echoed response text, timeout capped at 5 s, 1 retry, 1 MiB response, total wall-clock deadline |
+| F16 flow endpoint re-simulates in the API process (high) | Fixed: stored flow served as is; other parameters rebuild as a job (own process, 60 s limit, 429 when busy) |
+| F3, F4, F5, F6, F7, F9, F10, F11, F13 | Fixed, each with a test |
+| F14 quotas, F18 memory | Accepted for the hackathon: existing rate, job-start and active-job limits; hosted settings `PATHWAY_JOB_SECONDS=120`, `PATHWAY_MAX_PATIENTS=20000`, `PATHWAY_MAX_SEEDS=3`, `PATHWAY_MAX_JOBS=1..2` must be set on the host |
+| F8, F12, F15, F17 | Accepted, still `xfail(strict=True)` (see the review) |
 
-`tests/security/` is excluded from the default test run: nine of its expected-to-fail tests now
-pass (the holes are closed) and five need the allowlist configured for a local test server. Work
-package C6 F7: turn the passing ones into normal tests, fix the five, then close F16, F3, F5 to F7.
-Do F16 before any public URL.
+`tests/security/` runs as one command (about 2.5 min on a loaded 2-CPU machine) and is in the slow tier via `tests/slow_tests.txt`.
 
 ## Known problems
 
