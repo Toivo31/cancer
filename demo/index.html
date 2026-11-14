@@ -3028,6 +3028,15 @@ function screen2(sc){
   if(cv&&cv.changes&&cv.changes.length){
     h+='<div class="panel"><ul class="changes">'+cv.changes.map(function(c,i){return '<li><b>'+(i+1)+'</b><span>'+esc(plain(c))+'</span></li>'}).join('')+'</ul></div>';
   }else h+='<div class="empty">No suggested change listed in this bundle.</div>';
+  var cp=(sc.capacity_probe||[]).filter(function(r){return isNum(r.delta_share_pp)});
+  if(cp.length){
+    h+='<h2>If you could add one appointment a day, put it here</h2>';
+    h+='<p class="lede">Each row adds one slot per working day at one step, with today\'s order of steps, and reruns the same patients.</p>';
+    h+='<div class="panel"><table class="src"><thead><tr><th>Step</th><th>Busy</th><th>Treated on time</th><th>Median days</th></tr></thead><tbody>'+
+      cp.slice(0,6).map(function(r){return '<tr><td>'+esc(plain(r.label||human(r.resource)))+'</td><td class="mono">'+(isNum(r.utilisation)?Math.round(r.utilisation*100)+'%':'n/a')+
+        '</td><td class="mono">'+(r.delta_share_pp>=0?'+':'')+d1(r.delta_share_pp)+' points</td><td class="mono">'+(r.delta_median_days>0?'+':'')+d1(r.delta_median_days)+'</td></tr>'}).join('')+
+      '</tbody></table></div>';
+  }
   return h;
 }
 
