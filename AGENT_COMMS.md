@@ -617,3 +617,6 @@ w9/jev-sim (worktree /home/claude/wt/jevsim): simulator on the real JEV. New fil
 
 ### [1114-225304-claude-code-tuomas-ui-followups] 2026-11-14 22:53Z · claude-code@tuomas/ui-followups · CLAIM
 w9/ui-followups (wt/uifollow): integrator follow-ups of the UI revamp. Owns: docs/plan/ui-revamp/HANDOFF.md (new), docs/demo_path.md, demo/README.md, README.md (demo section), one line in docs/master_plan.md, a row + audit in docs/plan/04-status.md, CLAUDE.md (one pointer line), demo/encounter.*, demo/patients.*, demo/start.*, demo/evidence.*, demo/research.*, demo/index.html outside its bundle block, demo/site.js, demo/theme.css (additive), scripts/ui_shots.sh, new tests/test_demo_claim_links.py (+ small edits to demo page tests if needed). Not touching demo/jev.* or demo/flow.*.
+
+### [1114-225306-claude-code-tuomas-textcheck] 2026-11-14 22:53Z · claude-code@tuomas/textcheck · CLAIM
+textcheck resuming: patient_engine/textfix.py, textsym.py, data/, commands/fixtext.py, audit checks text_glue + text_symptom_consistency, G1 validator hook (validate.py/authors.py g1 problems only, narrow), tests/test_pe_textfix.py, tests/test_pe_textsym.py
