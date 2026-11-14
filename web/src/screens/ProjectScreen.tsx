@@ -21,6 +21,8 @@ import { RunPanel } from './RunPanel'
 import { OptimisePanel } from './OptimisePanel'
 import { EditPanel } from './EditPanel'
 import { DiffDialog } from './DiffDialog'
+import { pushHistory, redoHistory, startHistory, undoHistory } from '../lib/history'
+import type { History } from '../lib/history'
 
 type Tab = 'flowchart' | 'decisions'
 
@@ -89,7 +91,10 @@ export function ProjectScreen({ pid, route }: { pid: string; route: Route }) {
 
   // ---- edit mode: a working copy of the flowchart, checked by the validator as it changes ----
   const [editing, setEditing] = useState(false)
-  const [editDoc, setEditDoc] = useState<Flowchart | null>(null)
+  const [hist, setHist] = useState<History<Flowchart> | null>(null)
+  const editDoc = hist?.present ?? null
+  const setEditDoc = useCallback((d: Flowchart | null) => setHist(d ? startHistory(d) : null), [])
+  const [checkedDoc, setCheckedDoc] = useState<Flowchart | null>(null)
   const [editProblems, setEditProblems] = useState<Problem[]>([])
   const [checking, setChecking] = useState(false)
   const [editSaving, setEditSaving] = useState(false)
@@ -101,12 +106,25 @@ export function ProjectScreen({ pid, route }: { pid: string; route: Route }) {
     let live = true
     setChecking(true)
     const h = window.setTimeout(() => {
-      api.validate(pid, editDoc).then((v) => { if (live) setEditProblems(v.problems) })
-        .catch((e) => { const err = e as Error & { problems?: Problem[] }; if (live) setEditProblems(err.problems ?? [{ severity: 'error', code: 'check_failed', message: err.message }]) })
+      api.validate(pid, editDoc).then((v) => { if (live) { setEditProblems(v.problems); setCheckedDoc(editDoc) } })
+        .catch((e) => { const err = e as Error & { problems?: Problem[] }; if (live) { setEditProblems(err.problems ?? [{ severity: 'error', code: 'check_failed', message: err.message }]); setCheckedDoc(editDoc) } })
         .finally(() => { if (live) setChecking(false) })
     }, 400)
     return () => { live = false; window.clearTimeout(h) }
   }, [api, pid, editing, editDoc])
+  // undo and redo with the keyboard while editing (inside a text field the browser's own undo keeps working)
+  useEffect(() => {
+    if (!editing) return
+    const k = (e: KeyboardEvent) => {
+      if (!(e.metaKey || e.ctrlKey) || e.key.toLowerCase() !== 'z') return
+      const t = e.target as HTMLElement | null
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return
+      e.preventDefault()
+      setHist((h) => (h ? (e.shiftKey ? redoHistory(h) : undoHistory(h)) : h))
+    }
+    window.addEventListener('keydown', k)
+    return () => window.removeEventListener('keydown', k)
+  }, [editing])
   const startEdit = () => { if (fc) { setEditDoc(JSON.parse(JSON.stringify(fc))); setEditing(true); setEditProblems([]) } }
   const stopEdit = () => { setEditing(false); setEditDoc(null); setEditProblems([]); setEditError(null) }
   const saveEdit = async () => {
@@ -224,8 +242,10 @@ export function ProjectScreen({ pid, route }: { pid: string; route: Route }) {
             {flow && clock && layer !== 'structure' && !editing && <PlaybackBar clock={clock} patients={pps} sampleLabel={`Dots: ${pps.length} sampled patients of ${flow.totals.n.toLocaleString('en')}. Counts and colours use everyone.`} />}
           </div>
           {panelOpen && editing && editDoc && <aside className="side" aria-label="Side panel">
-            <EditPanel doc={editDoc} world={world} selected={selected} onSelect={setSelected} onChange={setEditDoc} problems={editProblems} checking={checking} dirty={editDirty} saving={editSaving}
-              baseVersion={fc.version} latestVersion={cur.latest_version} flowchartName={cur.name} onSave={saveEdit} onDiscard={() => setEditDoc(JSON.parse(JSON.stringify(fc)))} />
+            <EditPanel doc={editDoc} world={world} selected={selected} onSelect={setSelected} onChange={(d, key) => setHist((h) => (h ? pushHistory(h, d, key) : h))}
+              canUndo={!!hist?.past.length} canRedo={!!hist?.future.length} onUndo={() => setHist((h) => (h ? undoHistory(h) : h))} onRedo={() => setHist((h) => (h ? redoHistory(h) : h))}
+              problems={editProblems} checking={checking || checkedDoc !== editDoc} dirty={editDirty} saving={editSaving}
+              baseVersion={fc.version} latestVersion={cur.latest_version} flowchartName={cur.name} onSave={saveEdit} onDiscard={() => setHist((h) => (h ? pushHistory(h, JSON.parse(JSON.stringify(fc)) as Flowchart) : h))} />
             {editError && <div className="error" role="alert">{editError}</div>}
           </aside>}
           {panelOpen && !editing && <aside className="side" aria-label="Side panel">
