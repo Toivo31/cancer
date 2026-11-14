@@ -24,3 +24,13 @@ tests/test_jev_stub.py::test_shipped_scenarios_reproduce_exactly
 tests/test_expr.py::test_every_shipped_expression_matches_python_on_all_environments
 tests/test_service_datasets.py::test_upload_report_and_errors_do_not_stop_storing
 tests/test_finland.py::test_fast_track_marks_only_non_specific_presenters
+# Security suite (WP-C6-SEC1, merged): about 80 s in one run; in the slow tier so the fast gate stays under 2 minutes.
+tests/security/test_access_and_web.py
+tests/security/test_code_paths.py
+tests/security/test_fuzz_routes.py
+tests/security/test_input_limits.py
+tests/security/test_integrity.py
+tests/security/test_jobs_resources.py
+tests/security/test_paths_and_static.py
+tests/security/test_sec1_fixes.py
+tests/security/test_ssrf_jev.py
