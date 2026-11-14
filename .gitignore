@@ -5,6 +5,8 @@ __pycache__/
 
 # Secrets: API keys live here, never commit
 .env
+.env.*
+!.env.example
 
 # IDE
 .idea/
