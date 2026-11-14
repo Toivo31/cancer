@@ -130,106 +130,27 @@ def compile_guard(expr: str, where: str) -> Expr:
         raise ValueError(f"bad guard in {where}: {expr!r}: {e}") from e
 
 
+def _raise_first(problems, where: str) -> None:
+    for p in problems:
+        if p.severity == "error":
+            at = f"{where}/{p.node}" if p.node else where
+            raise ValueError(f"{at}: {p.detail or p.message}")
+
+
 def validate_flowchart(sc: Scenario, fc: Flowchart) -> None:
-    ids = set(fc.nodes)
-    option_of: dict[str, str] = {}
-    known_names = ids | set(sc.attributes) | {"group", "age", "t", "True", "False", "None"}
+    """Raise ``ValueError`` on the first error. The checks live in ``pathway_sim/validate.py`` (cheap
+    subset here: the optimiser calls this for every candidate edit); the editor and service use the
+    full structured list from there."""
+    from .validate import World, validate
     for n in fc.nodes.values():
-        where = f"{sc.id}/{fc.id}/{n.id}"
-        if n.kind not in NODE_KINDS:
-            raise ValueError(f"{where}: unknown kind {n.kind!r}")
-        if n.test and n.test not in sc.tests:
-            raise ValueError(f"{where}: unknown test {n.test!r}")
-        for ref in n.after + n.after_any + n.after_optional + n.options:
-            if ref not in ids:
-                raise ValueError(f"{where}: unknown node reference {ref!r}")
-        for o in n.availability or {}:
-            if o not in n.options:
-                raise ValueError(f"{where}: availability for {o!r}, not an option")
-        if n.kind == "choice":
-            if len(n.options) < 2:
-                raise ValueError(f"{where}: choice needs >= 2 options")
-            for o in n.options:
-                if o in option_of:
-                    raise ValueError(f"{where}: {o!r} is an option of two choices")
-                option_of[o] = n.id
-        if n.kind == "exit" and n.outcome not in OUTCOMES:
-            raise ValueError(f"{where}: exit needs outcome in {OUTCOMES}")
-        if n.stage and n.stage not in STAGES:
-            raise ValueError(f"{where}: unknown stage {n.stage!r}")
-        if n.retry:
-            fb = n.retry.get("fallback")
-            if fb and fb not in ids:
-                raise ValueError(f"{where}: unknown retry fallback {fb!r}")
-        n.code = compile_guard(n.when, where) if n.when else None
-        if n.code is not None:
-            unknown = n.code.names - known_names
-            if unknown:
-                raise ValueError(f"{where}: guard {n.when!r} reads unknown names {sorted(unknown)}")
-    for cid, cfg in (fc.policy or {}).items():
-        if cid not in fc.nodes or fc.nodes[cid].kind != "choice":
-            raise ValueError(f"{sc.id}/{fc.id}: policy for {cid!r}, which is not a choice node")
-        opts = set(fc.nodes[cid].options)
-        named = set((cfg.get("mix") or {}).keys()) | set(cfg.get("prefer") or [])
-        named |= {r["choose"] for r in cfg.get("rules") or []}
-        for r in cfg.get("rules") or []:
-            unknown = compile_guard(r["when"], f"{fc.id}/policy/{cid}").names - known_names
-            if unknown:
-                raise ValueError(f"{sc.id}/{fc.id}: policy rule for {cid!r} reads unknown names {sorted(unknown)}")
-        if cfg.get("default"):
-            named.add(cfg["default"])
-        bad = named - opts
-        if bad:
-            raise ValueError(f"{sc.id}/{fc.id}: policy for {cid!r} names unknown options {sorted(bad)}")
-    for tid in fc.test_overrides:
-        if tid not in sc.tests:
-            raise ValueError(f"{sc.id}/{fc.id}: test override for unknown test {tid!r}")
-    for rid in fc.resource_overrides:
-        if rid not in sc.resources:
-            raise ValueError(f"{sc.id}/{fc.id}: resource override for unknown resource {rid!r}")
-    if not any(n.kind == "exit" for n in fc.nodes.values()):
-        raise ValueError(f"{sc.id}/{fc.id}: no exit node")
-    # acyclic over after / after_any / options
-    deps = {n.id: set(n.after) | set(n.after_any) | set(n.after_optional) for n in fc.nodes.values()}
-    for o, c in option_of.items():
-        deps[o].add(c)
-    state: dict[str, int] = {}
-
-    def visit(x: str, stack: tuple) -> None:
-        if state.get(x) == 1:
-            raise ValueError(f"{sc.id}/{fc.id}: cycle through {' -> '.join(stack + (x,))}")
-        if state.get(x) == 2:
-            return
-        state[x] = 1
-        for y in deps[x]:
-            visit(y, stack + (x,))
-        state[x] = 2
-
-    for x in deps:
-        visit(x, ())
+        n.code = compile_guard(n.when, f"{sc.id}/{fc.id}/{n.id}") if n.when else None
+    problems = validate(World.from_scenario(sc), fc.to_dict(), flowchart_id=fc.id, deep=False)
+    _raise_first(problems, f"{sc.id}/{fc.id}")
 
 
 def validate_scenario(sc: Scenario) -> None:
-    prev = sum(float(c["prevalence"]) for c in sc.conditions)
-    if abs(prev - 1.0) > 1e-6:
-        raise ValueError(f"{sc.id}: condition prevalences sum to {prev}, not 1")
-    for rid, r in sc.resources.items():
-        t = r.get("type", "server")
-        if t not in RESOURCE_TYPES:
-            raise ValueError(f"{sc.id}: resource {rid} has unknown type {t!r}")
-        if t == "server" and float(r.get("capacity_per_day", 0)) <= 0:
-            raise ValueError(f"{sc.id}: server resource {rid} needs capacity_per_day > 0")
-        if t == "delay":
-            dists.validate(r.get("wait"))
-        if t == "batch" and not r.get("weekdays"):
-            raise ValueError(f"{sc.id}: batch resource {rid} needs weekdays")
-    for tid, t in sc.tests.items():
-        if t.get("resource", "none") not in sc.resources and t.get("resource", "none") != "none":
-            raise ValueError(f"{sc.id}: test {tid} uses unknown resource {t.get('resource')!r}")
-        if t.get("stage", "diagnosis") not in STAGES:
-            raise ValueError(f"{sc.id}: test {tid} has unknown stage {t.get('stage')!r}")
-        for k in ("service_days", "report_days", "extra_wait", "wait"):
-            dists.validate(t.get(k))
+    from .validate import check_world
+    _raise_first(check_world(sc), sc.id)
     for fc in sc.flowcharts.values():
         validate_flowchart(sc, fc)
 

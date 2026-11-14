@@ -122,6 +122,16 @@ Node fields:
 
 A patient whose cancer truth is True but who reaches `discharged` is a **missed cancer**.
 
+## Validation
+
+`pathway_sim/validate.py` returns every problem at once as `{"ok", "problems": [...]}`; the codes, severities
+and the problem object (`code, severity, message, flowchart, node, edge, field, hint`) are defined in
+`pathway_sim/problems.py`. `validate_scenario_dict(raw)` checks the world tables and every flowchart;
+`validate(world, flowchart_dict)` one flowchart. `deep=False` is the cheap error-only subset that
+`scenario.validate_flowchart` wraps (it still raises `ValueError` on the first error: CLI and optimiser
+unchanged). Warnings (`unreachable`, `possible_dead_end`, `missing_probabilities`) never block loading.
+A wrongly shaped document raises `MalformedDocument` (a `ValueError`).
+
 ## Patient card (`pathway_sim.patients.Patient`)
 
 ```python

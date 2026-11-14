@@ -38,7 +38,7 @@ Critical path to the first browser loop:
 | | ID | Ticket | Size | Needs | Done when |
 |---|---|---|---|---|---|
 | [ ] | M2-1 | Document format v1: world and flowchart JSON, converters both ways, YAML import | M | M1-3 | Round trip gives byte-identical metrics for all shipped scenarios |
-| [ ] | M2-2 | Structured validation: full problem list with codes, node references, reachability and dead-end warnings | M | M2-1 | One test per code; CLI behaviour unchanged |
+| [x] | M2-2 | Structured validation: full problem list with codes, node references, reachability and dead-end warnings | M | M2-1 | One test per code; CLI behaviour unchanged |
 | [ ] | M2-3 | Service skeleton: FastAPI app, config, SQLite store, templates, generated API page | M | M2-1 | `uvicorn service.app:app` serves `/api/templates` and `/docs` |
 | [ ] | M2-4 | Projects, world, flowchart versions, validate endpoint | M | M2-2, M2-3 | CRUD tests; versions with runs are immutable |
 | [ ] | M2-5 | Job runner (process pool, status, progress, cancel, limits) and engine progress hook | M | M2-3 | Progress moves during a run; cancel works; a crashing job fails alone |

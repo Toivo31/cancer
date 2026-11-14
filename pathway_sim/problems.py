@@ -87,6 +87,7 @@ class Problem:
     edge: dict | None = None      # {"from": id, "to": id, "type": EDGE_*}
     field: str | None = None
     hint: str | None = None
+    detail: str | None = None     # technical wording for logs and the CLI's ValueError; never serialised
 
     def __post_init__(self) -> None:
         if self.code not in CODES:
