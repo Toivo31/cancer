@@ -1,0 +1,441 @@
+# Synthetic Finnish lung-cancer diagnostic pathway, one wellbeing services county.
+# Clock: first contact in primary care -> start of treatment.  ALL DATA IS SYNTHETIC.
+#
+# Calibration targets (Finnish typical waits, IHE2026 citing KHALIFE2025; Satakunta MATTILA2025):
+#   health-centre appointment ~14 d; specialist consultation 14-28 d after the GP referral;
+#   diagnosis ~28 d after the specialist consultation; Satakunta: referral ~2 weeks, ~2 months to diagnosis.
+# Every parameter carries `source:` (an id in params/sources.yaml) or `source: assumption` with a note.
+#
+# How queues are modelled: `server` resources book the earliest weekday with a free slot, no earlier than
+# `min_lead_days` ahead (the appointment book is filled N days ahead), so a wait = booking lead + overload queue.
+# The capacities are SLICES of real county capacity available to this stream of chest-symptom patients,
+# not whole-county capacities (see docs/finland_scenario.md).
+
+id: finland_lung
+description: >
+  Synthetic Finnish lung-cancer pathway in one wellbeing services county, clock from first contact in
+  primary care (nurse or GP) to start of treatment. target_days: 42 is the NORWEGIAN target used here for
+  comparability with the Stokstad validation scenario; Finnish targets per IHE2026 are assessment within
+  21 days of referral, and the strategy goal is "treatment within target times". Chest-symptom presenters
+  arrive as a Poisson stream; lung cancer is about 1.6% of them, the rest is pneumonia, COPD exacerbation,
+  benign nodule, other benign chest conditions and self-limiting illness. Half see a nurse first
+  (KHALIFE2025). Queues form at GP appointments, chest X-ray, specialist clinic, CT, bronchoscopy / needle
+  biopsy, PET-CT and treatment slots. Chest X-ray misses about one in five lung cancers (HSSIB2021,
+  BRADLEY2021); a safety net (persisting symptoms -> re-presentation weeks later) catches some of them,
+  the rest are discharged = missed cancers.
+clock_start: first_contact
+target_days: 42
+warmup_days: 60
+default_n: 18800                     # 44 / day x (60 d warm-up + 365 d measured year) = 18,700, plus a margin
+arrivals: {rate_per_day: 44}
+arrivals_source: {source: assumption, note: "44 chest-symptom presenters per day x 1.6% lung cancer = about 260 lung cancers a year, i.e. a LARGE county of roughly 500,000 people (Pirkanmaa-sized) (params/finland.yaml: about 130 cancers per 250,000-person county-year, GLOBOCAN_FIN). A large county is chosen on purpose: slot capacities are whole numbers per day, so the scarce diagnostics (PET-CT, bronchoscopy) only reach 85-95% utilisation when the stream is this size. It is a modelling choice for the slice of presenters who get a chest-symptom work-up, not a count"}
+
+finnish_targets:                      # for docs and tests; not used by the engine
+  gp_appointment_wait_days: {value: 14, source: KHALIFE2025}
+  gp_referral_to_specialist_days: {range: [14, 28], source: KHALIFE2025}
+  specialist_to_diagnosis_days: {value: 28, source: KHALIFE2025}
+  first_contact_to_diagnosis_days: {range: [30, 60], source: KHALIFE2025}
+  satakunta_first_visit_to_referral_days: {value: 14, source: MATTILA2025}
+  satakunta_referral_to_diagnosis_days: {value: 55, source: MATTILA2025}
+  diagnosis_to_treatment_days: {value: 37, source: IHE2026, note: "registry, all cancers"}
+  first_contact_to_treatment_days: {value: 99, source: YLE_MOT2025, note: "primary care 41 + specialised care 58; secondary, unpublished"}
+
+conditions:
+  - {id: lung_cancer_site, cancer: true, prevalence: 0.005, source: KOO2023, note: "alarm-symptom presenters (haemoptysis etc.): 3.1% 12-month cancer risk after new haemoptysis; x 16% share of presenters"}
+  - {id: lung_cancer_nonspec, cancer: true, prevalence: 0.011, source: BRADLEY2021, note: "non-specific presenters: about 1.3% cancer in symptomatic over-50s having a chest X-ray; x 84% share of presenters"}
+  - {id: pneumonia, cancer: false, prevalence: 0.17, source: assumption, note: "lower-respiratory infection / pneumonia, a common confusable"}
+  - {id: copd_exacerbation, cancer: false, prevalence: 0.14, source: assumption, note: "COPD exacerbation; smokers, same age as lung cancer"}
+  - {id: benign_nodule, cancer: false, prevalence: 0.03, source: assumption, note: "benign pulmonary nodule or scar; looks suspicious on imaging"}
+  - {id: other_benign, cancer: false, prevalence: 0.30, source: assumption, note: "asthma, reflux, heart failure, musculoskeletal chest pain, etc."}
+  - {id: self_limiting, cancer: false, prevalence: 0.344, source: assumption, note: "viral cough or nothing serious; resolves by itself"}
+
+groups:
+  - id: site_specific                # alarm symptoms, e.g. haemoptysis
+    source: assumption
+    note: "about 16% of presenters (haemoptysis, chest signs, persistent hoarseness). Cancers presenting this way: 0.5% of presenters out of 1.6% total, i.e. about 31% of lung cancers"
+    share_by_condition: {lung_cancer_site: 1.0, lung_cancer_nonspec: 0.0, pneumonia: 0.22, copd_exacerbation: 0.12, benign_nodule: 0.25, other_benign: 0.12, self_limiting: 0.165}
+  - id: non_specific                 # fatigue, weight loss, cough: the remainder
+    source: assumption
+
+attributes:
+  location:                          # tumour / lesion location, revealed by the CT
+    values: {central: 0.35, peripheral: 0.65}
+    source: assumption
+    note: "most lung cancers and nodules are peripheral; decides bronchoscopy vs needle biopsy yield (RIVERA2013)"
+
+age: {dist: uniform, low: 45, high: 85, source: assumption, note: "symptomatic over 40s; age does not drive timing in this model"}
+
+resources:
+  nurse_appt:     {type: server, capacity_per_day: 35, weekdays_only: true, min_lead_days: 2, source: assumption, note: "slice of nurse first-contact capacity; the Finnish care guarantee asks for assessment of care need within about 3 working days (not in sources.yaml)"}
+  gp_appt:        {type: server, capacity_per_day: 74, weekdays_only: true, min_lead_days: 12, source: KHALIFE2025, note: "booking lead set so that the first GP appointment takes about 14 d (mode of survey answers, THL: 35% wait over 14 d); capacity is an assumption"}
+  xray:           {type: server, capacity_per_day: 24, weekdays_only: true, min_lead_days: 2, source: assumption, note: "direct-access chest X-ray, usually within days"}
+  clinic:         {type: server, capacity_per_day: 7, weekdays_only: true, min_lead_days: 12, source: assumption, note: "pulmonology outpatient visits for suspected lung cancer; lead + queue calibrated to 14-28 d from GP referral to specialist visit"}
+  ct_scanner:     {type: server, capacity_per_day: 3, weekdays_only: true, min_lead_days: 4, source: assumption, note: "slice of county CT for lung work-up (params/finland.yaml capacity: 30 scans/day county-wide, placeholder). Finland has the fewest CT scanners per capita in the Nordics (IHE2026)"}
+  bronchoscopy:   {type: server, capacity_per_day: 1, weekdays_only: true, min_lead_days: 6, source: assumption, note: "bronchoscopy / EBUS slots (params/finland.yaml: placeholder 4/day)"}
+  ttnb_slot:      {type: server, capacity_per_day: 1, weekdays_only: true, min_lead_days: 6, source: assumption, note: "CT-guided transthoracic needle biopsy slots"}
+  pet_scanner:    {type: server, capacity_per_day: 1, weekdays_only: true, min_lead_days: 4, source: assumption, note: "PET-CT slots; regional resource (params/finland.yaml placeholder 8/day regional). No Finnish PET-CT wait found"}
+  tumour_board:   {type: batch, weekdays: [2], cutoff_days: 1, source: assumption, note: "weekly multidisciplinary lung board on Wednesday (weekly is Norwegian practice, STOKSTAD2019; Pirkanmaa lists the board without frequency)"}
+  treatment_slot: {type: server, capacity_per_day: 2, weekdays_only: true, min_lead_days: 10, source: assumption, note: "surgery / oncology start slots for this county; lead calibrated to about 37 d diagnosis to treatment (IHE2026, all cancers)"}
+  paper:          {type: none, source: assumption, note: "letters and administrative handling; waits are on the tests"}
+
+tests:
+  # ---------------------------------------------------------------- detection (primary care)
+  nurse_assessment:               # True = the nurse orders a chest X-ray herself; False = books a GP appointment
+    kind: visit
+    resource: nurse_appt
+    stage: detection
+    service_days: 0.04
+    p_positive: {lung_cancer_site: 0.45, lung_cancer_nonspec: 0.15, pneumonia: 0.25, copd_exacerbation: 0.10, benign_nodule: 0.10, other_benign: 0.06, self_limiting: 0.04}
+    source: assumption
+    note: "Finnish nurses often lack protocols to order imaging (KHALIFE2025: nurse first contact is the Finnish exception); most patients are passed on to a GP. Alarm symptoms are recognised more often"
+  gp_assessment:                  # True = the GP orders a chest X-ray (or suspects cancer)
+    kind: visit
+    resource: gp_appt
+    stage: detection
+    service_days: 0.04
+    p_positive: &gp_ppos {lung_cancer_site: 0.97, lung_cancer_nonspec: 0.45, pneumonia: 0.70, copd_exacerbation: 0.35, benign_nodule: 0.45, other_benign: 0.25, self_limiting: 0.12}
+    source: assumption
+    note: "EQUITY ASSUMPTION: alarm symptoms nearly always trigger imaging, non-specific symptoms in about 70% of cancers (KOO2023: 34 vs 114 d diagnostic interval with vs without guideline-concordant imaging after dyspnoea, so imaging is often not done at the first visit). The 70% is not a Finnish number"
+  gp_assessment_after_nurse:
+    kind: visit
+    resource: gp_appt
+    stage: detection
+    service_days: 0.04
+    p_positive: *gp_ppos
+    source: assumption
+    note: "same decision as gp_assessment, after the nurse passed the patient on"
+  chest_xray:                     # True = abnormal / suspicious for malignancy
+    kind: test
+    resource: xray
+    stage: detection
+    service_days: 0.04
+    report_days: {dist: lognormal, median: 1.5, p90: 4}
+    p_positive: {lung_cancer_site: 0.754, lung_cancer_nonspec: 0.754, pneumonia: 0.20, copd_exacerbation: 0.12, benign_nodule: 0.90, other_benign: 0.05, self_limiting: 0.02}
+    cost_eur: 40
+    source: BRADLEY2021
+    note: "cancer sensitivity 0.754 (86/114) in symptomatic over-50s; HSSIB2021 'about one in five' missed. False-positive rates are assumptions chosen so overall CXR PPV is near 9% (BRADLEY2021: 0.0902)"
+  gp_second_look:                 # CXR negative: True = GP still suspects cancer and refers
+    kind: visit
+    resource: paper
+    stage: detection
+    wait: {dist: lognormal, median: 2, p90: 5}
+    p_positive: {lung_cancer_site: 0.55, lung_cancer_nonspec: 0.10, pneumonia: 0.02, copd_exacerbation: 0.03, benign_nodule: 0.0, other_benign: 0.02, self_limiting: 0.01}
+    source: assumption
+    note: "EQUITY ASSUMPTION: clinical suspicion despite a negative film is rarer for non-specific presenters (BRADLEY2021: 28 of 114 one-year cancers had a negative film; negative film NPV 99.65%)"
+  symptoms_persist:               # no referral so far: True = symptoms persist and the patient re-presents later (safety net)
+    kind: admin
+    resource: paper
+    stage: detection
+    p_positive: {lung_cancer_site: 0.95, lung_cancer_nonspec: 0.90, pneumonia: 0.05, copd_exacerbation: 0.30, benign_nodule: 0.15, other_benign: 0.20, self_limiting: 0.03}
+    source: assumption
+    note: "cancer symptoms do not resolve, so most re-present; BRADLEY2021: risk after negative film 0.35% at 1 year. Non-cancer conditions mostly resolve"
+  gp_represent:                   # re-presentation: True = GP refers to the specialist
+    kind: visit
+    resource: gp_appt
+    stage: detection
+    extra_wait: {dist: lognormal, median: 14, p90: 35}
+    service_days: 0.04
+    p_positive: {lung_cancer_site: 0.98, lung_cancer_nonspec: 0.95, pneumonia: 0.15, copd_exacerbation: 0.20, benign_nodule: 0.30, other_benign: 0.15, self_limiting: 0.10}
+    source: assumption
+    note: "persisting symptoms weeks after reassurance (safety-net advice 'come back if it persists'); interval median 2 weeks is an assumption; a second visit raises the referral rate"
+  # ---------------------------------------------------------------- referral
+  gp_referral_letter:
+    kind: admin
+    resource: paper
+    stage: referral
+    wait: {dist: lognormal, median: 3, p90: 7}
+    source: assumption
+    note: "GP reads the result, writes and sends the referral; Satakunta first visit to referral about 2 weeks in total (MATTILA2025) incl. the imaging steps"
+  referral_triage:
+    kind: admin
+    resource: paper
+    stage: referral
+    wait: {dist: lognormal, median: 2, p90: 5}
+    source: PIRHA_PATH
+    note: "referral handling 1-2 working days, invitation letter 3-4 working days (Pirkanmaa)"
+  specialist_visit: &t_spec               # True = the specialist orders the work-up (CT); False = no further work-up
+    kind: visit
+    resource: clinic
+    stage: referral
+    service_days: 0.06
+    p_positive: {lung_cancer_site: 0.99, lung_cancer_nonspec: 0.99, pneumonia: 0.35, copd_exacerbation: 0.20, benign_nodule: 0.90, other_benign: 0.12, self_limiting: 0.05}
+    source: assumption
+    note: "specialists almost always work up a patient referred with a suspicious film; benign conditions are partly worked up anyway"
+  # ---------------------------------------------------------------- diagnosis
+  chest_ct: &t_ct                       # True = suspicious for malignancy; reveals tumour location
+    kind: test
+    resource: ct_scanner
+    stage: diagnosis
+    reveals: [location]
+    service_days: 0.04
+    report_days: {dist: lognormal, median: 3, p90: 7}
+    p_positive: {lung_cancer_site: 0.97, lung_cancer_nonspec: 0.97, pneumonia: 0.15, copd_exacerbation: 0.05, benign_nodule: 0.65, other_benign: 0.02, self_limiting: 0.01}
+    cost_eur: 250
+    source: assumption
+    note: "sensitivity 0.95 and specificity about 0.80 for diagnostic CT are assumptions (params/test_accuracy.yaml; LDCT screening sensitivity 0.846, HOREWEG2014). Report within about a week (PIRHA_PATH: usually within a week)"
+  bronchoscopy: &t_bronch
+    kind: test
+    resource: bronchoscopy
+    stage: diagnosis
+    invasive: true
+    service_days: 0.06
+    report_days: {dist: lognormal, median: 4, p90: 7}
+    p_positive: {lung_cancer_site: 1.0, lung_cancer_nonspec: 1.0, default: 0.0}
+    p_nondiagnostic: {by: location, central: 0.12, peripheral: 0.45}
+    cost_eur: 1200
+    source: RIVERA2013
+    note: "sensitivity central 0.88, peripheral 0.34-0.63 (RIVERA2013) expressed as non-diagnostic rates; a diagnostic sample is assumed specific (params/test_accuracy.yaml). Result 3-5 d after the procedure (PIRHA_PATH)"
+  ttnb: &t_ttnb
+    kind: test
+    resource: ttnb_slot
+    stage: diagnosis
+    invasive: true
+    service_days: 0.06
+    report_days: {dist: lognormal, median: 4.5, p90: 9}
+    p_positive: {lung_cancer_site: 1.0, lung_cancer_nonspec: 1.0, default: 0.0}
+    p_nondiagnostic: {by: location, central: 0.35, peripheral: 0.08}
+    cost_eur: 900
+    source: UZUN2017
+    note: "single-centre CT-guided FNA: 2.7% non-diagnostic, accuracy 97.6%; rate 0.08 for peripheral lesions and 0.35 for central (hard to reach) are assumptions. Pathology 4.5 d (STOKSTAD2019)"
+  pet_ct: &t_pet
+    kind: test
+    resource: pet_scanner
+    stage: diagnosis
+    service_days: 0.06
+    report_days: {dist: lognormal, median: 2.5, p90: 4}
+    p_positive: {lung_cancer_site: 0.968, lung_cancer_nonspec: 0.968, pneumonia: 0.30, copd_exacerbation: 0.10, benign_nodule: 0.25, other_benign: 0.05, self_limiting: 0.02}
+    cost_eur: 1500
+    source: GOULD2001
+    note: "sensitivity 0.968, specificity 0.778 at the operating point of current practice (stand-alone FDG-PET). Report 2.5 d from STOKSTAD2019"
+  # ---------------------------------------------------------------- treatment start
+  tumour_board:
+    kind: admin
+    resource: tumour_board
+    stage: treatment_start
+    report_days: 0.5
+    source: assumption
+    note: "weekly board; the treatment recommendation is recorded the same day"
+  treatment_booking: &t_treat              # start of treatment; clock stops when the slot comes
+    kind: admin
+    resource: treatment_slot
+    stage: treatment_start
+    extra_wait: {dist: lognormal, median: 4, p90: 12}
+    service_days: 0.01
+    source: assumption
+    note: "pre-treatment work-up (lung function, anaesthesia assessment, oncology visit) before the slot. Registry diagnosis to treatment is 37 d for all cancers (IHE2026); no lung-specific number"
+
+  # ---------------------------------------------------------------- fast-lane variants (used only by fast_track_nonspecific)
+  # The engine gives priority patients the reserved slots but not a shorter booking lead. A fast lane is mostly
+  # about the lead (an urgent appointment within days), so the variants below shorten the lead with a NEGATIVE
+  # extra_wait (the booking starts earlier than the ready time + lead). Same server, so fast-lane patients still
+  # compete for the same slots and everyone else is crowded out. Feature request: `urgent_lead_days` on servers.
+  specialist_visit_fast: {<<: *t_spec, extra_wait: {dist: fixed, value: -7}, source: assumption, note: "urgent appointment about 5 d after referral handling instead of 12 (IHE2026: Finnish target is assessment within 21 d of referral); workaround for a shorter lead"}
+  chest_ct_fast:         {<<: *t_ct, extra_wait: {dist: fixed, value: -3}, source: assumption, note: "urgent CT, lead 1 d instead of 4"}
+  bronchoscopy_fast:     {<<: *t_bronch, extra_wait: {dist: fixed, value: -4}, source: assumption, note: "urgent sampling, lead 2 d instead of 6"}
+  ttnb_fast:             {<<: *t_ttnb, extra_wait: {dist: fixed, value: -4}, source: assumption, note: "urgent sampling, lead 2 d instead of 6"}
+  pet_ct_fast:           {<<: *t_pet, extra_wait: {dist: fixed, value: -3}, source: assumption, note: "urgent PET-CT, lead 1 d instead of 4"}
+  treatment_booking_fast: {<<: *t_treat, extra_wait: {dist: uniform, low: -6, high: -2}, source: assumption, note: "urgent treatment start: lead about 6 d instead of 10 and no extra work-up wait"}
+
+flowcharts:
+  # ===================================================================== baseline
+  # Finnish-style sequential pathway: nurse or GP -> chest X-ray -> GP review -> referral -> specialist
+  # visit -> CT -> sampling -> PET-CT -> tumour board -> treatment.
+  baseline:
+    description: Finnish sequential pathway (nurse/GP, CXR, referral, specialist, CT, sampling, PET-CT, board, treatment)
+    policy:
+      first_contact: {mix: {nurse_visit: 0.5, gp_visit: 0.5}, source: KHALIFE2025}
+      sample_choice: {rules: [{when: "location == 'central'", choose: bronch}], mix: {bronch: 0.35, ttnb: 0.65}, source: assumption}
+    nodes: &base_nodes
+      - {id: first_contact, kind: choice, options: [nurse_visit, gp_visit], label: Nurse or GP first}
+      - {id: nurse_visit, test: nurse_assessment, label: Nurse assessment}
+      - {id: gp_visit, test: gp_assessment, label: GP appointment}
+      - {id: gp_after_nurse, test: gp_assessment_after_nurse, after: [nurse_visit], when: "not nurse_visit", label: GP appointment after nurse}
+      - {id: cxr_ordered, after_optional: [nurse_visit, gp_visit, gp_after_nurse], when: "nurse_visit or gp_visit or gp_after_nurse", label: Chest X-ray ordered}
+      - {id: no_cxr, after_optional: [nurse_visit, gp_visit, gp_after_nurse], when: "not (nurse_visit or gp_visit or gp_after_nurse)", label: No imaging ordered}
+      - {id: cxr, test: chest_xray, after: [cxr_ordered], label: Chest X-ray}
+      - {id: second_look, test: gp_second_look, after: [cxr], when: "not cxr", label: GP review of a negative film}
+      - {id: gp_referral, test: gp_referral_letter, after_optional: [cxr, second_look], when: "cxr or second_look", label: GP writes referral}
+      - {id: no_referral, after_optional: [gp_referral], when: "not gp_referral", label: No referral}
+      - {id: persist, test: symptoms_persist, after: [no_referral], label: Do symptoms persist}
+      - {id: discharge_no_return, kind: exit, outcome: discharged, after: [persist], when: "not persist", label: Discharged (does not return)}
+      - {id: represent, test: gp_represent, after: [persist], when: "persist", label: Re-presents to GP}
+      - {id: discharge_represent, kind: exit, outcome: discharged, after: [represent], when: "not represent", label: Discharged after re-presentation}
+      - {id: referral_in, after_optional: [gp_referral, represent], when: "gp_referral or represent", label: Specialist referral sent}
+      - {id: triage, test: referral_triage, after: [referral_in], label: Referral handling at hospital}
+      - {id: spec_visit, test: specialist_visit, after: [triage], label: Specialist visit}
+      - {id: discharge_spec, kind: exit, outcome: discharged, after: [spec_visit], when: "not spec_visit", label: Discharged by specialist}
+      - {id: ct, test: chest_ct, after: [spec_visit], when: "spec_visit", label: CT chest}
+      - {id: discharge_ct, kind: exit, outcome: discharged, after: [ct], when: "not ct", label: Discharged after negative CT}
+      - {id: sample_choice, kind: choice, after: [ct], when: "ct", options: [bronch, ttnb], label: Choose sampling method}
+      - {id: bronch, test: bronchoscopy, retry: {max: 0, on: nondiagnostic, fallback: ttnb}, label: Bronchoscopy}
+      - {id: ttnb, test: ttnb, label: Needle biopsy}
+      - {id: sampling_done, after_optional: [sample_choice, bronch, ttnb], label: Sampling finished}
+      - {id: diagnosis, kind: milestone, milestone: diagnosis, after: [sampling_done], label: Tissue diagnosis}
+      - {id: pet, test: pet_ct, after: [sampling_done], when: "bronch is not False and ttnb is not False", label: PET-CT}
+      - {id: mdt, test: tumour_board, after: [sampling_done], after_optional: [pet], label: Tumour board}
+      - {id: book_treat, test: treatment_booking, after: [mdt], when: "bronch or ttnb or (pet and bronch is not False and ttnb is not False)", label: Waiting for treatment slot}
+      - {id: discharge_mdt, kind: exit, outcome: discharged, after: [mdt], when: "not (bronch or ttnb or (pet and bronch is not False and ttnb is not False))", label: No cancer (board)}
+      - {id: treat, kind: exit, outcome: treatment, after: [book_treat], label: Treatment starts}
+
+  # ===================================================================== direct_ct
+  # Primary care can order CT directly: alarm-symptom presenters skip the chest X-ray, everyone with a
+  # suspicious film gets a CT before the referral. The specialist visit then starts from a CT.
+  direct_ct:
+    description: GPs order CT directly (alarm symptoms skip the chest X-ray; suspicious film goes to CT before referral). Needs about 2.7x the CT slots (CT demand is 7-8 a weekday against 2.6 in the baseline); with the baseline's 3 slots the CT queue grows without bound
+    resource_overrides:
+      ct_scanner: {capacity_per_day: 8}
+    policy:
+      first_contact: {mix: {nurse_visit: 0.5, gp_visit: 0.5}, source: KHALIFE2025}
+      imaging_route: {rules: [{when: "group == 'site_specific'", choose: route_ct}], default: route_cxr, source: assumption}
+      sample_choice: {rules: [{when: "location == 'central'", choose: bronch}], mix: {bronch: 0.35, ttnb: 0.65}, source: assumption}
+    nodes:
+      - {id: first_contact, kind: choice, options: [nurse_visit, gp_visit], label: Nurse or GP first}
+      - {id: nurse_visit, test: nurse_assessment, label: Nurse assessment}
+      - {id: gp_visit, test: gp_assessment, label: GP appointment}
+      - {id: gp_after_nurse, test: gp_assessment_after_nurse, after: [nurse_visit], when: "not nurse_visit", label: GP appointment after nurse}
+      - {id: img_ordered, after_optional: [nurse_visit, gp_visit, gp_after_nurse], when: "nurse_visit or gp_visit or gp_after_nurse", label: Imaging ordered}
+      - {id: no_img, after_optional: [nurse_visit, gp_visit, gp_after_nurse], when: "not (nurse_visit or gp_visit or gp_after_nurse)", label: No imaging ordered}
+      - {id: imaging_route, kind: choice, after: [img_ordered], options: [route_cxr, route_ct], label: Chest X-ray or direct CT}
+      - {id: route_cxr, label: Chest X-ray first}
+      - {id: route_ct, label: Direct CT}
+      - {id: cxr, test: chest_xray, after: [route_cxr], label: Chest X-ray}
+      - {id: second_look, test: gp_second_look, after: [cxr], when: "not cxr", label: GP review of a negative film}
+      - {id: ct_first, test: chest_ct, after: [route_ct], label: CT ordered by GP (no X-ray)}
+      - {id: ct_gp, test: chest_ct, after: [cxr], when: "cxr", label: CT ordered by GP after suspicious film}
+      - {id: gp_referral, test: gp_referral_letter, after_optional: [ct_first, ct_gp, second_look], when: "ct_first or ct_gp or second_look", label: GP writes referral}
+      - {id: no_referral, after_optional: [gp_referral], when: "not gp_referral", label: No referral}
+      - {id: persist, test: symptoms_persist, after: [no_referral], label: Do symptoms persist}
+      - {id: discharge_no_return, kind: exit, outcome: discharged, after: [persist], when: "not persist", label: Discharged (does not return)}
+      - {id: represent, test: gp_represent, after: [persist], when: "persist", label: Re-presents to GP}
+      - {id: discharge_represent, kind: exit, outcome: discharged, after: [represent], when: "not represent", label: Discharged after re-presentation}
+      - {id: referral_in, after_optional: [gp_referral, represent], when: "gp_referral or represent", label: Specialist referral sent}
+      - {id: triage, test: referral_triage, after: [referral_in], label: Referral handling at hospital}
+      - {id: spec_visit, test: specialist_visit, after: [triage], label: Specialist visit}
+      - {id: discharge_spec, kind: exit, outcome: discharged, after: [spec_visit], when: "not spec_visit", label: Discharged by specialist}
+      - {id: ct_spec, test: chest_ct, after: [spec_visit], when: "spec_visit and not (ct_first or ct_gp)", label: CT ordered by specialist (none done yet)}
+      - {id: ct_known, after: [spec_visit], after_optional: [ct_spec, ct_first, ct_gp], when: "spec_visit and (ct_first or ct_gp or ct_spec)", label: Suspicious CT available}
+      - {id: discharge_ct, kind: exit, outcome: discharged, after: [spec_visit], after_optional: [ct_spec, ct_first, ct_gp], when: "spec_visit and not (ct_first or ct_gp or ct_spec)", label: Discharged after negative CT}
+      - {id: sample_choice, kind: choice, after: [ct_known], options: [bronch, ttnb], label: Choose sampling method}
+      - {id: bronch, test: bronchoscopy, retry: {max: 0, on: nondiagnostic, fallback: ttnb}, label: Bronchoscopy}
+      - {id: ttnb, test: ttnb, label: Needle biopsy}
+      - {id: sampling_done, after_optional: [sample_choice, bronch, ttnb], label: Sampling finished}
+      - {id: diagnosis, kind: milestone, milestone: diagnosis, after: [sampling_done], label: Tissue diagnosis}
+      - {id: pet, test: pet_ct, after: [sampling_done], when: "bronch is not False and ttnb is not False", label: PET-CT}
+      - {id: mdt, test: tumour_board, after: [sampling_done], after_optional: [pet], label: Tumour board}
+      - {id: book_treat, test: treatment_booking, after: [mdt], when: "bronch or ttnb or (pet and bronch is not False and ttnb is not False)", label: Waiting for treatment slot}
+      - {id: discharge_mdt, kind: exit, outcome: discharged, after: [mdt], when: "not (bronch or ttnb or (pet and bronch is not False and ttnb is not False))", label: No cancer (board)}
+      - {id: treat, kind: exit, outcome: treatment, after: [book_treat], label: Treatment starts}
+
+  # ===================================================================== bundled_workup
+  # Stokstad-style: at the first specialist visit CT is ordered together with PET-CT (for patients with a
+  # suspicious film), the tumour board meets BEFORE sampling, and sampling runs while the treatment slot is
+  # booked. Treatment starts when both the slot and the sampling result are there.
+  bundled_workup:
+    description: CT and PET-CT ordered together at the specialist visit, board before sampling, sampling while treatment is booked. Orders about 2.8x as many PET-CT scans (PET demand 2.3 a weekday against 0.8), so it needs 3 PET slots a day; with 1 slot the PET queue grows without bound
+    resource_overrides:
+      pet_scanner: {capacity_per_day: 3}
+    policy:
+      first_contact: {mix: {nurse_visit: 0.5, gp_visit: 0.5}, source: KHALIFE2025}
+      sample_choice: {rules: [{when: "location == 'central'", choose: bronch}], mix: {bronch: 0.35, ttnb: 0.65}, source: assumption}
+    nodes:
+      - {id: first_contact, kind: choice, options: [nurse_visit, gp_visit], label: Nurse or GP first}
+      - {id: nurse_visit, test: nurse_assessment, label: Nurse assessment}
+      - {id: gp_visit, test: gp_assessment, label: GP appointment}
+      - {id: gp_after_nurse, test: gp_assessment_after_nurse, after: [nurse_visit], when: "not nurse_visit", label: GP appointment after nurse}
+      - {id: cxr_ordered, after_optional: [nurse_visit, gp_visit, gp_after_nurse], when: "nurse_visit or gp_visit or gp_after_nurse", label: Chest X-ray ordered}
+      - {id: no_cxr, after_optional: [nurse_visit, gp_visit, gp_after_nurse], when: "not (nurse_visit or gp_visit or gp_after_nurse)", label: No imaging ordered}
+      - {id: cxr, test: chest_xray, after: [cxr_ordered], label: Chest X-ray}
+      - {id: second_look, test: gp_second_look, after: [cxr], when: "not cxr", label: GP review of a negative film}
+      - {id: gp_referral, test: gp_referral_letter, after_optional: [cxr, second_look], when: "cxr or second_look", label: GP writes referral}
+      - {id: no_referral, after_optional: [gp_referral], when: "not gp_referral", label: No referral}
+      - {id: persist, test: symptoms_persist, after: [no_referral], label: Do symptoms persist}
+      - {id: discharge_no_return, kind: exit, outcome: discharged, after: [persist], when: "not persist", label: Discharged (does not return)}
+      - {id: represent, test: gp_represent, after: [persist], when: "persist", label: Re-presents to GP}
+      - {id: discharge_represent, kind: exit, outcome: discharged, after: [represent], when: "not represent", label: Discharged after re-presentation}
+      - {id: referral_in, after_optional: [gp_referral, represent], when: "gp_referral or represent", label: Specialist referral sent}
+      - {id: triage, test: referral_triage, after: [referral_in], label: Referral handling at hospital}
+      - {id: spec_visit, test: specialist_visit, after: [triage], label: Specialist visit}
+      - {id: discharge_spec, kind: exit, outcome: discharged, after: [spec_visit], when: "not spec_visit", label: Discharged by specialist}
+      - {id: ct, test: chest_ct, after: [spec_visit], when: "spec_visit", label: CT chest}
+      - {id: pet_early, test: pet_ct, after: [spec_visit], when: "spec_visit and cxr", label: PET-CT ordered with the CT}
+      - {id: pet_after_ct, test: pet_ct, after: [ct], when: "ct and not cxr", label: PET-CT after CT (no suspicious film)}
+      - {id: discharge_ct, kind: exit, outcome: discharged, after: [ct], when: "not ct", label: Discharged after negative CT}
+      - {id: mdt, test: tumour_board, after: [ct], after_optional: [pet_early, pet_after_ct], when: "ct", label: Tumour board (before sampling)}
+      - {id: book_treat, test: treatment_booking, after: [mdt], when: "pet_early is not False and pet_after_ct is not False", label: Treatment slot booked while sampling (PET not negative)}
+      - {id: sample_choice, kind: choice, after: [mdt], options: [bronch, ttnb], label: Choose sampling method}
+      - {id: bronch, test: bronchoscopy, retry: {max: 0, on: nondiagnostic, fallback: ttnb}, label: Bronchoscopy}
+      - {id: ttnb, test: ttnb, label: Needle biopsy}
+      - {id: sampling_done, after_optional: [sample_choice, bronch, ttnb], label: Sampling finished}
+      - {id: diagnosis, kind: milestone, milestone: diagnosis, after: [sampling_done], label: Tissue diagnosis}
+      - {id: book_late, test: treatment_booking, after: [sampling_done], after_optional: [book_treat], when: "(bronch or ttnb or ((pet_early or pet_after_ct) and bronch is not False and ttnb is not False)) and not book_treat", label: Treatment slot booked after sampling (PET was negative)}
+      - {id: discharge_end, kind: exit, outcome: discharged, after: [sampling_done], when: "not (bronch or ttnb or ((pet_early or pet_after_ct) and bronch is not False and ttnb is not False))", label: No cancer (sampling / PET)}
+      - {id: treat, kind: exit, outcome: treatment, after: [sampling_done], after_optional: [book_treat, book_late], when: "(bronch or ttnb or ((pet_early or pet_after_ct) and bronch is not False and ttnb is not False))", label: Treatment starts}
+
+  # ===================================================================== fast_track_nonspecific
+  # Baseline plus a fast lane: non-specific presenters with a suspicious film get priority in every server
+  # queue from then on (fast_track: true), use the slots reserved at the clinic and the CT (urgent_reserved_share)
+  # and get short booking leads at every later step (the *_fast tests). Slots a fast lane does not use are lost
+  # to everyone else, and fast-lane bookings take the earliest free slots, so the others wait longer (crowd-out).
+  fast_track_nonspecific:
+    description: Baseline plus a fast lane for non-specific presenters with a suspicious X-ray (priority, reserved clinic and CT slots, short booking leads)
+    policy:
+      first_contact: {mix: {nurse_visit: 0.5, gp_visit: 0.5}, source: KHALIFE2025}
+      sample_choice: {rules: [{when: "location == 'central'", choose: bronch}], mix: {bronch: 0.35, ttnb: 0.65}, source: assumption}
+      sample_choice_fast: {rules: [{when: "location == 'central'", choose: bronch_fast}], mix: {bronch_fast: 0.35, ttnb_fast: 0.65}, source: assumption}
+    resource_overrides:
+      clinic: {urgent_reserved_share: 0.14}
+      ct_scanner: {urgent_reserved_share: 0.32}
+    nodes:
+      - {id: first_contact, kind: choice, options: [nurse_visit, gp_visit], label: Nurse or GP first}
+      - {id: nurse_visit, test: nurse_assessment, label: Nurse assessment}
+      - {id: gp_visit, test: gp_assessment, label: GP appointment}
+      - {id: gp_after_nurse, test: gp_assessment_after_nurse, after: [nurse_visit], when: "not nurse_visit", label: GP appointment after nurse}
+      - {id: cxr_ordered, after_optional: [nurse_visit, gp_visit, gp_after_nurse], when: "nurse_visit or gp_visit or gp_after_nurse", label: Chest X-ray ordered}
+      - {id: no_cxr, after_optional: [nurse_visit, gp_visit, gp_after_nurse], when: "not (nurse_visit or gp_visit or gp_after_nurse)", label: No imaging ordered}
+      - {id: cxr, test: chest_xray, after: [cxr_ordered], label: Chest X-ray}
+      - {id: fast_lane, fast_track: true, after: [cxr], when: "cxr and group == 'non_specific'", label: Fast lane (non-specific with suspicious film)}
+      - {id: second_look, test: gp_second_look, after: [cxr], when: "not cxr", label: GP review of a negative film}
+      - {id: gp_referral, test: gp_referral_letter, after_optional: [cxr, second_look], when: "cxr or second_look", label: GP writes referral}
+      - {id: no_referral, after_optional: [gp_referral], when: "not gp_referral", label: No referral}
+      - {id: persist, test: symptoms_persist, after: [no_referral], label: Do symptoms persist}
+      - {id: discharge_no_return, kind: exit, outcome: discharged, after: [persist], when: "not persist", label: Discharged (does not return)}
+      - {id: represent, test: gp_represent, after: [persist], when: "persist", label: Re-presents to GP}
+      - {id: discharge_represent, kind: exit, outcome: discharged, after: [represent], when: "not represent", label: Discharged after re-presentation}
+      - {id: referral_in, after_optional: [gp_referral, represent], when: "gp_referral or represent", label: Specialist referral sent}
+      - {id: triage, test: referral_triage, after: [referral_in], label: Referral handling at hospital}
+      - {id: spec_visit, test: specialist_visit, after: [triage], when: "not fast_lane", label: Specialist visit}
+      - {id: spec_visit_fast, test: specialist_visit_fast, after: [triage], when: "fast_lane", label: Specialist visit (fast lane)}
+      - {id: spec_ok, after: [triage], after_optional: [spec_visit, spec_visit_fast], when: "spec_visit or spec_visit_fast", label: Specialist orders work-up}
+      - {id: discharge_spec, kind: exit, outcome: discharged, after: [triage], after_optional: [spec_visit, spec_visit_fast], when: "not (spec_visit or spec_visit_fast)", label: Discharged by specialist}
+      - {id: ct, test: chest_ct, after: [spec_ok], when: "not fast_lane", label: CT chest}
+      - {id: ct_fast, test: chest_ct_fast, after: [spec_ok], when: "fast_lane", label: CT chest (fast lane)}
+      - {id: ct_ok, after: [spec_ok], after_optional: [ct, ct_fast], when: "ct or ct_fast", label: Suspicious CT}
+      - {id: discharge_ct, kind: exit, outcome: discharged, after: [spec_ok], after_optional: [ct, ct_fast], when: "not (ct or ct_fast)", label: Discharged after negative CT}
+      - {id: sample_choice, kind: choice, after: [ct_ok], when: "not fast_lane", options: [bronch, ttnb], label: Choose sampling method}
+      - {id: sample_choice_fast, kind: choice, after: [ct_ok], when: "fast_lane", options: [bronch_fast, ttnb_fast], label: Choose sampling method (fast lane)}
+      - {id: bronch, test: bronchoscopy, retry: {max: 0, on: nondiagnostic, fallback: ttnb}, label: Bronchoscopy}
+      - {id: ttnb, test: ttnb, label: Needle biopsy}
+      - {id: bronch_fast, test: bronchoscopy_fast, retry: {max: 0, on: nondiagnostic, fallback: ttnb_fast}, label: Bronchoscopy (fast lane)}
+      - {id: ttnb_fast, test: ttnb_fast, label: Needle biopsy (fast lane)}
+      - {id: sampling_done, after_optional: [sample_choice, sample_choice_fast, bronch, ttnb, bronch_fast, ttnb_fast], label: Sampling finished}
+      - {id: diagnosis, kind: milestone, milestone: diagnosis, after: [sampling_done], label: Tissue diagnosis}
+      - {id: pet, test: pet_ct, after: [sampling_done], when: "not fast_lane and (bronch is not False and ttnb is not False and bronch_fast is not False and ttnb_fast is not False)", label: PET-CT}
+      - {id: pet_fast, test: pet_ct_fast, after: [sampling_done], when: "fast_lane and (bronch is not False and ttnb is not False and bronch_fast is not False and ttnb_fast is not False)", label: PET-CT (fast lane)}
+      - {id: mdt, test: tumour_board, after: [sampling_done], after_optional: [pet, pet_fast], label: Tumour board}
+      - {id: book_treat, test: treatment_booking, after: [mdt], when: "not fast_lane and ((bronch or ttnb or bronch_fast or ttnb_fast) or ((pet or pet_fast) and (bronch is not False and ttnb is not False and bronch_fast is not False and ttnb_fast is not False)))", label: Waiting for treatment slot}
+      - {id: book_treat_fast, test: treatment_booking_fast, after: [mdt], when: "fast_lane and ((bronch or ttnb or bronch_fast or ttnb_fast) or ((pet or pet_fast) and (bronch is not False and ttnb is not False and bronch_fast is not False and ttnb_fast is not False)))", label: Waiting for treatment slot (fast lane)}
+      - {id: discharge_mdt, kind: exit, outcome: discharged, after: [mdt], when: "not ((bronch or ttnb or bronch_fast or ttnb_fast) or ((pet or pet_fast) and (bronch is not False and ttnb is not False and bronch_fast is not False and ttnb_fast is not False)))", label: No cancer (board)}
+      - {id: treat, kind: exit, outcome: treatment, after_optional: [book_treat, book_treat_fast], when: "book_treat or book_treat_fast", label: Treatment starts}
+
+  # ===================================================================== baseline_plus_capacity
+  # Control for the two reordering alternatives: the baseline order with the same extra capacity they need
+  # (CT 8 slots, PET-CT 3 slots). Differences between this row and direct_ct / bundled_workup are due to the ORDER of steps.
+  baseline_plus_capacity:
+    description: Baseline order with the extra CT (8 slots) and PET-CT (3 slots) capacity that direct_ct and bundled_workup need (capacity-only control)
+    policy:
+      first_contact: {mix: {nurse_visit: 0.5, gp_visit: 0.5}, source: KHALIFE2025}
+      sample_choice: {rules: [{when: "location == 'central'", choose: bronch}], mix: {bronch: 0.35, ttnb: 0.65}, source: assumption}
+    resource_overrides:
+      ct_scanner: {capacity_per_day: 8}
+      pet_scanner: {capacity_per_day: 3}
+    nodes: *base_nodes
