@@ -1,0 +1,279 @@
+{
+  "schema_version": 1,
+  "description": "Recorded outputs from checkpoint2350, NF4 experts; not live inference. Photo cases are unchanged training-split examples, not validation.",
+  "entries": {
+    "pathway": {
+      "title": "Synthetic pathway intake",
+      "request": {
+        "case": {
+          "case_id": "sanity-synthetic-pathway",
+          "context": "Synthetic diagnostic-pathway intake. Propose one allowed next step for a clinician to review.",
+          "step": 1,
+          "evidence": [
+            {
+              "source_id": "sim:intake",
+              "available_at_step": 0,
+              "text": "The intake description is available for review."
+            },
+            {
+              "source_id": "sim:future",
+              "available_at_step": 3,
+              "text": "This future simulator observation must not enter the current decision."
+            }
+          ]
+        },
+        "workflow": {
+          "id": "synthetic-intake",
+          "version": "1",
+          "root": "intake",
+          "nodes": {
+            "intake": {
+              "question": "Which allowed next step should be proposed for review?",
+              "protocol": "Synthetic integration workflow only. A clinician reviews the proposal; no treatment or referral is executed.",
+              "actions": [
+                {
+                  "id": "review",
+                  "description": "Review the available history with the clinician",
+                  "next": "await-review"
+                },
+                {
+                  "id": "complete-intake",
+                  "description": "Request the missing intake information",
+                  "next": "await-information"
+                }
+              ]
+            },
+            "await-review": {
+              "terminal": true
+            },
+            "await-information": {
+              "terminal": true
+            }
+          }
+        },
+        "node_id": "intake"
+      },
+      "decision": {
+        "id": "e374b46e23d54e18ba1679bee11695fb",
+        "created_at": "2026-11-14T18:10:55.709024+00:00",
+        "case_id": "sanity-synthetic-pathway",
+        "backend": {
+          "mode": "model",
+          "model": "nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-BF16",
+          "checkpoint_sha256": "22570c201a9e3d25dcdf7aa904770a568328e034ccb5ac89623784707a7323e8",
+          "step": 2350,
+          "revision": "fb0ee0bc6b3f70342afd8d84cb80dbadbaa8a1fe",
+          "training_identity": "003086694525587bde55201db3713f64f434df916492669a2836b871cc7d089d",
+          "quantization": "nf4-experts-merged-adapters"
+        },
+        "score_kind": "candidate_softmax",
+        "requires_review": true,
+        "questions": [
+          {
+            "id": "intake",
+            "text": "Which allowed next step should be proposed for review?",
+            "candidate_format": "newline",
+            "choices": [
+              {
+                "id": "review",
+                "text": "Review the available history with the clinician",
+                "score": 0.28601574897766113
+              },
+              {
+                "id": "complete-intake",
+                "text": "Request the missing intake information",
+                "score": 0.7139842510223389
+              }
+            ],
+            "proposed_action_id": "complete-intake",
+            "score_margin": 0.42796850204467773
+          }
+        ],
+        "cache": {
+          "enabled": true,
+          "context_hits": 0,
+          "candidate_hits": 0,
+          "candidate_count": 2,
+          "bytes": 98304,
+          "max_bytes": 67108864
+        },
+        "latency_ms": 5160.14,
+        "pathway": {
+          "workflow_id": "synthetic-intake",
+          "workflow_version": "1",
+          "workflow_sha256": "e576a952f5586ac94bd9d6ffeaeb8b0c394f26fa48ca9f468924cff3497a8b4e",
+          "node_id": "intake",
+          "step": 1,
+          "visible_source_ids": [
+            "sim:intake"
+          ],
+          "allowed_next_nodes": {
+            "review": "await-review",
+            "complete-intake": "await-information"
+          }
+        },
+        "proposed_next_node_id": "await-information"
+      },
+      "recorded_at": "2026-11-14T18:10:57.417709+00:00"
+    },
+    "example-1": {
+      "title": "Example 1",
+      "image_example_id": "example-1",
+      "image_sha256": "6ab7c22db560a67cf62777107a5170d15b05c5fae3e8d1bc6da891e92b67bbac",
+      "source_split": "train",
+      "decision": {
+        "id": "700a4dae895a47c68ec0ebcc40d37790",
+        "created_at": "2026-11-14T18:11:06.897454+00:00",
+        "case_id": "demo-example-1",
+        "backend": {
+          "mode": "model",
+          "model": "nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-BF16",
+          "checkpoint_sha256": "22570c201a9e3d25dcdf7aa904770a568328e034ccb5ac89623784707a7323e8",
+          "step": 2350,
+          "revision": "fb0ee0bc6b3f70342afd8d84cb80dbadbaa8a1fe",
+          "training_identity": "003086694525587bde55201db3713f64f434df916492669a2836b871cc7d089d",
+          "quantization": "nf4-experts-merged-adapters"
+        },
+        "score_kind": "candidate_softmax",
+        "requires_review": true,
+        "questions": [
+          {
+            "id": "skin-category",
+            "text": "Is this skin lesion malignant?",
+            "candidate_format": "inline",
+            "choices": [
+              {
+                "id": "non-malignant",
+                "text": "Non-malignant",
+                "score": 0.9980130195617676
+              },
+              {
+                "id": "malignant",
+                "text": "Malignant",
+                "score": 0.0019869038369506598
+              }
+            ],
+            "proposed_action_id": "non-malignant",
+            "score_margin": 0.9960261157248169
+          }
+        ],
+        "cache": {
+          "enabled": true,
+          "context_hits": 0,
+          "candidate_hits": 0,
+          "candidate_count": 2,
+          "bytes": 196608,
+          "max_bytes": 67108864
+        },
+        "latency_ms": 6210.6
+      },
+      "recorded_at": "2026-11-14T18:11:08.742843+00:00"
+    },
+    "example-2": {
+      "title": "Example 2",
+      "image_example_id": "example-2",
+      "image_sha256": "7828a76f045f7bef037f2d9d81175ae8d4582fad92ace3faaf588c3736c9fb1c",
+      "source_split": "train",
+      "decision": {
+        "id": "09048d5d63df4db0bf485f8ce3cf5318",
+        "created_at": "2026-11-14T18:11:23.773174+00:00",
+        "case_id": "demo-example-2",
+        "backend": {
+          "mode": "model",
+          "model": "nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-BF16",
+          "checkpoint_sha256": "22570c201a9e3d25dcdf7aa904770a568328e034ccb5ac89623784707a7323e8",
+          "step": 2350,
+          "revision": "fb0ee0bc6b3f70342afd8d84cb80dbadbaa8a1fe",
+          "training_identity": "003086694525587bde55201db3713f64f434df916492669a2836b871cc7d089d",
+          "quantization": "nf4-experts-merged-adapters"
+        },
+        "score_kind": "candidate_softmax",
+        "requires_review": true,
+        "questions": [
+          {
+            "id": "skin-category",
+            "text": "Is this skin lesion malignant?",
+            "candidate_format": "inline",
+            "choices": [
+              {
+                "id": "non-malignant",
+                "text": "Non-malignant",
+                "score": 0.39888378977775574
+              },
+              {
+                "id": "malignant",
+                "text": "Malignant",
+                "score": 0.6011162400245667
+              }
+            ],
+            "proposed_action_id": "malignant",
+            "score_margin": 0.2022324502468109
+          }
+        ],
+        "cache": {
+          "enabled": true,
+          "context_hits": 0,
+          "candidate_hits": 2,
+          "candidate_count": 2,
+          "bytes": 262144,
+          "max_bytes": 67108864
+        },
+        "latency_ms": 4402.526
+      },
+      "recorded_at": "2026-11-14T18:11:25.122142+00:00"
+    },
+    "example-3": {
+      "title": "Example 3",
+      "image_example_id": "example-3",
+      "image_sha256": "8f6c43b7e96201d265222c38c07588b4552ddf9cb08f22902621b4419857f266",
+      "source_split": "train",
+      "decision": {
+        "id": "e01a6ccdacd74796a748e859719d9770",
+        "created_at": "2026-11-14T18:11:31.156336+00:00",
+        "case_id": "demo-example-3",
+        "backend": {
+          "mode": "model",
+          "model": "nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-BF16",
+          "checkpoint_sha256": "22570c201a9e3d25dcdf7aa904770a568328e034ccb5ac89623784707a7323e8",
+          "step": 2350,
+          "revision": "fb0ee0bc6b3f70342afd8d84cb80dbadbaa8a1fe",
+          "training_identity": "003086694525587bde55201db3713f64f434df916492669a2836b871cc7d089d",
+          "quantization": "nf4-experts-merged-adapters"
+        },
+        "score_kind": "candidate_softmax",
+        "requires_review": true,
+        "questions": [
+          {
+            "id": "skin-category",
+            "text": "Is this skin lesion malignant?",
+            "candidate_format": "inline",
+            "choices": [
+              {
+                "id": "non-malignant",
+                "text": "Non-malignant",
+                "score": 0.9969610571861267
+              },
+              {
+                "id": "malignant",
+                "text": "Malignant",
+                "score": 0.0030389330349862576
+              }
+            ],
+            "proposed_action_id": "non-malignant",
+            "score_margin": 0.9939221241511405
+          }
+        ],
+        "cache": {
+          "enabled": true,
+          "context_hits": 0,
+          "candidate_hits": 2,
+          "candidate_count": 2,
+          "bytes": 294912,
+          "max_bytes": 67108864
+        },
+        "latency_ms": 3722.761
+      },
+      "recorded_at": "2026-11-14T18:11:32.625880+00:00"
+    }
+  }
+}

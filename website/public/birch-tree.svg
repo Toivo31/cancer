@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none">
+  <title>BIRCH branching tree</title>
+  <g stroke="#262b25" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M24 44V32M24 32 12 22V17M24 32 36 22V17"/>
+    <path d="M12 17 6 11V5M12 17 18 11V5M36 17 30 11V5M36 17 42 11V5"/>
+    <path d="M20 44h8"/>
+  </g>
+</svg>

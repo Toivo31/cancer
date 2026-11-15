@@ -1,0 +1,91 @@
+{
+  "delivery": "precomputed",
+  "description": "Recorded medical exam question; integration example, not clinical validation. Archived checkpoint1138, not2350.",
+  "source_id": "medmcqa:117423",
+  "dataset": "medmcqa",
+  "request": {
+    "case_id": "sanity-e20c5416c0a0b3cd3341ca6e",
+    "context": "Most common jaw tumor is -",
+    "questions": [
+      {
+        "id": "sanity",
+        "text": "Most common jaw tumor is -",
+        "candidate_format": "inline",
+        "choices": [
+          {
+            "id": "choice-0",
+            "text": "Ameloblastoma"
+          },
+          {
+            "id": "choice-1",
+            "text": "Ostogenie sarcoma"
+          },
+          {
+            "id": "choice-2",
+            "text": "Fibrosarcoma"
+          },
+          {
+            "id": "choice-3",
+            "text": "Squamous cell carcinoma"
+          }
+        ]
+      }
+    ]
+  },
+  "decision": {
+    "id": "6a15cadd5e074278a8bcf3e24fb915e1",
+    "created_at": "2026-11-14T15:00:16.464386+00:00",
+    "case_id": "sanity-e20c5416c0a0b3cd3341ca6e",
+    "backend": {
+      "mode": "model",
+      "model": "nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-BF16",
+      "checkpoint_sha256": "43ff62d125eef476fffbd32aaf43ee9130a5ec7212c973592aa91625b3e883a5",
+      "step": 1138,
+      "revision": "fb0ee0bc6b3f70342afd8d84cb80dbadbaa8a1fe",
+      "training_identity": "0874771d4646ff78946d85e5f8195eceb2daa76957cb2008b5c380ecdc85f75e",
+      "quantization": "nf4-experts-merged-adapters"
+    },
+    "score_kind": "candidate_softmax",
+    "requires_review": true,
+    "questions": [
+      {
+        "id": "sanity",
+        "text": "Most common jaw tumor is -",
+        "candidate_format": "inline",
+        "choices": [
+          {
+            "id": "choice-0",
+            "text": "Ameloblastoma",
+            "score": 0.9849224090576172
+          },
+          {
+            "id": "choice-1",
+            "text": "Ostogenie sarcoma",
+            "score": 0.0047689503990113735
+          },
+          {
+            "id": "choice-2",
+            "text": "Fibrosarcoma",
+            "score": 0.0026168799959123135
+          },
+          {
+            "id": "choice-3",
+            "text": "Squamous cell carcinoma",
+            "score": 0.007691760081797838
+          }
+        ],
+        "proposed_action_id": "choice-0",
+        "score_margin": 0.9772306489758193
+      }
+    ],
+    "cache": {
+      "enabled": true,
+      "context_hits": 0,
+      "candidate_hits": 0,
+      "candidate_count": 4,
+      "bytes": 3571712,
+      "max_bytes": 67108864
+    },
+    "latency_ms": 5414.693
+  }
+}
