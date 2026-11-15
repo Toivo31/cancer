@@ -6,7 +6,7 @@ from pathlib import Path
 import requests
 
 BASE=os.environ.get('WEBDRIVER_URL','http://127.0.0.1:4445')
-SITE=os.environ.get('WEBSITE_URL','https://cancer123--equal-care-pathways-web.us-east.modal.run/?release=20261115-6')
+SITE=os.environ.get('WEBSITE_URL','https://cancer123--equal-care-pathways-web.us-east.modal.run/?release=20261115-7')
 profile=Path.home()/('snap/firefox/common/equal-care-slides-qa-'+str(time.time_ns()));profile.mkdir(parents=True,exist_ok=True)
 r=requests.post(BASE+'/session',json={'capabilities':{'alwaysMatch':{'browserName':'firefox','moz:firefoxOptions':{'args':['-headless','-profile',str(profile)]}}}},timeout=60)
 r.raise_for_status();sid=r.json()['value']['sessionId'];url=BASE+'/session/'+sid
@@ -47,6 +47,8 @@ try:
  check('decision examples share one scrollable page','return document.documentElement.scrollHeight>innerHeight && document.querySelectorAll("[role=tab]").length===0')
  check('framework explained alongside graph','return document.querySelectorAll(".framework-rail article").length===6')
  check('model story links to Hugging Face','return document.querySelector(".hf-link").href==="https://huggingface.co/Toivo31/Nemotron-Birch"')
+ check('BIRCH branding','return document.title.includes("BIRCH") && document.querySelector(".brand").textContent.includes("BIRCH")')
+ check('decision failure modes and both thinking modes','return document.querySelectorAll(".failure-table article").length===3 && document.querySelectorAll(".thinking-modes article").length===2 && document.querySelector(".decision-limits").textContent.includes("wrong option")')
  check('all examples visible','return ["text","retrieval","photo","custom"].every(id=>!document.getElementById(id).hidden)')
  check('predefined examples have no live controls','return document.querySelectorAll("#text .live-call,#retrieval .live-call,#photo .live-call").length===0')
  check('medical text recorded result','return document.getElementById("text-result").textContent.includes("1138")')

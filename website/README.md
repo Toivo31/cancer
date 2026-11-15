@@ -1,6 +1,6 @@
-# Equal Care Pathways: three-slide website
+# BIRCH — Defining framework for automation
 
-Live: https://cancer123--equal-care-pathways-web.us-east.modal.run/?release=20261115-6
+Live: https://cancer123--equal-care-pathways-web.us-east.modal.run/?release=20261115-7
 
 1. **Simulation:** an automatically moving vertical branching graph, with no visible controls. Routes are simplified from the saved synthetic Finland baseline on `content/pages`. Intermediate steps and timing are compressed for illustration; no new search or live clinical simulation runs here.
 2. **Decision Studio:** saved Text and Photo examples plus live Custom questions. A separate example shows synthetic patient retrieval → context refinement → classification. All examples are listed together on one scrollable page. Saved photo and retrieval outputs are clearly labelled and run without GPU use.
@@ -37,3 +37,5 @@ Decision Studio lists all examples on one scrollable page. Predefined medical te
 The first graph is accompanied by six framework explanations: pathway configuration, available patient context, joint scoring of allowed actions with clinician review, optional record retrieval and context refinement, whole-pathway simulation, and optimiser proposals checked by rerunning the same cohort.
 
 Decision Studio introduces Nemotron-Birch with a brief nontechnical model story and a direct [Hugging Face link](https://huggingface.co/Toivo31/Nemotron-Birch), without a benchmark table or architecture specifications.
+
+Decision Studio explains LLM failure modes, the framework’s intended mitigations, direct System 1 style scoring, optional System 2 style evidence refinement, and the limitations that remain. Further-reading links point to primary OpenAI/Anthropic sources and the model card.
