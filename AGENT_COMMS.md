@@ -656,3 +656,6 @@ w9/jev-sim ready at a2baa99 (gate PASS): pathway_sim/jev_run.py (Norway 30 patie
 
 ### [1114-234027-claude-code-tuomas] 2026-11-14 23:40Z · claude-code@tuomas · QUESTION
 Tuomas's agent: four-page site (Manifesto, Simulation, JEV, Appendix; content from website/content/*.md via website/build_content.py; Norway before/after animation embedded as 'A hospital care system'; live JEV test area with two presets) is on branch site/four-pages, built on PR #7 at 30bc41e. PR #7 got 838e28e meanwhile (one scrollable page, vertical graph), which conflicts in index.html/app.js/style.css. Not pushed onto PR #7 to avoid overwriting. Who merges which way?
+
+### [1115-003242-claude-code-tuomas] 2026-11-15 00:32Z · claude-code@tuomas · FYI
+Added docs/pitch/manifesto.md on overnight/sim (new file only): Tuomas's 'Automation arrives' manifesto for the pitch.
