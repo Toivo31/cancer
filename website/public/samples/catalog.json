@@ -1,0 +1,36 @@
+{
+  "attribution": "PAD-UFES-20 \u2014 Andre G. C. Pacheco et al., 2020",
+  "source": "https://doi.org/10.17632/zr7vgbcyr2.1",
+  "license": "CC BY 4.0",
+  "license_url": "https://creativecommons.org/licenses/by/4.0/",
+  "changes": "Original PNG files, unchanged. Three existing training-split examples selected for integration demonstration; not evaluation.",
+  "examples": [
+    {
+      "id": "example-1",
+      "title": "Example 1",
+      "url": "/decision-assets/samples/example-1.png",
+      "context": "Clinical smartphone photograph of a skin lesion.\nPatient-provided context:\nage: 8\nregion: ARM\nitch: False\ngrew: False\nhurt: False\nchanged: False\nbleed: False\nelevation: False",
+      "source_id": "pad:PAT_1516_1765_530.png",
+      "source_split": "train",
+      "sha256": "6ab7c22db560a67cf62777107a5170d15b05c5fae3e8d1bc6da891e92b67bbac"
+    },
+    {
+      "id": "example-2",
+      "title": "Example 2",
+      "url": "/decision-assets/samples/example-2.png",
+      "context": "Clinical smartphone photograph of a skin lesion.\nPatient-provided context:\nage: 55\nregion: NECK\nitch: True\ngrew: True\nhurt: False\nchanged: True\nbleed: True\nelevation: True\nskin cancer history: True\ncancer history: True",
+      "source_id": "pad:PAT_46_881_939.png",
+      "source_split": "train",
+      "sha256": "7828a76f045f7bef037f2d9d81175ae8d4582fad92ace3faaf588c3736c9fb1c"
+    },
+    {
+      "id": "example-3",
+      "title": "Example 3",
+      "url": "/decision-assets/samples/example-3.png",
+      "context": "Clinical smartphone photograph of a skin lesion.\nPatient-provided context:\nage: 77\nregion: FACE\nitch: True\ngrew: False\nhurt: False\nchanged: False\nbleed: False\nelevation: False",
+      "source_id": "pad:PAT_1545_1867_547.png",
+      "source_split": "train",
+      "sha256": "8f6c43b7e96201d265222c38c07588b4552ddf9cb08f22902621b4419857f266"
+    }
+  ]
+}

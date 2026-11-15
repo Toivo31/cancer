@@ -1,0 +1,79 @@
+{
+  "_about": "The narration as written by the team (trailer2.js). Placeholder voice until the team's own recording: put n1 ... n8 (n4a, n4b) in a folder and run build_timeline.py --from-dir <folder> --rate 1.0",
+  "voice_style": "Speak in a normal, natural male voice, like a clear and friendly presenter. Confident, a little brisk. Conversational, not dramatic, not announcer-like.",
+  "rate": 1.1,
+  "lines": [
+    {
+      "id": "n1",
+      "at": "0:00",
+      "text": "Two people, the same cancer. One waits months longer for treatment.",
+      "phrases": [
+        "Two people, the same cancer.",
+        "One waits months longer for treatment."
+      ]
+    },
+    {
+      "id": "n2",
+      "at": "0:00",
+      "text": "Doctors either trust AI too little and check everything, or too much and check nothing.",
+      "phrases": [
+        "Doctors either trust AI too little and check everything,",
+        "or too much and check nothing."
+      ],
+      "rate": 1.05,
+      "_locked": "approved by the team: this recording (v4a_modes.wav) at 1.05x, slide as in trailer.js. Do not change."
+    },
+    {
+      "id": "n3",
+      "at": "0:00",
+      "text": "In our framework, clinicians define each pipeline, the system runs it, and when the model is unsure, a doctor reviews the case.",
+      "phrases": [
+        "In our framework,",
+        "clinicians define each pipeline,",
+        "the system runs it,",
+        "and when the model is unsure, a doctor reviews the case."
+      ]
+    },
+    {
+      "id": "n4a",
+      "at": "0:00",
+      "text": "We propose a framework where an expert defines a standardized care plan. From initial symptoms to post-cure screening, this can largely be automated by our decision model, specialized in medical data.",
+      "phrases": [
+        "We propose a framework where an expert defines a standardized care plan.",
+        "From initial symptoms to post-cure screening,",
+        "this can largely be automated by our decision model, specialized in medical data."
+      ]
+    },
+    {
+      "id": "n4b",
+      "at": "0:00",
+      "text": "We believe that although much of medicine can't be automated, we could free doctors from repeating tasks to concentrate on difficult cases. Whether it's scheduling visits, routing patients to the correct specialists, or identifying symptoms.",
+      "phrases": [
+        "We believe that although much of medicine can't be automated,",
+        "we could free doctors from repeating tasks to concentrate on difficult cases.",
+        "Whether it's scheduling visits,",
+        "routing patients to the correct specialists,",
+        "or identifying symptoms."
+      ]
+    },
+    {
+      "id": "n5",
+      "at": "0:00",
+      "text": "For example, our decision model can read the patient history automatically and select from a predefined set of actions whether urgent care is needed.",
+      "phrases": [
+        "For example, our decision model can read the patient history automatically and select from a predefined set of actions whether urgent care is needed."
+      ]
+    },
+    {
+      "id": "n7",
+      "at": "0:00",
+      "text": "Our suggestion: pilot one clinician-validated pipeline in North Savo, tracking treatment within target times. More time for hard cases and the human encounter.",
+      "phrases": [
+        "Our suggestion:",
+        "pilot one clinician-validated pipeline in North Savo,",
+        "tracking treatment within target times.",
+        "More time for hard cases and the human encounter."
+      ]
+    }
+  ]
+}

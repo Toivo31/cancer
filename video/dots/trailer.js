@@ -12,9 +12,9 @@ const TRAILER = (() => {
   const active = qs.has("trailer");
   if (!active) return { active: false };
   help.classList.add("hidden"); st.ui = false; st.playing = false;
-  FLOW.half = true; HALF_DOTS = true;      // draw every other patient; counts still use all of them
+  FLOW.half = true; FLOW.every = 6; FLOW.simple = true; HALF_DOTS = true;      // draw every other patient; counts still use all of them
 
-  const LEN = 64, PL = 16, DROP = 31, MUSIC_OFFSET = 18.8, MUSIC_OUT = 6.5, MUSIC_FADE = 3, MUSIC_VOL = 0.5;  // music (with its crackle) stops when the visualisation starts   // drop at excerpt 49.8 lands at 0:31 (OPTIMISE card)
+  const LEN = 69.2, PL = 19, P0 = 5.8, IBM = 999, DROP = 31, MUSIC_OFFSET = 18.8, MUSIC_OUT = 2.3, MUSIC_FADE = 3, MUSIC_VOL = 0.22;  // music (with its crackle) stops when the visualisation starts   // drop at excerpt 49.8 lands at 0:31 (OPTIMISE card)
   // the simulation scene is blue and grey only: every other colour drawn to the canvas is turned into its grey (blue stays)
   let monoOn = false;
   function toGrey(c) {
@@ -30,13 +30,15 @@ const TRAILER = (() => {
     const d = Object.getOwnPropertyDescriptor(CanvasRenderingContext2D.prototype, k);
     Object.defineProperty(CanvasRenderingContext2D.prototype, k, { get: d.get, configurable: true, set(v) { d.set.call(this, monoOn && typeof v === "string" ? toGrey(v) : v); } });
   }
-  const PIC = 0.8;                        // simulation scenes are zoomed out to this share; stills stay full frame
+  const PIC = 0.9;                        // simulation scenes are zoomed out to this share; stills stay full frame
   // narration: one file per line (natural speed), each played at 1.2x with pitch preserved at its cue time
   const RATE = 1.05, music = new Audio("audio/excerpt.wav"); music.preload = "auto";
-  let started = false, CAPS = [], LINES = [];
+  let started = false, CAPS = [], SPANS = [], LINES = [];
+  const NOCAP = new Set(["v2_rule", "v4a_modes", "v5_pitch", "v6c_build", "v7_end", "v8_punch"]);
   fetch("trailer_assets/cues.json").then(r => r.json()).then(c => {
-    LINES = c.map(([at, id, text, dur]) => { const au = new Audio(`trailer_assets/${id}.wav`); au.preload = "auto"; au.playbackRate = RATE; au.preservesPitch = true; return { at, au, text, dur, played: false }; });
-    CAPS = LINES.map(l => [l.at, l.at + l.dur / RATE, l.text]);
+    LINES = c.map(([at, id, text, dur, rate = RATE]) => { const au = new Audio(`trailer_assets/${id}.wav`); au.preload = "auto"; au.playbackRate = rate; au.preservesPitch = true; return { at, id, au, text, dur: dur / rate * RATE, played: false }; });
+    SPANS = LINES.map(l => [l.at, l.at + l.dur / RATE, l.text]);
+    CAPS = SPANS.filter((x, i) => !NOCAP.has(LINES[i].id));
   }).catch(() => {});
 
   const img = {};
@@ -44,7 +46,9 @@ const TRAILER = (() => {
     const im = new Image(); im.src = `trailer_assets/${id}_still.png`; img[id] = im;
   }
   for (const id of ["scan_wide", "scan_close"]) { const im = new Image(); im.src = `trailer_assets/${id}.webp`; img[id] = im; }
-  const COLOUR = [3.8, 4.6];                 // one scanner shot, in colour                 // the scanner shots keep their colours (canvas filter off)
+  const SCAN = [], NSCAN = 49;               // the 2 s scanner clip, 24 fps frames
+  for (let i = 1; i <= NSCAN; i++) { const im = new Image(); im.src = `trailer_assets/scanclip/f${String(i).padStart(3, "0")}.jpg`; SCAN.push(im); }
+  const CLIP_END = 3.8 + 2 / 1.5, COLOUR = [3.8, CLIP_END + 0.5];   // the 2 s clip at 1.5x speed, then its last frame held for 0.5 s                 // one scanner shot, in colour                 // the scanner shots keep their colours (canvas filter off)
   let filterOn = null;
 
   // clock: wall time from the click (?mute: no sound). Space pauses and resumes.
@@ -65,7 +69,7 @@ const TRAILER = (() => {
   const T = () => (!started ? +(qs.get("from") || 0) : pausedAt !== null ? pausedAt : performance.now() / 1000 - t0);
 
   // sound effects, synthesized (no files): a bling on the build credit, a low hit under the punchline
-  let ac = null; const SFX = [{ at: 44.4, kind: "bling", done: false }, { at: 46.2, kind: "bling2", done: false }, { at: 59.4, kind: "hit", done: false }];
+  let ac = null; const SFX = [{ at: 45.7, kind: "bling", done: false }, { at: 47.5, kind: "bling2", done: false }, { at: 63.4, kind: "hit", done: false }];
   function tone(f, t, dur, vol, type = "sine", f2 = null) {
     const o = ac.createOscillator(), g = ac.createGain(); o.type = type; o.frequency.setValueAtTime(f, t);
     if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + dur * 0.5);
@@ -86,8 +90,8 @@ const TRAILER = (() => {
     if (t < MUSIC_OUT + MUSIC_FADE) {
       const want = t + MUSIC_OFFSET;
       if (music.paused || Math.abs(music.currentTime - want) > 0.3) { music.currentTime = want; music.play().catch(() => {}); }
-      const duck = CAPS.some(([a, b]) => t >= a && t < b) ? 0.35 : 1;
-      music.volume = Math.max(0, Math.min(1, MUSIC_VOL * Math.min(1, t / 0.3) * duck * Math.min(1, (MUSIC_OUT + MUSIC_FADE - t) / MUSIC_FADE)));
+      const duck = SPANS.some(([a, b]) => t >= a && t < b) ? 0.35 : 1;
+      music.volume = Math.max(0, Math.min(1, MUSIC_VOL * (1 - Math.pow(1 - Math.min(1, t / 3.5), 2)) * duck * Math.min(1, (MUSIC_OUT + MUSIC_FADE - t) / MUSIC_FADE)));
     } else if (!music.paused) music.pause();
   }
 
@@ -100,12 +104,12 @@ const TRAILER = (() => {
   function update() {
     const rt = T(); syncMusic();
     // real time: 0-10.5 film, pitch (PL s), flow today 8 s (with a little fast track, in blue), note reading 8 s, build credit 4 s, ending
-    const F0 = 10.5 + PL, D0 = F0 + 8, K0 = D0 + 8, E0 = K0 + 6;
-    TRAILER.t = rt; TRAILER.blue = rt >= F0 && rt < D0; monoOn = TRAILER.blue; FLOW.mini = 0;
-    if (rt < 10.5) { scene = "film"; return "tdraw"; }
-    if (rt < F0) { TRAILER.t = 20.5 + (rt - 10.5); scene = "pitch"; return "tdraw"; }
+    const F0 = P0 + PL, D0 = F0 + 11, K0 = D0 + 8, E0 = K0 + 7.2;
+    TRAILER.t = rt; TRAILER.blue = rt >= F0 && rt < D0; monoOn = TRAILER.blue; FLOW.mini = 0; FLOW.build = 1; FLOW.scale = 0;
+    if (rt < P0) { scene = "film"; return "tdraw"; }
+    if (rt < F0) { TRAILER.t = 19 + (rt - P0); scene = "pitch"; return "tdraw"; }
     // the fast-track line appears as "a few take the fast track" is spoken
-    if (rt < D0) { FLOW.newKey = "baseline"; FLOW.mini = Math.max(0, Math.min(1, (rt - F0 - 6.3) / 0.8)); st.day = (rt - F0) * 9; return "flow"; }
+    if (rt < D0) { FLOW.newKey = "baseline"; FLOW.build = Math.min(1, (rt - F0) / 2.8); FLOW.scale = Math.max(0, Math.min(1, (rt - F0 - 3.4) / 0.6)); FLOW.mini = Math.max(0, Math.min(1, (rt - F0 - 6.5) / 0.8)); st.day = Math.max(0, rt - F0 - 3) * 4; return "flow"; }
     if (rt < K0) { TRAILER.docT = (rt - D0) * 1.6; return "doc"; }
     if (rt < E0) { scene = "build"; return "tdraw"; }
     scene = "end"; return "tdraw";
@@ -114,7 +118,7 @@ const TRAILER = (() => {
   // ---- drawing helpers (picture coordinates are W x H; begin() maps them into the top band)
   let full = false;
   function begin(mode) {
-    const t = T(), colour = started && ((t >= COLOUR[0] && t < COLOUR[1]) || TRAILER.blue);
+    const t = T(), colour = started && TRAILER.blue;
     if (filterOn !== !colour) { cv.style.filter = colour ? "none" : "url(#ink) grayscale(1)"; filterOn = !colour; }
     ctx.save();
     full = mode === "tdraw";                  // film stills and cards: full frame, subtitles over the picture
@@ -148,151 +152,93 @@ const TRAILER = (() => {
 
   function draw() {
     const t = TRAILER.t;
-    if (!started) { ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, H); text("CLICK OR PRESS SPACE TO PLAY · 50 SECONDS", W / 2, H / 2, H * 0.03, "#ddd", 600); return; }
-    ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = "#fbf9ef"; ctx.fillRect(0, 0, W, H);
+    if (!started) { text("CLICK OR PRESS SPACE TO PLAY", W / 2, H / 2, H * 0.03, "#6b6b66", 600); return; }
     if (scene === "film") {
-      if (t < 2) {                                   // the hook: 87 DAYS slams onto black
-        const k = Math.max(0, 1 - t / 0.22), sc = 1 + 0.5 * k;
-        ctx.save(); ctx.translate(W / 2, H * 0.47); ctx.scale(sc, sc);
-        mono("87 DAYS", 0, 0, H * 0.2, "#f4f4f4"); ctx.restore();
-        if (t > 0.7) text("to wait for a cancer diagnosis", W / 2, H * 0.64, H * 0.035, "#cfcfcf", 500);
-        text("Dramatisation", W * 0.96, H * 0.05, H * 0.02, "rgba(255,255,255,0.7)", 600, "right");
+      if (t < COLOUR[0]) {                           // the hook: a sourced gap, counted up
+        const cnt = (n, t0) => Math.round(n * Math.max(0, Math.min(1, (t - t0) / 0.7)));
+        text("Same lymphoma. Days from first symptom to treatment:", W / 2, H * 0.24, H * 0.03, "#1f1f1d", 500);
+        if (t > 0.3) { text(cnt(123, 0.3) + " days", W * 0.3, H * 0.47, H * 0.13, "#1f1f1d", 800);
+                       text("occupational or private care", W * 0.3, H * 0.6, H * 0.03, "#6b6b66", 500); }
+        if (t > 1.3) { text(cnt(207, 1.3) + " days", W * 0.7, H * 0.47, H * 0.13, "#1f1f1d", 800);
+                       text("public health centre", W * 0.7, H * 0.6, H * 0.03, "#6b6b66", 500); }
+        text("Kuitunen et al., Cancer Medicine 2026 (DLBCL)", W / 2, H * 0.76, H * 0.019, "#8a8a85", 500);
       }
-      else if (t < 3) still("a2_consultation", 2, 1, 0.04);               // quick montage, hard cuts
-      else if (t < 3.8) still("a4_stain", 3, 0.8, 0.1);
-      else if (t < 4.6) scanner(t);                                         // in colour
-      else if (t < 8.4) {
-        still("b3_waiting_room", 4.6, 3.8, 0.05);
-        { const z = 1 + 0.05 * Math.max(0, Math.min(1, (TRAILER.t - 4.6) / 3.8));      // stuck to the wall: zooms with the picture
-          ctx.save(); ctx.translate(W / 2, H / 2); ctx.scale(z, z); ctx.translate(-W / 2, -H / 2);
-          mono("87 DAYS", W * 0.536, H * 0.348, H * 0.042, "rgba(255,190,90,0.95)"); ctx.restore(); }
-        text("Dramatisation", W * 0.96, H * 0.05, H * 0.02, "rgba(255,255,255,0.85)", 600, "right");
-      }
-      else {                                                                // the IBM line, typed on black
-        const L = ["A COMPUTER CAN NEVER BE HELD ACCOUNTABLE", "THEREFORE A COMPUTER MUST NEVER", "MAKE A MANAGEMENT DECISION"];
-        L.forEach((l, i) => { const n = Math.max(0, Math.min(l.length, Math.floor((t - 8.4 - i * 0.45) * 60))); mono(l.slice(0, n), W / 2, H * (0.42 + i * 0.08), H * 0.036, "#eee"); });
+      else if (t < COLOUR[1]) scanner(t);
+      else if (t >= IBM) {                                                  // the IBM line, typed
+        const l = "A COMPUTER CAN NEVER BE HELD ACCOUNTABLE", n = Math.max(0, Math.min(l.length, Math.floor((t - 5.85) * 17)));
+        mono(l.slice(0, n), W / 2, H * 0.5, H * 0.04, "#1f1f1d");
       }
       return;
     }
     if (scene === "pitch") { pitch(t); return; }
     if (scene === "build") {                  // credit, synced to the voice: each name appears (and chimes) as it is spoken
-      const V = 10.5 + PL + 17.1, tt = T();      // voice start; "Nemotron" is spoken at +0.81 s, "Verda" at +2.57 s (1.05x)
+      const V = P0 + PL + 20.1, tt = T();      // voice start; "Nemotron" is spoken at +0.81 s, "Verda" at +2.57 s (1.05x)
       const col = (x, labelAt, nameAt, label, name) => {
         const al = Math.max(0, Math.min(1, (tt - labelAt) / 0.3)), an = Math.max(0, Math.min(1, (tt - nameAt) / 0.25));
-        if (al) { ctx.globalAlpha = al; text(label, x, H * 0.45, H * 0.022, "#9a9a9a", 600); }
-        if (an) { ctx.globalAlpha = an; text(name, x, H * 0.52 + (1 - an) * H * 0.015, H * 0.05, "#f2f2f2", 800); }
+        if (al) { ctx.globalAlpha = al; text(label, x, H * 0.55, H * 0.022, "#6b6b66", 600); }
+        if (an) { ctx.globalAlpha = an; text(name, x, H * 0.62 + (1 - an) * H * 0.015, H * 0.055, "#1f1f1d", 800); }
         ctx.globalAlpha = 1;
       };
-      col(W * 0.27, V + 0.05, V + 0.81, "BUILT WITH", "NVIDIA Nemotron");
-      if (tt > V + 1.85) { ctx.globalAlpha = Math.min(1, (tt - V - 1.85) / 0.3); ctx.fillStyle = "rgba(255,255,255,0.35)"; ctx.fillRect(W * 0.5 - 1, H * 0.43, 2, H * 0.14); ctx.globalAlpha = 1; }
-      col(W * 0.73, V + 1.85, V + 2.57, "POWERED BY", "Verda");
+      { const K = P0 + PL + 19, aa = Math.max(0, Math.min(1, (tt - K - 0.2) / 0.6));
+        ctx.globalAlpha = aa; text("THE CHALLENGE", W / 2, H * 0.3, H * 0.022, "#6b6b66", 600); text("AstraZeneca: Equal Care Across Finland", W / 2, H * 0.37, H * 0.045, "#1f1f1d", 700); ctx.globalAlpha = 1; }
+      col(W * 0.3, V + 0.05, V + 0.81, "BUILT WITH", "NVIDIA Nemotron");
+      if (tt > V + 1.85) { ctx.globalAlpha = Math.min(1, (tt - V - 1.85) / 0.3); ctx.fillStyle = "rgba(0,0,0,0.25)"; ctx.fillRect(W * 0.5 - 1, H * 0.52, 2, H * 0.15); ctx.globalAlpha = 1; }
+      col(W * 0.7, V + 1.85, V + 2.57, "POWERED BY", "Verda");
       return;
     }
-    const pk = Math.max(0, Math.min(1, (T() - 59.4) / 0.5));       // the punchline arrives last; the rest steps back
+    const pk = Math.max(0, Math.min(1, (T() - 63.4) / 0.5));       // the punchline arrives last; the rest steps back
     ctx.globalAlpha = 1 - 0.65 * pk;
-    text("SCIENCE-BASED PILOT", W / 2, H * 0.37, H * 0.026, "#9fc3ea", 700);
-    text("One clinician-validated pipeline in one wellbeing services county.", W / 2, H * 0.45, H * 0.034, "#f2f2f2", 600);
-    text("More time for hard cases, and for the human encounter.", W / 2, H * 0.6, H * 0.03, "#f2f2f2", 600);
-    text("Clinicians define, automate and validate each pipeline, transparently. The dots are an illustration. github.com/Toivo31/cancer", W / 2, H * 0.8, H * 0.016, "#bbb");
+    text("SCIENCE-BASED PILOT", W / 2, H * 0.24, H * 0.024, "#6b6b66", 700);
+    text("One clinician-validated pipeline, piloted in Finland.", W / 2, H * 0.32, H * 0.038, "#1f1f1d", 700);
+    text("More time for hard cases, and for the human encounter.", W / 2, H * 0.42, H * 0.03, "#3a3a37", 500);
+    ctx.globalAlpha = 1;
+    text("github.com/Toivo31/cancer", W / 2, H * 0.9, H * 0.018, "#8a8a85", 500);
     ctx.globalAlpha = pk;
-    text("Waiting is a decision nobody made.", W / 2, H * 0.76, H * 0.06, "#ffffff", 800);
+    text("Waiting is a decision nobody made.", W / 2, H * 0.62, H * 0.07, "#1f1f1d", 800);
     ctx.globalAlpha = 1;
   }
 
   // the scanner: original orientation, no zoom. First the shot with less of the face, then the one with more;
   // the picture slides steadily downwards so the table (kelkka) seems to move out of the scanner.
   function scanner(t) {
-    const a = COLOUR[0], b = COLOUR[1], mid = a + (b - a) * 0.5;
-    const im = img.scan_close;
-    if (!im.complete || !im.naturalWidth) return;
-    const k = (t - a) / (b - a);                                  // one continuous slide across both shots
+    const k = Math.max(0, Math.min(0.999, (t - COLOUR[0]) / (CLIP_END - COLOUR[0])));   // after the clip, the last frame holds
+    let im = SCAN[Math.floor(k * NSCAN)];
+    if (!im || !im.complete || !im.naturalWidth) im = SCAN.find(x => x.complete && x.naturalWidth);
+    if (!im) return;
     const r = Math.max(W / im.naturalWidth, H / im.naturalHeight), w = im.naturalWidth * r, h = im.naturalHeight * r;
-    const y = (H - h) / 2;                                       // still: no movement
-    ctx.drawImage(im, (W - w) / 2, y, w, h);
+    ctx.drawImage(im, (W - w) / 2, (H - h) / 2, w, h);
   }
 
   // the product pitch: four panels on the beat; the music drop lands on OPTIMISE
   function pitch(t) {
     ctx.fillStyle = "#fbf9ef"; ctx.fillRect(0, 0, W, H);
-    const pt = t - 20.5;                       // seconds into the pitch scene; the first 6.5 s are the two failure modes
-    if (pt < 6.5) {
-      text("TWO WAYS AI FAILS IN MEDICINE", W / 2, H * 0.14, H * 0.05, "#111", 800);
-      const C = [[0.5, "TRUST TOO LITTLE", "Doctors check everything.", "No time is saved."],
-                 [2.0, "TRUST TOO MUCH", "Doctors stop checking.", "Errors slip through."]];
-      C.forEach(([at, h, l1, l2], i) => {
-        const a = Math.max(0, Math.min(1, (pt - at) / 0.35)); if (!a) return;
-        const x = W * (0.08 + i * 0.44), y = H * 0.27 + (1 - a) * H * 0.03, w = W * 0.4, hh = H * 0.42;
-        ctx.globalAlpha = a; ctx.fillStyle = "#fff"; ctx.fillRect(x, y, w, hh);
-        ctx.strokeStyle = "#1f1f1d"; ctx.lineWidth = 2; ctx.strokeRect(x, y, w, hh);
-        text(h, x + w / 2, y + hh * 0.26, H * 0.04, "#111", 800);
-        text(l1, x + w / 2, y + hh * 0.56, H * 0.03, "#333", 500);
-        text(l2, x + w / 2, y + hh * 0.74, H * 0.03, "#333", 500);
+    const pt = t - 19, fade = at => Math.max(0, Math.min(1, (pt - at) / 0.4));
+    if (pt < 8) {                              // the two failure modes, as two plain statements
+      [[0.5, "Trust AI too little,", "and doctors check everything."], [2.0, "Trust it too much,", "and nobody checks."]].forEach(([at, a, b], i) => {
+        const k = fade(at); if (!k) return;
+        ctx.globalAlpha = k;
+        text(a, W * 0.12, H * (0.36 + i * 0.26), H * 0.07, "#1f1f1d", 800, "left");
+        text(b, W * 0.12, H * (0.45 + i * 0.26), H * 0.045, "#6b6b66", 500, "left");
         ctx.globalAlpha = 1;
       });
       return;
     }
-    text("EQUAL CARE PATHWAYS", W * 0.05, H * 0.1, H * 0.05, "#111", 800, "left");
-    text("A simple, transparent framework to automate cancer care.", W * 0.05, H * 0.16, H * 0.024, "#444", 500, "left");
-    const P = [
-      [27.0, "DEFINE", "Clinicians define each pipeline as a simple flowchart of rules."],
-      [29.0, "AUTOMATE", "The system reads the note and runs the pipeline: red flag, no follow-up, fast track."],
-      [31.4, "VALIDATE", "Clinicians validate each pipeline before it runs. If the model is unsure, it flags the case for clinical review."],
-    ];
-    const pw = W * 0.28, gap = W * 0.03, x0 = W * 0.05, y0 = H * 0.21, ph = H * 0.56;
-    P.forEach(([at, head, cap], i) => {
-      const a = Math.max(0, Math.min(1, (t - at) / 0.35)); if (!a) return;
-      const x = x0 + i * (pw + gap), y = y0 + (1 - a) * H * 0.04;
-      ctx.globalAlpha = a;
-      ctx.fillStyle = "#ffffff"; ctx.fillRect(x, y, pw, ph);
-      ctx.strokeStyle = "#1f1f1d"; ctx.lineWidth = 2; ctx.strokeRect(x, y, pw, ph);
-      text(`${i + 1}  ${head}`, x + W * 0.012, y + H * 0.05, H * 0.032, "#111", 800, "left");
-      const cx = x + pw / 2, vy = y + H * 0.1, vh = H * 0.28;
-      ctx.strokeStyle = "#1f1f1d"; ctx.fillStyle = "#1f1f1d"; ctx.lineWidth = 1.5;
-      if (head === "DEFINE") {                      // a small flowchart drawing itself
-        const n = Math.min(6, Math.floor((t - at) * 6) + 1);
-        for (let k = 0; k < n; k++) {
-          const ny = vy + vh * 0.85 - k * vh * 0.85 / 5, nx = cx + (k % 2 ? 1 : -1) * (k === 3 ? pw * 0.18 : 0);
-          ctx.beginPath(); ctx.arc(nx, ny, 7, 0, Math.PI * 2); ctx.fill();
-          if (k) { const py = vy + vh * 0.85 - (k - 1) * vh * 0.85 / 5, px = cx + ((k - 1) % 2 ? 1 : -1) * (k - 1 === 3 ? pw * 0.18 : 0); ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(nx, ny); ctx.stroke(); }
-        }
-      } else if (head === "AUTOMATE") {          // a note, a flag, then the rule fires
-        ctx.fillStyle = "#f3f1ea"; ctx.fillRect(x + pw * 0.08, vy + vh * 0.05, pw * 0.84, vh * 0.36);
-        text("Tired, lost 6 kg.", x + pw * 0.12, vy + vh * 0.16, H * 0.017, "#222", 400, "left");
-        if (t > at + 0.4) {                      // the red flag: a box measured around "lost 6 kg"
-          ctx.font = `400 ${Math.round(H * 0.017)}px "Inter", sans-serif`;
-          const bx = x + pw * 0.12 + ctx.measureText("Tired, ").width, bw = ctx.measureText("lost 6 kg.").width;
-          ctx.lineWidth = 2; ctx.strokeRect(bx - 1, vy + vh * 0.16 - H * 0.016, bw + 4, H * 0.032);
-        }
-        text("Likely stress.", x + pw * 0.12, vy + vh * 0.31, H * 0.017, "#222", 400, "left");
-        if (t > at + 0.6) text("red flag, no follow-up", cx, vy + vh * 0.56, H * 0.0155, "#222", 600);
-        if (t > at + 1.2) { text("↓", cx, vy + vh * 0.7, H * 0.03, "#111", 800); text("FAST TRACK", cx, vy + vh * 0.88, H * 0.022, "#111", 800); }
-      } else if (head === "VALIDATE") {          // two rules, then the stamp
-        ctx.fillStyle = "#f3f1ea"; ctx.fillRect(x + pw * 0.08, vy + vh * 0.03, pw * 0.84, vh * 0.64);
-        text("RULE FT-07", x + pw * 0.12, vy + vh * 0.13, H * 0.017, "#222", 800, "left");
-        text("IF red flag AND no follow-up", x + pw * 0.12, vy + vh * 0.26, H * 0.0145, "#222", 400, "left");
-        text("→ fast track", x + pw * 0.12, vy + vh * 0.34, H * 0.0145, "#222", 400, "left");
-        if (t > at + 0.5) { text("IF the model is unsure", x + pw * 0.12, vy + vh * 0.47, H * 0.0145, "#222", 400, "left");
-                            text("→ clinical review", x + pw * 0.12, vy + vh * 0.55, H * 0.0145, "#222", 400, "left"); }
-        if (t > at + 1.2) {
-          ctx.save(); ctx.translate(cx, vy + vh * 0.84); ctx.rotate(-0.06);
-          ctx.lineWidth = 3; ctx.strokeRect(-pw * 0.4, -H * 0.03, pw * 0.8, H * 0.06);
-          text("CLINICIAN-VALIDATED", 0, 0, H * 0.015, "#111", 800); ctx.restore();
-        }
-      }
-      ctx.font = `${Math.round(H * 0.019)}px "Inter", sans-serif`; ctx.fillStyle = "#333"; ctx.textAlign = "left"; ctx.textBaseline = "top";
-      let line = "", yy = y + ph - H * 0.17;
-      for (const w of cap.split(" ")) { const tr = line ? line + " " + w : w; if (ctx.measureText(tr).width > pw - W * 0.024 && line) { ctx.fillText(line, x + W * 0.012, yy); line = w; yy += H * 0.026; } else line = tr; }
-      ctx.fillText(line, x + W * 0.012, yy);
+    text("EQUAL CARE PATHWAYS", W * 0.12, H * 0.16, H * 0.026, "#6b6b66", 700, "left");
+    [[8.0, "Clinicians define the pipeline."], [10.0, "The system runs it."], [12.4, "When the model is unsure, a doctor reviews the case."]].forEach(([at, line], i) => {
+      const k = fade(at); if (!k) return;
+      ctx.globalAlpha = k;
+      text(String(i + 1), W * 0.08, H * (0.34 + i * 0.17), H * 0.05, "#8a8a85", 700, "left");
+      text(line, W * 0.12, H * (0.34 + i * 0.17), H * 0.055, "#1f1f1d", 800, "left");
       ctx.globalAlpha = 1;
     });
-    text("Clinicians define, automate and validate each pipeline, transparently · the dots are an illustration", W / 2, H * 0.81, H * 0.02, "#555", 600);
   }
 
   // overlays on the dot scenes (picture coordinates)
   function overlay(mode) {
     const t = TRAILER.t;
     if (mode === "flow" && TRAILER.blue) {      // the simulation runs inside our framework
-      const a = Math.min(1, (T() - (10.5 + PL)) / 0.4);
+      const a = Math.min(1, (T() - (P0 + PL)) / 0.4);
       ctx.save(); ctx.globalAlpha = a;
       ctx.fillStyle = "rgba(251,249,239,0.96)"; ctx.fillRect(W * 0.76, H * 0.045, W * 0.23, H * 0.12);
       ctx.strokeStyle = "rgba(30,30,28,1)"; ctx.lineWidth = 2.5; ctx.strokeRect(W * 0.76, H * 0.045, W * 0.23, H * 0.12);
@@ -337,11 +283,12 @@ const TRAILER = (() => {
     for (const w of c[2].split(" ")) { const tr = cur ? cur + " " + w : w; if (ctx.measureText(tr).width > maxW && cur) { lines.push(cur); cur = w; } else cur = tr; }
     lines.push(cur);
     const lh = size * 1.3, mid = (y0 + H) / 2;
-    if (full) {                                // over the picture: dark box behind the text
+    const onPic = scene === "film" && t >= COLOUR[0] && t < COLOUR[1];
+    if (onPic) {                               // over the picture: dark box behind the text
       const bh = lines.length * lh + size * 0.6;
       ctx.fillStyle = "rgba(0,0,0,0.6)"; ctx.fillRect(W * 0.1, mid - bh / 2, W * 0.8, bh);
     }
-    lines.forEach((l, i) => text(l, W / 2, mid + (i - (lines.length - 1) / 2) * lh, size, full ? "#fff" : "#1f1f1d", 500));
+    lines.forEach((l, i) => text(l, W / 2, mid + (i - (lines.length - 1) / 2) * lh, size, onPic ? "#fff" : "#1f1f1d", 500));
   }
 
   return { active: true, update, begin, draw, overlay, finish, t: 0, docT: 0, LEN };

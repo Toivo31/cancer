@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f4f0e4"><meta name="description" content="Equal Care Pathways: faster cancer pathways from simulation and a decision model."><title>Equal Care Pathways · Junction 2026</title><link rel="stylesheet" href="style.css?v=20261115-3"></head>
+<body><header><a class="brand" href="#manifesto"><span class="brand-icon">✳</span> equal care<span class="brand-sub">PATHWAYS</span></a><nav aria-label="Pages"><a href="#manifesto">01 <span>Manifesto</span></a><a href="#simulation">02 <span>Simulation</span></a><a href="#jev">03 <span>JEV</span></a><a href="#appendix">04 <span>Appendix</span></a></nav><span class="event">JUNCTION / 2026</span></header>
+<main>
+<section id="page-manifesto" class="page prose" aria-label="Manifesto"><p class="eyebrow">01 / MANIFESTO</p><!--md:01-manifesto--><h1>Manifesto</h1>
+<p>Cancer patients in Finland wait too long for a diagnosis, and most of that time is not spent on tests. It is spent in queues between them. Each step of a care pathway can be reasonable on its own while the order of the steps, and the queues that form in front of scarce tests, keep patients waiting for weeks.</p>
+<p>We believe the fastest way to shorten that wait is not always more equipment or more staff. Often it is a better order of steps. A pathway is a process, and processes can be described, tested and improved.</p>
+<h2>The idea</h2>
+<p>We describe a care pathway as a flowchart. Every visit, test and clinical judgement is a step, and every point where someone chooses what happens next is a decision. At each decision our model, Birch, can read what is known about the patient so far and rank the options the flowchart allows. A doctor always makes the final call.</p>
+<p>We then run thousands of synthetic patients through the flowchart, with realistic waits and limited capacity, to see where time is lost. An optimiser tries changes to the pathway and keeps only those that get the same patients to treatment faster without adding tests.</p>
+<h2>What it gives</h2>
+<p><strong>A second opinion for every decision.</strong> The doctor sees what the model recommends and how it ranks the alternatives. The aim is to flag outliers and outdated habits, so that the quality of care depends less on which doctor a patient happens to meet.</p>
+<p><strong>A safe foundation for automation.</strong> Because every step and decision is explicit, steps can be automated one at a time while the flowchart keeps the process under human control.</p>
+<p><strong>Faster pathways without new resources.</strong> The simulation shows where the queues are, and the optimiser finds a better order of steps. When we rebuilt a published hospital pathway, our optimiser found the same kind of reordering that the study's authors had proposed, though it did not improve on their redesign.</p>
+<h2>From demo to real care</h2>
+<p>Today everything runs on synthetic patients, and we say so openly. The simulation's decisions follow fixed rules fitted to observed practice; Birch is built to take over at each decision, and its live test is on the JEV page. Each synthetic part can be replaced with a real one: waiting times and capacities from a hospital's booking data, test accuracies from published studies, and decisions learned from a region's own records. The details of how the data is built, the research behind the idea and the hospital case study are in the <a href="#appendix">Appendix</a>.</p><!--/md--></section>
+<section id="page-simulation" class="page sim-only" hidden aria-label="Simulation"><iframe id="sim-frame" class="sim-embed" title="Simulated patients moving through a hospital care pathway, today and after optimisation" src="sim/flow.html?s=norway&view=both&v=3"></iframe></section>
+<section id="page-jev" class="page prose" hidden aria-label="JEV"><p class="eyebrow">03 / JEV · BIRCH</p><!--md:03-jev--><h1>Birch: our JEV decision model</h1>
+<p>Birch is a decision model, not a chatbot. You give it a situation and a list of possible answers, and it returns a score for every answer in a single pass. It cannot invent an answer that is not on the list, which makes it a natural fit for any process where the allowed next steps are known in advance, such as a care pathway.</p>
+<p>Birch belongs to the JEV family of decision models. It is built on NVIDIA Nemotron 3.5 Super VL, a large open vision-language model. We kept the base model frozen, trained small adapters on its final blocks and added our own scoring head on top. The training mix combined medical and general multiple-choice tasks, including skin-lesion photos; full documentation of the training data is still to come.</p>
+<h2>What is new</h2>
+<p>A plain JEV model reads the situation once, reads each option separately, and scores each option by how well it matches the situation. Each option is judged alone, so the model cannot tell that an option is best only because the others are worse, or that one option's value depends on another option's queue.</p>
+<p>Our addition is a small step between reading and scoring in which every option can look at every other option before the final score is given. The order of the options does not matter, and their number can change from question to question. The result is a model that compares options side by side, the way a person does. In a controlled test inside our simulator, a small model with this architecture matched the ideal sampling choice in 92 percent of the cases where the best choice depends on another option's queue, against about 30 percent for a plain per-option model trained on the same 12,000 choices. A plain model given a hand-written summary of the options did nearly as well, and the gain needs plenty of training data.</p>
+<p>Birch also encodes the situation, usually the longest part of a question, only once per request and caches it, so asking again about an unchanged record is much faster. And because it only scores the options it is given, it can never propose a step the pathway does not allow.</p>
+<h2>How it works in healthcare</h2>
+<p>In the simulation every point where someone decides what happens next is a decision: a nurse deciding whether a patient needs a GP visit, a GP choosing between antibiotics and an X-ray, a specialist choosing a sampling method. At each one, Birch receives the patient's record as it stands at that moment, written as a clinician would read it, together with the options the flowchart allows. It proposes the highest-scoring option, and in real care a doctor would make the final call.</p>
+<p>Birch never sees the hidden truth about a patient. It only receives what has been revealed so far: the complaint, the background, earlier visits and the results of tests that have actually been done. A check before every request makes sure no diagnosis or future result slips in. The simulator can export training examples in exactly this form, so a model trained on them has to learn to decide from the record, not from the answer.</p>
+<p>The simulation results on the Simulation page come from fixed decision rules fitted to observed practice, so they do not depend on the model. Birch is built to be switched on at the decisions and stepped through patient by patient, with every proposal shown for review. Its scores rank the options on offer; they are not probabilities of disease.</p><!--/md-->
+<h2 id="try">Try it live</h2><p>Pick an example or write your own situation and possible answers. Birch scores each answer; a person reviews the proposal. Scores are relative to the options you give, not probabilities of disease. Use synthetic or public information only.</p>
+<div class="workspace"><form id="custom-form" class="input-pane"><div class="presets"><span class="label">Examples</span><button type="button" class="secondary" data-preset="gp">GP next step</button><button type="button" class="secondary" data-preset="sampling">Sampling method</button><button type="button" class="secondary" data-preset="clear">Clear</button></div><label for="context">Situation</label><textarea id="context" required maxlength="12000" rows="5"></textarea><label for="question">Question</label><input id="question" required maxlength="1000"><label for="choices">Possible answers · one per line, 2–8</label><textarea id="choices" required rows="4"></textarea><button class="primary live-call" type="submit">Compute live ↗</button><p class="caption">Live call to our deployed model on Modal. A cold start can take several minutes; the page waits and never resends.</p></form><div id="custom-result" class="result-pane" aria-live="polite"></div></div></section>
+<section id="page-appendix" class="page prose" hidden aria-label="Appendix"><p class="eyebrow">04 / APPENDIX</p><!--md:04-appendix--><h1>Appendix</h1>
+<h2>A. How the synthetic patients are made</h2>
+<p>All patients in this project are synthetic. No real patient data is used. The data is built to behave like a real population with lung symptoms: most people have something ordinary, a few have cancer, and many ordinary illnesses look like cancer at first.</p>
+<p>The medical content lives in a catalogue that a non-programmer can read and correct. It lists 11 conditions that bring people to a doctor with lung symptoms, among them lung cancer, pneumonia, COPD, asthma, heart failure, tuberculosis and a benign nodule. It also lists 42 hidden variables, such as symptoms, true lab values and what a scan would truly show, and 26 tests, from a blood count and chest X-ray to CT, PET-CT, bronchoscopy and biopsy. Each test has an accuracy, a chance of giving an unusable result, a waiting time and a cost. Where a number comes from a published source the source is recorded; the rest are marked as assumptions.</p>
+<p>Each patient is generated in three steps. A background is drawn first: age, sex, smoking history and region. Then a condition is drawn with realistic prevalence, so cancer stays rare, sometimes with an ordinary illness alongside it. Finally, every hidden variable and the result of every test are generated from that condition, including realistic mistakes: an X-ray can miss a small lesion and a biopsy can come back unusable. Some patients are written from templates and some by a language model, which also writes the short reports a radiologist or lab would produce. Every card is checked against the catalogue.</p>
+<p>A patient card has a visible side, with the background and the complaint in the patient's own words, and a hidden side, with the true conditions and a pre-written result for every test. As the patient moves through the pathway, each test reveals only its own result. Because every result exists in advance, the same patient can be run through a different pathway, which makes a fair before-and-after comparison possible.</p>
+<h2>B. The research behind the idea</h2>
+<p>Finland's national cancer strategy for 2026 to 2035 asks for equal and effective care, with patients reaching treatment within target times. Lung cancer is where Finland falls furthest behind its Nordic neighbours. Between 40 and 60 percent of Finnish patients with lung symptoms first see a nurse rather than a doctor, and fewer than 10 percent of primary care units can order a CT scan directly. Finland is slower at every step: about 14 days to a health centre appointment against 2 to 7 days elsewhere in the Nordics, 14 to 28 days to a specialist against 7 to 14, and about 28 days from specialist to diagnosis. In one Satakunta study, most of the delay arose in specialist care, after the referral.</p>
+<p>The evidence suggests that the order of steps often matters more than capacity. A Norwegian study found that a faster PET-CT scanner would have raised the share of patients treated on time from 40 to 48 percent, a gain that was not significant, while reordering the steps would have raised it to 80 percent. An English hospital cut the wait for CT from 15 days to 3, yet the time to a treatment decision did not change, because later steps were untouched. Where whole pathways were redesigned, times fell: in Toronto, ordering tests before the first visit cut referral to diagnosis from about 40 to 28 days, and London's Royal Free cut referral to treatment from 66 to 29 days.</p>
+<p>Reordering has limits. Some tests are genuinely undersized, and fast tracks can make other patients wait longer. This is why our simulator reports waits for every patient and points out where extra capacity would actually help.</p>
+<p>Sources: National Cancer Strategy 2026–2035 (Finland); IHE Cancer Dashboard Finland 2026; University of Helsinki, Nordic lung cancer comparison; Mattila 2025 (Satakunta); Stokstad et al. 2019, BMC Health Services Research; ERJ 2023 on rapid CT access in England; Toronto pre-ordered tests study; Royal Free lung pathway (Pulse); Cooke et al. 2022; Swedish cancer pathway staff interviews. Links are in <code>docs/master_plan.md</code>.</p>
+<h2>C. Case study: comparing with the original hospital study</h2>
+<p>The simulation pathway is rebuilt from Stokstad and colleagues' 2019 study of 100 patients with early-stage lung cancer at St Olavs Hospital in Trondheim. Only 40 percent of them started treatment within the 42-day target, with a median of 46.5 days. The authors estimated that a faster PET-CT scanner would have raised this to 48 percent, and that a reordered pathway, with scans ordered at the first visit and the tumour board meeting straight after them, would have raised it to 80 percent.</p>
+<p>We built the flowchart from the paper, with waiting times taken from the intervals it reports, such as a median of 20.5 days from PET-CT referral to report. A few quantities needed by the simulation are not reported, such as the wait for bronchoscopy. We tried many combinations of them and kept every one under which our hospital reproduced the real result of about 40 percent on time. That was the only thing we tuned.</p>
+<p>We then ran the authors' alternatives without further tuning, and let our optimiser search from today's pathway with no new equipment and without being told the authors' answer.</p>
+<table>
+<thead>
+<tr>
+<th>Pathway</th>
+<th>Original study</th>
+<th>Our simulation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Today's pathway</td>
+<td>40%</td>
+<td>40% (tuned to match)</td>
+</tr>
+<tr>
+<td>Faster PET-CT scanner</td>
+<td>48%</td>
+<td>60%</td>
+</tr>
+<tr>
+<td>Authors' reordered pathway</td>
+<td>80%</td>
+<td>80% at the best fit; 62–86% across all settings that fit</td>
+</tr>
+<tr>
+<td>Our optimiser, no new equipment</td>
+<td>not in the study</td>
+<td>67% at the best fit; 48–77% across settings</td>
+</tr>
+</tbody>
+</table>
+<p>The ranking holds in every setting: reordering beats a faster scanner, and a faster scanner beats today's pathway. Our simulation overestimates the effect of the scanner alone. The optimiser arrived at the same three timing changes the authors proposed: order PET-CT on time, order the exercise test early, and hold the tumour board without waiting for the sample. It added one change of its own, planning tissue sampling already at referral, which would need clinical review. It did not improve on the authors' redesign.</p>
+<p>The check supports the direction of the optimiser's changes, not the exact size of its predictions. It covers specialist care only, since every patient in the study already had cancer.</p><!--/md--></section>
+</main><footer><span>Equal Care Pathways</span><span>Junction 2026 · Experimental prototype · synthetic data only</span><div class="slide-controls"><a href="https://github.com/Toivo31/cancer" target="_blank" rel="noopener">Project ↗</a></div></footer><script type="module" src="app.js?v=20261115-9"></script></body></html>

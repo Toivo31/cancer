@@ -74,6 +74,9 @@ Full table with owners and start points: `docs/repo_map.md`. Reading order for a
 
 Sources and licence: the published sources are listed per parameter in `params/sources.yaml` and `docs/parameters.md`. No licence file is in the repository yet.
 
+**Video:** https://vimeo.com/1246920559/41ca86218a?share=copy&fl=sv&fe=ci
+**Technology challenges** (Modal, Nemotron, Gemini API, Verda): [what we claim and what backs it](docs/submission_tech_challenges.md).
+
 ## Decision model integration for the demo team
 
 Read [the teammate setup guide](decision_api/README.md) or give
@@ -102,3 +105,11 @@ Open http://127.0.0.1:8770 for the flowchart demo, `/note` for the note reader,
 Simulator estimates and model candidate scores are separate quantities.
 All model proposals require human review. See the integration guide for the
 prototype's limitations and the difference between live and saved examples.
+
+## Three-slide live website
+
+[Open Equal Care Pathways](https://cancer123--equal-care-pathways-web.us-east.modal.run/?release=20261115-3) — a moving patient graph, Decision Studio (Text, Photo and Custom question), and a discussion/manifesto placeholder.
+
+[Join our Modal organization](https://modal.com/signup?token=dd6w00V0NL0JDEY0zPvPJ5uZ08k73wqyJLys8mplk8o&shareable-token=true&organization=true) using this invitation link.
+
+Website source and deployment instructions: [website/README.md](website/README.md). The site reuses the existing public decision gateway; visitors do not need a Modal account to try it.

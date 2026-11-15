@@ -1,0 +1,16 @@
+{
+  "_about": "Final narration: one normal male voice for every line, natural speed in the files; the trailer plays each line at 1.2x with pitch preserved (browser time-stretch). Run: python video/generated/tts.py --lines vo_final.json --voice Iapetus",
+  "voice_style": "Speak in a normal, natural male voice, like a clear and friendly presenter. Conversational, not dramatic, not announcer-like.",
+  "lines": [
+    {
+      "id": "v1_word",
+      "at": "0:00.3",
+      "text": "Two people, the same cancer. One waits months longer for treatment."
+    },
+    {
+      "id": "v2_rule",
+      "at": "0:06.6",
+      "text": "A computer can never be held accountable."
+    }
+  ]
+}

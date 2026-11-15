@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A hospital care system</title>
+<link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="flow.css">
+<link rel="stylesheet" href="embed.css">
+</head>
+<body class="sim-body">
+<nav class="site-nav" data-page="simulator"></nav>
+
+<main class="sim" id="sim">
+  <div class="sim-left">
+    <div class="sim-day">
+      <span class="sim-day__word">Day</span> <span class="num sim-day__n" id="day"></span>
+      <div class="label">days since each patient's first contact</div>
+    </div>
+    <label class="sim-scn">
+      <span class="label">Pathway</span>
+      <select id="scn" aria-label="Which pathway to simulate"></select>
+    </label>
+    <div class="sim-flip" id="flip" hidden>
+      <div class="sim-toggle" role="group" aria-label="Before or after the change">
+        <button type="button" class="sim-toggle__b" data-side="0" id="flip-today">Today</button><button type="button" class="sim-toggle__b" data-side="1" id="flip-after">After the change</button>
+      </div>
+      <span class="stamp" id="flip-stamp">Saved optimiser run</span>
+      <a class="sim-quiet" id="flip-link" href="index.html">See both pathways drawn step by step</a>
+    </div>
+    <p class="sim-lede" id="lede">Each dot is a simulated patient moving through the lung-cancer pathway. Where dots pile up, patients wait.</p>
+    <p class="caption sim-legend" id="legend"></p>
+    <p class="caption sim-pairnote" id="pairnote" hidden></p>
+  </div>
+
+  <section class="sim-graph" id="panes" aria-label="The pathway with simulated patients"></section>
+
+  <aside class="sim-right">
+    <div class="card sim-head" id="head" aria-live="polite"></div>
+  </aside>
+</main>
+
+<div class="sim-opt card" id="optcard" hidden>
+  <div class="label" id="opt-title">Optimiser: changes to the order of steps</div>
+  <ol class="sim-opt__list" id="opt-list"></ol>
+  <div class="caption" id="opt-note"></div>
+</div>
+
+<footer class="sim-bar" id="bar">
+  <button type="button" id="play" class="btn btn--secondary sim-play" aria-label="Play or pause">Pause</button>
+  <input id="slider" type="range" min="0" max="100" step="0.1" value="0" aria-label="Day since first contact">
+  <label class="sim-speed"><span class="label">Speed</span> <select id="speed" aria-label="Playback speed"></select></label>
+  <button type="button" id="optimise" class="btn btn--primary">Optimise</button>
+  <button type="button" id="details" class="btn btn--secondary sim-details-btn" aria-haspopup="true" aria-expanded="false">Details</button>
+</footer>
+
+<div class="sim-menu card" id="menu" hidden role="menu"></div>
+<aside class="drawer sim-drawer" id="drawer" aria-label="Details"></aside>
+<div class="sim-tip" id="tip" hidden></div>
+<div class="footer-strip sim-footer"></div>
+
+<script src="data/flow_bundle.js"></script>
+<script src="data/start_bundle.js"></script>
+<script src="site.js"></script>
+<script src="flow.js"></script>
+</body>
+</html>

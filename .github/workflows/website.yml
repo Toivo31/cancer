@@ -1,0 +1,24 @@
+name: Three-slide website
+on:
+  push:
+    paths: ['website/**', '.github/workflows/website.yml']
+  pull_request:
+    paths: ['website/**', '.github/workflows/website.yml']
+jobs:
+  static-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: python -m unittest discover -s website/tests -p 'test_*.py' -v
+      - run: python -m py_compile website/modal_app.py
+      - run: |
+          node --check website/public/app.js
+          node --check website/public/results.js
+          node --check website/public/client.js
+          node --check website/public/simulation/animation.js

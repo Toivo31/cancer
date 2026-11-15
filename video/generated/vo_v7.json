@@ -1,0 +1,11 @@
+{
+  "_about": "Final narration: one normal male voice for every line, natural speed in the files; the trailer plays each line at 1.2x with pitch preserved (browser time-stretch). Run: python video/generated/tts.py --lines vo_final.json --voice Iapetus",
+  "voice_style": "Speak in a normal, natural male voice, like a clear and friendly presenter. Conversational, not dramatic, not announcer-like.",
+  "lines": [
+    {
+      "id": "v7_end",
+      "at": "0:45.7",
+      "text": "Our suggestion: pilot one clinician-validated pipeline in Finland, tracking treatment within target times. More time for hard cases and the human encounter."
+    }
+  ]
+}
