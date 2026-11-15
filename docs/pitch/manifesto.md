@@ -4,7 +4,7 @@ Nov 15, 2026 · Tuomas Talasmaa
 
 Every step in healthcare consists of two things: an execution and a decision. A nurse takes a sample, and someone decides what it means. A doctor sees a patient, and someone decides what happens next. Together, care pathways form a node graph, where patients travel from node to node until they are diagnosed and treated.
 
-More and more of these nodes will be automated. We have already seen the first symptom assessment automated through Omaolo. Next come chatbots and humanoids taking on parts of nursing work, and robotic arms collecting samples. But these inventions do not make decisions by themselves. Every automated step must be paired with a decision architecture that answers one question: given this set of facts, which test or treatment comes next? There's a limited benefit to a robotic sample collection arm if a nurse still has to decide what to do with the results.
+More and more of these nodes will be automated. We have already seen the first symptom assessment automated through self-reporting questionnaires and assessments. Next come chatbots and humanoids taking on parts of nursing work, and robotic arms collecting samples. But these inventions do not make decisions by themselves. Every automated step must be paired with a decision architecture that answers one question: given this set of facts, which test or treatment comes next? There's a limited benefit to a robotic sample collection arm if a nurse still has to decide what to do with the results.
 
 With JEV decision models, we can build that decision architecture for healthcare. It is ready for automation one part at a time, and it leaves humans to handle the edge cases.
 
