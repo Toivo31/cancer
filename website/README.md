@@ -1,6 +1,6 @@
 # Equal Care Pathways: three-slide website
 
-Live: https://cancer123--equal-care-pathways-web.us-east.modal.run/?release=20261115-4
+Live: https://cancer123--equal-care-pathways-web.us-east.modal.run/?release=20261115-5
 
 1. **Simulation:** an automatically moving vertical branching graph, with no visible controls. Routes are simplified from the saved synthetic Finland baseline on `content/pages`. Intermediate steps and timing are compressed for illustration; no new search or live clinical simulation runs here.
 2. **Decision Studio:** saved Text and Photo examples plus live Custom questions. A separate example shows synthetic patient retrieval → context refinement → classification. All examples are listed together on one scrollable page. Saved photo and retrieval outputs are clearly labelled and run without GPU use.
@@ -33,3 +33,5 @@ The medical text example is an exact recorded MedMCQA question and model respons
 Actual live completion and checks: [VALIDATION.md](VALIDATION.md).
 
 Decision Studio lists all examples on one scrollable page. Predefined medical text, patient retrieval, and photo examples use recorded results only. Medical text preserves archived checkpoint 1138 provenance; photos and retrieval retain checkpoint 2350. Only custom questions compute live. The first slide animates a vertical branching graph without controls.
+
+The first graph is accompanied by six framework explanations: pathway configuration, available patient context, joint scoring of allowed actions with clinician review, optional record retrieval and context refinement, whole-pathway simulation, and optimiser proposals checked by rerunning the same cohort.

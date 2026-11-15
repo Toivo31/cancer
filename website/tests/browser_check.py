@@ -6,7 +6,7 @@ from pathlib import Path
 import requests
 
 BASE=os.environ.get('WEBDRIVER_URL','http://127.0.0.1:4445')
-SITE=os.environ.get('WEBSITE_URL','https://cancer123--equal-care-pathways-web.us-east.modal.run/?release=20261115-4')
+SITE=os.environ.get('WEBSITE_URL','https://cancer123--equal-care-pathways-web.us-east.modal.run/?release=20261115-5')
 profile=Path.home()/'snap/firefox/common/equal-care-slides-qa';profile.mkdir(parents=True,exist_ok=True)
 r=requests.post(BASE+'/session',json={'capabilities':{'alwaysMatch':{'browserName':'firefox','moz:firefoxOptions':{'args':['-headless','-profile',str(profile)]}}}},timeout=60)
 r.raise_for_status();sid=r.json()['value']['sessionId'];url=BASE+'/session/'+sid

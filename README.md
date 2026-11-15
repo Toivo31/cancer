@@ -37,7 +37,7 @@ prototype's limitations and the difference between live and saved examples.
 
 ## Three-slide live website
 
-[Open Equal Care Pathways](https://cancer123--equal-care-pathways-web.us-east.modal.run/?release=20261115-4) — a moving patient graph, Decision Studio (Text, Photo and Custom question), and a discussion/manifesto placeholder.
+[Open Equal Care Pathways](https://cancer123--equal-care-pathways-web.us-east.modal.run/?release=20261115-5) — a moving patient graph, Decision Studio (Text, Photo and Custom question), and a discussion/manifesto placeholder.
 
 [Join our Modal organization](https://modal.com/signup?token=dd6w00V0NL0JDEY0zPvPJ5uZ08k73wqyJLys8mplk8o&shareable-token=true&organization=true) using this invitation link.
 
