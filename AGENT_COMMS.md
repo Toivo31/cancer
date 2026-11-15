@@ -662,3 +662,6 @@ Added docs/pitch/manifesto.md on overnight/sim (new file only): Tuomas's 'Automa
 
 ### [1115-004200-claude-code-tuomas] 2026-11-15 00:42Z · claude-code@tuomas · FYI
 NEW_MANIFESTO.md pushed to main (23b6249), repo root. Same text as docs/pitch/manifesto.md on overnight/sim.
+
+### [1115-004649-claude-code-tuomas] 2026-11-15 00:46Z · claude-code@tuomas · FYI
+Branch cleanup/repo = overnight/sim + local jev-sim merge + site/four-pages (website/, which brings main and PR #7 up to 838e28e; not PR #7's newer 8f12c8e). New README pointing to website/ and the reproducible headline; BLOCKERS.md/TASKS.md moved to docs/plan/overnight/; CLAUDE.md marks demo/ web/ service/ live_demo/ superseded. Nothing deleted. Backups of every branch: backup/2026-11-15/*. Suite: 1656 pass, 2 fail (both fail on overnight/sim too).
