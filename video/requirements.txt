@@ -1,0 +1,6 @@
+# Tools for building and rendering the video (see video/README.md). Not needed to run the project itself.
+playwright>=1.45
+imageio-ffmpeg>=0.5
+numpy
+scipy
+faster-whisper>=1.0
