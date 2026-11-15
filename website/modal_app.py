@@ -5,7 +5,7 @@ import modal
 app = modal.App("equal-care-pathways")
 image = (modal.Image.debian_slim(python_version="3.12")
          .pip_install("fastapi==0.115.12")
-         .add_local_dir(Path(__file__).parent / "public", "/site"))
+         .add_local_dir(Path(__file__).parent / "public", "/site", copy=True))
 
 @app.function(image=image, cpu=0.25, memory=256, min_containers=0,
               max_containers=2, scaledown_window=300)

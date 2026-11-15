@@ -6,7 +6,7 @@ from pathlib import Path
 import requests
 
 BASE=os.environ.get('WEBDRIVER_URL','http://127.0.0.1:4445')
-SITE=os.environ.get('WEBSITE_URL','https://cancer123--equal-care-pathways-web.us-east.modal.run/?release=20261115-8')
+SITE=os.environ.get('WEBSITE_URL','https://cancer123--equal-care-pathways-web.us-east.modal.run/?release=20261115-9')
 profile=Path.home()/('snap/firefox/common/equal-care-slides-qa-'+str(time.time_ns()));profile.mkdir(parents=True,exist_ok=True)
 r=requests.post(BASE+'/session',json={'capabilities':{'alwaysMatch':{'browserName':'firefox','moz:firefoxOptions':{'args':['-headless','-profile',str(profile)]}}}},timeout=60)
 r.raise_for_status();sid=r.json()['value']['sessionId'];url=BASE+'/session/'+sid
@@ -81,7 +81,7 @@ try:
  wait('return !document.querySelector("#custom-form .live-call").disabled')
  js('window.slow=true;document.getElementById("refine").checked=false;document.getElementById("custom-form").requestSubmit();document.getElementById("question").value="Changed while waiting";document.getElementById("question").dispatchEvent(new Event("input"))');time.sleep(1)
  check('late reply cannot overwrite edited input','return !document.getElementById("custom-result").textContent.includes("LIVE MODEL RESULT")')
- screenshot('studio-desktop.png');route('manifesto');check('manifesto remains placeholder','return document.getElementById("manifesto").textContent.includes("PLACEHOLDER")')
+ screenshot('studio-desktop.png');route('manifesto');check('full manifesto and renamed navigation','return document.querySelectorAll("nav a")[2].textContent.includes("Manifesto") && document.querySelectorAll("#manifesto h2").length===3 && document.getElementById("manifesto").textContent.includes("A doctor always makes the final call") && !document.getElementById("manifesto").textContent.includes("PLACEHOLDER")')
  cmd('/window/rect',{'width':390,'height':844});route('studio/photo');check('mobile has no outer overflow','return document.documentElement.scrollWidth<=innerWidth');screenshot('studio-mobile.png')
  route('simulation');check('mobile simulation stays within slide','return document.documentElement.scrollWidth<=innerWidth');screenshot('simulation-mobile.png')
  print(json.dumps({'passed':len(checks),'checks':checks},indent=2))
