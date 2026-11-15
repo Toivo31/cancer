@@ -30,4 +30,10 @@ Finland's lung cancer outcomes trail the other Nordic countries, and Finnish pat
 
 - Use machine-assisted preventive cancer screening on patient records.
 - Streamline treatment pathways and introduce fast-track lines for patients with elevated cancer risk.
-- Embrace automation to streamline healthcare and reduce lead times.
+- Embrace automation to streamline healthcare and reduce lead times. Changes with published evidence behind them:
+    - **Book the treatment slot while the last tests finish.** In Trondheim the treatment plan changed after PET-CT in only 2% of patients. Referring patients for treatment at the tumour board, with tissue sampling done while they wait, was part of a redesign estimated to raise on-time treatment from 40% to 80% ([Stokstad et al. 2019](https://doi.org/10.1186/s12913-019-4517-z)).
+    - **Order PET-CT and the fitness test at the first specialist visit.** Late PET-CT referral was the most common delay in the same study (27 of 100 patients).
+    - **Pre-order the standard tests at referral triage.** In Toronto this cut referral to diagnosis from 39.9 to 28.1 days ([JCO Oncology Practice](https://pmc.ncbi.nlm.nih.gov/articles/PMC7564135)).
+    - **Do the multidisciplinary work-up at the first visit.** In Montpellier it gave a significantly faster tissue diagnosis ([Pujol et al. 2023](https://doaj.org/article/be5fa10ccb474503a25308361debcf48)).
+    - **Give primary care direct access to CT.** Fewer than 10% of Finnish primary care units have it, against 90–100% in the other Nordic countries ([Khalife et al. 2025](https://doi.org/10.2340/1651-226X.2025.42778)).
+    - **Open a rapid diagnosis route for vague symptoms.** In Swansea, time to diagnosis fell from 84 days to under 6 for patients diagnosed at the centre visit ([PMC6960004](https://pmc.ncbi.nlm.nih.gov/articles/PMC6960004)).
