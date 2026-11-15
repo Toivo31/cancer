@@ -5,6 +5,15 @@
 (function () {
 'use strict';
 const D = window.FLOW_DATA;
+/* JEV-decided run (data/flow_jev_bundle.js from demo/export_jev_flow.py, optional): its two variants (rule tables and
+   JEV on the same recorded patients) join their scenario; s.jev keeps the comparison and the provenance. */
+const J = window.FLOW_JEV_DATA || null;
+if (D && J && J.scenarios) J.scenarios.forEach(js => {
+  const s = D.scenarios.find(x => x.id === js.id);
+  if (!s || js.status !== 'recorded') return;
+  s.jev = js;
+  js.variants.forEach(v => { if (!s.variants.some(x => x.key === v.key)) s.variants.push(v); });
+});
 const $ = (s, r) => (r || document).querySelector(s);
 /* colours: theme tokens via Site.tokens() (demo/site.js), read at start and on theme change. No colour literals. */
 let C = {};
@@ -55,7 +64,7 @@ const LAYERS = [['flow', 'patients (default)', 'Dots are patients; piles are pat
   ['queues', 'queue over the year', 'The line in each step is the number waiting there over the simulated calendar year, not the replay clock.'],
   ['decisions', 'decisions', 'Rounded steps are choices; they show the share of patients who got each option.']];
 const S = {sid: null, keys: [null, null], layer: 'flow', t: 0, playing: true, speed: 2, opt: false, side: 0, split: false,
-  deltas: false, dense: false, tall: false, sel: null, hl: null, pin: null, panes: [], H: 100, big: false, drawer: null, touched: false};
+  deltas: false, dec: 'rules', dense: false, tall: false, sel: null, hl: null, pin: null, panes: [], H: 100, big: false, drawer: null, touched: false};
 /* ------------------------------------------------------------------ layout (union of both flowcharts) */
 function layoutUnion(flows) {
   const nodes = new Map(), edges = new Map();
@@ -216,9 +225,11 @@ function globalMax(key) {
 }
 function sc() { return D.scenarios.find(s => s.id === S.sid); }
 function variantOf(s, key) { return s.variants.find(v => v.key === key); }
-const SHORT = {observed: 'Today', baseline: 'Today', suggested: 'Optimiser', authors: "Authors' pathway", faster_pet: 'Faster scanner'};
+const SHORT = {observed: 'Today', baseline: 'Today', suggested: 'Optimiser', authors: "Authors' pathway", faster_pet: 'Faster scanner',
+  jev_rules: 'Rule tables', jev: 'JEV'};
 function sideName(side) {
   const k = S.keys[side], V = variantOf(sc(), k);
+  if (k === 'jev' && sc().jev && sc().jev.mock) return 'JEV (mock)';
   if (side === 0 && (k === 'observed' || k === 'baseline')) return 'Today';
   if (side === 1 && V && V.changes && V.changes.length && (S.keys[0] === 'observed' || S.keys[0] === 'baseline')) return 'After the change';
   return SHORT[k] || (V ? V.label : k);
@@ -671,12 +682,17 @@ function renderHead() {
       ? `best fit; across the ${O.n_settings} settings that fit today's pathway: ${pct(bd.observed.min)}–${pct(bd.observed.max)} today, ${pct(bd.optimiser_no_equipment.min)}–${pct(bd.optimiser_no_equipment.max)} after (median ${pct(bd.optimiser_no_equipment.median)})`
       : S.keys[0] === 'observed' && !two ? `best fit; ${pct(bd.observed.min)}–${pct(bd.observed.max)} across the ${O.n_settings} settings that fit` : 'at the best-fitting setting';
   }
+  const js = S.dec === 'jev' && s.jev;
+  if (js) {
+    const o = js.outcomes, ci = c => c ? `${pct(c[0])}–${pct(c[1])}` : '–';
+    sub = `same ${js.provenance.n_patients} patients; 95% interval ${ci(o.rule_tables.share_ci95)} with the tables, ${ci(o.jev.share_ci95)} with the JEV`;
+  }
   let h = row(`Treated within ${A.target_days} days`, share(A), share(B), '%', sub);
   h += row('Median days to treatment', f1(A.metrics.median_days_to_treatment), f1(B.metrics.median_days_to_treatment), '', '', true);
   if (missedAny) h += row('Cancers missed, per cohort', f1(A.metrics.missed_cancers), f1(B.metrics.missed_cancers), '', '', true);
   const cl = CLAIM[S.sid] || {};
   const byKey = {faster_pet: 'sim-no-faster-pet-overpredicted', authors: 'sim-no-authors-band'};
-  const claim = !two ? (cl.today || cl.share) : S.sid === 'norway' && byKey[S.keys[1]] ? byKey[S.keys[1]] : cl.share;
+  const claim = js ? null : !two ? (cl.today || cl.share) : S.sid === 'norway' && byKey[S.keys[1]] ? byKey[S.keys[1]] : cl.share;
   h += `<div class="sim-head__basis"><span class="sim-basis">Our simulation</span> whole run, ${fmt(A.totals.n)} simulated patients · ${claimLink(claim)}</div>`;
   $('#head').innerHTML = h;
   $('#head').classList.toggle('is-two', two);
@@ -685,11 +701,11 @@ function renderHead() {
 /* ------------------------------------------------------------------ chrome: flip, legend, pair note, menu */
 function renderChrome() {
   const s = sc(), V1 = S.panes[1].V, hasChanges = !!(V1.changes && V1.changes.length);
-  $('#flip').hidden = !S.opt;
+  $('#flip').hidden = !S.opt || S.dec === 'jev';     // in JEV mode the Decisions switch is the flip
   $('#flip-today').textContent = sideName(0);
   $('#flip-after').textContent = sideName(1);
   [$('#flip-today'), $('#flip-after')].forEach((b, i) => b.setAttribute('aria-pressed', String(!S.split && S.side === i)));
-  $('#flip-stamp').textContent = hasChanges ? (s.synthetic ? 'Saved optimiser run · held-out patients' : 'Saved optimiser run · best fit') : 'Saved simulation';
+  $('#flip-stamp').textContent = S.dec === 'jev' && s.jev ? (s.jev.mock ? 'Mock rehearsal · not the model' : 'Recorded JEV run') : hasChanges ? (s.synthetic ? 'Saved optimiser run · held-out patients' : 'Saved optimiser run · best fit') : 'Saved simulation';
   const fl = $('#flip-link');
   fl.href = `index.html#${DASH_KEY[S.sid] || S.sid}/5`;
   fl.hidden = !hasChanges;
@@ -698,6 +714,8 @@ function renderChrome() {
   ob.classList.toggle('is-done', S.opt);
   ob.classList.toggle('btn--primary', !S.opt);
   ob.classList.toggle('btn--secondary', S.opt);
+  ob.style.display = S.dec === 'jev' ? 'none' : '';
+  renderDec();
   const dot = (c, ring) => `<i style="${ring ? `border:1.5px solid ${c};background:none` : `background:${c}`}"></i>`;
   $('#legend').innerHTML = `<span class="nw">${dot(C.ink)}moving or being seen</span> · <span class="nw">${dot(C.faint)}waiting</span> · <span style="color:${C.mustardInk}">steps turn mustard, then brick, as patients pile up</span>` +
     (S.sid === 'finland' ? ` · <span style="color:${C.brown}">return: back to primary care</span>` : '');
@@ -773,6 +791,7 @@ const DRAWERS = {
   results: ['All results', () => resultsCard()],
   counts: ['Counts now', () => countsCard()],
   decisions: ['Decisions: what was chosen', () => decisionsCard()],
+  jevcmp: ['Decision model vs rule tables', () => jevCard()],
   about: ['About this simulation', () => aboutCard() + `<div class="card"><h3>Key</h3>${keyHtml()}<p>${renderNote()}</p></div>`],
   trace: ['Patient', () => traceCard()]};
 function renderMenu() {
@@ -791,7 +810,7 @@ function renderMenu() {
     <div class="sim-menu__sec sim-menu__links">
       ${item('lost', 'Where time is lost')}${s.published ? item('check', 'Check against the published study') : ''}
       ${item('pair', 'Compare other pathways')}${item('results', 'All results')}
-      ${item('counts', 'Counts now')}${item('decisions', 'Decisions: what was chosen')}
+      ${item('counts', 'Counts now')}${item('decisions', 'Decisions: what was chosen')}${s.jev ? item('jevcmp', 'Decision model vs rule tables') : ''}
       ${item('about', 'About this simulation')}
       <a class="sim-menu__link" href="encounter.html">Primary-care loop (other page)</a>
       <a class="sim-menu__link" href="evidence.html">Evidence page</a>
@@ -954,9 +973,71 @@ function decisionsCard() {
     });
     h += '</div>';
   });
-  h += `<p>Where the pathway has a choice, a decision source picks the option. Here it is the scenario's rule table, a stand-in until the decision model is attached.</p></div>`;
+  const js = S.dec === 'jev' && sc().jev;
+  h += js ? `<p>Where the pathway has a choice, a decision source picks the option. Grey: the scenario's rule tables; black: ${js.mock ? 'a mock of the decision model (not the model)' : 'the decision model'} (${esc(js.provenance_line)}), on the same ${js.provenance.n_patients} patients. Details, Decision model vs rule tables, compares them.</p></div>`
+    : `<p>Where the pathway has a choice, a decision source picks the option. Here it is the scenario's rule table, a stand-in until the decision model is attached${sc().jev ? '; the Decisions switch shows a recorded run of the decision model' : ''}.</p></div>`;
   return h;
 }
+/* ------------------------------------------------------------------ decisions: rule tables or the JEV (D51) */
+function jevCard() {
+  const js = sc().jev;
+  if (!js) return '';
+  const p = js.provenance, L = id => esc(js.node_labels[id] || id);
+  const shares = sh => Object.entries(sh || {}).filter(([, v]) => v > 0).map(([o, v]) => `${L(o)} ${pct(v)}`).join('<br>') || '–';
+  const ci = c => c ? `${pct(c[0])}–${pct(c[1])}` : '–';
+  let h = `<div class="card sim-jev"><h3>Decision model vs rule tables</h3>
+    <p><span class="stamp${js.mock ? ' stamp--brick' : ''}">${js.mock ? 'Mock rehearsal · not the model' : 'Recorded run'}</span></p><p class="m">${esc(js.provenance_line)}</p>
+    <p>The same ${p.n_patients} simulated patients (${esc(p.cohort)}) went through today's pathway twice: once with every choice taken from the scenario's rule tables (the practice mixes observed in the paper), once with every choice taken from ${js.mock ? 'a local mock standing in for the model' : 'the decision model'}. Agreement compares the two picks on the identical patient state: same patient, same step, same history.</p>
+    <table><tr><th>Choice point</th><th>Asked</th><th>Same pick</th><th>JEV picked</th><th>Table mix (observed)</th></tr>`;
+  Object.entries(js.agreement).forEach(([node, a]) => {
+    h += `<tr><td>${L(node)}</td><td>${a.n}</td><td>${pct(a.agreement)}</td><td class="m">${shares(a.jev_share)}</td><td class="m">${a.table_mix ? shares(a.table_mix) : '–'}</td></tr>`;
+  });
+  const o = js.outcomes, r = o.rule_tables, j = o.jev, pr = js.paired;
+  const cell = m => `${m.within_target} of ${m.n} (${pct(m.share_within_target)}; ${ci(m.share_ci95)})`;
+  h += `</table><table style="margin-top:10px"><tr><th></th><th>Rule tables</th><th>JEV</th></tr>
+    <tr><td>Treated within ${js.target_days} days</td><td>${cell(r)}</td><td>${cell(j)}</td></tr>
+    <tr><td>Median days to treatment</td><td>${f1(r.median_days_to_treatment)}</td><td>${f1(j.median_days_to_treatment)}</td></tr>
+    <tr><td>Steps per patient</td><td>${r.steps_per_patient == null ? '–' : r.steps_per_patient.toFixed(2)}</td><td>${j.steps_per_patient == null ? '–' : j.steps_per_patient.toFixed(2)}</td></tr></table>
+    <p>Patient by patient, the JEV's pathway was faster for ${pr.jev_faster}, slower for ${pr.jev_slower} and the same for ${pr.same} (median difference ${f1(pr.median_diff_days)} days).</p>
+    <p><b>What this does and does not show</b></p><ul>${js.caveats.map(c => `<li>${esc(c)}</li>`).join('')}</ul>
+    <p class="m">${p.calls_live} live calls and ${p.answers_from_cache} answers from the cache in the recorded run; ${p.single_option_decisions} single-option steps not sent. Model identity from the responses: ${esc(JSON.stringify(p.model_identity))}. Request: ${esc(p.request_builder)}.</p></div>`;
+  return h;
+}
+function renderDec() {
+  const s = sc(), js = s.jev, box = $('#jevsw');
+  box.hidden = !(js || S.sid === 'norway');
+  if (box.hidden) return;
+  const jevSide = S.dec === 'jev' && !S.split && S.side === 1, rulesSide = S.dec !== 'jev' || (!S.split && S.side === 0);
+  $('#jevsw-rules').setAttribute('aria-pressed', String(rulesSide));
+  $('#jevsw-jev').setAttribute('aria-pressed', String(jevSide));
+  $('#jevsw-jev').disabled = !js;
+  $('#jevsw-jev').textContent = js && js.mock ? 'JEV (mock)' : 'JEV';
+  const st = $('#jevsw-stamp'), note = $('#jevsw-note');
+  if (!js) {
+    const cmd = (J && J.how_to_record) || ['python -m pathway_sim.jev_run', 'python demo/export_jev_flow.py'];
+    st.textContent = 'JEV run not recorded yet';
+    st.className = 'stamp';
+    note.innerHTML = `Every choice on this page comes from the scenario's rule tables. To record the decision model on this pathway: ${cmd.map(c => `<code>${esc(c)}</code>`).join(', then ')}.`;
+    return;
+  }
+  st.textContent = js.mock ? 'Mock rehearsal · not the model' : 'Recorded run';
+  st.className = 'stamp' + (js.mock ? ' stamp--brick' : '');
+  note.innerHTML = S.dec === 'jev'
+    ? `${esc(js.provenance_line)}. The same ${js.provenance.n_patients} patients, every choice by the rule tables or by the JEV. <a href="#" data-open="jevcmp">How the decisions compare</a> · <a href="#" data-dec-exit="1">back to the full run</a>`
+    : `Choices come from the scenario's rule tables (observed practice). Switch to the JEV to see a recorded run of the decision model: ${esc(js.provenance_line)}.`;
+}
+function setDec(dec) {
+  const s = sc();
+  if (dec === 'jev' && !s.jev) return;
+  if (S.dec === 'jev' && dec !== 'full') { flip(dec === 'jev' ? 1 : 0); return; }   // JEV mode: the buttons flip between the two runs
+  if (dec === 'full') dec = 'rules';                                                 // back to the page's full run
+  S.dec = dec; S.sel = null; S.hl = null; unpin();
+  if (dec === 'jev') { S.keys = s.jev.default_pair.slice(); S.opt = true; S.side = 1; }
+  else { S.keys = [s.default_pair[0], s.default_pair[1]]; S.opt = false; S.side = 0; }
+  S.split = false; S.t = 0;
+  buildPanes();
+}
+
 function traceCard() {
   const pa = S.panes[S.sel.pane], F = pa.P.F, d = pa.dots.find(x => x.idx === S.sel.idx), p = d.p;
   const nm = id => { const n = F.graph.nodes.find(x => x.id === id); return n ? n.short : id; };
@@ -1066,7 +1147,15 @@ function init() {
   $('#scn').innerHTML = D.scenarios.map(s => `<option value="${s.id}">${esc(s.id === 'norway' ? 'Norway · published study' : 'Finland · synthetic')}</option>`).join('') +
     '<option value="__encounter">Primary-care loop ›</option>';
   setScenario(S.sid, q);
+  if (q.get('dec') === 'jev') { const t0 = S.t; setDec('jev'); S.t = t0; }
   S.t = Math.min(S.t, S.H);
+  $('#jevsw-rules').onclick = () => setDec('rules');
+  $('#jevsw-jev').onclick = () => setDec('jev');
+  $('#jevsw').addEventListener('click', e => {
+    const a = e.target.closest('[data-open]'), x = e.target.closest('[data-dec-exit]');
+    if (a) { e.preventDefault(); openDrawer(a.dataset.open); }
+    if (x) { e.preventDefault(); setDec('full'); }
+  });
   $('#scn').addEventListener('change', e => {
     if (e.target.value === '__encounter') { location.href = 'encounter.html'; return; }
     S.t = 0; S.opt = false; S.side = 0; S.split = false; setPlaying(true); closeDrawer(); unpin(); setScenario(e.target.value);
@@ -1121,6 +1210,7 @@ function init() {
 }
 function setScenario(sid, q) {
   S.sid = sid;
+  S.dec = 'rules';
   const s = sc();
   S.keys = [s.default_pair[0], s.default_pair[1]];
   if (q && q.get('left') && variantOf(s, q.get('left'))) S.keys[0] = q.get('left');
