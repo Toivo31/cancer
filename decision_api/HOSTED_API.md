@@ -1,3 +1,5 @@
+> Current release: **checkpoint2881**, published at https://huggingface.co/Toivo31/Nemotron-Birch. `decision_api.probability.predict_proba(..., reasoning_budget=0)` offers a simple ordered probability vector; positive budgets1..512 enable bounded refinement. Historical2350 timing/selection details below remain labelled as such.
+
 # Hosted decision API: teammate and coding-agent quick start
 
 Base URL: **https://cancer123--birch-decision-1138-demo.us-east.modal.run**
@@ -113,11 +115,11 @@ teammate-owned `jev/` files:
 
 ```python
 from decision_api.jev_bridge import backend, policy
-model = backend()  # localhost8771, checkpoint2350, timeout660
+model = backend()  # localhost8771, checkpoint2881, timeout660
 # Or: model_policy = policy(world, max_calls=20)
 ```
 
-The bridge separates the cache by checkpoint/hash, rejects cached1138 results, and verifies live step/hash before accepting scores. If using `BirchBackend` directly, set checkpoint2350 and timeout660 and use a new checkpoint-specific cache directory.
+The bridge separates the cache by checkpoint/hash, rejects cached1138 results, and verifies live step/hash before accepting scores. If using `BirchBackend` directly, set checkpoint2881 and timeout660 and use a new checkpoint-specific cache directory.
 Its older defaults are checkpoint1138 and timeout160seconds. Keep the existing call budget/cache/visible-record checks. This
 migration does not alter simulator state or bulk-run model scoring.
 
@@ -130,7 +132,7 @@ migration does not alter simulator state or bulk-run model scoring.
 Only the owner needs Modal credentials and the existing `birch-inference`
 secret. `runtime/decision_model/` is an isolated inference source snapshot,
 with the reference branch enabled; it does not overwrite teammate model code or
-any training working tree. Checkpoint2350 remains pinned and checksum-verified.
+any training working tree. Checkpoint2881 remains pinned and checksum-verified.
 The inference URL remains authenticated. The public gateway has no image upload
 route and keeps the API key server-side. Overnight pausing remains with the
 team; no schedule has been installed.
@@ -138,16 +140,17 @@ team; no schedule has been installed.
 
 ## Checkpoint selection
 
-Live scoring now pins `birch07-refine-v3/checkpoint-00002350`, with trainable SHA256
-`22570c201a9e3d25dcdf7aa904770a568328e034ccb5ac89623784707a7323e8`.
-The legacy app/URL name contains1138 for compatibility; use response
-`backend.step` and `checkpoint_sha256` for the actual identity. The default saved examples and native reasoning recording have been refreshed with actual2350 outputs. Original1138 recordings are retained in `web/precomputed-1138.json` and `web/precomputed-reasoning-1138.json`; never relabel them as2350. The2366 experimental reasoning
-pilot was considered but its paired raw check fell from29/40 to25/40;2350 was
-chosen for this demo. This small screen does not prove general model quality.
+Live scoring now pins `birch08-task-instructions-v1/checkpoint-00002881`, with
+trainable SHA256 `ec2bc28fd13d1933b6d18bee23e23928f326b24940467db7db4729426e7de16f`.
+The legacy URL retains1138 in its name; use response `backend.step` and
+`checkpoint_sha256` for identity. Default saved examples are recorded2881 outputs;
+older2350/1138 recordings remain separately labelled archives. The earlier2350
+selection and timing reports remain historical evidence, not2881 benchmark results.
 
-
-Deployment checks and limitations: [validation/README.md](validation/README.md), with the recorded2350 provenance and GPU report in `validation/step2350.json`.
-
+The HF card retains its original text and2350 benchmark table. Its added usage
+section describes hosted or local `predict_proba`, default-off reasoning budgets
+and the custom checkpoint loader. No internal medical-retention evaluation was
+added to the model card.
 
 ## Efficient inference
 

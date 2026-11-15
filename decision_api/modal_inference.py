@@ -10,13 +10,13 @@ import modal
 
 ROOT = Path(__file__).resolve().parents[1]
 BUCKET = 'Toivo31/project-birch-03'
-STEP = 2350
-PREFIX = 'birch07-refine-v3/checkpoint-00002350'
+STEP = 2881
+PREFIX = 'birch08-task-instructions-v1/checkpoint-00002881'
 MODEL = 'nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-BF16'
 REVISION = 'fb0ee0bc6b3f70342afd8d84cb80dbadbaa8a1fe'
-STATE_SHA256 = 'f5951fb2c51e6a437dde6717e467fd38aa5b164afba524ee65d2db225cb6baab'
-WEIGHTS_SHA256 = '22570c201a9e3d25dcdf7aa904770a568328e034ccb5ac89623784707a7323e8'
-CHECKPOINT = Path('/weights/checkpoint-00002350')
+STATE_SHA256 = 'dbeec932ba150caf14b083553607531a495afaa088619e15a22e19b91da88875'
+WEIGHTS_SHA256 = 'ec2bc28fd13d1933b6d18bee23e23928f326b24940467db7db4729426e7de16f'
+CHECKPOINT = Path('/weights/checkpoint-00002881')
 app = modal.App('birch-decision-1138')
 weights = modal.Volume.from_name('birch-inference-weights', create_if_missing=True)
 data = modal.Volume.from_name('birch-inference-reviews', create_if_missing=True)
@@ -38,7 +38,7 @@ image = (modal.Image.from_registry('nvidia/cuda:12.8.1-cudnn-devel-ubuntu24.04',
     .pip_install('mamba-ssm==2.3.2.post1', 'causal-conv1d==1.7.0', extra_options='--no-build-isolation')
     # Include only reviewed inference source/examples, never outputs, credentials,
     # datasets, training deployments or the working tree's other files.
-    .add_local_dir(ROOT/'decision_api/runtime/decision_model', '/app/decision_model', ignore=['__pycache__', '*.pyc'])
+    .add_local_dir(ROOT/'decision_api/runtime/decision_model', '/app/decision_model', ignore=['__pycache__', '*.pyc', '**/__pycache__/**', '**/*.pyc'])
     .add_local_dir(ROOT/'decision_api/runtime/examples', '/app/examples')
     .add_local_file(ROOT/'decision_api/__init__.py', '/app/decision_api/__init__.py')
     .add_local_file(ROOT/'decision_api/shared_generation.py', '/app/decision_api/shared_generation.py')
@@ -258,7 +258,7 @@ def main(probe: bool = False):
 gateway_image = (modal.Image.debian_slim(python_version='3.12')
     .pip_install('fastapi==0.162.7')
     .env({'PYTHONPATH':'/app','BIRCH_NATIVE_REFINEMENT_ENABLED':'1'})
-    .add_local_dir(ROOT/'decision_api','/app/decision_api',ignore=['runtime','__pycache__','*.pyc','.env','.env.*']))
+    .add_local_dir(ROOT/'decision_api','/app/decision_api',ignore=['runtime','runtime/**','tests','tests/**','__pycache__','**/__pycache__/**','*.pyc','**/*.pyc','.env','.env.*']))
 
 @app.function(image=gateway_image, secrets=[secret], cpu=1, memory=512,
               min_containers=0, max_containers=1, scaledown_window=300, timeout=900)
