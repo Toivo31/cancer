@@ -1,5 +1,5 @@
-import {createDecisionClient} from './client.js?v=20261115-7';
-import {render as renderResults} from './results.js?v=20261115-7';
+import {createDecisionClient} from './client.js?v=20261115-8';
+import {render as renderResults} from './results.js?v=20261115-8';
 const $=id=>document.getElementById(id);
 const api=createDecisionClient({baseUrl:'https://cancer123--birch-decision-1138-demo.us-east.modal.run/api/decision',fetch:(...args)=>globalThis.fetch(...args)});
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -11,7 +11,7 @@ function currentIndex(){const p=location.hash.slice(1).split('/')[0];return Math
 $('previous').onclick=()=>location.hash=slides[Math.max(0,currentIndex()-1)];$('next').onclick=()=>location.hash=slides[Math.min(2,currentIndex()+1)];
 window.addEventListener('keydown',e=>{if(e.target.closest('input,textarea,select,button,[role=tab]')||e.altKey||e.ctrlKey||e.metaKey)return;if(e.key==='ArrowRight')$('next').click();if(e.key==='ArrowLeft')$('previous').click();});
 window.addEventListener('hashchange',route);$('sim-frame').addEventListener('load',()=>notifySimulation(!$('simulation').hidden));route();
-function clearResult(id){versions[id]=(versions[id]||0)+1;$(id).innerHTML='<div class="empty-state"><span>✳</span><h3>Ready for your question.</h3><p>Set the context and possible answers, then compute live on Modal.</p></div>';}
+function clearResult(id){versions[id]=(versions[id]||0)+1;$(id).innerHTML='<div class="empty-state"><span><img class="empty-tree" src="birch-tree.svg" alt="" width="48" height="48"></span><h3>Ready for your question.</h3><p>Set the context and possible answers, then compute live on Modal.</p></div>';}
 function render(id,data,isSaved){renderResults(id,data,isSaved,{$,api,esc});}
 async function run(id,work){if(busy)return;busy=true;const v=versions[id]=(versions[id]||0)+1;document.querySelectorAll('.live-call').forEach(b=>b.disabled=true);$(id).innerHTML='<div class="loading" role="status">Computing on Modal.<p>A cold start can take several minutes. Keep this page open; this submission will not be replayed.</p></div>';try{const data=await work();if(versions[id]===v)render(id,data,false);}catch(e){if(versions[id]===v){$(id).innerHTML=`<div class="error" role="alert">${esc(e.message)}</div>`;if(e.jobStatusUrl){const a=document.createElement('a');a.href=e.jobStatusUrl;a.textContent='Check accepted job status ↗';a.target='_blank';a.rel='noopener';$(id).append(a);}}}finally{busy=false;document.querySelectorAll('.live-call').forEach(b=>b.disabled=false);}}
 function choices(value){const rows=value.split('\n').map(s=>s.trim()).filter(Boolean);if(rows.length<2||rows.length>8)throw Error('Enter 2–8 possible answers, one per line.');return rows.map((text,i)=>({id:'answer-'+i,text}));}
