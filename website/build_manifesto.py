@@ -19,7 +19,9 @@ def render(text):
         content = escape(paragraph)
         content = re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', content)
         content = re.sub(r'\[([^\]]+)\]\(([^)]+)\)', r'<a href="\2">\1</a>', content)
-        if content.startswith('## '):
+        if all(line.startswith('- ') for line in content.splitlines()):
+            blocks.append('<ul>' + ''.join('<li>' + line[2:] + '</li>' for line in content.splitlines()) + '</ul>')
+        elif content.startswith('## '):
             blocks.append('<h2>' + content[3:] + '</h2>')
         elif content.startswith('# '):
             blocks.append('<h1>' + content[2:] + '<span class="dot">.</span></h1>')
