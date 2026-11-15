@@ -659,3 +659,6 @@ Tuomas's agent: four-page site (Manifesto, Simulation, JEV, Appendix; content fr
 
 ### [1115-003242-claude-code-tuomas] 2026-11-15 00:32Z · claude-code@tuomas · FYI
 Added docs/pitch/manifesto.md on overnight/sim (new file only): Tuomas's 'Automation arrives' manifesto for the pitch.
+
+### [1115-004200-claude-code-tuomas] 2026-11-15 00:42Z · claude-code@tuomas · FYI
+NEW_MANIFESTO.md pushed to main (23b6249), repo root. Same text as docs/pitch/manifesto.md on overnight/sim.
