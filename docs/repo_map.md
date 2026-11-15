@@ -34,5 +34,5 @@ model kit, `decision_api/`). `decision_api/` (the teammate's model kit), `jev/` 
 | `tests/` | Test suite; `tests/security/` is the service's security tests; `tests/test_review_w7_*.py` mark open review findings as expected failures | all | `python -m pytest -q tests/test_demo_start.py` |
 | `scripts/` | `gate.sh` (the integrator's gate), `comms.py` (agent channel), Norway robustness and encounter report scripts, `build_training_set.py` | integrator | `python scripts/comms.py --help` |
 | `runs/` | Saved optimiser and model-in-loop result files (JSON) | architect | `runs/opt_finland.json` |
-| `BLOCKERS.md`, `TASKS.md` | Blockers log and the overnight task queue (history; `docs/plan/04-status.md` is current) | integrator | |
+| `docs/plan/overnight/BLOCKERS.md`, `docs/plan/overnight/TASKS.md` | Blockers log and the overnight task queue (history; `docs/plan/04-status.md` is current) | integrator | |
 | `requirements.txt`, `pytest.ini` | Python requirements (`service/requirements.txt` adds the API's) and test settings | | `docs/commands.md` section 1 |

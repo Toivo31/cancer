@@ -31,3 +31,10 @@ runs/training/
 runs/llm_cache/
 runs/libraries/
 runs/training/
+
+# Local run outputs (regenerable)
+runs/jev_cache/
+runs/jev_cache_mock/
+runs/jev_sim/
+runs/ui_shots/
+runs/walk_library/

@@ -6,7 +6,7 @@ The README says what this is. This page says what to read to check whether we ar
 
 | Min | Open | What to look for |
 |---|---|---|
-| 0 to 2 | `demo/start.html` | Six results, each read from its data file. Read the grey caveat under each number. A row that says "pending" is not ready; it is not hidden |
+| 0 to 2 | `README.md`, then the site in `website/` | What we built, the headline result with what it depends on, and the one command that reproduces it |
 | 2 to 4 | `docs/pitch/filled/numbers_sheet.md` | Every number we say aloud, the one sentence it may be used in, its range, and a status: fitted, predicted, simulated, published or assumption. Row A11 lists a number we retired because it was the corner of a wider band. Rows E4, E4b and G2 list things we do not stand behind |
 | 4 to 7 | `docs/validation.md`, section "Robustness" | The Norwegian check. We fitted only today's order. The prediction for the authors' reordering is a band over 184 settings, not a point. The faster-scanner prediction misses (we over-predict). The ranking is the part that holds in every setting |
 | 7 to 9 | `docs/review_w7.md`, "Verdict" and "Ten questions a critical judge will ask" | An independent review written before the freeze, with its blockers: a wording leak in model-written test reports, no population model for patient backgrounds, stale demo numbers. Open findings are kept as expected-failing tests (`tests/test_review_w7_*.py`) |

@@ -1,115 +1,81 @@
-# Equal Care Across Finland: lung cancer pathway simulator and optimiser
+# Equal Care Pathways
 
-Junction 2026, AstraZeneca challenge. We built a simulator of the lung cancer diagnostic pathway. Synthetic patients move through a
-**flowchart** (an editable diagram of care steps, each with waits and limited capacity). An optimiser proposes a better order of
-steps using only what a clinic would see, accepts a change only if a rerun of the same patients is faster, and reports it on
-**held-out** patients (patients the search never used). All patients are synthetic. No clinician has reviewed any of it.
+Junction 2026, AstraZeneca challenge "Equal Care Across Finland".
 
-## Open this first
+We built a simulator of a hospital's lung cancer diagnostic pathway and an optimiser that searches for a better order of
+care steps. Synthetic patients move through a **flowchart** of care steps with waits and limited capacity. The optimiser
+proposes a change, reruns the same patients with it, keeps the change only if patients reach treatment sooner without
+extra tests or missed cancers, and reports the result on **held-out** patients it never searched on. At each decision
+point, a decision model (**JEV**, our model Birch) can rank the options from what a clinician would see.
 
-| What | How | What it shows |
-|---|---|---|
-| Offline demo site | open `demo/start.html` (the Overview) in a browser (no server) | Five pages in one nav: Overview (three cards: simulate, optimise, check against a real hospital), Simulator (`flow.html`: the pathway with moving patients; OPTIMISE flips them onto the changed pathway), Patients (sealed truth vs visible record), Evidence (the Norway check with ranges), Decision model (`jev.html`). Every number carries a tag (published / our simulation / our assumption) that opens its source on `research.html`. Numbers are read from the data bundles. Presenter script: `docs/demo_path.md`; page guide: `demo/README.md` |
-| Web app | `uvicorn service.app:app --port 8000` after building `web/` (`docs/commands.md` section 4), open <http://localhost:8000> | Build or edit a flowchart, run it, optimise, rerun. Needs Node and the API requirements |
-| Hosted demo | no address is recorded in this repo; the hosted page is planned as `live_demo/` served by `python3 -m note_reader.server` (see the teammate section below) | The teammate's flowchart demo, note reader and report |
+All patients are synthetic. No clinician has reviewed any of it.
 
-If a page says "pending", rebuild the bundles with `python demo/export_all.py` (1 to 2 minutes) and reload. `?theme=night` on any page gives the old dark look for a washed-out projector.
+## Start here
 
-## Results, with how sure we are
-
-All numbers are from `docs/pitch/filled/numbers_sheet.md`, which also gives the exact sentence each may be used in. Status: **fitted** = tuned to it; **predicted** = computed with the fitted model, not tuned to it; **simulated** = a result inside our synthetic world.
-
-| What | Number | Status | The caveat that goes with it |
-|---|---|---|---|
-| Norway, today's order (Stokstad et al. 2019, 100 patients, one hospital) | 40% treated within 42 days; paper 40% | fitted | The only thing fitted. A 100-patient cohort in our model gives 30 to 51% |
-| Norway, the authors' reordered pathway | 80% at our best fit; 62 to 86% across all 184 settings that fit today's order, typically about 75% | predicted | The 80% is one point in a band, and the paper's 80% is itself a model estimate. With PET-CT ordered only at the first visit the best fit gives 66%. Never "matches" |
-| Norway, ranking | reordering beats a faster scanner beats today, in 184 of 184 settings | predicted | Sizes are not supported to better than about 12 points. Trust the ranking, not the size |
-| Norway, faster scanner alone | 60% at best fit (50 to 74%); paper 48% | predicted | A miss: we over-predict |
-| Norway, optimiser (plausibility check; D62, D68) | From today's pathway with no new equipment: 67% at the best fit, 48 to 77% across all 184 settings (median 65), against 36 to 44% for today's pathway. Not a like-for-like pair with the authors' 80%, which includes the shorter PET-CT wait | simulated | It chose from a menu of about 69 changes that contained the authors' three. It rediscovered their redesign plus one overlapping change (tissue sampling planned at referral triage; worth 2 to 4 points; needs a clinical check) and it does not improve on the authors' redesign. Without new equipment it beats today's pathway in 184 of 184 settings but beats the faster scanner alone in only 128 of 184. Never quote 67% without the range. The optimiser is not run or reported with the faster scanner (D68) |
-| Our synthetic Finnish county, optimiser | 18% to 33% treated within 90 days; gain 9 to 19 points over 12 cohorts, positive in all 12 | simulated | Two reorders, no new equipment, two held-out cohorts. The 90-day target is ours. 40 of 49 scenario inputs are assumptions. Not an estimate for real Finnish patients |
-
-Other numbers (equity, capacity, the primary-care loop, model-written cards) are in the sheet and in `docs/results_in_full.md`.
-The equity gap in percentage points widens (13.6 to 24.6) while both groups gain; we do not claim it closes.
-
-## What is real and what is synthetic
-
-- **Real, and not ours:** the Norwegian study's published numbers, the published Finnish and Nordic waits and survival figures. Each is cited in `params/sources.yaml` and `docs/pitch/evidence_brief.md`.
-- **Synthetic:** every patient, the Finnish county, and its outputs. Of 49 inputs in the Finnish scenario, 9 cite a source; every capacity and booking lead is an assumption (`docs/ledger.md`).
-- **Patient cards:** a **card** is one synthetic patient: a hidden truth plus the pre-written result of every test. The decision side sees only what has been revealed. 500 are written from templates. Some are written by a language model; that count is still changing (sheet E2, P3).
-- **Care catalogue** (11 conditions, 26 tests): a draft no clinician has read; most of its numbers are our assumptions.
-- **JEV**, the team's decision model, scores the offered options at a choice point from the visible record; a person decides. Its scores are relative, not probabilities. The results above come from placeholder tables and rules, not from JEV.
-
-## How it works
-
-1. A **flowchart** lists steps, what each must wait for, and the resource it uses (`docs/architecture.md`, `scenarios/stokstad.yaml`).
-2. **Synthetic patients** carry a hidden truth. Decisions see only the revealed record (`patient_engine/`, `docs/synthetic_data_for_jev.md`).
-3. A discrete-event run adds queues, a weekly tumour board and published waiting-time distributions (`pathway_sim/`).
-4. The **optimiser** proposes changes from revealed timestamps; a change is kept only if a rerun of the same patients is faster and passes the guardrails, such as no more missed cancers (`optimiser/`).
-5. Results are reported on **held-out** patients. In real life the rerun would be a pilot (`docs/master_plan.md`).
-6. At choice points a decision model proposes and a person decides (`jev/`, `decision_api/`, `docs/platform/jev-birch.md`).
-
-## What we do not claim
-
-Full list: the "safe to claim / do not claim" box in `docs/pitch/filled/deck.md`. Open problems found by the independent review: `docs/review_w7.md`.
-
-- Not a prediction for real patients, not lives saved. Faster care saving lives in lung cancer is not shown: the lung-surgery delay estimate is not significant.
-- Not "we predicted 80% exactly", and not the older narrow range "78 to 86%" (the range is 62 to 86%). The optimiser did not beat or improve on the authors, did not find their answer from nothing, and the fourth change is not shown safe; "reordering beats buying the scanner" holds in 128 of 184 settings, not all.
-- 61% is conditional on assumed urgent-booking times. It is not a result.
-- The primary-care loop uses placeholder decision tables and every behaviour number is an assumption. It reproduces the calibrated chain only at the edge of the tolerances (8 of 8 checks on the tuning seeds, 6 of 8 on fresh seeds, 7 of 8 pooled over eight seeds; the pooled miss is non-cancer patients referred, 11.0% against 8.0%). A cancer waits about 25 days to referral, as in the chain; about one in ten (9%, 4 to 13%) is first treated as something else and those wait about four times as long (wide interval). Not a Finnish estimate; the old 37 days, one in six, 84 days and 840 EUR are withdrawn. Quote it as a mechanism, with the numbers and caveats in `docs/encounter_results.md` (sheet E4).
-- Model-written cards are not "leak-free": the review found report wording that gave away false alarms. The fix (result prompt g2@2, reports rebuilt from values for old cards, an audit check) is merged; the new prompt has not yet been run on the real model, so the 35 model-written cards in the repository use the old prompt. Backgrounds now come from a population model whose numbers are mostly assumptions.
-- Nothing is validated on real patients, and nothing here is clinically reviewed. The Norwegian check covers specialist care, not primary care.
-- Our Finnish calibration uses 37 days from diagnosis to treatment; a lung-specific Finnish study gives 65 to 69. We reran at 67: the gain from the two reorders stays at about 15 points and 7.5 days, but the 90-day share falls to 0% for every pathway if that reading is right (`docs/evidence_sensitivity.md`).
-
-## Where things are
-
-Full table with owners and start points: `docs/repo_map.md`. Reading order for a technical judge: `docs/START_HERE.md`.
-
-| Need | Go to |
+| What | Where |
 |---|---|
-| Run commands (install, simulate, optimise, JEV, web app) | `docs/commands.md` |
-| Every number and its allowed sentence | `docs/pitch/filled/numbers_sheet.md` |
-| Method, Norway robustness, limits | `docs/validation.md`; ranges `docs/ranges.md`; inputs `docs/ledger.md` |
-| Plan and status | `docs/master_plan.md`, `docs/plan/README.md`, `docs/plan/04-status.md`, `docs/decisions.md` |
-| Pitch text, submission, hard questions | `docs/pitch/filled/` |
+| The website (Manifesto, Simulation, JEV, Appendix) | `website/`. Run `python3 -m http.server 8780 --directory website/public` and open <http://localhost:8780> |
+| Page text | `website/content/*.md`. After editing, run `python3 website/build_content.py` (needs `pip install markdown`) |
+| The headline result, reproduced in about a minute | `python3 -m optimiser scenarios/generated/stokstad_calibrated.yaml --start observed` |
+| Every number we quote, with its caveat | `docs/pitch/filled/numbers_sheet.md` |
+| How we checked against a published hospital study | `docs/validation.md`, `docs/norway_case_study.md` |
+| Design and decisions | `docs/master_plan.md`, `docs/architecture.md`, `docs/decisions.md` |
 
-Sources and licence: the published sources are listed per parameter in `params/sources.yaml` and `docs/parameters.md`. No licence file is in the repository yet.
+## The headline result
 
-**Video:** https://vimeo.com/1246920559/41ca86218a?share=copy&fl=sv&fe=ci
-**Technology challenges** (Modal, Nemotron, Gemini API, Verda): [what we claim and what backs it](docs/submission_tech_challenges.md).
+The pathway is rebuilt from a published Norwegian study (Stokstad et al. 2019, one university hospital). We fitted the
+simulator to the study's observed pathway: 40% of patients start treatment within 42 days. Starting from that pathway,
+with no new equipment, the optimiser keeps four changes:
 
-## Decision model integration for the demo team
+1. Order the PET-CT scan at triage or the first visit, never late.
+2. Plan tissue sampling when the referral is triaged, before the first hospital visit.
+3. Order the exercise test early, together with the other tests.
+4. Hold the tumour board while tissue sampling runs alongside.
 
-Read [the teammate setup guide](decision_api/README.md) or give
-[the integration prompt](decision_api/INTEGRATION_PROMPT.md) to your coding model.
-The follow-up [shared-Nemotron refinement handoff](decision_api/REASONING_HANDOFF.md)
-adds the optional token-budget and patient-tool design; it is off by default.
+On held-out patients the share treated within 42 days rises from **40.1% to 67.1%** at the best-fitting setting, and
+from 36–44% to 48–77% across the 184 settings that fit today's pathway (median 65%). The study's authors reported 80%
+for their own redesign, which also assumed a shorter PET-CT wait, so the two are not a like-for-like pair. Our result does
+not improve on theirs.
 
-```bash
-python3 -m decision_api.server
+What the result depends on: the simulator is calibrated to the published study (an uncalibrated run gives different
+numbers); the decisions at each choice point follow rule tables fitted to observed practice, **not** JEV; and the
+acceptance rerun uses the simulator's hidden truth, which in a real hospital would be a pilot.
+
+## What is in the repository
+
+| Folder | What it is |
+|---|---|
+| `website/` | The website: static pages, the embedded before-and-after animation (`public/sim/`), the live JEV test area, Modal deploy (`modal_app.py`) |
+| `pathway_sim/` | The simulator: a discrete-event engine with appointment capacity, weekly tumour boards and published waiting-time distributions (`engine.py`), plus calibration and metrics |
+| `optimiser/` | The search: propose, rerun, accept with guardrails, report on held-out patients (`search.py`, `edits.py`) |
+| `scenarios/` | Pathways as YAML: `stokstad.yaml` (Norway), `generated/stokstad_calibrated.yaml` (fitted), `finland_lung.yaml` (a synthetic Finnish county) |
+| `params/` | Parameters and their sources (`sources.yaml`) |
+| `patient_engine/`, `catalogue/`, `populations/`, `libraries/` | Synthetic patients: hidden truth plus pre-written test results, the care catalogue, and saved patient libraries |
+| `jev/` | Connects JEV (Birch) to the simulator's choice nodes (`flow_policy.py`, `birch.py`). Run on JEV: `python3 -m pathway_sim.jev_run --estimate` |
+| `decision_api/`, `decision_model/` | The decision model's API and gateway (owned by the JEV owner), and an earlier small numpy model |
+| `note_reader/`, `technique_classifier/` | Teammate tools for reading clinical notes and classifying techniques |
+| `video/` | The video: script, how it is made |
+| `docs/` | Plans, decisions, validation, evidence, pitch material |
+| `tests/` | `python3 -m pytest -q` |
+| `scripts/` | Helper scripts, including the agent channel `scripts/comms.py` |
+
+**Superseded, kept for reference:** `demo/` (the earlier offline demo site), `web/` and `service/` (the flowchart editor
+web app), `live_demo/`. The website in `website/` replaces them.
+
+## JEV status
+
+The simulator calls a pluggable policy at every choice node, and `jev/flow_policy.py` turns the patient's visible state
+into a request for Birch, checking that no hidden information is sent. This has been run end to end against a mock of
+the gateway. It has **not** yet been run against the real model, so no reported result uses JEV. What Birch was trained
+on is not yet documented (`docs/platform/jev-birch.md`).
+
+## Setup
+
+```
+pip install -r requirements.txt                  # simulator and optimiser
+pip install -r service/requirements.txt          # needed by the service tests
+pip install markdown                              # website/build_content.py
+python3 -m pytest -q
 ```
 
-Open http://127.0.0.1:8771/decision. Medical-dataset pictures and recorded model
-examples work immediately, without credentials, uploads or GPU usage. A backend
-key enables an explicit live call to the separately hosted checkpoint1138 model.
-The JavaScript client and optional review component can be reused in your own UI.
-
-## Existing project demo
-
-```bash
-python3 -m pip install -r requirements.txt
-python3 -m note_reader.server
-```
-
-Open http://127.0.0.1:8770 for the flowchart demo, `/note` for the note reader,
-`/report/` for the dashboard and `/decision` for the decision-model panel.
-Simulator estimates and model candidate scores are separate quantities.
-All model proposals require human review. See the integration guide for the
-prototype's limitations and the difference between live and saved examples.
-
-## Three-slide live website
-
-[Open Equal Care Pathways](https://cancer123--equal-care-pathways-web.us-east.modal.run/?release=20261115-3) — a moving patient graph, Decision Studio (Text, Photo and Custom question), and a discussion/manifesto placeholder.
-
-[Join our Modal organization](https://modal.com/signup?token=dd6w00V0NL0JDEY0zPvPJ5uZ08k73wqyJLys8mplk8o&shareable-token=true&organization=true) using this invitation link.
-
-Website source and deployment instructions: [website/README.md](website/README.md). The site reuses the existing public decision gateway; visitors do not need a Modal account to try it.
+API keys live in `.env` (see `.env.example`) and are never committed.

@@ -1,7 +1,7 @@
 # Overnight task queue (14–15 Nov)
 
 Contract: `docs/architecture.md`. Provisional choices: `docs/decisions.md`.
-Blockers: `BLOCKERS.md`. Branch: `overnight/sim`. Each track works on its own
+Blockers: `docs/plan/overnight/BLOCKERS.md`. Branch: `overnight/sim`. Each track works on its own
 branch and gets merged in. Run all tests with `python -m pytest -q`.
 
 ## Track 0: setup
