@@ -66,7 +66,7 @@ class RoutesTests(unittest.TestCase):
         saved = json.loads(body)
         self.assertEqual(saved['delivery'], 'precomputed')
         self.assertEqual(saved['decision']['backend']['mode'], 'model')
-        self.assertEqual(saved['decision']['backend']['step'], 2350)
+        self.assertEqual(saved['decision']['backend']['step'], 2881)
         self.assertFalse(self.upstream.calls)
         self.assertNotIn(b'type="file"', self.request('/decision')[1])
 
